@@ -7,8 +7,16 @@
 <!-- STATUS -->
 Epic: Vertical Slice
 Feature: 汜水小城守御
-Task: ✅ Slice 完成（26 测试绿）— 裁定 PROCEED；下一步 /gate-check pre-production
+Task: ✅ Slice 完成（33 测试绿）— PROCEED（设计者签核）；本会话结束，下次入口 /gate-check pre-production
 <!-- /STATUS -->
+
+## ⏹ 本会话结束（2026-06-21）
+
+- **已完成**：G3 跨系统审查闭环 → Vertical Slice「汜水小城守御」全程（三条兵法条件链 + 军师 GDD_008 + 双边断粮博弈 + 敌军援军 + 情报雾 GDD_007 + 存档 round-trip ADR-0005）。**33/33 测试绿**。裁定 **PROCEED（设计者亲手试玩签核）**。
+- **已入库远程**：`tk/main`（nerrazzuri/three_kingdom）至 `f20da44`。工作树干净。
+- **未做（有意推迟，省 token，留待干净上下文）**：`/gate-check pre-production`（opus 档，多文档综合裁定）。
+- **下次入口**：新会话直接说「跑 /gate-check pre-production」。通过后再 `/create-epics layer:foundation`/`layer:core` → `/sprint-plan`（用 REPORT velocity）。
+- **关键参照**：slice 代码 `prototypes/three-kingdom-siege-vertical-slice/`（运行 `cd src && dotnet run` 演示 / `dotnet run play` 交互 / `cd tests && dotnet test`）；裁定与 Lessons 见同目录 REPORT.md。铁律：production 从头重写、永不 import prototypes。
 
 ## ▶ VERTICAL SLICE 检查点（2026-06-21 启动）
 
