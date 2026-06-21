@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Domain/">
+    <Project Path="src/Domain/ThreeKingdom.Domain.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/unit/">
+    <Project Path="tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

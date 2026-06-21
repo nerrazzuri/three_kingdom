@@ -19,7 +19,7 @@ Accepted
 | **Engine** | Unity 6.3 LTS |
 | **Domain** | Core / Scripting |
 | **Knowledge Risk** | LOW — 本决策为引擎无关的纯 C# 分层架构，不依赖任何 Unity 6.x 特有 API |
-| **References Consulted** | `docs/engine-reference/unity/VERSION.md`、`docs/architecture/architecture-overview.md` |
+| **References Consulted** | `docs/engine-reference/unity/VERSION.md`、`docs/architecture/architecture.md` |
 | **Post-Cutoff APIs Used** | None — Domain 层禁止依赖 UnityEngine；分层本身不调用引擎 API |
 | **Verification Required** | 验证纯 C# Domain 程序集可独立于 UnityEngine 编译与单元测试（无 Unity 引用即可 `dotnet test`） |
 
@@ -38,7 +38,7 @@ Accepted
 
 项目是离线单机三国沙盒战略 RPG，核心是大量互相影响、需测试与调平、必须确定性可复现的模拟规则。
 若不强制分层，Unity 的 MonoBehaviour/ScriptableObject 会侵入 gameplay 规则，导致：状态权威分散、
-模拟依赖帧率/Unity 时间而无法确定性复现、规则无法在无引擎环境下单元测试。`architecture-overview.md`
+模拟依赖帧率/Unity 时间而无法确定性复现、规则无法在无引擎环境下单元测试。`architecture.md`
 已起草分层方向但未正式锁定为可强制的决策。本 ADR 将其固化，使所有后续 ADR、GDD 实现和 story 都受同一边界约束。
 
 ### Constraints
@@ -192,5 +192,5 @@ interface IDeterministicRandom { double Next(CheckpointId at); }
 ## Related Decisions
 
 - ADR-0001：选择 Unity + C#（本 ADR 的上游基础）
-- `docs/architecture/architecture-overview.md`：本 ADR 正式固化其分层与依赖方向章节
+- `docs/architecture/architecture.md`：本 ADR 正式固化其分层与依赖方向章节
 - 即将撰写：ADR-0003（数据驱动配置）、ADR-0004（确定性战斗模拟）、ADR-0005（存档版本与迁移）

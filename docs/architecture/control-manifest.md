@@ -4,9 +4,9 @@ Manifest Version: 1
 
 ## 当前阶段
 
-`GDD DRAFTS COMPLETE / CROSS-SYSTEM REVIEW NEXT`
+`PRODUCTION — FOUNDATION 实现开始`
 
-当前仅允许概念、设计、架构、生产和质量文档工作。禁止创建 gameplay、战斗、UI、Scene 实现或硬编码平衡值。
+Pre-Production→Production 闸门已通过（2026-06-21，裁定 CONCERNS，四总监 Panel：CD/TD/PR=CONCERNS、AD=READY，无 NOT READY；用户接受 CONCERNS 推进）。现允许按 story 实现 Foundation 层 Domain 代码（epic-001/002/009）。仍须遵守全部强制设计锁与层级；CONCERNS 作为 Production 早期 guardrail（见 active.md「四总监 Panel 裁定」段）。
 
 ## 权威文档顺序
 
@@ -44,8 +44,8 @@ Manifest Version: 1
 | G3 跨系统审查 | contradiction report | Passed（CONCERNS） | 报告 `design/gdd/gdd-cross-review-2026-06-21.md`；唯一阻断（支柱4 外交无 GDD 归属）已闭合——外交受控入口回写 GDD_012 §8；5 项 Warning（断粮传导单点/知识TTL/morale命名/mod_weather范围/破环顺序）**已全部回写修复** |
 | G4 技术锁定 | 架构、ADR_0002—0005、质量基础 | Pending | 分层、确定性、配置、存档边界 Accepted |
 | G5 方法就绪 | first slice method specs | Pending | 所有 public API 契约与测试要求明确 |
-| G6 预制作 | vertical slice、资产、UX、backlog、Sprint | In Progress | **Vertical Slice 完成（2026-06-21，裁定 PROCEED）** — `prototypes/three-kingdom-siege-vertical-slice/`，三条条件链 + 军师 + 存档 round-trip，26 测试绿，[REPORT](../../prototypes/three-kingdom-siege-vertical-slice/REPORT.md)。余下 G6 项（资产/UX/backlog/Sprint）待 `/gate-check pre-production` 后展开 |
-| G7 Story 开发 | 单个 Ready story | Blocked | 仅在 G0—G6 通过后按 `/dev-story` 执行 |
+| G6 预制作 | vertical slice、资产、UX、backlog、Sprint | Passed（CONCERNS） | Vertical Slice PROCEED（33 测试绿）；art-bible v1.0 全 9 节 + AD 签核 APPROVED；三关键屏 UX（main-menu/hud/pause）/ux-review APPROVED；9 epics + 28 stories（`production/epics/`）；sprint-01 重生指向真实 story 路径。Pre-Production→Production 闸门通过（2026-06-21，CONCERNS） |
+| G7 Story 开发 | 单个 Ready story | Unblocked（Foundation） | G0—G6 通过；可按 `/story-readiness`→`/dev-story` 实现 Foundation story（epic-001/002/009）。**硬前置已闭合**：纯 C# Domain + NUnit 示例测试 `dotnet test` 本地绿（`tests/unit/ThreeKingdom.Domain.Tests`），CI `domain-tests` job 无需 UNITY_LICENSE 即绿（首次 GitHub 绿待 push 验证） |
 
 ## Story Readiness Checklist
 
@@ -73,4 +73,10 @@ Story 只有同时满足以下条件才可进入开发：
 
 ## 当前阻断项
 
-G3 跨系统审查已通过（CONCERNS，2026-06-21）：唯一阻断已闭合，报告见 `design/gdd/gdd-cross-review-2026-06-21.md`。method specs 和 vertical slice 计划尚未完成，因此任何 gameplay story 都未 Ready。**下一门禁为 G6 预制作**：恢复 `/vertical-slice` 前置验证乐趣（active.md 既定顺序；G4 技术锁定的架构/ADR 已 Accepted，G5 method specs 随首段 Domain 代码落地）。G3 剩余 5 项 Warning 非阻断，于 slice 后或 story 拆分时批量处理。
+**无阻断项**。G0—G6 全部通过；Pre-Production→Production 闸门 2026-06-21 通过（CONCERNS）。Foundation story（epic-001/002/009）可开工。
+
+**Production 早期 guardrail（CONCERNS，非阻断，须主动守护——详见 active.md「四总监 Panel 裁定」段）**：
+- CD：非战斗决策空间须经体验验证（防薄皮战斗沙盒）；降输入摩擦须过 P11 审查（尤其军师层）；核心幻想须在 Unity 表现层重验（无 player-journey）。
+- TD/PR：CI 首次 GitHub 绿待 push（本地 `dotnet test` 已绿、workflow 已无许可依赖）；表现层帧/draw-call/内存 + Unity 序列化适配须早期打样；里程碑日历/容量基线 sprint 1 内回填。
+- AD：§4 对比度首批资产入库前工具实测；art-bible §7 高对比变体配色待补（高对比功能实现前）。
+- 排程注意：epic-009 S3（存档校验）实质依赖 epic-005 S1（情报四层）→ 归 Core 期，勿当 Foundation 早期任务。

@@ -45,7 +45,7 @@
 | `docs/02_design/GDD_INDEX.md` | `design/gdd/gdd-index.md` |
 | `docs/03_technical/adrs/ADR_0001_ENGINE_CHOICE.md` | `docs/architecture/adr-0001-engine-choice.md` |
 | `docs/03_technical/ADR_INDEX.md` | `docs/architecture/adr-index.md` |
-| `docs/03_technical/ARCHITECTURE.md` | `docs/architecture/architecture-overview.md` |
+| `docs/03_technical/ARCHITECTURE.md` | `docs/architecture/architecture.md` |
 | `docs/03_technical/CONTROL_MANIFEST.md` | `docs/architecture/control-manifest.md` |
 | `docs/04_production/EPICS.md` | `production/epics/epics-index.md` |
 | `docs/04_production/SPRINT_01.md` | `production/sprints/sprint-01.md` |
@@ -59,7 +59,7 @@
 
 - [x] `design/gdd/` 已填充（13 份 GDD + game-concept + game-pillars + systems-index + gdd-index）
 - [x] `design/concept/` 已填充（mvp-scope、non-goals、art-direction、concept-validation）
-- [x] `docs/architecture/` 已填充（adr-0001、adr-index、architecture-overview、control-manifest）
+- [x] `docs/architecture/` 已填充（adr-0001、adr-index、architecture、control-manifest）
 - [x] `production/sprints/` 已填充（sprint-01）
 - [x] `production/story-backlog.md` 已就位
 - [x] `docs/project-brief.md` 已就位
@@ -119,7 +119,7 @@
 ## Formulas
 
 本系统无独立公式——序列化规则由架构层的基础设施层定义
-（参见 architecture-overview.md §Infrastructure Layer）。
+（参见 architecture.md §Infrastructure Layer）。
 确定性由不可变快照保障，非计算公式。
 ```
 
@@ -288,7 +288,7 @@ SYSTEM_MAP.md（迁移至 `design/gdd/systems-index.md`）的 Status 列值
 
 ### 5a. 架构可追溯性文档
 
-`docs/architecture/architecture-traceability.md` 不存在。
+`docs/architecture/requirements-traceability.md` 不存在。
 该文档由 `/architecture-review` 自动生成——完成第 3a 步即可覆盖此需求。
 
 - [ ] 由第 3a 步覆盖

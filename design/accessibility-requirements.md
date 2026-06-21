@@ -1,10 +1,11 @@
 # 无障碍需求文档
 **《三国演义：兵法沙盒》Accessibility Requirements**
 
-> **状态**：In Review · 待 /ux-review 验证
+> **状态**：Approved
 > **作者**：user + accessibility-specialist
 > **基准文档**：`design/ux/interaction-patterns.md`、`docs/ux-accessibility.md`
 > **最后更新**：2026-06-21
+> **ux-review（ux-designer）**：APPROVED 2026-06-21 — 与 `design/art/art-bible.md` §7 无障碍视觉标准、interaction-patterns P1–P12（P3 颜色外冗余 / P12 减少动态）及三关键屏 UX 规格（main-menu/hud/pause-menu §12）双向一致，无矛盾；WCAG 2.1 AA 基线在视觉/运动/键盘/认知四域均有可验证落点。遗留 OQ（如 OQ-03 Unity 6.3 UI Toolkit AT API 能力）为正当待实测项，不阻断。
 > **平台**：PC（Windows/macOS/Linux）· 键鼠为主 · Gamepad 部分 · 无触控
 
 ---

@@ -19,7 +19,7 @@ Accepted
 | **Engine** | Unity 6.3 LTS |
 | **Domain** | Core / Configuration |
 | **Knowledge Risk** | LOW — ScriptableObject 仅用于编辑期，构建时转换；Domain 配置为引擎无关不可变对象，不依赖 Unity 6.x 运行时序列化 |
-| **References Consulted** | `docs/engine-reference/unity/VERSION.md`、`docs/architecture/architecture-overview.md`、`adr-0001-engine-choice.md`、`adr-0002-architecture-layering.md`、`adr-0005-save-versioning-migration.md` |
+| **References Consulted** | `docs/engine-reference/unity/VERSION.md`、`docs/architecture/architecture.md`、`adr-0001-engine-choice.md`、`adr-0002-architecture-layering.md`、`adr-0005-save-versioning-migration.md` |
 | **Post-Cutoff APIs Used** | None — ScriptableObject 是稳定 API；构建期转换不依赖 Unity 6.x 新特性 |
 | **Verification Required** | 验证非法范围/缺失引用配置在进入 Domain 前被拒绝；验证运行时无法修改已加载配置（不可变） |
 
@@ -37,7 +37,7 @@ Accepted
 ### Problem Statement
 
 `coding-standards.md` 与全部 13 份 GDD 要求"平衡值数据驱动、不硬编码"，GDD 的 §Balancing Parameters
-列出大量配置参数（耗时、权重、阈值、修正、曲线）。architecture-overview 已起草配置管线方向但未锁定。
+列出大量配置参数（耗时、权重、阈值、修正、曲线）。architecture 已起草配置管线方向但未锁定。
 若不正式确立配置的编辑形态、校验时机、不可变契约与指纹机制，各系统会各自以不同方式读配置，
 导致：运行时配置被意外修改破坏确定性、非法配置进入 Domain 引发难复现错误、存档无法用配置指纹判定兼容（ADR-0005）。
 本 ADR 锁定数据驱动配置的完整契约。
@@ -199,4 +199,4 @@ sealed class ValidatedConfig {
 - ADR-0002：架构分层（配置加载/校验在 Infrastructure，Domain 只读消费）
 - ADR-0004：确定性战斗模拟（配置指纹纳入状态哈希）
 - ADR-0005：存档版本与迁移（配置指纹用于存档兼容判定）
-- `docs/architecture/architecture-overview.md`：本 ADR 固化其"数据驱动规则"章节
+- `docs/architecture/architecture.md`：本 ADR 固化其"数据驱动规则"章节

@@ -19,7 +19,7 @@ Accepted
 | **Engine** | Unity 6.3 LTS |
 | **Domain** | Core / Persistence |
 | **Knowledge Risk** | LOW — 存档用显式 DTO + JSON，不依赖 Unity 序列化 Domain 类型，规避 Unity 6.x 序列化行为 |
-| **References Consulted** | `docs/engine-reference/unity/VERSION.md`、`docs/architecture/architecture-overview.md`、`adr-0002-architecture-layering.md`、`adr-0004-deterministic-battle-simulation.md` |
+| **References Consulted** | `docs/engine-reference/unity/VERSION.md`、`docs/architecture/architecture.md`、`adr-0002-architecture-layering.md`、`adr-0004-deterministic-battle-simulation.md` |
 | **Post-Cutoff APIs Used** | None — 存档 I/O 经 Infrastructure 端口；用 System.Text.Json 或等价，不用 Unity JsonUtility 处理 Domain 权威状态 |
 | **Verification Required** | 验证空/完整状态 round-trip 一致；验证旧版存档经迁移链加载后状态哈希与等价新存档一致；验证写入中断不破坏既有存档 |
 
@@ -197,4 +197,4 @@ interface ISaveMigrator {
 - ADR-0002：架构分层（存档属 Infrastructure，实现端口）
 - ADR-0004：确定性战斗模拟（复用状态哈希与回放契约）
 - ADR-0003（待撰写）：数据驱动配置——配置指纹是本 ADR 兼容判定的输入
-- `docs/architecture/architecture-overview.md`：本 ADR 固化其"存档边界"章节
+- `docs/architecture/architecture.md`：本 ADR 固化其"存档边界"章节

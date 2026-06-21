@@ -19,7 +19,7 @@ Accepted
 | **Engine** | Unity 6.3 LTS |
 | **Domain** | Core / Scripting |
 | **Knowledge Risk** | LOW — 决策刻意规避引擎数值行为，核心结算用整数/定点，不依赖 Unity 6.x 浮点或物理 |
-| **References Consulted** | `docs/engine-reference/unity/VERSION.md`、`docs/architecture/architecture-overview.md`、`docs/architecture/adr-0002-architecture-layering.md` |
+| **References Consulted** | `docs/engine-reference/unity/VERSION.md`、`docs/architecture/architecture.md`、`docs/architecture/adr-0002-architecture-layering.md` |
 | **Post-Cutoff APIs Used** | None — Domain 不调用 Unity 数学/物理；时间推进用 Domain 时段非 Unity Time |
 | **Verification Required** | 在 Windows/macOS/Linux 三平台对同一 golden scenario 运行，验证状态哈希逐位相同；验证 Domain 无任何 `float` 进入权威结算路径 |
 
@@ -124,7 +124,7 @@ interface IBattleResolver {
 - **描述**：用 `float`/`double` 结算，重放时允许微小数值容差，哈希用量化后的值。
 - **Pros**：实现简单、与 GDD 公式小数直接对应、性能略优。
 - **Cons**：跨平台逐位一致无法证明；容差使状态哈希不再是严格相等判定，差异复现与回放校验不可靠；与"严格状态哈希一致"需求冲突。
-- **Rejection Reason**：GDD_010/GDD_013 明确要求逐位可复现的状态哈希，容差方案无法满足；architecture-overview 已预先排除。
+- **Rejection Reason**：GDD_010/GDD_013 明确要求逐位可复现的状态哈希，容差方案无法满足；architecture 已预先排除。
 
 ### Alternative 2：仅全状态快照（无哈希校验）
 
@@ -191,4 +191,4 @@ interface IBattleResolver {
 - ADR-0001：选择 Unity + C#
 - ADR-0002：架构分层（确定性逻辑落在 Domain 层）
 - ADR-0005（待撰写）：存档版本与迁移，复用本 ADR 的状态哈希与回放契约
-- `docs/architecture/architecture-overview.md`：本 ADR 固化其"确定性"章节
+- `docs/architecture/architecture.md`：本 ADR 固化其"确定性"章节

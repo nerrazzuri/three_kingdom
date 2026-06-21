@@ -7,10 +7,50 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    name: Run Unity Tests
+  # 纯 C# Domain 单元测试 — 无 Unity 运行时依赖，不需要 UNITY_LICENSE。
+  # 这是 Logic story 的 gating 绿灯（TD/PR 建议：旁路 Unity 许可，确保阻断门不虚设）。
+  domain-tests:
+    name: Domain Unit Tests (dotnet)
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore ThreeKingdom.slnx
+
+      - name: Test
+        run: dotnet test ThreeKingdom.slnx --configuration Release --no-restore --verbosity normal
+
+  # 检测 UNITY_LICENSE 是否已配置；未配置则跳过 Unity 测试（不让工作流变红）。
+  check-unity-license:
+    name: Check Unity License Secret
+    runs-on: ubuntu-latest
+    outputs:
+      has-license: ${{ steps.check.outputs.has-license }}
+    steps:
+      - id: check
+        env:
+          UL: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          if [ -n "$UL" ]; then
+            echo "has-license=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-license=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::UNITY_LICENSE 未配置 — 跳过 EditMode/PlayMode 集成测试。Domain 单元测试照常运行。"
+          fi
+
+  # Unity EditMode/PlayMode 集成测试 — 仅在 UNITY_LICENSE 已配置时运行。
+  unity-tests:
+    name: Unity EditMode/PlayMode Tests
+    needs: check-unity-license
+    if: needs.check-unity-license.outputs.has-license == 'true'
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,5 +77,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: unity-test-results
           path: test-results/

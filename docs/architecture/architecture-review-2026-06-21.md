@@ -113,7 +113,7 @@ ADR-0004 表补 `TR-map-001`，即升为 ✅，无需任何设计或代码变更
 
 ## 架构文档覆盖
 
-`docs/architecture/architecture-overview.md` 存在，被全部 5 份 ADR 引用为草案来源。
+`docs/architecture/architecture.md` 存在，被全部 5 份 ADR 引用为草案来源。
 未发现孤立架构。建议后续轻量交叉核对 13 系统在总览分层中均有位置（非阻断）。
 
 ---
