@@ -40,8 +40,9 @@
 |---|-------|------|--------|-----|
 | 001 | 人物核心状态与不变量 | Logic | ✅ Complete | ADR-0002 |
 | 002 | 职责权限与命令执行意愿 | Logic | ✅ Complete | ADR-0004 |
-| 003 | 方向性多维关系与事件幂等 | Logic | Ready | ADR-0004 |
+| 003 | 方向性多维关系与事件幂等 | Logic | ✅ Complete | ADR-0004 |
 
 ## Next Step
 
-S1、S2 ✅ Complete（2026-06-22）。下一步：`/story-readiness production/epics/epic-003-character-relationship/story-003-directional-relationship.md` → `/dev-story`
+✅ **epic-003 全部 3 story 完成（2026-06-22）**。DoD 已核对：全部 story 经 `/story-done` 关闭；gdd-005/006 验收标准验证；关系不对称性与事件幂等有测试；执行意愿确定性可复现；破环顺序遵守（关系事件结算 → 人物意愿）；全部 Logic story 在 `tests/unit/` 有通过测试（全套 181/181 绿，0 warning）。
+下一模块：epic-004-city-logistics（待新指令启动）。

@@ -1,12 +1,12 @@
 # Story 003: 方向性多维关系与事件幂等
 
 > **Epic**: 人物与关系
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -69,8 +69,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/relationship/directional_relationship_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Relationships/DirectionalRelationshipTests.cs` — 须存在并通过
+**Status**: [x] 已创建并通过（10 测，全套 181/181 绿）
+**Note**: 路径由故事原写的 `tests/unit/relationship/directional_relationship_test.cs` 归一到真实可编译测试工程。
 
 ---
 
@@ -78,3 +79,13 @@
 
 - Depends on: epic-001 Story 002；Story 001
 - Unlocks: Story 002（消费 coop_score）、epic-008（关系写回）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 5/5 passing（方向性多维不对称、具名事件幂等、coop_score 不凭空授权、授权有效性受期限/撤销约束、多维不合并）
+**Files**: `src/Domain/Relationships/`（RelationshipDimension+RelationshipScale、RelationshipEvent、RelationshipState、CooperationEvaluator+CooperationResponse+CooperationThresholds、AuthorityGrant）+ `tests/unit/ThreeKingdom.Domain.Tests/Relationships/DirectionalRelationshipTests.cs`（10 测）
+**Deviations**: ADVISORY — 测试路径归一到真实测试工程（见 Test Evidence Note）
+**Test Evidence**: Logic — 测试文件存在且通过（全套 181/181 绿，`-warnaserror` 0 warning）
+**Code Review**: Complete — `/code-review` = APPROVED（事件按稳定 ID 幂等、仅知情者、coop_score 匹配 GDD §3、授权独立于关系）

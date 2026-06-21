@@ -400,6 +400,12 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **测试累计 148/148 全绿，`-warnaserror` 0 warning**。每 story 走完整 readiness→dev-story→code-review(APPROVED)→story-done(COMPLETE WITH NOTES)→commit+push tk/main。
 - **共性偏差（ADVISORY）**：各 story 测试路径从故事原写的 `tests/unit/<sys>/*.cs`、`tests/integration/...` 归一到唯一可编译测试工程 `tests/unit/ThreeKingdom.Domain.Tests/`。
 
+### ✅ epic-003 人物与关系 — 全部 3 story 完成（2026-06-22）
+- **S1 人物核心状态**（GDD_005/ADR-0002）：`src/Domain/Characters/`（CharacterState、CapabilitySet、PersonalityProfile、HealthState、TaskCapabilityWeights）。能力→质量系数非解锁。commit `36f0e72`。
+- **S2 职责权限与意愿**（GDD_005 §2/§4/ADR-0004）：AuthorityRegistry（能力不绕过授权）、TaskConflictPolicy、WillingnessCalculator（读已结算 coop_score）。commit `17f7adc`。
+- **S3 方向性多维关系**（GDD_006/ADR-0004）：`src/Domain/Relationships/`（RelationshipState 四维方向性+事件幂等、CooperationEvaluator coop_score、AuthorityGrant 有效性）。commit 见下。
+- **测试累计 181/181 全绿，0 warning**。
+
 ### ▶ 下一入口
-- epic-001、epic-002 均关闭。下一模块 **epic-003-character-relationship**（角色与关系），待新指令启动。
-- 自主远程任务（epic-001 S3/S4 + epic-002 全 5 story）已完成。
+- epic-001、epic-002、epic-003 均关闭。下一模块 **epic-004-city-logistics**（城市与后勤），待新指令启动。
+- 自主远程任务（epic-001 S3/S4 + epic-002 全 5 + epic-003 全 3）已完成；用户「继续」推进至 epic-003。
