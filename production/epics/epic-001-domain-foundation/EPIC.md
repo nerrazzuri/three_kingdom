@@ -44,7 +44,7 @@
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | 建立纯 C# Domain 与测试边界 | Integration | Ready | ADR-0002 |
+| 001 | 建立纯 C# Domain 与测试边界 | Integration | ✅ Complete | ADR-0002 |
 | 002 | 定点数值与确定性随机流底座 | Logic | Ready | ADR-0004 |
 | 003 | 版本化配置加载与校验 | Logic | Ready | ADR-0003 |
 | 004 | SaveVersion 值对象 | Logic | Ready | ADR-0005 |

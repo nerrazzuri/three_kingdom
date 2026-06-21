@@ -39,8 +39,28 @@ Task: ✅闸门四步+四总监Panel / ✅fix-forward(改名+accessibility Appro
 **③ 阶段推进**
 - `production/stage.txt` = **Production**；control-manifest 当前阶段→PRODUCTION、G6=Passed(CONCERNS)、G7=Unblocked(Foundation)、当前阻断项=无（CONCERNS 列为 guardrail）。
 
-**未提交 git**：本会话全部改动（art-bible/3 UX/9 epics+28 stories/改名/CI+工程/accessibility/sprint/manifest/stage/active）待用户指示 commit/push。
-**下一步**：`/story-readiness production/epics/epic-001-domain-foundation/story-001-domain-test-boundary.md` → `/dev-story`。
+**已入库**：上述全部改动已 commit（`de86317`）+ push 至 `tk/main`（nerrazzuri/three_kingdom，`f9158cf..de86317`）。
+
+## Session Extract — /dev-story 2026-06-21（epic-001 S1 实现）
+
+- **Story**: `production/epics/epic-001-domain-foundation/story-001-domain-test-boundary.md` — 建立纯 C# Domain 与测试边界（Status: In Progress）
+- **/story-readiness 裁定**: READY（lean，QL-STORY-READY 跳过）
+- **实现方式**: inline（小型反射断言测试，省冷启动 engine-programmer/unity-specialist 子代理；框架骨架闸门②已建）
+- **文件**: 新增 `tests/unit/ThreeKingdom.Domain.Tests/DomainBoundaryTests.cs`（3 测）；既有 `src/Domain/{ThreeKingdom.Domain.csproj,BuildInfo.cs}` + `BuildInfoTests.cs`（2 测）+ `ThreeKingdom.slnx`
+- **AC**: 全 4 条满足（Domain 无 UnityEngine 引用[反射实证]/独立 NUnit 测试程序集/dotnet test 无 Unity 运行时/示例类型+测试）
+- **测试**: `dotnet test ThreeKingdom.slnx` → **5/5 绿**（本地）
+- **偏差**: 测试证据路径由 `tests/integration/foundation/...` 调整为统一测试工程 `ThreeKingdom.Domain.Tests`（CI 装配更简）；实现 inline 非子代理（已记）
+- **Blockers**: None
+- **Next**: `/code-review` 新增文件 → `/story-done` 关闭 S1
+
+## Session Extract — 设计锁红线 + /code-review + /story-done 2026-06-21
+
+- **两条红线正式写入**（约束全部后续产出）：
+  - control-manifest §强制设计锁 + art-bible §9.4：①【红线】零复制现有三国游戏/作品资产（原创性，含 AI 仿制/二改/同 IP 全禁；史料+原著可作题材、表达须自创；存疑不入库、违者拒收不 commit；`/asset-spec` 须填「参考来源」字段）②所有文件中文撰写（「中文叙述 + 英文标识符」，代码命名/引擎 API/编号保留英文）。
+- **/code-review（epic-001 S1 文件）**: APPROVED（inline；ADR-0002 COMPLIANT、Standards 6/6、新红线合规）。
+- **/story-done（epic-001 S1）**: **裁定 COMPLETE WITH NOTES**。Status→Complete；AC 4/4 COVERED；`dotnet test` 5/5 绿；ADVISORY 2 项（测试路径统一到 ThreeKingdom.Domain.Tests / inline 实现）。EPIC.md S1→✅Complete。lean：QL-TEST-COVERAGE 跳过、LP-CODE-REVIEW 由本会话 /code-review APPROVED 充当。
+- **DomainBoundaryTests 设为永久回归门**（后续 Domain 程序集禁 UnityEngine）。
+- **Next**: commit+push 本批 → 解锁 epic-001 S2（定点/随机流，Depends on S1=Done）。`/story-readiness epic-001 S2` → `/dev-story`。
 - **CONCERNS 汇总（均非阻断，Production 早期 guardrail）**：
   - **CD-C1** 非战斗决策空间（人物/关系/城市）仅经设计未经体验验证 → 首个非切片里程碑须体验验证「有意义机会成本」，防漂移成「薄皮战斗沙盒」。
   - **CD-C2** 降输入摩擦 vs P11 无自动化捷径张力，尤其军师层 → 所有降摩擦设计须过 P11 审查；「军师不越界」列专门验收。
