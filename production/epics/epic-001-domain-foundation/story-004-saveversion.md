@@ -1,12 +1,12 @@
 # Story 004: SaveVersion 值对象
 
 > **Epic**: 项目与 Domain 基础
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S（2h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -65,8 +65,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/foundation/saveversion_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Persistence/SaveVersionTests.cs` — 须存在并通过
+**Status**: [x] 已创建并通过（26 测，全套 74/74 绿）
+**Note**: 路径由故事原写的 `tests/unit/foundation/saveversion_test.cs` 归一到真实可编译测试工程（`foundation/` 不在任何 csproj）。
 
 ---
 
@@ -74,3 +75,13 @@
 
 - Depends on: Story 001（Domain 边界）
 - Unlocks: epic-009 Story 001/002/003（存档实现）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 3/3 passing（解析/比较/兼容三类关系、非法版本拒绝、不可变+值相等）
+**Files**: `src/Domain/Persistence/SaveVersion.cs`（SaveVersion + SaveCompatibility）+ `tests/unit/ThreeKingdom.Domain.Tests/Persistence/SaveVersionTests.cs`（26 测）
+**Deviations**: ADVISORY — 测试路径归一到真实测试工程（见 Test Evidence Note）
+**Test Evidence**: Logic — 测试文件存在且通过（全套 74/74 绿，`-warnaserror` 0 warning）
+**Code Review**: Complete — `/code-review` = APPROVED（纯值对象，ADR-0005 兼容三类 + 不静默降级）

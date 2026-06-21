@@ -47,8 +47,9 @@
 | 001 | 建立纯 C# Domain 与测试边界 | Integration | ✅ Complete | ADR-0002 |
 | 002 | 定点数值与确定性随机流底座 | Logic | ✅ Complete | ADR-0004 |
 | 003 | 版本化配置加载与校验 | Logic | ✅ Complete | ADR-0003 |
-| 004 | SaveVersion 值对象 | Logic | Ready | ADR-0005 |
+| 004 | SaveVersion 值对象 | Logic | ✅ Complete | ADR-0005 |
 
 ## Next Step
 
-`/story-readiness production/epics/epic-001-domain-foundation/story-004-saveversion.md` → `/dev-story`（S1、S2、S3 已 ✅ Complete）
+✅ **epic-001 全部 story 完成（2026-06-22）**。DoD 已核对：Domain 程序集纯 C# 无 UnityEngine（asmdef/csproj 边界）、定点/随机流/状态哈希确定性、配置非法范围/缺失引用被拒且无部分写入、SaveVersion 表达兼容关系并有测试、全部 Logic story 在 `tests/unit/` 有通过测试（74/74 绿）。
+下一模块：`/story-readiness production/epics/epic-002-world-substrate/story-001-deterministic-time.md` → `/dev-story`
