@@ -46,9 +46,9 @@
 |---|-------|------|--------|-----|
 | 001 | 建立纯 C# Domain 与测试边界 | Integration | ✅ Complete | ADR-0002 |
 | 002 | 定点数值与确定性随机流底座 | Logic | ✅ Complete | ADR-0004 |
-| 003 | 版本化配置加载与校验 | Logic | Ready | ADR-0003 |
+| 003 | 版本化配置加载与校验 | Logic | ✅ Complete | ADR-0003 |
 | 004 | SaveVersion 值对象 | Logic | Ready | ADR-0005 |
 
 ## Next Step
 
-`/story-readiness production/epics/epic-001-domain-foundation/story-003-config-loading.md` → `/dev-story`（S1、S2 已 ✅ Complete）
+`/story-readiness production/epics/epic-001-domain-foundation/story-004-saveversion.md` → `/dev-story`（S1、S2、S3 已 ✅ Complete）

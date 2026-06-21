@@ -1,12 +1,12 @@
 # Story 003: 版本化配置加载与校验
 
 > **Epic**: 项目与 Domain 基础
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -72,8 +72,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/foundation/config_load_validate_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Configuration/ConfigLoadValidateTests.cs` — 须存在并通过
+**Status**: [x] 已创建并通过（18 测，全套 48/48 绿）
+**Note**: 路径由故事原写的 `tests/unit/foundation/config_load_validate_test.cs` 归一到真实可编译测试工程（`foundation/` 不在任何 csproj，否则不会被编译/运行）。
 
 ---
 
@@ -81,3 +82,13 @@
 
 - Depends on: Story 001（Domain 边界）、Story 002（哈希用于指纹）
 - Unlocks: 全部依赖配置的 epic（002/004/005/007）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 5/5 passing（范围/边界/负值/空集、引用完整性、指纹稳定+变化+顺序无关、无部分写入、稳定错误码）
+**Files**: `src/Domain/Configuration/`（ConfigIds、ConfigResult、ConfigSchema、ConfigDraft、ValidatedConfig、ConfigValidator、IConfigLoader）+ `tests/unit/ThreeKingdom.Domain.Tests/Configuration/ConfigLoadValidateTests.cs`（18 测）
+**Deviations**: ADVISORY — 测试路径归一到真实测试工程（见 Test Evidence Note）
+**Test Evidence**: Logic — 测试文件存在且通过（全套 48/48 绿，`-warnaserror` 0 warning）
+**Code Review**: Complete — `/code-review` = APPROVED（重构 Validate 拆分以满足 <40 行/复杂度<10）
