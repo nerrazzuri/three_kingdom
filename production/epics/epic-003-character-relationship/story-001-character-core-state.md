@@ -1,12 +1,12 @@
 # Story 001: 人物核心状态与不变量
 
 > **Epic**: 人物与关系
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -65,8 +65,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/character/character_core_state_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Characters/CharacterCoreStateTests.cs` — 须存在并通过
+**Status**: [x] 已创建并通过（12 测，全套 160/160 绿）
+**Note**: 路径由故事原写的 `tests/unit/character/character_core_state_test.cs` 归一到真实可编译测试工程。
 
 ---
 
@@ -74,3 +75,13 @@
 
 - Depends on: epic-001 Story 001/002
 - Unlocks: Story 002, 003；epic-005/006/007（人物消费）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 3/3 passing（核心状态+构造不变量、能力/健康→过程质量系数、无无条件技能解锁负向断言）
+**Files**: `src/Domain/Characters/`（CharacterId+RoleId、CapabilitySet+CapabilityDomain、PersonalityProfile+PersonalityTrait、HealthState+HealthLevel、TaskCapabilityWeights、CharacterState）+ `tests/unit/ThreeKingdom.Domain.Tests/Characters/CharacterCoreStateTests.cs`（12 测）
+**Deviations**: ADVISORY — 测试路径归一到真实测试工程（见 Test Evidence Note）
+**Test Evidence**: Logic — 测试文件存在且通过（全套 160/160 绿，`-warnaserror` 0 warning）
+**Code Review**: Complete — `/code-review` = APPROVED（质量公式匹配 GDD §1、满能力→系数 1.0 非解锁、连续无阈值跳变）

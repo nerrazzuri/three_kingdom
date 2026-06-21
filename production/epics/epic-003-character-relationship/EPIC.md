@@ -38,10 +38,10 @@
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | 人物核心状态与不变量 | Logic | Ready | ADR-0002 |
+| 001 | 人物核心状态与不变量 | Logic | ✅ Complete | ADR-0002 |
 | 002 | 职责权限与命令执行意愿 | Logic | Ready | ADR-0004 |
 | 003 | 方向性多维关系与事件幂等 | Logic | Ready | ADR-0004 |
 
 ## Next Step
 
-`/story-readiness production/epics/epic-003-character-relationship/story-001-character-core-state.md` → `/dev-story`
+S1 ✅ Complete（2026-06-22）。下一步：`/story-readiness production/epics/epic-003-character-relationship/story-002-duty-authority-willingness.md` → `/dev-story`
