@@ -1,13 +1,13 @@
-# 会话状态 — Vertical Slice 实现中（汜水小城守御）
+# 会话状态 — Foundation 实现中（epic-001）
 
-> **最后更新**：2026-06-21
+> **最后更新**：2026-06-22
 > **语言**：全程中文（见用户偏好 memory）
 > **审查模式**：lean
 
 <!-- STATUS -->
-Epic: Foundation 实现
-Feature: 进入 Production（闸门 CONCERNS 通过，stage.txt=Production）
-Task: ✅闸门四步+四总监Panel / ✅fix-forward(改名+accessibility Approved+sprint-01重生) / ✅CI dotnet test 本地绿+示例测试 / ✅stage→Production｜下一步 /story-readiness epic-001 S1 → /dev-story
+Epic: Foundation 实现（epic-001 项目与 Domain 基础）
+Feature: Domain 内核底座
+Task: ✅S1 Domain 测试边界 / ✅S2 定点+确定随机流+状态哈希（30/30 绿，push ed1ba8a）｜下一步 ▶ S3 版本化配置加载与校验（ADR-0003）
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）
@@ -358,3 +358,23 @@ ADR-0003（数据驱动配置的正式锁定）。
 - Code Review: APPROVED（ADR-0004 COMPLIANT / Standards 6/6 / SOLID / 红线合规）
 - Tech debt logged: None
 - Next recommended: epic-001 S3 版本化配置加载与校验（ADR-0003）
+
+## ✅ 今日收尾 — 2026-06-22（休息存档）
+
+**本次完成**：epic-001 S2 全链路收口并 push。
+- S2 实现 ADR-0004 确定性数值三件套（Domain 权威路径禁 float）：
+  - `FixedPoint`（Q16.16，checked 溢出 / decimal 显示 / 向零截断）
+  - `IDeterministicRandom` + `DeterministicRandom`（SplitMix64 注入流，position 为权威状态可重建续抽）
+  - `StateHasher`（FNV-1a 64 位，显式小端 / 顺序敏感）
+- 测试 25 测（FixedPoint 10 / DetRng 8 / StateHasher 6）+ S1 共 **30/30 全绿，0 warning**。
+- `/code-review` = **APPROVED**；`/story-done` = **COMPLETE WITH NOTES**（story-002 Status=Complete，EPIC.md S2=✅）。
+- **push 成功**：`tk/main` = 本地 `HEAD` = commit **ed1ba8a**（工作区干净，已同步）。
+- **顺手修隐患**：手写权威 `.csproj` 此前被 .gitignore 的 Unity 模板规则忽略且从未入库 → slnx 指向未跟踪工程会让干净克隆上 CI 构建失败。已加反忽略例外并纳入 `ThreeKingdom.Domain.csproj` + `ThreeKingdom.Domain.Tests.csproj`（prototype 的 csproj 维持忽略，守铁律）。
+
+### ▶ 明天入口（epic-001 S3）
+- **目标**：S3 版本化配置加载与校验（ADR-0003 数据驱动配置；SO 编辑期 → 不可变 Domain 配置 + 配置指纹）。
+- **story 文件**：`production/epics/epic-001-domain-foundation/story-003-config-loading.md`
+- **建议命令链**（沿用 S1/S2 节奏，lean 模式）：
+  `/story-readiness production/epics/epic-001-domain-foundation/story-003-config-loading.md` → `/dev-story` → `/code-review` → `/story-done` → commit+push tk/main
+- **注意**：ADR-0003 验收要点 — 非法范围 / 缺失引用被明确拒绝且**无部分写入**；配置指纹确定性。新增 .cs 落 `src/Domain/`，测试落 `tests/unit/ThreeKingdom.Domain.Tests/`（同 S2 结构）。
+- **待办（非阻断 guardrail，源自闸门 CONCERNS）**：CI 首次 GitHub 绿仍待验证（push 已多次，可顺带去 Actions 页确认 domain-tests job 跑绿）；entity-inventory、sprint-01 旧 id 刷新等仍挂账。
