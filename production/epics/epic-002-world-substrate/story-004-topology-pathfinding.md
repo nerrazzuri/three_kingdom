@@ -1,12 +1,12 @@
 # Story 004: 区域/路线拓扑与确定性寻路
 
 > **Epic**: 世界基底（时间·环境·地图拓扑）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -68,8 +68,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/map/topology_pathfinding_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Map/TopologyPathfindingTests.cs` — 须存在并通过
+**Status**: [x] 已创建并通过（16 测，全套 140/140 绿）
+**Note**: 路径由故事原写的 `tests/unit/map/topology_pathfinding_test.cs` 归一到真实可编译测试工程。
 
 ---
 
@@ -77,3 +78,13 @@
 
 - Depends on: epic-001 Story 002（定点）、Story 003（边权读天气修正）
 - Unlocks: epic-004（补给路线）、epic-006/007（部署/移动）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 4/4 passing（区域/路线拓扑无像素坐标、确定性寻路平局按 RouteId 字典序、容量门控 occ+n≤cap、相向接触双向+进度和≥1.0）
+**Files**: `src/Domain/Map/`（MapIds、Region、Route、WorldMap、MapFormulas[RouteCost/RouteContact]、Pathfinder+PathResult）+ `tests/unit/ThreeKingdom.Domain.Tests/Map/TopologyPathfindingTests.cs`（16 测）
+**Deviations**: ADVISORY — 测试路径归一到真实测试工程（见 Test Evidence Note）
+**Test Evidence**: Logic — 测试文件存在且通过（全套 140/140 绿，`-warnaserror` 0 warning）
+**Code Review**: Complete — `/code-review` = APPROVED（整数代价 Dijkstra + RouteId 序列字典序平局、坐标不参与结算、route_time 定点 ceil）
