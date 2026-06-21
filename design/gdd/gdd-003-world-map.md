@@ -94,15 +94,17 @@ contact = (route 双向) ∧ (progress_A + progress_B ≥ 1.0)
 - `progress` 为 [0,1] 的路线行进比例。交叉则按路线规则创建接触或退回最近区域（见 §Edge Cases）。
 - **示例**：A 进度 0.6，B 进度 0.5 → `0.6+0.5=1.1 ≥ 1.0` → 创建路线接触。
 
-### 6. 知识时效（事实 vs 推测）
+### 6. 知识时效（事实 vs 推测 — 时效权威归 GDD_007）
 
-阵营对敌区的已知信息随观察时间衰减为推测：
+> **权威分工**：报告/观察的时效与置信衰减由 **GDD_007 §4 `freshness(age)`/`ttl(topic)` 唯一持有**。
+> 本系统的 `MapKnowledge` **只记录每条空间信息的「最后观察时间」`observed_time`**，事实 vs 推测的判定**复用 GDD_007 的降级判定**，不在本系统另立一套 TTL，避免两处时效机制冲突。
 
 ```
-is_fact(info) = ( now − info.observed_time ≤ fact_ttl ) ∧ (info.source 可信)
+is_fact(map_info) = GDD_007.fresh_enough( map_info.topic, now − map_info.observed_time )
+                  ∧ (map_info.source 可信)
 ```
 
-- 超过 `fact_ttl`（配置）后降级为推测，UI 须区分呈现（见 §Main Rules 真值/知识分离）。
+- 地图主题（地形几乎不变、控制/兵力变化快）的 `ttl(topic)` 取自 GDD_007 配置；超时降级为推测，UI 须区分呈现（见 §Main Rules 真值/知识分离）。
 
 
 - `WorldMap`：区域集合、路线集合、地图版本。
@@ -122,7 +124,7 @@ is_fact(info) = ( now − info.observed_time ≤ fact_ttl ) ∧ (info.source 可
 
 ## Dependencies
 
-依赖 GDD_001 时间、GDD_002 环境和单位移动/负载信息。向城市、情报、准备、战斗和后勤提供空间契约。
+依赖 GDD_001 时间、GDD_002 环境和单位移动/负载信息。向 GDD_002（地形标签，供天气派生道路状态）、城市、情报、准备、战斗和后勤提供空间契约。（002↔003 为生产者/消费者双向关系——天气读地图地形标签、地图读天气通行修正，破环顺序见 systems-index §跨系统结算顺序）
 
 ## Edge Cases
 

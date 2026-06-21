@@ -41,7 +41,7 @@ Manifest Version: 1
 | G0 初始化 | `/start` 文档集 | Passed | 19 个要求文件齐全；路径、非空、范围与设计锁检查通过 |
 | G1 概念锁定 | 概念验证、系统地图、MVP、非目标、美术方向 | Passed | 九项核心问题已回答；slice 边界、区域/路线表达、2D 美术方向已锁定；低层问题已分派至 GDD |
 | G2 系统设计 | 首批 13 份 GDD | Passed | 13 份 GDD 已创建；每份 18 个强制章节完整；状态保持 Draft，等待 G3 审查 |
-| G3 跨系统审查 | contradiction report | Pending | 阻断问题已回写相关 GDD |
+| G3 跨系统审查 | contradiction report | Passed（CONCERNS） | 报告 `design/gdd/gdd-cross-review-2026-06-21.md`；唯一阻断（支柱4 外交无 GDD 归属）已闭合——外交受控入口回写 GDD_012 §8；5 项 Warning（断粮传导单点/知识TTL/morale命名/mod_weather范围/破环顺序）**已全部回写修复** |
 | G4 技术锁定 | 架构、ADR_0002—0005、质量基础 | Pending | 分层、确定性、配置、存档边界 Accepted |
 | G5 方法就绪 | first slice method specs | Pending | 所有 public API 契约与测试要求明确 |
 | G6 预制作 | vertical slice、资产、UX、backlog、Sprint | Pending | story 可追踪到 GDD/method spec/验收标准 |
@@ -73,4 +73,4 @@ Story 只有同时满足以下条件才可进入开发：
 
 ## 当前阻断项
 
-跨系统矛盾审查、技术 ADR、method specs 和 vertical slice 计划尚未完成，因此任何 gameplay story 都未 Ready。下一门禁为 G3：运行 `/review-gdds` 并把阻断修正回写相关 GDD。
+G3 跨系统审查已通过（CONCERNS，2026-06-21）：唯一阻断已闭合，报告见 `design/gdd/gdd-cross-review-2026-06-21.md`。method specs 和 vertical slice 计划尚未完成，因此任何 gameplay story 都未 Ready。**下一门禁为 G6 预制作**：恢复 `/vertical-slice` 前置验证乐趣（active.md 既定顺序；G4 技术锁定的架构/ADR 已 Accepted，G5 method specs 随首段 Domain 代码落地）。G3 剩余 5 项 Warning 非阻断，于 slice 后或 story 拆分时批量处理。

@@ -120,13 +120,18 @@ pursue = ( w_k×knows_target + w_g×goal_fit + w_p×personality_aggression
 
 ### 8. 断粮的延迟传导（不立即魔法崩溃）
 
+> **单一权威点（避免重复施加）**：`supply_state` 由 **GDD_012 §5** 持有并结算；
+> 断粮对 `morale`/`fatigue` 的变更由 **GDD_011 §1/§2** 作为**唯一施加点**结算（幂等）；
+> 本系统（GDD_010）**只读取** GDD_011 已结算的 `morale`/`fatigue`，**不**自行再减，杜绝同一饥饿惩罚被算两次。
+
 ```
-supply_state' = clamp( supply_state − cut_rate × segments_cut, 0, 1 )
-morale' = morale − k_supply × (1 − supply_state)   （按时段逐步,非瞬时）
-fatigue' = fatigue + k_supply_fat × (1 − supply_state)
+（GDD_012 §5 持有）supply_state' = clamp( supply_state − cut_rate × segments_cut, 0, 1 )
+（GDD_012 §5 触发）shortage_segments ≥ grace_period → 发出断粮后果事件
+（GDD_011 §1/§2 应用）morale/fatigue ← 按该事件唯一施加（幂等，按时段逐步，非瞬时）
+（GDD_010 读取）combat_power 使用 GDD_011 已结算的 morale/fatigue，不重复扣减
 ```
 
-- 补给中断先改 GDD_012 供给状态,再**按时段**影响士气/疲劳/可用行动,不立即全军崩溃(见 §Main Rules)。
+- 补给中断先改 GDD_012 供给状态,经断粮事件由 GDD_011 **按时段**结算士气/疲劳,本系统只消费结果,不立即全军崩溃(见 §Main Rules)。
 - **断粮疲敌成立 = 切断补给线 + 持续若干时段 + 敌士气/疲劳跨阈值**的时间条件链。
 
 ### 9. 夜袭条件链

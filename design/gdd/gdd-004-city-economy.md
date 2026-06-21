@@ -79,23 +79,25 @@ civ_demand = base_civ_consume × pop_pressure
 
 ### 4. 短缺后果（民心/治安传导）
 
+> **命名消歧**：本系统的 `civ_morale` 指**城市民心**（居民支持/怨恨），与 GDD_011 的部队士气 `unit_morale` 是**两个不同权威系统的不同状态**，配置与代码不得混用同名 `morale`。
+
 ```
-morale' = clamp( morale − k_shortage × shortage, 0, MORALE_MAX )
+civ_morale' = clamp( civ_morale − k_shortage × shortage, 0, CIV_MORALE_MAX )
 unrest_risk = (shortage > shortage_threshold) ? high : low
 ```
 
 - 短缺越大，民心下降越多，超阈值触发骚乱风险（见 §Failure Cases 饥饿/骚乱）。
-- **示例**：morale=60，k_shortage=0.5，shortage=20 → `60−0.5×20=50`。
+- **示例**：civ_morale=60，k_shortage=0.5，shortage=20 → `60−0.5×20=50`。
 
 ### 5. 征用军粮对民心的影响
 
 ```
-morale' = clamp( morale − k_morale_req × req_amount, 0, MORALE_MAX )
+civ_morale' = clamp( civ_morale − k_morale_req × req_amount, 0, CIV_MORALE_MAX )
 army_food += req_amount   （转移给后勤，城市 stock 同步扣减，守恒）
 ```
 
-- 拨出后由后勤系统持有，城市不再计入（见 §Main Rules 不重复计算）。
-- **示例**：morale=70，k_morale_req=0.3，req_amount=40 → `70−0.3×40=58`。
+- 拨出后由后勤系统持有，城市不再计入（见 §Main Rules 不重复计算）。`k_morale_req` 为征用对**城市民心**的影响系数。
+- **示例**：civ_morale=70，k_morale_req=0.3，req_amount=40 → `70−0.3×40=58`。
 
 ### 6. 工事修复
 
