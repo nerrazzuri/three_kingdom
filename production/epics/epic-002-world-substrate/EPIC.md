@@ -42,7 +42,7 @@
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | 确定性时间推进与时段/日界结算 | Logic | Ready | ADR-0004 |
+| 001 | 确定性时间推进与时段/日界结算 | Logic | ✅ Complete | ADR-0004 |
 | 002 | 嵌套战斗时段预算与跨时段触发 | Logic | Ready | ADR-0004 |
 | 003 | 配置驱动天气/风向确定性解析 | Logic | Ready | ADR-0004 |
 | 004 | 区域/路线拓扑与确定性寻路 | Logic | Ready | ADR-0004 |
@@ -50,4 +50,4 @@
 
 ## Next Step
 
-`/story-readiness production/epics/epic-002-world-substrate/story-001-deterministic-time.md` → `/dev-story`
+S1 ✅ Complete（2026-06-22）。下一步：`/story-readiness production/epics/epic-002-world-substrate/story-002-battle-phase-budget.md` → `/dev-story`

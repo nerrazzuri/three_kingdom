@@ -1,12 +1,12 @@
 # Story 001: 确定性时间推进与时段/日界结算
 
 > **Epic**: 世界基底（时间·环境·地图拓扑）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -69,8 +69,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/time/deterministic_time_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Time/DeterministicTimeTests.cs` — 须存在并通过
+**Status**: [x] 已创建并通过（18 测，全套 92/92 绿）
+**Note**: 路径由故事原写的 `tests/unit/time/deterministic_time_test.cs` 归一到真实可编译测试工程。
 
 ---
 
@@ -78,3 +79,13 @@
 
 - Depends on: epic-001 Story 002（定点/哈希）
 - Unlocks: Story 002；epic-004（日界城市/补给）、epic-007（战斗时段）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 4/4 passing（WorldTime 权威时间仅命令前进、同点事件 (priority,stableId) 全序、日界顺序 环境→补给→城市→状态事件、同输入→同结果可复现）
+**Files**: `src/Domain/Time/`（DaySegment、WorldTime、DayBoundaryStage、ScheduledEvent+ScheduledEventOrder、WorldClock+AdvanceTimeCommand+AdvanceResult+DayBoundarySettlement）+ `tests/unit/ThreeKingdom.Domain.Tests/Time/DeterministicTimeTests.cs`（18 测）
+**Deviations**: ADVISORY — 测试路径归一到真实测试工程（见 Test Evidence Note）
+**Test Evidence**: Logic — 测试文件存在且通过（全套 92/92 绿，`-warnaserror` 0 warning）
+**Code Review**: Complete — `/code-review` = APPROVED（ADR-0004 确定性全序 + 引擎无关；SegmentsPerDay 由枚举派生）

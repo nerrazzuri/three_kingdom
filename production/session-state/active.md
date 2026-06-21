@@ -378,3 +378,20 @@ ADR-0003（数据驱动配置的正式锁定）。
   `/story-readiness production/epics/epic-001-domain-foundation/story-003-config-loading.md` → `/dev-story` → `/code-review` → `/story-done` → commit+push tk/main
 - **注意**：ADR-0003 验收要点 — 非法范围 / 缺失引用被明确拒绝且**无部分写入**；配置指纹确定性。新增 .cs 落 `src/Domain/`，测试落 `tests/unit/ThreeKingdom.Domain.Tests/`（同 S2 结构）。
 - **待办（非阻断 guardrail，源自闸门 CONCERNS）**：CI 首次 GitHub 绿仍待验证（push 已多次，可顺带去 Actions 页确认 domain-tests job 跑绿）；entity-inventory、sprint-01 旧 id 刷新等仍挂账。
+
+---
+
+## 🌙 远程自主执行 — 2026-06-22 06:00 起（用户授权离线自动跑）
+
+> 背景：3:05AM 定时器未触发（机器睡眠，ScheduleWakeup 需会话存活）。用户 06:00 回来后改为「现在直接开干」，授权连续跑到 epic-002 完成。
+
+### ✅ epic-001 已完全关闭
+- **S3 版本化配置加载与校验**（ADR-0003）：`src/Domain/Configuration/`（ConfigIds/ConfigResult/ConfigSchema/ConfigDraft/ValidatedConfig/ConfigValidator/IConfigLoader）+ 18 测。两阶段校验、错误聚合、**无部分写入**、配置指纹（复用 StateHasher，规范化排序顺序无关）。`/code-review`=APPROVED，`/story-done`=COMPLETE WITH NOTES。commit `cc4605d` → push tk/main。
+- **S4 SaveVersion 值对象**（ADR-0005）：`src/Domain/Persistence/SaveVersion.cs`（SaveVersion + SaveCompatibility 三类）+ 26 测。解析/比较/兼容（同主版本可迁移、存档高于当前不兼容不静默降级）、非法版本拒绝、不可变值相等。`/code-review`=APPROVED，`/story-done`=COMPLETE WITH NOTES。commit `ae34330` → push tk/main。
+- **全套测试 74/74 全绿，`-warnaserror` 0 warning**。EPIC.md 已标全部 ✅ 并核对 DoD。
+- **偏差（ADVISORY）**：两个 story 的测试路径从 `tests/unit/foundation/*.cs` 归一到真实可编译测试工程 `tests/unit/ThreeKingdom.Domain.Tests/`（foundation/ 不在任何 csproj）。
+
+### ▶ 进行中：epic-002 世界基底（5 story，顺序执行）
+- 入口：`production/epics/epic-002-world-substrate/story-001-deterministic-time.md`
+- 链路（每 story）：readiness → dev-story → code-review → story-done → commit+push tk/main
+- 状态：E2-S1 开始
