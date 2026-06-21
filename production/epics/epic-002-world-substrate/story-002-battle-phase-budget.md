@@ -1,12 +1,12 @@
 # Story 002: 嵌套战斗时段预算与跨时段触发
 
 > **Epic**: 世界基底（时间·环境·地图拓扑）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -66,8 +66,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/time/battle_phase_budget_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Time/BattlePhaseBudgetTests.cs` — 须存在并通过
+**Status**: [x] 已创建并通过（19 测，全套 111/111 绿）
+**Note**: 路径由故事原写的 `tests/unit/time/battle_phase_budget_test.cs` 归一到真实可编译测试工程。
 
 ---
 
@@ -75,3 +76,13 @@
 
 - Depends on: Story 001（时间权威与日界顺序）
 - Unlocks: epic-007（战斗解析消费时段预算）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 3/3 passing（嵌套 BattlePhase 按配置预算消耗、耗尽确定性跨段触发天气/补给/疲劳结算、行动耗时/期限/取消数据模型完整可序列化占位）
+**Files**: `src/Domain/Time/`（BattleClock+SegmentSettlementStage+SegmentCrossing+BattlePhaseResult、TimedAction+ActionStatus+ActionCost、Deadline+DeadlineConsequence+CancellationPolicy）+ `tests/unit/ThreeKingdom.Domain.Tests/Time/BattlePhaseBudgetTests.cs`（19 测）
+**Deviations**: ADVISORY — 测试路径归一到真实测试工程（见 Test Evidence Note）
+**Test Evidence**: Logic — 测试文件存在且通过（全套 111/111 绿，`-warnaserror` 0 warning）
+**Code Review**: Complete — `/code-review` = APPROVED（floor(phases/budget) 确定性跨段；复用 S1 日界编排；耗时/取消定点 ceil；预算配置驱动）
