@@ -350,3 +350,11 @@ ADR-0003（数据驱动配置的正式锁定）。
   - C-W4 破环/对称消费者: 补005/003消费者 + 新增 systems-index §跨系统结算顺序（含日界顺序，收S-I1）
 - **G3 实质问题全部清零**（阻断闭合 + 5 Warning 全修）；control-manifest G3=Passed(CONCERNS)，下一门禁 G6
 - **Recommended next**: 恢复 `/vertical-slice` 前置验证乐趣（active.md 既定）；或先补跑 /consistency-check 填充实体注册表
+
+## Session Extract — /story-done 2026-06-21
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/epic-001-domain-foundation/story-002-fixedpoint-rng.md — 定点数值与确定性随机流底座
+- Test Evidence: 30/30 passed, 0 warnings（dotnet test ThreeKingdom.slnx）
+- Code Review: APPROVED（ADR-0004 COMPLIANT / Standards 6/6 / SOLID / 红线合规）
+- Tech debt logged: None
+- Next recommended: epic-001 S3 版本化配置加载与校验（ADR-0003）

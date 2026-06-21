@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    纯 C# Domain 程序集（ADR-0002 四层架构 / technical-preferences「Domain 层禁 UnityEngine」）。
+    TargetFramework=netstandard2.1 与 Unity 6.3 LTS 兼容，可被 Unity 经 asmdef 引用，
+    同时可由 `dotnet test`（纯 NUnit）在无 Unity 运行时下单元测试（TD/PR 建议：旁路 UNITY_LICENSE 跑 CI）。
+    禁止添加任何 UnityEngine 引用——asmdef/csproj 边界由 epic-001 story-001 验收。
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>ThreeKingdom.Domain</AssemblyName>
+    <RootNamespace>ThreeKingdom.Domain</RootNamespace>
+    <!-- 内部游戏 Domain 程序集（非分发库）：实质 public API 均有中文 doc 注释；
+         不生成 XML 文档文件以免 CS1591 在运算符/Equals 等语言样板成员上产生噪声。
+         coding-standards「public API 文档注释」由实际注释覆盖而非编译器强制。 -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

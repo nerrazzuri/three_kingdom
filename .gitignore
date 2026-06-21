@@ -56,6 +56,10 @@ export_presets.cfg
 *.csproj
 *.unityproj
 *.sln
+# 例外：手写的权威 .NET 工程文件（非 Unity 生成）须入库，否则 CI 的 `dotnet test ThreeKingdom.slnx` 在干净克隆上无工程可构建。
+# prototype 下的 csproj 维持忽略（throwaway，铁律不 import）。
+!src/Domain/ThreeKingdom.Domain.csproj
+!tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj
 *.suo
 *.tmp
 *.user

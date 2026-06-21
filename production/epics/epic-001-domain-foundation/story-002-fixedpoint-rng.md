@@ -1,12 +1,12 @@
 # Story 002: 定点数值与确定性随机流底座
 
 > **Epic**: 项目与 Domain 基础
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-21
 
 ## Context
 
@@ -28,10 +28,10 @@
 
 ## Acceptance Criteria
 
-- [ ] Fixed（Q16.16）值类型：加减乘除、比较、与 int 互转，确定性且跨平台一致
-- [ ] DetRng 确定性随机流：同种子 → 同序列；流位置可读取/恢复
-- [ ] 状态哈希函数：对同一 Domain 快照产生稳定哈希，字段顺序无关性明确定义
-- [ ] 单元测试覆盖：定点运算边界（溢出/舍入）、随机流复现、哈希稳定性
+- [x] Fixed（Q16.16）值类型：加减乘除、比较、与 int 互转，确定性且跨平台一致
+- [x] DetRng 确定性随机流：同种子 → 同序列；流位置可读取/恢复
+- [x] 状态哈希函数：对同一 Domain 快照产生稳定哈希，字段顺序策略明确定义（顺序敏感 + 调用方按稳定顺序累积）
+- [x] 单元测试覆盖：定点运算边界（溢出/舍入）、随机流复现、哈希稳定性
 
 ---
 
@@ -73,8 +73,12 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/foundation/fixedpoint_rng_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: 单元测试须存在并通过
+**Status**: [x] 已交付 — `dotnet test ThreeKingdom.slnx` → 30/30 passed, 0 warnings
+**实际路径**（结构同 S1，按 NUnit 测试工程组织）:
+- `tests/unit/ThreeKingdom.Domain.Tests/Numerics/FixedPointTests.cs`（10 测）
+- `tests/unit/ThreeKingdom.Domain.Tests/Numerics/DeterministicRandomTests.cs`（8 测）
+- `tests/unit/ThreeKingdom.Domain.Tests/Numerics/StateHasherTests.cs`（6 测）
 
 ---
 
@@ -82,3 +86,20 @@
 
 - Depends on: Story 001（Domain 边界）
 - Unlocks: 全部确定性结算 epic（002/004/005/006/007/008）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-21
+**Criteria**: 4/4 通过（无 deferred）
+**Files**:
+- `src/Domain/Numerics/FixedPoint.cs` — Q16.16 定点值类型（checked 溢出，decimal 显示，无 float）
+- `src/Domain/Numerics/IDeterministicRandom.cs` + `DeterministicRandom.cs` — SplitMix64 注入式确定流（position 为权威状态，可重建续抽）
+- `src/Domain/Numerics/StateHasher.cs` — FNV-1a 64 位，显式小端，顺序敏感
+- 3 个测试文件，合计 25 测（+ S1 的 5 测 = 30/30 全绿）
+**Deviations**（ADVISORY）:
+- 测试路径采 NUnit 工程结构（非 story 所写扁平路径），与 S1 同构、覆盖更细
+- AC-3「顺序无关性」实现为「顺序敏感 + 稳定顺序累积」契约（FNV 标准做法）
+- `Next(CheckpointId)` 属战斗 epic 范畴，本 story 不含（底座先行）
+**Test Evidence**: 单元测试 30/30 passed, 0 warnings（`dotnet test ThreeKingdom.slnx`）
+**Code Review**: Complete — `/code-review` 本会话 APPROVED（ADR-0004 COMPLIANT、Standards 6/6、SOLID COMPLIANT、红线合规）
