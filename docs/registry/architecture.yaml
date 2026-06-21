@@ -29,8 +29,8 @@
 #   All forbidden patterns: Grep pattern="^  - pattern:" (forbidden_patterns section)
 #   Superseded entries:     Grep pattern="status: superseded"
 
-version: 1
-last_updated: ""
+version: 5
+last_updated: "2026-06-21"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -43,7 +43,17 @@ last_updated: ""
 # interface: how other systems access this state (read-only property, method call,
 #   signal, shared resource, etc.) — this is the contract other ADRs depend on.
 
-state_ownership: []
+state_ownership:
+  - state: all_authoritative_gameplay_state
+    status: active
+    owner_system: domain-layer
+    adr: docs/architecture/adr-0002-architecture-layering.md
+    interface: "只读 DTO 投影（经 Application Query）；写入仅经 Application Command"
+    write_access: domain-layer-only   # 仅 Domain 经 Application Command 路径写入
+    referenced_by:
+      - docs/architecture/adr-0002-architecture-layering.md
+    added: 2026-06-21
+    revised: ""
 
 # Example:
 #
@@ -71,7 +81,63 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: player_command_path
+    status: active
+    pattern: direct_call      # Presentation 经 Application Service 提交 Command
+    producer: presentation-layer
+    consumers:
+      - application-layer      # 校验身份/时机/前置，编排 Domain
+      - domain-layer           # 解析命令，返回结果与 Domain Events
+    adr: docs/architecture/adr-0002-architecture-layering.md
+    signal_signature: "ICommandHandler<TCommand>.Handle(cmd, IDeterministicContext): Result<TResult>"
+    referenced_by:
+      - docs/architecture/adr-0002-architecture-layering.md
+    added: 2026-06-21
+    revised: ""
+
+  - contract: battle_state_hash
+    status: active
+    pattern: none             # 纯函数契约，非消息模式
+    producer: domain-layer
+    consumers:
+      - infrastructure-layer   # 存档/回放包写入 checkpoint 哈希（ADR-0005）
+    adr: docs/architecture/adr-0004-deterministic-battle-simulation.md
+    signal_signature: "state_hash(phase) = H(initial_snapshot ‖ config_fingerprint ‖ seed ‖ ordered_orders[0..phase])"
+    referenced_by:
+      - docs/architecture/adr-0004-deterministic-battle-simulation.md
+      - docs/architecture/adr-0005-save-versioning-migration.md
+    added: 2026-06-21
+    revised: ""
+
+  - contract: save_repository
+    status: active
+    pattern: direct_call      # Application 经端口调用 Infrastructure 实现
+    producer: infrastructure-layer
+    consumers:
+      - application-layer      # 提交/加载存档，触发存档策略
+    adr: docs/architecture/adr-0005-save-versioning-migration.md
+    signal_signature: "ISaveRepository.Commit(snapshot): Result（原子写入）; Load(id): Result<SaveSnapshot>（兼容判定+逆序逐版迁移+不变量校验）"
+    referenced_by:
+      - docs/architecture/adr-0005-save-versioning-migration.md
+    added: 2026-06-21
+    revised: ""
+
+  - contract: config_loader
+    status: active
+    pattern: direct_call      # Domain/Application 定义端口，Infrastructure 实现
+    producer: infrastructure-layer
+    consumers:
+      - domain-layer           # 只读消费不可变配置
+      - application-layer      # 加载/校验配置，计算指纹
+    adr: docs/architecture/adr-0003-data-driven-configuration.md
+    signal_signature: "IConfigLoader.Load(id): Result<ValidatedConfig>（解析+校验+默认值展开）; Fingerprint(cfg): ConfigFingerprint"
+    referenced_by:
+      - docs/architecture/adr-0003-data-driven-configuration.md
+      - docs/architecture/adr-0004-deterministic-battle-simulation.md   # 指纹入状态哈希
+      - docs/architecture/adr-0005-save-versioning-migration.md          # 指纹入存档兼容判定
+    added: 2026-06-21
+    revised: ""
 
 # Example:
 #
@@ -131,7 +197,41 @@ performance_budgets: []
 # Register an API decision when the choice is non-obvious and other ADRs might
 # make a different choice for the same purpose without knowing this was decided.
 
-api_decisions: []
+api_decisions:
+  - purpose: battle_numeric_strategy
+    status: active
+    api: "整数 / 定点数（Q16.16）用于一切影响状态哈希的权威结算"
+    not: "float / double（仅允许出现在非权威 Presentation/UI，永不回写 Domain）"
+    adr: docs/architecture/adr-0004-deterministic-battle-simulation.md
+    reason: "C# 浮点跨平台逐位一致无法证明；GDD_010/GDD_013 要求严格相等的状态哈希与回放校验"
+    referenced_by:
+      - docs/architecture/adr-0004-deterministic-battle-simulation.md
+    added: 2026-06-21
+    revised: ""
+
+  - purpose: save_format
+    status: active
+    api: "显式版本化 DTO + JSON（System.Text.Json 或等价）经 Infrastructure 端口"
+    not: "Unity JsonUtility / Unity 序列化 Domain 权威状态"
+    adr: docs/architecture/adr-0005-save-versioning-migration.md
+    reason: "Unity 序列化不适合承载确定性权威状态；显式 DTO 支持校验、版本迁移与知识分区隔离（ADR-0001/0002，GDD_013）"
+    referenced_by:
+      - docs/architecture/adr-0005-save-versioning-migration.md
+    added: 2026-06-21
+    revised: ""
+
+  - purpose: config_pipeline
+    status: active
+    api: "ScriptableObject（编辑期）→ 构建时转换为校验后的不可变 Domain 配置；JSON 用于外部数据/Mod"
+    not: "代码常量配置 / 运行时可变配置 / SO 作为运行时权威状态"
+    adr: docs/architecture/adr-0003-data-driven-configuration.md
+    reason: "编辑器友好调参 + 引擎无关不可变运行时配置；满足 coding-standards 不硬编码与全部 GDD §Balancing Parameters"
+    referenced_by:
+      - docs/architecture/adr-0003-data-driven-configuration.md
+      - docs/architecture/adr-0004-deterministic-battle-simulation.md
+      - docs/architecture/adr-0005-save-versioning-migration.md
+    added: 2026-06-21
+    revised: ""
 
 # Example:
 #
@@ -157,7 +257,48 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: domain_depends_on_unity
+    status: active
+    description: "Domain 层禁止依赖 UnityEngine、MonoBehaviour、Scene、UI、文件系统或系统时间。"
+    why: "Domain 必须可在无引擎环境下编译与单元测试，并保持确定性可复现（ADR-0001/0002）。"
+    adr: docs/architecture/adr-0002-architecture-layering.md
+    added: 2026-06-21
+
+  - pattern: direct_cross_system_state_write
+    status: active
+    description: "Presentation 或任何系统禁止直接写入 Domain 权威状态；所有写入经 Application Command 路径。"
+    why: "直接写入破坏状态权威模型，制造竞态与不可解释的状态变化。Domain 为唯一权威写入者。"
+    adr: docs/architecture/adr-0002-architecture-layering.md
+    added: 2026-06-21
+
+  - pattern: scriptableobject_as_runtime_authority
+    status: active
+    description: "ScriptableObject 仅作配置来源，构建时转换为不可变 Domain 配置；不得作为运行时权威状态。"
+    why: "Unity 序列化与编辑器对象生命周期不适合承载确定性权威状态（ADR-0001/0002）。"
+    adr: docs/architecture/adr-0002-architecture-layering.md
+    added: 2026-06-21
+
+  - pattern: implicit_global_random
+    status: active
+    description: "Domain 禁止使用隐式全局随机（如裸 System.Random）；随机性须经显式注入的确定性随机源或预生成随机流。"
+    why: "隐式随机破坏确定性重放与状态哈希一致（GDD_010/GDD_013）。"
+    adr: docs/architecture/adr-0002-architecture-layering.md
+    added: 2026-06-21
+
+  - pattern: float_in_domain_authoritative_path
+    status: active
+    description: "Domain 权威结算路径（影响状态哈希的一切计算）禁用 float/double；用整数或定点（Q16.16）。float 仅允许出现在非权威 Presentation/UI。"
+    why: "C# 浮点跨平台逐位一致无法证明，会使状态哈希不一致、回放校验与差异复现失效（ADR-0004、GDD_010/GDD_013）。"
+    adr: docs/architecture/adr-0004-deterministic-battle-simulation.md
+    added: 2026-06-21
+
+  - pattern: unity_serialization_of_domain
+    status: active
+    description: "禁止用 Unity JsonUtility 或 Unity 序列化处理 Domain 权威状态；存档须用显式版本化 DTO + JSON 经 Infrastructure 端口。"
+    why: "Unity 序列化无法承载确定性权威状态，且不支持显式版本迁移、校验与知识分区隔离（ADR-0005，GDD_013）。"
+    adr: docs/architecture/adr-0005-save-versioning-migration.md
+    added: 2026-06-21
 
 # Example:
 #

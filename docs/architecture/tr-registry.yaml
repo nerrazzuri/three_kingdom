@@ -24,33 +24,249 @@
 #
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
-version: 1
-last_updated: ""
+version: 2
+last_updated: "2026-06-21"
 
-requirements: []
+requirements:
+  # --- 时间 (GDD_001) ---
+  - id: TR-time-001
+    system: time
+    gdd: design/gdd/gdd-001-game-time.md
+    requirement: "权威时间以 WorldDay+DaySegment 表示；同一时间点事件按稳定优先级与稳定 ID 全序解析，不依赖帧率"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-time-002
+    system: time
+    gdd: design/gdd/gdd-001-game-time.md
+    requirement: "嵌套 BattlePhase 按配置预算消耗，耗尽跨入下一世界时段并触发天气/补给/疲劳结算"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-time-003
+    system: time
+    gdd: design/gdd/gdd-001-game-time.md
+    requirement: "行动耗时、期限、取消的数据模型须可存档并 round-trip 后产生相同事件序列"
+    created: 2026-06-21
+    revised: ""
+    status: active
 
-# --- EXAMPLE ENTRIES (remove when first real entries are added) ---
-#
-# - id: TR-combat-001
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Player takes damage from enemies based on attack power minus defence"
-#   created: 2026-03-10
-#   revised: ""
-#   status: active
-#
-# - id: TR-combat-002
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Combo window timing is 0.4 seconds between hits"
-#   created: 2026-03-10
-#   revised: "2026-04-01"
-#   status: active
-#
-# - id: TR-combat-003
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Old damage formula using raw stats"
-#   created: 2026-03-10
-#   revised: ""
-#   status: superseded-by: TR-combat-001
+  # --- 天气 (GDD_002) ---
+  - id: TR-weather-001
+    system: weather
+    gdd: design/gdd/gdd-002-season-weather.md
+    requirement: "天气转移由配置权重 + 显式确定性随机流驱动；同一随机流位置 + 同一前态产生同一结果"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-weather-002
+    system: weather
+    gdd: design/gdd/gdd-002-season-weather.md
+    requirement: "环境只产出具名修正，由移动/侦察/隐蔽/疲劳/补给各消费者自取，不直接触发计策成功"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 地图 (GDD_003) ---
+  - id: TR-map-001
+    system: map
+    gdd: design/gdd/gdd-003-world-map.md
+    requirement: "地图为区域/路线拓扑图，视觉坐标不参与 Domain 结算；单位无权威像素坐标"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-map-002
+    system: map
+    gdd: design/gdd/gdd-003-world-map.md
+    requirement: "确定性寻路（平局按稳定 ID 序）+ 区域容量门控 + 相向移动接触判定"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-map-003
+    system: map
+    gdd: design/gdd/gdd-003-world-map.md
+    requirement: "地图真值与阵营知识分离；敌区信息须由侦察更新，控制权改变不自动揭示全部敌情"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 城市 (GDD_004) ---
+  - id: TR-city-001
+    system: city
+    gdd: design/gdd/gdd-004-city-economy.md
+    requirement: "民用与军用粮食来自同一权威库存；拨给军队后转由后勤持有，不重复计算（守恒）"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-city-002
+    system: city
+    gdd: design/gdd/gdd-004-city-economy.md
+    requirement: "日界按稳定顺序结算（承诺→产入→消耗→短缺后果→工事/治安）；资源不低于合法下限"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 人物 (GDD_005) ---
+  - id: TR-character-001
+    system: character
+    gdd: design/gdd/gdd-005-character.md
+    requirement: "能力/性格/健康影响过程质量与执行意愿，不直接解锁无条件技能或战斗光环"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-character-002
+    system: character
+    gdd: design/gdd/gdd-005-character.md
+    requirement: "职责决定合法权限；能力高不能绕过授权；同一时段只能承担兼容任务"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 关系 (GDD_006) ---
+  - id: TR-relationship-001
+    system: relationship
+    gdd: design/gdd/gdd-006-relationship-faction.md
+    requirement: "方向性多维关系（A→B 与 B→A 分别保存，不对称）；变化由具名事件驱动且对同一事件幂等"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-relationship-002
+    system: relationship
+    gdd: design/gdd/gdd-006-relationship-faction.md
+    requirement: "关系只影响请求/支持/执行承诺，不凭空授予法律权限；授权有效性受期限与撤销规则约束"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 情报 (GDD_007) ---
+  - id: TR-intel-001
+    system: intel
+    gdd: design/gdd/gdd-007-intelligence-recon.md
+    requirement: "世界真值、观察、报告、阵营知识四层分离；UI 只能读取阵营知识"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-intel-002
+    system: intel
+    gdd: design/gdd/gdd-007-intelligence-recon.md
+    requirement: "报告含置信度（来源可靠性，非真实概率）、时效衰减、估计区间；暴露由确定性随机流判定"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-intel-003
+    system: intel
+    gdd: design/gdd/gdd-007-intelligence-recon.md
+    requirement: "世界真值与玩家知识分别序列化，加载不得交叉污染"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 军议 (GDD_008) ---
+  - id: TR-council-001
+    system: council
+    gdd: design/gdd/gdd-008-war-council.md
+    requirement: "军议读取召开时合法知识快照；知识/资源变化后建议标记过时，不静默更新"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-council-002
+    system: council
+    gdd: design/gdd/gdd-008-war-council.md
+    requirement: "军师只输出条件化建议，不输出综合成功率、唯一推荐或自动命令"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 战前准备 (GDD_009) ---
+  - id: TR-prep-001
+    system: prep
+    gdd: design/gdd/gdd-009-battle-preparation.md
+    requirement: "PlanDraft 不修改权威 state；提交全部通过验证后才原子生成 CommittedPlan（全有或全无）"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-prep-002
+    system: prep
+    gdd: design/gdd/gdd-009-battle-preparation.md
+    requirement: "硬冲突（占用/资源/可达/权限/循环依赖）阻止提交；命令依赖图须为 DAG"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 战斗 (GDD_010) ---
+  - id: TR-battle-001
+    system: battle
+    gdd: design/gdd/gdd-010-battle-tactics-sandbox.md
+    requirement: "确定性 Domain 模拟：相同初始快照+配置指纹+随机种子+有序命令流产生相同事件与状态哈希"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-battle-002
+    system: battle
+    gdd: design/gdd/gdd-010-battle-tactics-sandbox.md
+    requirement: "兵法为多条件全部成立时的涌现结果，系统只在事件后打复盘标签，绝无同名无条件执行按钮"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-battle-003
+    system: battle
+    gdd: design/gdd/gdd-010-battle-tactics-sandbox.md
+    requirement: "阶段按稳定管线解析（验证→移动→侦测→交战→损耗→士气→触发→发布）；解析异常回滚整个原子阶段"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 士气疲劳 (GDD_011) ---
+  - id: TR-cohesion-001
+    system: cohesion
+    gdd: design/gdd/gdd-011-morale-fatigue.md
+    requirement: "士气、疲劳、军纪三维独立不得合并；士气事件按受众权重聚合，同一事件幂等"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-cohesion-002
+    system: cohesion
+    gdd: design/gdd/gdd-011-morale-fatigue.md
+    requirement: "阈值检查综合军纪、指挥、退路（非单一数值决定）；拆分/合并状态按人数加权非取最大"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 后勤 (GDD_012) ---
+  - id: TR-supply-001
+    system: supply
+    gdd: design/gdd/gdd-012-logistics-supply.md
+    requirement: "粮食由城市/运输/携行三类持有者保存，转移守恒；同批粮不能同时留城与在途"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-supply-002
+    system: supply
+    gdd: design/gdd/gdd-012-logistics-supply.md
+    requirement: "断粮通过实际路线切断 + 时段累积传导给士气/疲劳，无断粮成功按钮，不立即全军崩溃"
+    created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 存档 (GDD_013) ---
+  - id: TR-save-001
+    system: save
+    gdd: design/gdd/gdd-013-save-load.md
+    requirement: "版本化 DTO + 临时文件原子写入 + 显式迁移链（只操作副本，失败保留上一份有效存档）"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-save-002
+    system: save
+    gdd: design/gdd/gdd-013-save-load.md
+    requirement: "Round-trip 一致性：load(save(s))≡s；保存随机流位置，读档不重新抽取已发生结果"
+    created: 2026-06-21
+    revised: ""
+    status: active
+  - id: TR-save-003
+    system: save
+    gdd: design/gdd/gdd-013-save-load.md
+    requirement: "加载先验证 schema/配置指纹/校验；不兼容不得部分载入当前会话"
+    created: 2026-06-21
+    revised: ""
+    status: active

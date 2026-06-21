@@ -5,59 +5,84 @@
 
 ## Engine & Language
 
-- **Engine**: [TO BE CONFIGURED — run /setup-engine]
-- **Language**: [TO BE CONFIGURED]
-- **Rendering**: [TO BE CONFIGURED]
-- **Physics**: [TO BE CONFIGURED]
+- **Engine**: Unity 6.3 LTS
+- **Language**: C#
+- **Rendering**: Universal Render Pipeline (URP)
+- **Physics**: 不适用（Domain 层不依赖物理引擎；展示层如需视觉效果可选 Unity Physics）
 
 ## Input & Platform
 
 <!-- Written by /setup-engine. Read by /ux-design, /ux-review, /test-setup, /team-ui, and /dev-story -->
 <!-- to scope interaction specs, test helpers, and implementation to the correct input methods. -->
 
-- **Target Platforms**: [TO BE CONFIGURED — e.g., PC, Console, Mobile, Web]
-- **Input Methods**: [TO BE CONFIGURED — e.g., Keyboard/Mouse, Gamepad, Touch, Mixed]
-- **Primary Input**: [TO BE CONFIGURED — the dominant input for this game]
-- **Gamepad Support**: [TO BE CONFIGURED — Full / Partial / None]
-- **Touch Support**: [TO BE CONFIGURED — Full / Partial / None]
-- **Platform Notes**: [TO BE CONFIGURED — any platform-specific UX constraints]
+- **Target Platforms**: PC（Windows 10/11、macOS、Linux）
+- **Input Methods**: Keyboard/Mouse（主要）、Gamepad（可选）
+- **Primary Input**: Keyboard/Mouse
+- **Gamepad Support**: Partial
+- **Touch Support**: None
+- **Platform Notes**: 策略 UI 须在 1080p 及 1440p/4K 下可读；所有交互元素须通过键鼠可达，不得有仅悬停才可触发的状态。
 
 ## Naming Conventions
 
-- **Classes**: [TO BE CONFIGURED]
-- **Variables**: [TO BE CONFIGURED]
-- **Signals/Events**: [TO BE CONFIGURED]
-- **Files**: [TO BE CONFIGURED]
-- **Scenes/Prefabs**: [TO BE CONFIGURED]
-- **Constants**: [TO BE CONFIGURED]
+- **Classes**: PascalCase（e.g., `WorldDay`、`BattleResolutionService`、`SubmitDeploymentCommand`）
+- **Variables**:
+  - Public 属性/字段: PascalCase（e.g., `CurrentSegment`、`FactionId`）
+  - Private 字段: `_camelCase`（e.g., `_currentSegment`、`_moveSpeed`）
+- **Signals/Events**: Domain Events 用 PascalCase + `Event` 后缀（e.g., `BattleResolvedEvent`）；C# 委托用 `EventHandler` 后缀（e.g., `BattleStartedEventHandler`）
+- **Files**: PascalCase 与类名一致（e.g., `WorldDayService.cs`、`CharacterRepository.cs`）
+- **Scenes/Prefabs**: PascalCase 对应根概念（e.g., `WorldMapScene.unity`、`CityPanel.prefab`）
+- **Constants**: Domain 常量用 PascalCase（e.g., `DefaultMoveSpeed`）；ScriptableObject 配置键可用 `UPPER_SNAKE_CASE`
+- **Domain 层专有约定**:
+  - Value Objects: PascalCase 无后缀（e.g., `WorldDay`、`DaySegment`、`FactionId`）
+  - Commands: PascalCase + `Command` 后缀（e.g., `SubmitDeploymentPlanCommand`）
+  - Application Services: PascalCase + `Service` 后缀（e.g., `BattleResolutionService`）
+  - Interfaces: `I` 前缀（e.g., `ICharacterRepository`、`IConfigLoader`）
+  - DTOs: PascalCase + `Dto` 后缀（e.g., `CharacterStateDto`、`BattleResultDto`）
+  - ScriptableObjects（配置）: PascalCase + `Config` 或 `Data` 后缀（e.g., `WeatherConfig`、`FactionData`）
 
 ## Performance Budgets
 
-- **Target Framerate**: [TO BE CONFIGURED]
-- **Frame Budget**: [TO BE CONFIGURED]
-- **Draw Calls**: [TO BE CONFIGURED]
-- **Memory Ceiling**: [TO BE CONFIGURED]
+- **Target Framerate**: 60fps（玩家可见帧；回合制模拟处理不计入帧预算）
+- **Frame Budget**: 16.6ms（玩家可见帧）
+- **Draw Calls**: ≤1000 帧/游戏期间
+- **Memory Ceiling**: 8GB 峰值工作内存（模拟状态 + 资产 + Unity 运行时开销）
 
 ## Testing
 
-- **Framework**: [TO BE CONFIGURED]
-- **Minimum Coverage**: [TO BE CONFIGURED]
-- **Required Tests**: Balance formulas, gameplay systems, networking (if applicable)
+- **Framework**: NUnit（Unity 标准；Domain 层纯 C# 单元测试 + Unity EditMode 集成测试）
+- **Minimum Coverage**: Domain 层全部 public 方法；Application 层全部用例
+- **Required Tests**:
+  - 时间推进确定性（同一种子 → 同一结果）
+  - 战役条件链结算（各条件独立可验证）
+  - 存档读档 round-trip 状态一致性
+  - 配置校验（非法范围与缺失引用被拒绝）
+  - Command 前置校验（失败返回稳定错误码，无部分写入）
 
 ## Forbidden Patterns
 
-<!-- Add patterns that should never appear in this project's codebase -->
-- [None configured yet — add as architectural decisions are made]
+- Domain 层出现 `MonoBehaviour` 或任何 `UnityEngine.*` 类型
+- `ScriptableObject` 作为运行时权威状态（仅用作配置来源，构建时转换为不可变 Domain 配置）
+- Presentation 层直接修改 Domain 状态（所有玩家操作必须经 Command / Application Service 路径）
+- 方法体内硬编码平衡数值（所有数值来自版本化配置）
+- Domain 逻辑依赖帧率或 Unity 时间（模拟必须确定性且引擎无关）
+- Domain 使用隐式随机源（所有随机性通过显式注入的确定性种子或预生成随机流）
+- UI 或 MonoBehaviour 直接持有或修改可变 Domain 对象
+- Domain 权威结算路径使用 `float`/`double`（影响状态哈希的计算用整数/定点 Q16.16；float 仅限非权威 Presentation/UI）— ADR-0004
+- 用 Unity JsonUtility / Unity 序列化处理 Domain 权威状态（存档须用显式版本化 DTO + JSON 经 Infrastructure 端口）— ADR-0005
 
 ## Allowed Libraries / Addons
 
-<!-- Add approved third-party dependencies here -->
+<!-- Add approved third-party dependencies here only when actively integrating, not speculatively. -->
 - [None configured yet — add as dependencies are approved]
 
 ## Architecture Decisions Log
 
 <!-- Quick reference linking to full ADRs in docs/architecture/ -->
-- [No ADRs yet — use /architecture-decision to create one]
+- [ADR-0001](../docs/architecture/adr-0001-engine-choice.md): Unity + C# 为引擎与主语言 — Accepted（2026-06-21）
+- [ADR-0002](../docs/architecture/adr-0002-architecture-layering.md): 四层架构（Domain/Application/Infrastructure/Presentation）+ 依赖方向 — Accepted（2026-06-21）
+- [ADR-0004](../docs/architecture/adr-0004-deterministic-battle-simulation.md): 确定性战斗模拟（整数/定点 + 注入随机流 + 状态哈希）— Accepted（2026-06-21）
+- [ADR-0003](../docs/architecture/adr-0003-data-driven-configuration.md): 数据驱动配置（SO 编辑期 + 构建时转不可变配置 + 配置指纹）— Accepted（2026-06-21）
+- [ADR-0005](../docs/architecture/adr-0005-save-versioning-migration.md): 存档版本与迁移（显式 DTO/JSON + 原子写入 + 逆序逐版迁移链）— Accepted（2026-06-21）
 
 ## Engine Specialists
 
@@ -65,12 +90,12 @@
 <!-- Read by /code-review, /architecture-decision, /architecture-review, and team skills -->
 <!-- to know which specialist to spawn for engine-specific validation. -->
 
-- **Primary**: [TO BE CONFIGURED — run /setup-engine]
-- **Language/Code Specialist**: [TO BE CONFIGURED]
-- **Shader Specialist**: [TO BE CONFIGURED]
-- **UI Specialist**: [TO BE CONFIGURED]
-- **Additional Specialists**: [TO BE CONFIGURED]
-- **Routing Notes**: [TO BE CONFIGURED]
+- **Primary**: unity-specialist
+- **Language/Code Specialist**: unity-specialist（C# 代码审查——Primary 覆盖）
+- **Shader Specialist**: unity-shader-specialist（Shader Graph、HLSL、URP/HDRP 材质）
+- **UI Specialist**: unity-ui-specialist（UI Toolkit UXML/USS、UGUI Canvas、运行时 UI）
+- **Additional Specialists**: unity-addressables-specialist（资产加载、内存管理、内容目录）；unity-dots-specialist（ECS/Jobs/Burst——仅在 ADR 批准 DOTS 采用后启用）
+- **Routing Notes**: 架构决策与通用 C# 代码审查使用 Primary。渲染和视觉效果使用 Shader 专家。所有 UI 实现使用 UI 专家。资产管理使用 Addressables 专家。DOTS 专家在无 ADR 批准前**不得**启用——本项目 Domain 层为纯 C#，非 ECS。
 
 ### File Extension Routing
 
@@ -79,9 +104,10 @@
 
 | File Extension / Type | Specialist to Spawn |
 |-----------------------|---------------------|
-| Game code (primary language) | [TO BE CONFIGURED] |
-| Shader / material files | [TO BE CONFIGURED] |
-| UI / screen files | [TO BE CONFIGURED] |
-| Scene / prefab / level files | [TO BE CONFIGURED] |
-| Native extension / plugin files | [TO BE CONFIGURED] |
-| General architecture review | Primary |
+| Game code (.cs files) | unity-specialist |
+| Shader / material files (.shader, .shadergraph, .mat) | unity-shader-specialist |
+| UI / screen files (.uxml, .uss, Canvas prefabs) | unity-ui-specialist |
+| Scene / prefab / level files (.unity, .prefab) | unity-specialist |
+| Config assets (.asset, ScriptableObjects) | unity-specialist |
+| Native extension / plugin files (.dll, native plugins) | unity-specialist |
+| General architecture review | unity-specialist |
