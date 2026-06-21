@@ -46,8 +46,9 @@
 | 002 | 嵌套战斗时段预算与跨时段触发 | Logic | ✅ Complete | ADR-0004 |
 | 003 | 配置驱动天气/风向确定性解析 | Logic | ✅ Complete | ADR-0004 |
 | 004 | 区域/路线拓扑与确定性寻路 | Logic | ✅ Complete | ADR-0004 |
-| 005 | 地图真值与阵营知识分离 | Integration | Ready | ADR-0002 |
+| 005 | 地图真值与阵营知识分离 | Integration | ✅ Complete | ADR-0002 |
 
 ## Next Step
 
-S1、S2、S3、S4 ✅ Complete（2026-06-22）。下一步：`/story-readiness production/epics/epic-002-world-substrate/story-005-truth-knowledge-split.md` → `/dev-story`
+✅ **epic-002 全部 5 story 完成（2026-06-22）**。DoD 已核对：全部 story 经 `/story-done` 关闭；gdd-001/002/003 验收标准验证；时间推进/天气解析/寻路结果确定性可复现（同种子→同事件/路径）；全部 Logic/Integration story 在 `tests/` 有通过测试（全套 148/148 绿，0 warning）。
+下一模块：epic-003-character-relationship（待新会话/指令启动）。

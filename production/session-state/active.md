@@ -391,7 +391,15 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **全套测试 74/74 全绿，`-warnaserror` 0 warning**。EPIC.md 已标全部 ✅ 并核对 DoD。
 - **偏差（ADVISORY）**：两个 story 的测试路径从 `tests/unit/foundation/*.cs` 归一到真实可编译测试工程 `tests/unit/ThreeKingdom.Domain.Tests/`（foundation/ 不在任何 csproj）。
 
-### ▶ 进行中：epic-002 世界基底（5 story，顺序执行）
-- 入口：`production/epics/epic-002-world-substrate/story-001-deterministic-time.md`
-- 链路（每 story）：readiness → dev-story → code-review → story-done → commit+push tk/main
-- 状态：E2-S1 开始
+### ✅ epic-002 世界基底 — 全部 5 story 完成（2026-06-22）
+- **S1 确定性时间推进**（GDD_001/ADR-0004）：`src/Domain/Time/`（WorldTime+DaySegment、WorldClock+AdvanceTimeCommand、DayBoundaryStage、ScheduledEventOrder）。commit `c595be5`。
+- **S2 嵌套战斗时段预算**（ADR-0004+0003）：BattleClock floor(phases/budget) 跨段+天气/补给/疲劳结算、TimedAction/ActionCost、Deadline、CancellationPolicy。commit `a1cb999`。
+- **S3 天气/风向确定性解析**（GDD_002/ADR-0004）：`src/Domain/Environment/`（WeatherTransitionTable、WeatherResolver 注入流加权选择、EnvironmentModifierSet、Wind）。commit `027bcf4`。
+- **S4 拓扑与确定性寻路**（GDD_003/ADR-0004）：`src/Domain/Map/`（WorldMap、Pathfinder 整数代价+RouteId 字典序平局、RouteCost、Region 容量门控、RouteContact）。commit `98f259f`。
+- **S5 真值/知识分离**（ADR-0002，Integration）：MapTruth、FactionKnowledge+只读投影、ScoutingService。commit 见下。
+- **测试累计 148/148 全绿，`-warnaserror` 0 warning**。每 story 走完整 readiness→dev-story→code-review(APPROVED)→story-done(COMPLETE WITH NOTES)→commit+push tk/main。
+- **共性偏差（ADVISORY）**：各 story 测试路径从故事原写的 `tests/unit/<sys>/*.cs`、`tests/integration/...` 归一到唯一可编译测试工程 `tests/unit/ThreeKingdom.Domain.Tests/`。
+
+### ▶ 下一入口
+- epic-001、epic-002 均关闭。下一模块 **epic-003-character-relationship**（角色与关系），待新指令启动。
+- 自主远程任务（epic-001 S3/S4 + epic-002 全 5 story）已完成。
