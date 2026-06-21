@@ -1,12 +1,12 @@
 # Story 003: 配置驱动天气/风向确定性解析
 
 > **Epic**: 世界基底（时间·环境·地图拓扑）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -69,8 +69,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/weather/weather_deterministic_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Environment/WeatherDeterministicTests.cs` — 须存在并通过
+**Status**: [x] 已创建并通过（13 测，全套 124/124 绿）
+**Note**: 路径由故事原写的 `tests/unit/weather/weather_deterministic_test.cs` 归一到真实可编译测试工程。
 
 ---
 
@@ -78,3 +79,13 @@
 
 - Depends on: Story 001（时间）、epic-001 Story 002/003（随机流/配置）
 - Unlocks: epic-004（补给）、epic-007（战斗读天气修正）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 5/5 passing（配置权重+注入流转移、同流位置+同前态→同结果、具名修正供 5 消费者自取不触发计策、天气只减速≥1.0+极端夹取、破环以已结算只读修正暴露供地图通行后读）
+**Files**: `src/Domain/Environment/`（WeatherType、Wind+WindDirection、WeatherTransitionTable、WeatherResolver、EnvironmentModifierSet+EnvironmentConsumer+EnvironmentModifier）+ `tests/unit/ThreeKingdom.Domain.Tests/Environment/WeatherDeterministicTests.cs`（13 测）
+**Deviations**: ADVISORY — 测试路径归一到真实测试工程；AC-5 破环顺序在本 story 以「天气产出已结算只读修正集」结构性保证，跨 story 通行读取在 Story 004 落地。
+**Test Evidence**: Logic — 测试文件存在且通过（全套 124/124 绿，`-warnaserror` 0 warning）
+**Code Review**: Complete — `/code-review` = APPROVED（定点累积加权选择、续抽一致、权重校验、Movement≥1.0、无计策消费者）
