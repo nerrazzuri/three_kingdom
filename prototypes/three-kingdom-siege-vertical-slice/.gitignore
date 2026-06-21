@@ -1,0 +1,4 @@
+# VERTICAL SLICE build artifacts
+bin/
+obj/
+*.user

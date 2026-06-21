@@ -44,7 +44,7 @@ Manifest Version: 1
 | G3 跨系统审查 | contradiction report | Passed（CONCERNS） | 报告 `design/gdd/gdd-cross-review-2026-06-21.md`；唯一阻断（支柱4 外交无 GDD 归属）已闭合——外交受控入口回写 GDD_012 §8；5 项 Warning（断粮传导单点/知识TTL/morale命名/mod_weather范围/破环顺序）**已全部回写修复** |
 | G4 技术锁定 | 架构、ADR_0002—0005、质量基础 | Pending | 分层、确定性、配置、存档边界 Accepted |
 | G5 方法就绪 | first slice method specs | Pending | 所有 public API 契约与测试要求明确 |
-| G6 预制作 | vertical slice、资产、UX、backlog、Sprint | Pending | story 可追踪到 GDD/method spec/验收标准 |
+| G6 预制作 | vertical slice、资产、UX、backlog、Sprint | In Progress | **Vertical Slice 完成（2026-06-21，裁定 PROCEED）** — `prototypes/three-kingdom-siege-vertical-slice/`，三条条件链 + 军师 + 存档 round-trip，26 测试绿，[REPORT](../../prototypes/three-kingdom-siege-vertical-slice/REPORT.md)。余下 G6 项（资产/UX/backlog/Sprint）待 `/gate-check pre-production` 后展开 |
 | G7 Story 开发 | 单个 Ready story | Blocked | 仅在 G0—G6 通过后按 `/dev-story` 执行 |
 
 ## Story Readiness Checklist
