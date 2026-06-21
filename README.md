@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/engine-Unity%206.3%20LTS-000000?logo=unity" alt="Unity 6.3 LTS">
   <img src="https://img.shields.io/badge/language-C%23-239120?logo=c-sharp" alt="C#">
   <img src="https://img.shields.io/badge/platform-PC%20(Win%2FmacOS%2FLinux)-blue" alt="PC">
-  <img src="https://img.shields.io/badge/stage-Pre--Production-orange" alt="Pre-Production">
+  <img src="https://img.shields.io/badge/stage-Production-brightgreen" alt="Production">
 </p>
 
 ---
@@ -57,17 +57,21 @@
 - **目标平台**:PC(Windows 10/11、macOS、Linux),键鼠为主,可选手柄
 - **性能预算**:60fps / 16.6ms 帧预算 · ≤1000 draw calls · ≤8GB 峰值内存
 
-> 当前实现许可:**仅文档与规划**。在通过阶段门禁前,禁止进入 gameplay、UI 或 Scene 实现。
+> 当前实现许可:**Domain/Application 层实现已授权**(Pre-Production→Production 门禁已通过,裁定 CONCERNS)。Presentation/UI/Scene 实现仍待表现层里程碑前置验证后开启。
 
-## 当前阶段:Pre-Production
+## 当前阶段:Production — Foundation 实现
 
-文档基线已建立,正推进跨系统审查与垂直切片验证。
+Pre-Production→Production 门禁已通过(CONCERNS,四总监 Panel 裁定),垂直切片乐趣已验证,正按 epic/story 推进 Domain 层确定性底座。
 
-- ✅ 13 份系统 GDD(含 Formulas 公式节)
-- ✅ 5 份 ADR 全部 Accepted + 架构审查(覆盖率 28/31)
-- ✅ 美术圣经 v0.1 · 无障碍需求 · 交互模式库
-- ✅ Epics / Sprint-01 / Story Backlog · 测试脚手架 + CI
-- ⏳ 下一步:`/review-all-gdds`(G3 跨系统矛盾审查)→ 垂直切片 → 首段 Domain 代码
+- ✅ 13 份系统 GDD(含 Formulas 公式节)+ G3 跨系统矛盾审查闭环
+- ✅ 5 份 ADR 全部 Accepted + 架构审查
+- ✅ 美术圣经 v1.0(AD 签核 APPROVED)· 无障碍需求(Approved)· 三关键屏 UX(全 APPROVED)
+- ✅ 垂直切片「汜水小城守御」PROCEED(设计者试玩签核)
+- ✅ 9 epics / 28 stories · 测试脚手架 + CI(`dotnet test` 旁路 Unity 许可)
+- 🔄 进行中:epic-001 Domain 基础(S1 Domain 边界 ✅ / S2 定点+随机流+状态哈希 ✅ → S3 配置加载校验)
+- ⏳ 下一步:Foundation 余下 story → 世界基质 / 人物 / 城池 / 情报 / 兵法沙盒各 epic
+
+> **权威进度跟踪**:`production/epics/*/story-*.md`(每 story 含状态/验收/测试证据)。`production/story-backlog.md` 为已取代的早期初稿。
 
 ## 文档导航
 
