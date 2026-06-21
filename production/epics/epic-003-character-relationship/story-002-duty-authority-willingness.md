@@ -1,12 +1,12 @@
 # Story 002: 职责权限与命令执行意愿
 
 > **Epic**: 人物与关系
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -68,8 +68,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/character/duty_authority_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Characters/DutyAuthorityTests.cs` — 须存在并通过
+**Status**: [x] 已创建并通过（11 测，全套 171/171 绿）
+**Note**: 路径由故事原写的 `tests/unit/character/duty_authority_test.cs` 归一到真实可编译测试工程。
 
 ---
 
@@ -77,3 +78,13 @@
 
 - Depends on: Story 001、Story 003（coop_score）
 - Unlocks: epic-006（部署权限）、epic-007（执行质量）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 4/4 passing（职责权限能力不绕过、同时段任务冲突拒绝、意愿读已结算 coop_score 确定性计算、破环顺序遵守）
+**Files**: `src/Domain/Characters/`（Authority[CommandType+AuthorityRegistry]、TaskCompatibility[TaskKind+TaskConflictPolicy]、WillingnessCalculator）+ `tests/unit/ThreeKingdom.Domain.Tests/Characters/DutyAuthorityTests.cs`（11 测）
+**Deviations**: ADVISORY — 测试路径归一；Story 003（coop_score 产出）尚未完成，本 story 按设计「只消费已结算值」将 coop_score 作为注入参数，无代码依赖 S3（符合 005↔006 破环顺序），接受依赖风险。
+**Test Evidence**: Logic — 测试文件存在且通过（全套 171/171 绿，`-warnaserror` 0 warning）
+**Code Review**: Complete — `/code-review` = APPROVED（授权纯函数无能力旁路、任务冲突无序对、意愿公式匹配 GDD §2 + 夹取 + 确定性）
