@@ -3,7 +3,7 @@
 > **Layer**: Foundation
 > **GDD**: design/gdd/gdd-013-save-load.md
 > **Architecture Module**: Infrastructure 存档端口（版本化 DTO + 原子写 + 迁移链）+ Domain memento/快照
-> **Status**: Ready
+> **Status**: ✅ Complete（2026-06-22）
 > **Stories**: 见下方 Stories 表
 
 ## Overview
@@ -42,7 +42,7 @@
 |---|-------|------|--------|-----|
 | 001 | 版本化 DTO + 原子写 + 迁移链 | Integration | ✅ Complete | ADR-0005 |
 | 002 | Round-trip 一致性与随机流位置保存 | Integration | ✅ Complete | ADR-0005 |
-| 003 | 加载校验与不兼容拒绝 | Logic | Ready | ADR-0005 |
+| 003 | 加载校验与不兼容拒绝 | Logic | ✅ Complete | ADR-0005 |
 
 ## Next Step
 

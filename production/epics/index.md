@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-06-21
+Last Updated: 2026-06-22
 Engine: Unity 6.3 LTS + C#
 Manifest Version: 1 (2026-06-21)
 
@@ -11,20 +11,20 @@ Manifest Version: 1 (2026-06-21)
 
 | Epic | Layer | System | GDD | Stories | Status |
 |------|-------|--------|-----|---------|--------|
-| [项目与 Domain 基础](epic-001-domain-foundation/EPIC.md) | Foundation | 工程底座 | 横切 | 4 stories | Ready |
-| [世界基底（时间·环境·地图）](epic-002-world-substrate/EPIC.md) | Foundation | 时间/天气/地图 | gdd-001/002/003 | 5 stories | Ready |
-| [存档与复现](epic-009-save-replay/EPIC.md) | Foundation | 存档 | gdd-013 | 3 stories | Ready |
+| [项目与 Domain 基础](epic-001-domain-foundation/EPIC.md) | Foundation | 工程底座 | 横切 | 4 stories | ✅ Complete |
+| [世界基底（时间·环境·地图）](epic-002-world-substrate/EPIC.md) | Foundation | 时间/天气/地图 | gdd-001/002/003 | 5 stories | ✅ Complete |
+| [存档与复现](epic-009-save-replay/EPIC.md) | Foundation | 存档 | gdd-013 | 3 stories | ✅ Complete |
 
 ## Core 层
 
 | Epic | Layer | System | GDD | Stories | Status |
 |------|-------|--------|-----|---------|--------|
-| [人物与关系](epic-003-character-relationship/EPIC.md) | Core | 人物/关系 | gdd-005/006 | 3 stories | Ready |
-| [城市与后勤](epic-004-city-logistics/EPIC.md) | Core | 城市/后勤/外交入口 | gdd-004/012 | 3 stories | Ready |
-| [情报与军议](epic-005-intel-council/EPIC.md) | Core | 情报/军议 | gdd-007/008 | 3 stories | Ready |
-| [战前准备](epic-006-battle-preparation/EPIC.md) | Core | 战前准备 | gdd-009 | 2 stories | Ready |
-| [兵法沙盒结算](epic-007-tactics-sandbox/EPIC.md) | Core | 战斗/士气 | gdd-010/011 | 3 stories | Ready |
-| [后果与可玩失败](epic-008-outcome-consequence/EPIC.md) | Core | 后果结算 | gdd-010 §后果 | 2 stories | Ready |
+| [人物与关系](epic-003-character-relationship/EPIC.md) | Core | 人物/关系 | gdd-005/006 | 3 stories | ✅ Complete |
+| [城市与后勤](epic-004-city-logistics/EPIC.md) | Core | 城市/后勤/外交入口 | gdd-004/012 | 3 stories | ✅ Complete |
+| [情报与军议](epic-005-intel-council/EPIC.md) | Core | 情报/军议 | gdd-007/008 | 3 stories | ✅ Complete |
+| [战前准备](epic-006-battle-preparation/EPIC.md) | Core | 战前准备 | gdd-009 | 2 stories | ✅ Complete |
+| [兵法沙盒结算](epic-007-tactics-sandbox/EPIC.md) | Core | 战斗/士气 | gdd-010/011 | 3 stories | ✅ Complete |
+| [后果与可玩失败](epic-008-outcome-consequence/EPIC.md) | Core | 后果结算 | gdd-010 §后果 | 2 stories | ✅ Complete |
 
 ## 后续层（未展开）
 
@@ -39,5 +39,8 @@ Manifest Version: 1 (2026-06-21)
 
 ## 下一步
 
-`/sprint-plan new`（用 slice REPORT velocity 标定 solo 容量）→ `/story-readiness [story]` → `/dev-story [story]`。
-按 story 的 `Depends on:` 字段顺序推进（Foundation 先于 Core）。
+★ **全部 9 epics（28 stories）已 ✅ Complete（2026-06-22）** — Domain 四层内核 + 存档/复现底座全部落地，
+测试累计 **329/329 全绿，`-warnaserror` 0 warning**。
+- **下一阶段候选**：Presentation 层 EPIC_010（Slice UX 与可访问性，UX 规格已 Approved）→ `/create-epics layer:presentation`；
+  或 Unity 表现层垂直切片重验核心幻想（CD-C3/TD CONCERNS：核心幻想未在 Unity 表现层实证）。
+- 挂账 guardrail（非阻断）：GitHub Actions 首次绿待确认；entity-inventory、sprint-01 旧 id 刷新。

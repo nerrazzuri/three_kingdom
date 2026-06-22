@@ -1,12 +1,12 @@
 # Story 003: 加载校验与不兼容拒绝
 
 > **Epic**: 存档与复现
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -27,10 +27,10 @@
 
 ## Acceptance Criteria
 
-- [ ] 加载先验证 schema 版本 + 配置指纹 + 数据校验，任一不过则拒绝
-- [ ] 不兼容（存档版本高于当前）被拒绝，不部分载入当前会话
-- [ ] 世界真值与玩家知识分别序列化，加载不交叉污染（TR-intel-003）
-- [ ] 拒绝返回可行动原因（供 main-menu/pause 错误态显示）
+- [x] 加载先验证 schema 版本 + 配置指纹 + 数据校验，任一不过则拒绝 — `SaveLoadService.Load` 结构完整性→版本→指纹→迁移 顺序校验
+- [x] 不兼容（存档版本高于当前）被拒绝，不部分载入当前会话 — `LoadErrorCode.IncompatibleNewer`，纯函数零副作用，磁盘存档未改
+- [x] 世界真值与玩家知识分别序列化，加载不交叉污染（TR-intel-003）— 同名键各归各位；知识段缺失走 Corrupted 拒绝而非真值回填
+- [x] 拒绝返回可行动原因（供 main-menu/pause 错误态显示）— `LoadResult.Reason` 稳定错误码 + 中文可行动文案
 
 ---
 
@@ -68,8 +68,8 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/save/load_validation_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Persistence/LoadValidationTests.cs` — 8 测全通过（归一到唯一可编译测试工程，ADVISORY 偏差）
+**Status**: [x] Passed — 329/329 全绿，`-warnaserror` 0 warning
 
 ---
 
