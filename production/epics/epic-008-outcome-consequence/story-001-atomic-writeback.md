@@ -1,12 +1,12 @@
 # Story 001: 跨系统变更集校验与原子写回
 
 > **Epic**: 后果与可玩失败
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: L（6h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -27,11 +27,11 @@
 
 ## Acceptance Criteria
 
-- [ ] 战果生成跨系统变更集合（人物/关系/城市/名声）
-- [ ] 写回前整体校验；任一目标不合法 → 整批回滚，零部分写入
-- [ ] 各权威系统独占写自身状态（经其 Command/接口，非外部直改）
-- [ ] 守恒：写回前后跨系统资源/关系恒等（无凭空增减）
-- [ ] 确定性：同战果 → 同变更集 → 同最终状态哈希
+- [x] 战果生成跨系统变更集合（人物/关系/城市/名声）— `ConsequenceSet` + `OutcomeChange.ForCity/ForReputation/ForCharacter/ForRelationship`
+- [x] 写回前整体校验；任一目标不合法 → 整批回滚，零部分写入 — `OutcomeWritebackService.Apply` 聚合错误，失败返回原快照
+- [x] 各权威系统独占写自身状态（经其 Command/接口，非外部直改）— 按 Kind 路由，城市经 `CityEconomyState.With`、关系经刻度 clamp
+- [x] 守恒：写回前后跨系统资源/关系恒等（无凭空增减）— `ConservationKey` 分组净额须为 0
+- [x] 确定性：同战果 → 同变更集 → 同最终状态哈希 — `OutcomeWorld.ComputeHash` 规范遍历
 
 ---
 
@@ -69,8 +69,8 @@
 ## Test Evidence
 
 **Story Type**: Integration
-**Required evidence**: `tests/integration/outcome/atomic_writeback_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Outcome/AtomicWritebackTests.cs` — 8 测全通过（归一到唯一可编译测试工程，ADVISORY 偏差）
+**Status**: [x] Passed — 302/302 全绿，`-warnaserror` 0 warning
 
 ---
 

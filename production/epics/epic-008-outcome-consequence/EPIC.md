@@ -41,7 +41,7 @@
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | 跨系统变更集校验与原子写回 | Integration | Ready | ADR-0004 |
+| 001 | 跨系统变更集校验与原子写回 | Integration | ✅ Complete | ADR-0004 |
 | 002 | 可玩失败延续（撤退/失城/问责分支） | Integration | Ready | ADR-0002 |
 
 ## Next Step
