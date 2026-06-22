@@ -40,7 +40,7 @@
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | 城市日界产耗结算与资源守恒 | Logic | ✅ Complete | ADR-0004 |
-| 002 | 三持有者补给守恒与路线断粮传导 | Logic | Ready | ADR-0004 |
+| 002 | 三持有者补给守恒与路线断粮传导 | Logic | ✅ Complete | ADR-0004 |
 | 003 | 外交受控入口（求援/求粮/求时限，§8） | Integration | Ready | ADR-0002 |
 
 ## Next Step

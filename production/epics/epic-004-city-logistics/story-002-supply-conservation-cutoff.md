@@ -1,12 +1,12 @@
 # Story 002: 三持有者补给守恒与路线断粮传导
 
 > **Epic**: 城市与后勤
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L（6h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -78,3 +78,10 @@
 
 - Depends on: Story 001；epic-002 Story 004（路线拓扑）
 - Unlocks: epic-007 Story 003（士气消费 supply 事件）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 5/5 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/Supply/`；GDD §Formula 2 的 `new_delivery` 未明确，采保守解释（交付只取 remain，余留在途，守恒清晰）
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Supply/SupplyConservationCutoffTests.cs`（13 测全绿，207/207 总）
+**Code Review**: Complete（APPROVED）
