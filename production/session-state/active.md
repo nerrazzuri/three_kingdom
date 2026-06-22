@@ -454,3 +454,16 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **▶ 下一模块**：见 `production/epics/index.md`（epic-005~009 Core/Foundation 余项）。沿用 lean 链路与红线（Domain 纯 C# 禁 UnityEngine、权威路径禁 float、确定性、数据驱动、构造校验无部分写入）。
 - **复用底座新增**：`City`（日界结算）、`Supply`（三持有者守恒+断粮事件）、`Diplomacy`（受控外交入口）。
 - **挂账 guardrail（非阻断）**：GitHub Actions 首次绿待确认；entity-inventory、sprint-01 旧 id 刷新。
+
+## ✅ epic-005 情报与军议 — 全部 3 story 完成（2026-06-22 连续会话）
+- **S1 情报四层分离与只读投影**（GDD_007/ADR-0002，Integration）：`src/Domain/Intel/`（IntelSubjectId、IntelSource、WorldTruthLedger/TruthRecord、Observation、IntelReport、FactionIntel+IntelKnowledgeEntry+IntelProjection、IntelService）。四层分离、投影不含真值、单向流转。8 测。commit `0487100`。
+- **S2 报告置信/时效/区间与确定性暴露**（GDD_007/ADR-0004，Logic）：IntelConfig、ConfidenceSignals（多信号非单一百分比）、EstimateInterval、IntelAssessment/Service、ScoutingExposureService（注入随机流）。11 测。commit `e36d0b2`。
+- **S3 军师条件化建议**（GDD_008/ADR-0002，Logic）：`src/Domain/Council/`（AdvisorPerspective、AdviceTemplate、CouncilConfig、AdviceStatement、CouncilAdviceSet、WarCouncilService）。读只读投影、过时标记、置信=最弱依据×能力、结构性+反射负向断言（无成功率/最优解/命令）。10 测。commit 见下。
+- **测试累计 250/250 全绿，0 warning**（181 基线 + 69 新增：epic-004 40 + epic-005 29）。
+- 每 story 走完整 readiness→dev-story→code-review(APPROVED)→story-done(COMPLETE WITH NOTES)→commit+push tk/main。
+
+### 📌 接续交接 — 新会话从此处接续
+- **已完成并 push tk/main**：epic-001/002/003/004/005 全关闭。
+- **▶ 下一模块候选**（见 `production/epics/index.md`）：epic-006 战前准备（gdd-009，2 story，依赖 epic-005）/ epic-007 兵法沙盒结算（gdd-010/011，依赖 epic-004 supply 事件 + epic-006）/ epic-008 后果 / epic-009 存档（Foundation，S3 现已解锁）。
+- **复用底座新增**：`City`、`Supply`、`Diplomacy`、`Intel`（四层+评估+暴露）、`Council`（条件化建议）。
+- 红线与 lean 链路同前。验证：`dotnet test tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj -warnaserror`。

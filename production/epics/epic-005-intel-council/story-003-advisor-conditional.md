@@ -1,12 +1,12 @@
 # Story 003: 军师条件化建议（无最优解/无成功率）
 
 > **Epic**: 情报与军议
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -78,3 +78,10 @@
 
 - Depends on: Story 001, 002
 - Unlocks: epic-006（玩家据建议构建计划）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 5/5 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/Council/`；无最优解/成功率以结构性+反射断言守护
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Council/AdvisorConditionalTests.cs`（10 测全绿，250/250 总）
+**Code Review**: Complete（APPROVED）

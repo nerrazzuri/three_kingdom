@@ -3,7 +3,7 @@
 > **Layer**: Core
 > **GDD**: design/gdd/gdd-007-intelligence-recon.md · gdd-008-war-council.md
 > **Architecture Module**: Domain 情报四层模型 + 军师建议层（只读知识投影）
-> **Status**: Ready
+> **Status**: ✅ Complete（2026-06-22）
 > **Stories**: 见下方 Stories 表
 
 ## Overview
@@ -42,8 +42,8 @@
 |---|-------|------|--------|-----|
 | 001 | 情报四层分离与只读投影 | Integration | ✅ Complete | ADR-0002 |
 | 002 | 报告置信/时效/区间与确定性暴露 | Logic | ✅ Complete | ADR-0004 |
-| 003 | 军师条件化建议（无最优解/无成功率） | Logic | Ready | ADR-0002 |
+| 003 | 军师条件化建议（无最优解/无成功率） | Logic | ✅ Complete | ADR-0002 |
 
 ## Next Step
 
-`/story-readiness production/epics/epic-005-intel-council/story-001-intel-four-tier.md` → `/dev-story`
+✅ **Epic 全部 3 story 关闭（2026-06-22）**。DoD 核对：四层分离有测（投影不含真值字段，冲突时只含报告）；时效衰减确定性可复现（权威归 007）；军师输出无综合成功率/最优解（结构性+反射负向断言）；知识 TTL 时效权威归 007；全部 Logic/Integration story 测试通过（29 测）。同时解锁 epic-009 S3（知识序列化分离）。
