@@ -45,7 +45,7 @@ This epic is complete when:
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | 投影→展示模型 + UI 意图→Command 映射底座（可测表现逻辑） | Logic | Ready | ADR-0002 |
+| 001 | 投影→展示模型 + UI 意图→Command 映射底座（可测表现逻辑） | Logic | ✅ Complete | ADR-0002 |
 | 002 | 主菜单屏（新游戏/继续/读档错误态 + 键鼠可达） | UI | Ready | ADR-0002/0005 |
 | 003 | HUD 五态呈现（不完全信息 + 多维不合并 + 因果链） | UI | Ready | ADR-0002/0004 |
 | 004 | 暂停菜单（存档/读档/设置 + 失败延续「继续」契约） | UI | Ready | ADR-0002/0005 |

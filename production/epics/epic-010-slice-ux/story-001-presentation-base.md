@@ -1,12 +1,12 @@
 # Story 001: 投影→展示模型 + UI 意图→Command 映射底座
 
 > **Epic**: Slice UX 与可访问性
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Logic
 > **Estimate**: L（6h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -28,12 +28,12 @@
 
 ## Acceptance Criteria
 
-- [ ] 展示模型（ViewModel/DTO）由 Domain **只读投影**确定性派生，不含任何写状态路径
-- [ ] UI 意图经显式映射产出 Application Command（New Game/Load/Save/Scout/SubmitPlan 等），不直接触达 Domain
-- [ ] 敌方展示模型**只**含探报字段（推测/区间/时效/来源），**绝不**含权威真值（P10 负向断言）
-- [ ] 多维状态（士气/疲劳/军纪、关系四维）在展示模型中**分列字段**，无任何单一综合值（P6 负向断言）
-- [ ] 军师/建议展示模型不含「成功率/最优解/排序最优项」字段（P11 负向断言）
-- [ ] 同一投影 → 同一展示模型（确定性，可快照测试）
+- [x] 展示模型由 Domain **只读投影**确定性派生，不含任何写状态路径 — `EnemyIntelPanelView`/`CohesionView`/`RelationshipView`/`CouncilView`，仅 getter
+- [x] UI 意图经显式映射产出 Application Command，不直接触达 Domain — `IntentTranslator` 纯 switch 映射 5 类意图→命令载荷
+- [x] 敌方展示模型**只**含探报字段，**绝不**含权威真值（P10 负向断言）— 反射断言 `EnemyIntelView` 无 truth/actual/real 字段
+- [x] 多维状态在展示模型中**分列字段**，无任何单一综合值（P6 负向断言）— 反射断言 `CohesionView`/`RelationshipView` 无 combined/overall/score 等
+- [x] 军师/建议展示模型不含「成功率/最优解/排序最优项」字段（P11 负向断言）— 反射断言 `AdviceView`/`CouncilView` 无 success/optimal/rank 等；置信为定性标签
+- [x] 同一投影 → 同一展示模型（确定性，可快照测试）— EnemyIntelPanelView 确定性排序，逐字段相等
 
 ---
 
@@ -83,8 +83,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Presentation/*Tests.cs` — 须存在并通过（BLOCKING；归一到唯一可编译测试工程）
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Presentation/{PresentationViewTests,PresentationLockTests,IntentTranslationTests}.cs` — 16 测全通过（BLOCKING）
+**Status**: [x] Passed — 345/345 全绿，`-warnaserror` 0 warning
+**ADVISORY note**: AdviceView 置信定性分档阈值（0.34/0.67）为展示阈值（非 gameplay 平衡值），未来可移入展示配置。
 
 ---
 

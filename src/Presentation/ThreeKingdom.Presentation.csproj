@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    纯 C# Presentation 逻辑层（ADR-0002 四层架构：Presentation 只依赖 Application API + 只读 DTO）。
+    此程序集承载「投影→展示模型」与「UI 意图→Command」的**可测逻辑**，不含 MonoBehaviour/UXML——
+    这些 Unity 外壳在 Assets/ 下经 asmdef 引用本程序集（视觉/输入薄壳，单独以 Editor 验证）。
+    TargetFramework=netstandard2.1 与 Unity 6.3 兼容；可由 `dotnet test` 在无 Unity 运行时下单元测试（BLOCKING）。
+    禁止添加任何 UnityEngine 引用——边界由 PresentationBoundaryTests 验收。
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>ThreeKingdom.Presentation</AssemblyName>
+    <RootNamespace>ThreeKingdom.Presentation</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\ThreeKingdom.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
