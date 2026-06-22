@@ -40,7 +40,7 @@
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | 情报四层分离与只读投影 | Integration | Ready | ADR-0002 |
+| 001 | 情报四层分离与只读投影 | Integration | ✅ Complete | ADR-0002 |
 | 002 | 报告置信/时效/区间与确定性暴露 | Logic | Ready | ADR-0004 |
 | 003 | 军师条件化建议（无最优解/无成功率） | Logic | Ready | ADR-0002 |
 

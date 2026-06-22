@@ -1,12 +1,12 @@
 # Story 001: 情报四层分离与只读投影
 
 > **Epic**: 情报与军议
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -75,3 +75,10 @@
 
 - Depends on: epic-002 Story 005（地图真值/知识分离）
 - Unlocks: Story 002, 003；epic-009 Story 003（知识序列化分离）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 4/4 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径 `tests/integration/intel/*.cs` → 归一到 `tests/unit/ThreeKingdom.Domain.Tests/Intel/`
+**Test Evidence**: Integration — `tests/unit/ThreeKingdom.Domain.Tests/Intel/IntelFourTierTests.cs`（8 测全绿，229/229 总）
+**Code Review**: Complete（APPROVED）
