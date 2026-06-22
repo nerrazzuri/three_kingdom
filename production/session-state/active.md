@@ -504,3 +504,16 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **复用底座新增**：`Outcome`（跨系统原子写回 + 可玩失败延续）、`Persistence`（版本化存档 + 原子写 + 迁移链 + round-trip + 加载校验）。
 - **▶ 下一阶段候选**：Presentation 层 EPIC_010（Slice UX，规格已 Approved）→ `/create-epics layer:presentation`；或 Unity 表现层垂直切片重验核心幻想（CD-C3/TD CONCERNS 未实证）。
 - **挂账 guardrail（非阻断）**：GitHub Actions 首次绿待确认；entity-inventory、sprint-01 旧 id 刷新。
+
+## ▶ EPIC_010 Presentation 启动（2026-06-22 连续会话）
+- **Unity 验证路径确认**：本机 `C:\Program Files\Unity\Hub\Editor\6000.3.18f1\Editor\Unity.exe`（=Unity 6.3 LTS，匹配项目 pin）batchmode 可用，有效 license（LicenseClient-Liang Kai Feng），`return code 0`。→ UI 故事可测表现逻辑走 dotnet/EditMode BLOCKING，视觉走 Editor 截图 ADVISORY。
+- **一次性探针残留**：`tools/_unity_probe/`（已 .gitignore + untrack，但物理文件夹仍在磁盘；`rm -rf` 被权限策略拒，待用户手动删）。
+- **/create-epics + /create-stories（lean）**：`epic-010-slice-ux`（EPIC.md + 5 stories）。commit `f03bdb5`，push tk/main `82f818f`。
+- **✅ S1 投影→展示模型 + 意图→Command 底座**（ADR-0002，Logic）：新 `src/Presentation/`（netstandard2.1，禁 MonoBehaviour/UnityEngine）——`Projections/`（EnemyIntelPanelView 仅探报无真值 / CohesionView 三维分列 / RelationshipView 四维方向性 / CouncilView 并列+过时+定性置信）、`Intents/`（IntentTranslator 意图→命令载荷纯映射）、`Display`（定点→展示 decimal）。设计锁反射固化 P10/P6/P11 + 不依赖 UnityEngine 边界回归。16 测。commit `7b9de4a`，push tk/main。
+- **测试累计 345/345 全绿，`-warnaserror` 0 warning**（329 基线 + 16 Presentation）。
+- **工程接线**：src/Presentation 入 `ThreeKingdom.slnx` + `.gitignore` csproj 例外 + 测试工程 ProjectReference。
+
+### 📌 EPIC_010 接续交接
+- **▶ 剩余 4 story（002 主菜单 / 003 HUD 五态 / 004 暂停 / 005 无障碍）均为 UI 型**：各含「可测 ViewModel 逻辑（dotnet/EditMode BLOCKING）」+「UXML/USS/Scene 视觉外壳（需 Unity Editor，ADVISORY 截图签核）」。
+- **待决结构**：UI 视觉外壳需在 repo 根建真实 Unity 6.3 项目（Assets/ProjectSettings/Packages）引用 Domain DLL + asmdef 引用 Presentation。建议先把 002–005 的可测 ViewModel 逻辑在 src/Presentation 落地（dotnet 验证），再一次性建 Unity 项目搭全部 UXML 外壳并 batchmode 跑 EditMode 验证。
+- 复用底座：`Presentation`（Projections/Intents/Display + 设计锁反射回归）。
