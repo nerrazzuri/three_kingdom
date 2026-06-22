@@ -517,3 +517,16 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **▶ 剩余 4 story（002 主菜单 / 003 HUD 五态 / 004 暂停 / 005 无障碍）均为 UI 型**：各含「可测 ViewModel 逻辑（dotnet/EditMode BLOCKING）」+「UXML/USS/Scene 视觉外壳（需 Unity Editor，ADVISORY 截图签核）」。
 - **待决结构**：UI 视觉外壳需在 repo 根建真实 Unity 6.3 项目（Assets/ProjectSettings/Packages）引用 Domain DLL + asmdef 引用 Presentation。建议先把 002–005 的可测 ViewModel 逻辑在 src/Presentation 落地（dotnet 验证），再一次性建 Unity 项目搭全部 UXML 外壳并 batchmode 跑 EditMode 验证。
 - 复用底座：`Presentation`（Projections/Intents/Display + 设计锁反射回归）。
+
+### ▶ EPIC_010 S2–S5 可测 ViewModel 逻辑完成（2026-06-23）
+- **S2 主菜单**：`MainMenuViewModel`（5 态）+ `SaveSlotView`；读档错误态消费 LoadResult。6 测。
+- **S3 HUD**：`HudContextView`（情境→元素集 + 模态隐去）+ `CausalChainView`（跳过终值不变）+ `NotificationFeed`（500ms 合并/临界绕队/并发≤3）。8 测。
+- **S4 暂停**：`PauseMenuViewModel`（5 态 + 保存失败错误态 + 草稿 P9 门控）+ `ContinuationPromptView`（消费 epic-008 OutcomeContinuation，败局仍可继续）。6 测。
+- **S5 无障碍**：`AccessibilitySettings`（校验 + 序列化 round-trip）+ `StatusChannels`（去色冗余）。5 测。
+- **测试累计 370/370 全绿，0 warning**（345 + 25 新；其中含 S1 16）。commit `d51c413`，push tk/main。
+- **各 UI 故事状态**：可测逻辑 BLOCKING 完成；**UXML/USS/Scene 视觉壳待 Unity 项目**（ADVISORY 截图签核）。
+
+### 📌 待决：EPIC_010 视觉壳的 Unity 项目搭建
+- 剩余只差 4 屏的 UXML/USS/Scene + asmdef 引用 Presentation。需在 repo 根建真实 Unity 6.3 项目（Assets/ProjectSettings/Packages）。
+- 验证：batchmode 可编译 asmdef + 跑 EditMode（BLOCKING 编译级）；视觉截图需 graphics 模式（较重）。
+- 结构性改动（reshape repo 根 + CI），待用户拍板再搭。
