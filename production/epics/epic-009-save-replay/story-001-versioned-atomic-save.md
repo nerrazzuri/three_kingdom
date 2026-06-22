@@ -1,12 +1,12 @@
 # Story 001: 版本化 DTO + 原子写 + 迁移链
 
 > **Epic**: 存档与复现
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: L（6h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -28,10 +28,10 @@
 
 ## Acceptance Criteria
 
-- [ ] Domain 快照 ↔ 版本化 DTO 双向映射（经 Infrastructure 端口）
-- [ ] 写入经临时文件 + 原子 rename，失败不破坏现有有效存档
-- [ ] 逆序逐版迁移链：旧版本逐版迁移至当前，只操作副本
-- [ ] 迁移失败保留原存档并返回稳定错误
+- [x] Domain 快照 ↔ 版本化 DTO 双向映射（经 Infrastructure 端口）— `SaveSnapshot` + `ISaveSerializer`/`CanonicalSaveSerializer`（纯 BCL，禁 Unity 序列化）
+- [x] 写入经临时文件 + 原子 rename，失败不破坏现有有效存档 — `SaveRepository.Save`（Write tmp → Move），临时写/改名失败均保留旧档
+- [x] 逆序逐版迁移链：旧版本逐版迁移至当前，只操作副本 — `SaveMigrator`（按 From 唯一链路，快照不可变即副本）
+- [x] 迁移失败保留原存档并返回稳定错误 — 步骤抛错→`MigrationErrorCode.StepFailed`，原快照引用未变；断链→`NoMigrationPath`
 
 ---
 
@@ -69,8 +69,8 @@
 ## Test Evidence
 
 **Story Type**: Integration
-**Required evidence**: `tests/integration/save/versioned_atomic_save_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Persistence/VersionedAtomicSaveTests.cs` — 7 测全通过（归一到唯一可编译测试工程，ADVISORY 偏差）
+**Status**: [x] Passed — 316/316 全绿，`-warnaserror` 0 warning
 
 ---
 
