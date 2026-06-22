@@ -146,3 +146,6 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+# 一次性 Unity batchmode 探针（可删，勿入库）
+tools/_unity_probe/

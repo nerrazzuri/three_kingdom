@@ -26,15 +26,20 @@ Manifest Version: 1 (2026-06-21)
 | [兵法沙盒结算](epic-007-tactics-sandbox/EPIC.md) | Core | 战斗/士气 | gdd-010/011 | 3 stories | ✅ Complete |
 | [后果与可玩失败](epic-008-outcome-consequence/EPIC.md) | Core | 后果结算 | gdd-010 §后果 | 2 stories | ✅ Complete |
 
+## Presentation 层
+
+| Epic | Layer | System | GDD | Stories | Status |
+|------|-------|--------|-----|---------|--------|
+| [Slice UX 与可访问性](epic-010-slice-ux/EPIC.md) | Presentation | Slice UX/无障碍 | design/ux/* + accessibility | 5 stories | Ready |
+
 ## 后续层（未展开）
 
-- **Presentation**：EPIC_010 Slice UX 与可访问性 — UX 规格已就绪（`design/ux/main-menu.md`/`hud.md`/`pause-menu.md`，均 Approved）；待 Core 接近完成后 `/create-epics layer:presentation`。
 - **Feature**：MVP 不含；slice 后按需。
 
 ## 统计
 
-- 9 epics（3 Foundation + 6 Core）、28 stories（12 Foundation + 16 Core）
-- Story 类型分布：Logic 17 / Integration 11
+- 10 epics（3 Foundation + 6 Core + 1 Presentation）；前 9 epics（28 stories）✅ Complete
+- epic-010 Presentation：预期 5 stories（1 Logic 可测表现逻辑 + 4 UI），待 `/create-stories epic-010-slice-ux`
 - 全部 governing ADR 为 Accepted（ADR-0001~0005）；无 Blocked story
 
 ## 下一步
