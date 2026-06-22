@@ -1,12 +1,12 @@
 # Story 001: 城市日界产耗结算与资源守恒
 
 > **Epic**: 城市与后勤
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -76,3 +76,10 @@
 
 - Depends on: epic-001 Story 002/003；epic-002 Story 001（日界顺序）
 - Unlocks: Story 002；epic-007（城市状态约束战斗）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 4/4 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/City/`；消耗夹取用 `min(demand, max(0, stock−FLOOR))` 修正 GDD §Formula 2 字面式凭空补齐边界 bug
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/City/CityDaySettlementTests.cs`（13 测全绿，194/194 总）
+**Code Review**: Complete（APPROVED 含建议）

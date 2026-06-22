@@ -429,3 +429,14 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 验证命令：`dotnet test tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj -warnaserror`
 
 **挂账 guardrail（非阻断）**：GitHub Actions 首次绿待确认；entity-inventory、sprint-01 旧 id 刷新。
+
+## Session Extract — /dev-story 2026-06-22（epic-004 S1）
+- Story: production/epics/epic-004-city-logistics/story-001-city-daily-settlement.md — 城市日界产耗结算与资源守恒
+- 实现方式: inline（lean，沿用本轮节奏）
+- 新增 `src/Domain/City/`：CityId、CityEconomyState（不可变聚合+不变量）、CitySettlementConfig（数据驱动+范围校验）、CityDaySettlementStage(+CanonicalOrder)、CitySettlementResult(+LedgerEntry+ConservationHolds)、CityDaySettlementService（纯函数确定性五阶段结算）
+- 测试 `tests/unit/ThreeKingdom.Domain.Tests/City/CityDaySettlementTests.cs`（13 测）
+- AC: 4/4 覆盖（AC-1 同源库存+移交无双计 / AC-2 稳定顺序 / AC-3 下限夹取不出负 / AC-4 守恒恒等）
+- 测试: 194/194 全绿，0 warning（-warnaserror）
+- 偏差(ADVISORY): 测试路径 tests/unit/city/*.cs → 归一到 ThreeKingdom.Domain.Tests/City/；消耗下限夹取改用 min(demand, max(0, stock−FLOOR)) 修正 GDD 字面 max() 在 stock<FLOOR 时会凭空补齐的边界 bug（更严守「不凭空补齐」）
+- Blockers: None
+- Next: /code-review src/Domain/City/*.cs → /story-done
