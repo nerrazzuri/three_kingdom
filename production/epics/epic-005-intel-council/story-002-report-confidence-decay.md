@@ -1,12 +1,12 @@
 # Story 002: 报告置信/时效/区间与确定性暴露
 
 > **Epic**: 情报与军议
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -77,3 +77,10 @@
 
 - Depends on: Story 001；epic-001 Story 002（随机流）；epic-002 Story 001（时段）
 - Unlocks: Story 003（军师读报告）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 4/4 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/Intel/`；区间半宽用 effective_conf（=可靠性×新鲜度）替 GDD §3 的 conf，以满足 AC-4「区间随时效变宽」（时间维度合成，刻意细化）
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Intel/ReportConfidenceDecayTests.cs`（11 测全绿，240/240 总）
+**Code Review**: Complete（APPROVED）
