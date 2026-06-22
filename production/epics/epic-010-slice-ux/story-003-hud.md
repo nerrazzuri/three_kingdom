@@ -1,7 +1,7 @@
 # Story 003: HUD 五态呈现（不完全信息 + 多维不合并 + 因果链）
 
 > **Epic**: Slice UX 与可访问性
-> **Status**: Ready
+> **Status**: In Progress（可测逻辑 BLOCKING 完成；UXML 视觉壳待 Unity）
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: L（6h）

@@ -1,7 +1,7 @@
 # Story 004: 暂停菜单（原子存档错误态 + 草稿处置 P9 + 失败延续「继续」）
 
 > **Epic**: Slice UX 与可访问性
-> **Status**: Ready
+> **Status**: In Progress（可测逻辑 BLOCKING 完成；UXML 视觉壳待 Unity）
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M（4h）

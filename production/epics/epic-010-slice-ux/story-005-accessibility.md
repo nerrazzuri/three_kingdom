@@ -1,7 +1,7 @@
 # Story 005: 无障碍横切（文本缩放/色盲冗余/减少动态/HUD 可见性持久）
 
 > **Epic**: Slice UX 与可访问性
-> **Status**: Ready
+> **Status**: In Progress（可测逻辑 BLOCKING 完成；UXML 视觉壳待 Unity）
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M（4h）

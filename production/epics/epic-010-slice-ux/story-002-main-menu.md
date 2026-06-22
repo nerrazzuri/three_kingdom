@@ -1,7 +1,7 @@
 # Story 002: 主菜单屏（5 态 + 读档错误态 + 键鼠可达）
 
 > **Epic**: Slice UX 与可访问性
-> **Status**: Ready
+> **Status**: In Progress（可测逻辑 BLOCKING 完成；UXML 视觉壳待 Unity）
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M（4h）
