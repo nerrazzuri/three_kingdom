@@ -1,12 +1,12 @@
 # Story 001: 确定性战役解析管线与状态哈希
 
 > **Epic**: 兵法沙盒结算
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L（6h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -79,3 +79,10 @@
 
 - Depends on: epic-001 Story 002；epic-002 Story 002（时段）；epic-006（CommittedPlan）
 - Unlocks: Story 002, 003；epic-008（后果）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 4/4 passing（slice 回归基线以新正式测试覆盖哈希复现/突然性/回滚）
+**Deviations**: ADVISORY — 测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/Battle/`；士气/触发/撤退步为占位（士气步读 GDD_011 只读，触发/撤退链由 S2 承接）
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Battle/DeterministicPipelineTests.cs`（7 测全绿，275/275 总）
+**Code Review**: Complete（APPROVED）
