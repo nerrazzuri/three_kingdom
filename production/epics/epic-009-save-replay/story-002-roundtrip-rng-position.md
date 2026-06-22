@@ -1,12 +1,12 @@
 # Story 002: Round-trip 一致性与随机流位置保存
 
 > **Epic**: 存档与复现
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -27,10 +27,10 @@
 
 ## Acceptance Criteria
 
-- [ ] load(save(s)) 的状态哈希 ≡ s 的状态哈希（epic-001 哈希底座）
-- [ ] 随机流位置随档保存；读档后续抽取与未存档继续一致
-- [ ] round-trip 后行动耗时/期限事件序列一致（TR-time-003）
-- [ ] 在途外援/在途行动 round-trip 后存活（slice 已验证此类）
+- [x] load(save(s)) 的状态哈希 ≡ s 的状态哈希（epic-001 哈希底座）— `SaveSnapshot.ComputeHash` 经 save→medium→load 不变
+- [x] 随机流位置随档保存；读档后续抽取与未存档继续一致 — `RngStreamState.Capture/Rebuild`，续抽逐项匹配未存档流
+- [x] round-trip 后行动耗时/期限事件序列一致（TR-time-003）— rebuilt 流 NextInt 序列与 live 流逐项一致
+- [x] 在途外援/在途行动 round-trip 后存活（slice 已验证此类）— `inflight.*` 真值字段 round-trip 后存活，空集合边界亦通过
 
 ---
 
@@ -68,8 +68,8 @@
 ## Test Evidence
 
 **Story Type**: Integration
-**Required evidence**: `tests/integration/save/roundtrip_rng_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Persistence/RoundtripRngTests.cs` — 5 测全通过（归一到唯一可编译测试工程，ADVISORY 偏差）
+**Status**: [x] Passed — 321/321 全绿，`-warnaserror` 0 warning
 
 ---
 
