@@ -3,7 +3,7 @@
 > **Layer**: Core
 > **GDD**: design/gdd/gdd-009-battle-preparation.md
 > **Architecture Module**: Domain 计划草稿/承诺模型 + Application 提交校验路径
-> **Status**: Ready
+> **Status**: ✅ Complete（2026-06-22）
 > **Stories**: 见下方 Stories 表
 
 ## Overview
@@ -36,9 +36,9 @@
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | PlanDraft 零副作用与原子提交 | Integration | Ready | ADR-0002 |
+| 001 | PlanDraft 零副作用与原子提交 | Integration | ✅ Complete | ADR-0002 |
 | 002 | 硬冲突校验与 DAG 依赖图 | Logic | ✅ Complete | ADR-0004 |
 
 ## Next Step
 
-`/story-readiness production/epics/epic-006-battle-preparation/story-001-draft-atomic-commit.md` → `/dev-story`
+✅ **Epic 全部 2 story 关闭（2026-06-22）**。DoD 核对：草稿态零副作用有测（草稿操作后 ResourcePool 哈希不变）；提交原子性有测（硬冲突→零部分写入 + 稳定错误码）；循环依赖被检出拒绝（DAG 拓扑）；全部 story 测试通过（18 测）。解锁 epic-007（消费 CommittedPlan）。

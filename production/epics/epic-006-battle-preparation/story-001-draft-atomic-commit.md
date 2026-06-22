@@ -1,12 +1,12 @@
 # Story 001: PlanDraft 零副作用与原子提交
 
 > **Epic**: 战前准备
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -77,3 +77,10 @@
 
 - Depends on: epic-003 Story 002（权限）；epic-004（资源）
 - Unlocks: Story 002；epic-007（消费 CommittedPlan）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 4/4 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/Preparation/`；权威 state 以 `ResourcePool`（StateHasher 哈希）建模以证草稿零副作用
+**Test Evidence**: Integration — `tests/unit/ThreeKingdom.Domain.Tests/Preparation/DraftAtomicCommitTests.cs`（6 测全绿，268/268 总）
+**Code Review**: Complete（APPROVED）

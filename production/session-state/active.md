@@ -467,3 +467,13 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **▶ 下一模块候选**（见 `production/epics/index.md`）：epic-006 战前准备（gdd-009，2 story，依赖 epic-005）/ epic-007 兵法沙盒结算（gdd-010/011，依赖 epic-004 supply 事件 + epic-006）/ epic-008 后果 / epic-009 存档（Foundation，S3 现已解锁）。
 - **复用底座新增**：`City`、`Supply`、`Diplomacy`、`Intel`（四层+评估+暴露）、`Council`（条件化建议）。
 - 红线与 lean 链路同前。验证：`dotnet test tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj -warnaserror`。
+
+## ✅ epic-006 战前准备 — 全部 2 story 完成（2026-06-22 连续会话）
+- **S2 硬冲突校验与 DAG 依赖图**（GDD_009/ADR-0004，Logic）：`src/Domain/Preparation/`（OrderId/ResourceKey、TimeWindow、PreparedOrder、PreparationContext、PreparationConfig、PlanValidationResult、PlanValidator）。五类硬冲突聚合 + Kahn 拓扑检环 + 错误/风险区分。12 测。commit 见下（先于 S1，依赖方向）。
+- **S1 PlanDraft 零副作用与原子提交**（GDD_009/ADR-0002，Integration）：ResourcePool（StateHasher 哈希）、PlanDraft、CommittedPlan、SubmitPlanResult、PlanCommitService。草稿零副作用（哈希不变）、提交全有或全无、失败稳定错误码零部分写入。6 测。commit 见下。
+- **测试累计 268/268 全绿，0 warning**（181 基线 + 87 新增：E4 40 + E5 29 + E6 18）。
+
+### 📌 接续交接
+- **已完成并 push tk/main**：epic-001/002/003/004/005/006 全关闭。
+- **▶ 下一模块候选**：epic-007 兵法沙盒结算（gdd-010/011，3 story，依赖 epic-004 supply 事件 + epic-006 CommittedPlan）/ epic-008 后果 / epic-009 存档（Foundation，S3 已解锁）。
+- **复用底座新增**：`Preparation`（计划草稿/校验/原子提交）。
