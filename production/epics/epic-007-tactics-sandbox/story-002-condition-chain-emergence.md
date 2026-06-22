@@ -1,12 +1,12 @@
 # Story 002: 条件链涌现与复盘标签（无无条件按钮）
 
 > **Epic**: 兵法沙盒结算
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L（6h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -78,3 +78,10 @@
 
 - Depends on: Story 001（管线）；epic-004 Story 002（断粮）；epic-005（情报/军师）
 - Unlocks: epic-008（后果写回）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 5/5 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/Battle/`；复盘上下文 RetrospectiveContext 抽象可观察条件集，调用方从 S1 解析/断粮/侦测汇集
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Battle/ConditionChainEmergenceTests.cs`（10 测全绿，285/285 总）
+**Code Review**: Complete（APPROVED）
