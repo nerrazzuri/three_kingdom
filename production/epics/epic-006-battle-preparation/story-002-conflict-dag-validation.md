@@ -1,12 +1,12 @@
 # Story 002: 硬冲突校验与 DAG 依赖图
 
 > **Epic**: 战前准备
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -76,3 +76,10 @@
 
 - Depends on: epic-002 Story 004（可达）；epic-003 Story 002（权限）
 - Unlocks: Story 001（提交调用校验）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 4/4 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/Preparation/`；按依赖方向先于 Story 001 实现（S2 校验器被 S1 提交消费）
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Preparation/ConflictDagValidationTests.cs`（12 测全绿，268/268 总）
+**Code Review**: Complete（APPROVED）

@@ -37,7 +37,7 @@
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | PlanDraft 零副作用与原子提交 | Integration | Ready | ADR-0002 |
-| 002 | 硬冲突校验与 DAG 依赖图 | Logic | Ready | ADR-0004 |
+| 002 | 硬冲突校验与 DAG 依赖图 | Logic | ✅ Complete | ADR-0004 |
 
 ## Next Step
 
