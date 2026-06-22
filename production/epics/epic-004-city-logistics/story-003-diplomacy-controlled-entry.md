@@ -1,12 +1,12 @@
 # Story 003: 外交受控入口（求援/求粮/求时限，§8）
 
 > **Epic**: 城市与后勤
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -79,3 +79,10 @@
 
 - Depends on: Story 002（补给库存）；epic-002 Story 001（时间）
 - Unlocks: epic-007（守城待变链消费外交输入）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 6/6 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径 `tests/integration/supply/*.cs` → 归一到唯一可编译工程 `tests/unit/ThreeKingdom.Domain.Tests/Diplomacy/`（自动化集成风格测试）
+**Test Evidence**: Integration — `tests/unit/ThreeKingdom.Domain.Tests/Diplomacy/DiplomacyControlledEntryTests.cs`（14 测全绿，221/221 总）
+**Code Review**: Complete（APPROVED）

@@ -3,7 +3,7 @@
 > **Layer**: Core
 > **GDD**: design/gdd/gdd-004-city-economy.md · gdd-012-logistics-supply.md（含 §8 外交受控入口）
 > **Architecture Module**: Domain 城市政治 + 军队后勤权威模型（资源守恒）
-> **Status**: Ready
+> **Status**: ✅ Complete（2026-06-22）
 > **Stories**: 见下方 Stories 表
 
 ## Overview
@@ -41,8 +41,8 @@
 |---|-------|------|--------|-----|
 | 001 | 城市日界产耗结算与资源守恒 | Logic | ✅ Complete | ADR-0004 |
 | 002 | 三持有者补给守恒与路线断粮传导 | Logic | ✅ Complete | ADR-0004 |
-| 003 | 外交受控入口（求援/求粮/求时限，§8） | Integration | Ready | ADR-0002 |
+| 003 | 外交受控入口（求援/求粮/求时限，§8） | Integration | ✅ Complete | ADR-0002 |
 
 ## Next Step
 
-`/story-readiness production/epics/epic-004-city-logistics/story-001-city-daily-settlement.md` → `/dev-story`
+✅ **Epic 全部 3 story 关闭（2026-06-22）**。DoD 核对：资源守恒恒等有测（S1 ConservationHolds / S2 GrandTotal）；断粮单一权威（012 发 SupplyCutoffEvent / 011 待消费 / 010 只读）；日界全局顺序遵守（City 五阶段嵌入 DayBoundaryStage.City）；全部 Logic/Integration story 在测试工程有通过测试（40 测）。下一模块见 epics/index.md。

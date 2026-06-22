@@ -440,3 +440,17 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 偏差(ADVISORY): 测试路径 tests/unit/city/*.cs → 归一到 ThreeKingdom.Domain.Tests/City/；消耗下限夹取改用 min(demand, max(0, stock−FLOOR)) 修正 GDD 字面 max() 在 stock<FLOOR 时会凭空补齐的边界 bug（更严守「不凭空补齐」）
 - Blockers: None
 - Next: /code-review src/Domain/City/*.cs → /story-done
+
+## ✅ epic-004 城市与后勤 — 全部 3 story 完成（2026-06-22 连续会话）
+- **S1 城市日界产耗结算与资源守恒**（GDD_004/ADR-0004+0003）：`src/Domain/City/`（CityEconomyState、CitySettlementConfig、CityDaySettlementStage 五阶段固定顺序、CitySettlementResult+ConservationHolds、CityDaySettlementService 纯函数）。13 测。commit `96b90eb`。
+- **S2 三持有者补给守恒与路线断粮传导**（GDD_012/ADR-0004）：`src/Domain/Supply/`（SupplyChainState GrandTotal 守恒、SupplyConfig、RouteSupplyLink 拓扑切断派生非按钮、SupplyCutoffEvent 单一权威只发事件、SupplySettlementService 逐时段先携行后交付）。13 测。commit `e9c8d37`。
+- **S3 外交受控入口（求援/求粮/求时限 §8）**（GDD_012 §8/ADR-0002+0004，Integration）：`src/Domain/Diplomacy/`（DiplomaticRequest/Pledge/Outcome、DiplomacyConfig、DiplomacyService Evaluate+Resolve+ApplyFulfilledSupply）。延迟交付非即到、可背约失败、代价不返还、交付守恒、随机流仅兑现检查点消费。14 测。commit 见下。
+- **测试累计 221/221 全绿，`-warnaserror` 0 warning**（181 基线 + 40 新增）。
+- 每 story 走完整 readiness→dev-story→code-review(APPROVED)→story-done(COMPLETE WITH NOTES)→commit+push tk/main。
+- **共性偏差（ADVISORY）**：测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/<模块>/`；S1 消耗夹取 `min(demand, max(0, stock−FLOOR))` 修正 GDD 字面式边界 bug。
+
+### 📌 epic-004 收尾交接 — 新会话从此处接续
+- **已完成并 push tk/main**：epic-001/002/003/004 全关闭；本会话 epic-004 三提交 `96b90eb e9c8d37` + S3（待本次 commit）。
+- **▶ 下一模块**：见 `production/epics/index.md`（epic-005~009 Core/Foundation 余项）。沿用 lean 链路与红线（Domain 纯 C# 禁 UnityEngine、权威路径禁 float、确定性、数据驱动、构造校验无部分写入）。
+- **复用底座新增**：`City`（日界结算）、`Supply`（三持有者守恒+断粮事件）、`Diplomacy`（受控外交入口）。
+- **挂账 guardrail（非阻断）**：GitHub Actions 首次绿待确认；entity-inventory、sprint-01 旧 id 刷新。
