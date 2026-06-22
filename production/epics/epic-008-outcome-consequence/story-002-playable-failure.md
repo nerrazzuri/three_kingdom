@@ -1,12 +1,12 @@
 # Story 002: 可玩失败延续（撤退/失城/问责分支）
 
 > **Epic**: 后果与可玩失败
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -27,10 +27,10 @@
 
 ## Acceptance Criteria
 
-- [ ] 胜/败/撤退/失城均为分支结算（非单一胜负开关）
-- [ ] 战败延续至少提供撤退 / 失城 / 问责一条可继续路径
-- [ ] 失败后世界状态完整可继续（非空白界面，对齐 art-bible §2.5「尚有余地」）
-- [ ] 败局后存在至少一条合法可继续命令（自动化断言）
+- [x] 胜/败/撤退/失城均为分支结算（非单一胜负开关）— `OutcomeBranch` 四分支，`FailureContinuationService.Resolve` 各生成不同变更集
+- [x] 战败延续至少提供撤退 / 失城 / 问责一条可继续路径 — 通用兜底 Regroup+Accountability，分支特有 Retreat/SueForPeace
+- [x] 失败后世界状态完整可继续（非空白界面，对齐 art-bible §2.5「尚有余地」）— 写回成功且 `IsPlayable`，损失上限夹取不写负
+- [x] 败局后存在至少一条合法可继续命令（自动化断言）— `OutcomeContinuation` 构造断言 Options 非空 + `HasPlayableContinuation`
 
 ---
 
@@ -68,8 +68,8 @@
 ## Test Evidence
 
 **Story Type**: Integration
-**Required evidence**: `tests/integration/outcome/playable_failure_test.cs` — 须存在并通过
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Outcome/PlayableFailureTests.cs` — 7 测全通过（归一到唯一可编译测试工程，ADVISORY 偏差）
+**Status**: [x] Passed — 309/309 全绿，`-warnaserror` 0 warning
 
 ---
 

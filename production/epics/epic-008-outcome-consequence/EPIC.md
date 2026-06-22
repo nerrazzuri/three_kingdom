@@ -3,7 +3,7 @@
 > **Layer**: Core
 > **GDD**: design/gdd/gdd-010-battle-tactics-sandbox.md（§后果/复盘）+ systems-index「后果结算」权威契约（跨 004/005/006/012）
 > **Architecture Module**: Domain 后果结算（跨系统变更集 → 校验 → 原子写回）
-> **Status**: Ready
+> **Status**: ✅ Complete（2026-06-22）
 > **Stories**: 见下方 Stories 表
 
 ## Overview
@@ -42,7 +42,7 @@
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | 跨系统变更集校验与原子写回 | Integration | ✅ Complete | ADR-0004 |
-| 002 | 可玩失败延续（撤退/失城/问责分支） | Integration | Ready | ADR-0002 |
+| 002 | 可玩失败延续（撤退/失城/问责分支） | Integration | ✅ Complete | ADR-0002 |
 
 ## Next Step
 
