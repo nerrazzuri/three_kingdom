@@ -406,6 +406,26 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **S3 方向性多维关系**（GDD_006/ADR-0004）：`src/Domain/Relationships/`（RelationshipState 四维方向性+事件幂等、CooperationEvaluator coop_score、AuthorityGrant 有效性）。commit 见下。
 - **测试累计 181/181 全绿，0 warning**。
 
-### ▶ 下一入口
-- epic-001、epic-002、epic-003 均关闭。下一模块 **epic-004-city-logistics**（城市与后勤），待新指令启动。
-- 自主远程任务（epic-001 S3/S4 + epic-002 全 5 + epic-003 全 3）已完成；用户「继续」推进至 epic-003。
+### 📌 会话收尾交接（2026-06-22）— 新会话从此处接续
+
+**已完成并全部 push tk/main（本地 HEAD = tk/main = `14f60ce`，工作区干净）**：
+- epic-001（S1–S4）✅ 关闭 · epic-002（S1–S5）✅ 关闭 · epic-003（S1–S3）✅ 关闭
+- 全套测试 **181/181 全绿，`-warnaserror` 0 warning**
+- 自主任务 10 提交：`cc4605d ae34330`（E1 S3/S4）· `c595be5 a1cb999 027bcf4 98f259f 0f79e6b`（E2 S1–S5）· `36f0e72 17f7adc 14f60ce`（E3 S1–S3）
+
+**▶ 下一模块：epic-004-city-logistics（城市与后勤）** — 尚未动工（仅读过 GDD_004，无代码）
+- 入口：`/story-readiness production/epics/epic-004-city-logistics/story-001-city-daily-settlement.md` → `/dev-story`
+- 3 个 story：
+  1. S1 城市日界产耗结算与资源守恒（Logic, ADR-0004；GDD_004：守恒恒等、日界顺序 承诺→产入→消耗→短缺后果→工事/治安、stock≥FLOOR、军粮移交后勤不双计）
+  2. S2 三持有者补给守恒与路线断粮传导（Logic, ADR-0004；GDD_012）
+  3. S3 外交受控入口 求援/求粮/求时限（Integration, ADR-0002；GDD_012 §8）
+
+**接续约定（沿用本轮节奏，lean 模式）**：
+- 每 story 链路：`/story-readiness → /dev-story → /code-review(须 APPROVED) → /story-done → commit+push tk/main`
+- 新增 .cs 落 `src/Domain/<模块>/`；测试落 `tests/unit/ThreeKingdom.Domain.Tests/<模块>/`（故事里写的 `tests/unit/<sys>/` 等路径需归一到此唯一可编译测试工程 —— 共性 ADVISORY 偏差）
+- 红线：Domain 纯 C# 无 UnityEngine；权威路径禁 float（用 `FixedPoint` Q16.16 / 整数）；确定性同输入同结果；平衡值数据驱动不硬编码；构造校验不变量、失败无部分写入
+- 复用底座：`Numerics`（FixedPoint/DeterministicRandom/StateHasher）、`Time`（WorldTime/日界编排）、`Configuration`、`Map`、`Characters`、`Relationships`
+- 提交信息体含 `Story: EPIC-004-S0X` + CLAUDE.md 要求的 Co-Authored-By / Claude-Session 尾注；push 目标 remote `tk`（nerrazzuri/three_kingdom），非 origin
+- 验证命令：`dotnet test tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj -warnaserror`
+
+**挂账 guardrail（非阻断）**：GitHub Actions 首次绿待确认；entity-inventory、sprint-01 旧 id 刷新。
