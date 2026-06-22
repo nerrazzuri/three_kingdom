@@ -5,9 +5,9 @@
 > **审查模式**：lean
 
 <!-- STATUS -->
-Epic: Foundation 实现（epic-001 项目与 Domain 基础）
-Feature: Domain 内核底座
-Task: ✅S1 Domain 测试边界 / ✅S2 定点+确定随机流+状态哈希（30/30 绿，push ed1ba8a）｜下一步 ▶ S3 版本化配置加载与校验（ADR-0003）
+Epic: ★ 全部 9 epics（28 stories）✅ Complete（2026-06-22）
+Feature: Domain 四层内核 + 后果结算 + 存档/复现底座
+Task: 329/329 全绿 0 warning，全推 tk/main（HEAD=c470fd1）｜下一阶段 ▶ Presentation EPIC_010 或 Unity 表现层切片重验幻想
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）
@@ -488,3 +488,19 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **已完成并 push tk/main**：epic-001~007 全关闭。
 - **▶ 下一模块候选**：epic-008 后果与可玩失败（gdd-010 §后果，2 story，依赖 epic-007）/ epic-009 存档与复现（Foundation，3 story，S3 已由 epic-005 解锁）。
 - **复用底座新增**：`Battle`（确定性管线+复盘标签）、`Cohesion`（士气三维）。
+
+## ✅ epic-008 后果与可玩失败 — 全部 2 story 完成（2026-06-22 连续会话）
+- **S1 跨系统变更集校验与原子写回**（gdd-010 §后果/ADR-0004+0002，Integration）：`src/Domain/Outcome/`（OutcomeChange/ConsequenceSet 意图、OutcomeWorld 四类权威状态不可变快照+确定性 ComputeHash、OutcomeWritebackService 聚合校验→任一失败整批回滚零部分写入→全通过原子构造新快照）。守恒分组净额=0、各权威系统独占写（城市 With/关系刻度 clamp/名声带符号/人物非负）。8 测。commit `965ecb7`。
+- **S2 可玩失败延续分支**（ADR-0002+强制设计锁，Integration）：OutcomeBranch 胜/撤退/失城/败北四分支、FailureContinuationService 各生成不同变更集共用 S1 写回、OutcomeConsequenceConfig 数据驱动损失（按当前值上限夹取不写负）、OutcomeContinuation 构造断言 Options 非空（败局不切死局，极端失城+主将被俘仍可问责/重整）。7 测。commit `d161f43`。
+
+## ✅ epic-009 存档与复现 — 全部 3 story 完成（2026-06-22 连续会话）
+- **S1 版本化 DTO + 原子写 + 迁移链**（ADR-0005，Integration）：`src/Domain/Persistence/`（SaveSnapshot 版本+指纹+随机流位置+真值/知识分段、RngStreamState Capture/Rebuild、ISaveSerializer+CanonicalSaveSerializer 纯 BCL 确定性文本编解码禁 Unity、ISaveMedium+SaveRepository 临时写→原子改名失败保留旧档、ISaveMigration+SaveMigrator 逐版迁移只操作不可变副本失败保留原档）。7 测。commit `b1307c1`。
+- **S2 Round-trip 一致性与随机流位置**（ADR-0005+0004，Integration）：load(save(s)) 经介质往返哈希≡s、(seed,position) 读档续抽与未存档逐项一致不重抽、事件序一致、在途外援/空集合存活。5 测。commit `0256947`。
+- **S3 加载校验与不兼容拒绝**（ADR-0005+TR-intel-003，Logic）：SaveLoadService 顺序校验（结构→版本→指纹→迁移），不兼容/指纹不符/损坏拒绝零部分载入、纯函数零副作用、LoadResult.Reason 可行动原因、真值/知识不交叉污染（知识段缺失拒绝非真值回填）。8 测。commit `c470fd1`（关闭 epic-009）。
+- **测试累计 329/329 全绿，`-warnaserror` 0 warning**（294 基线 + 35 新增：E8 15 + E9 20）。
+
+### 📌 全部 epic 收尾
+- **已完成并 push tk/main**（HEAD=`c470fd1`）：epic-001~009 全 9 epics（28 stories）✅ 关闭。
+- **复用底座新增**：`Outcome`（跨系统原子写回 + 可玩失败延续）、`Persistence`（版本化存档 + 原子写 + 迁移链 + round-trip + 加载校验）。
+- **▶ 下一阶段候选**：Presentation 层 EPIC_010（Slice UX，规格已 Approved）→ `/create-epics layer:presentation`；或 Unity 表现层垂直切片重验核心幻想（CD-C3/TD CONCERNS 未实证）。
+- **挂账 guardrail（非阻断）**：GitHub Actions 首次绿待确认；entity-inventory、sprint-01 旧 id 刷新。
