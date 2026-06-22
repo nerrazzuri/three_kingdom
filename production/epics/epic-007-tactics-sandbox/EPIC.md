@@ -3,7 +3,7 @@
 > **Layer**: Core
 > **GDD**: design/gdd/gdd-010-battle-tactics-sandbox.md · gdd-011-morale-fatigue.md
 > **Architecture Module**: Domain 确定性战役解析管线 + 士气/疲劳/军纪模型
-> **Status**: Ready
+> **Status**: ✅ Complete（2026-06-22）
 > **Stories**: 见下方 Stories 表
 
 ## Overview
@@ -42,8 +42,8 @@
 |---|-------|------|--------|-----|
 | 001 | 确定性战役解析管线与状态哈希 | Logic | ✅ Complete | ADR-0004 |
 | 002 | 条件链涌现与复盘标签（无无条件按钮） | Logic | ✅ Complete | ADR-0004 |
-| 003 | 士气/疲劳/军纪三维与阈值检查 | Logic | Ready | ADR-0004 |
+| 003 | 士气/疲劳/军纪三维与阈值检查 | Logic | ✅ Complete | ADR-0004 |
 
 ## Next Step
 
-`/story-readiness production/epics/epic-007-tactics-sandbox/story-001-deterministic-pipeline.md` → `/dev-story`
+✅ **Epic 全部 3 story 关闭（2026-06-22）**。DoD 核对：状态哈希复现有测（同种子同哈希/乱序稳定/不同种子不同）；无条件按钮负向测试（缺前置不涌现 + 反射无执行方法）；管线异常原子回滚有测；士气三维独立 + 幂等 + 多输入阈值 + 人数加权有测（26 测）。解锁 epic-008（后果写回）。

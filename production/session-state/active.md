@@ -477,3 +477,14 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **已完成并 push tk/main**：epic-001/002/003/004/005/006 全关闭。
 - **▶ 下一模块候选**：epic-007 兵法沙盒结算（gdd-010/011，3 story，依赖 epic-004 supply 事件 + epic-006 CommittedPlan）/ epic-008 后果 / epic-009 存档（Foundation，S3 已解锁）。
 - **复用底座新增**：`Preparation`（计划草稿/校验/原子提交）。
+
+## ✅ epic-007 兵法沙盒结算 — 全部 3 story 完成（2026-06-22 连续会话）
+- **S1 确定性战役解析管线与状态哈希**（GDD_010/ADR-0004，Logic）：`src/Domain/Battle/`（BattleUnitState、八步管线 BattleResolver、CombatMath 有效战斗力/突然性/伤亡、DetectionState、状态哈希、原子回滚）。7 测。commit `cb...`（见 git log）。
+- **S2 条件链涌现与复盘标签**（GDD_010/ADR-0004，Logic）：TacticTag/TacticCondition、TacticChainConfig（slice 三链+夜袭）、RetrospectiveContext、TacticRecognizer（事后打标签、反射断言无执行按钮）。10 测。
+- **S3 士气/疲劳/军纪三维与阈值检查**（GDD_011/ADR-0004，Logic）：`src/Domain/Cohesion/`（CohesionState 三维独立、MoraleEvent 幂等聚合、多输入阈值 Steady/Wavering/Routed、人数加权 Merge、ApplySupplyCutoff 消费 epic-004 SupplyCutoffEvent 单一施加）。9 测。
+- **测试累计 294/294 全绿，0 warning**（181 基线 + 113 新增：E4 40 + E5 29 + E6 18 + E7 26）。
+
+### 📌 接续交接
+- **已完成并 push tk/main**：epic-001~007 全关闭。
+- **▶ 下一模块候选**：epic-008 后果与可玩失败（gdd-010 §后果，2 story，依赖 epic-007）/ epic-009 存档与复现（Foundation，3 story，S3 已由 epic-005 解锁）。
+- **复用底座新增**：`Battle`（确定性管线+复盘标签）、`Cohesion`（士气三维）。

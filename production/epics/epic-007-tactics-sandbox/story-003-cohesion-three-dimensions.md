@@ -1,12 +1,12 @@
 # Story 003: 士气/疲劳/军纪三维与阈值检查
 
 > **Epic**: 兵法沙盒结算
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-22
 
 ## Context
 
@@ -78,3 +78,10 @@
 
 - Depends on: Story 001；epic-004 Story 002（断粮事件）
 - Unlocks: Story 002（链消费士气）；epic-008（士气后果）
+
+## Completion Notes
+**Completed**: 2026-06-22
+**Criteria**: 5/5 passing（无 deferred）
+**Deviations**: ADVISORY — 测试路径归一到 `tests/unit/ThreeKingdom.Domain.Tests/Cohesion/`；阈值结果用 Steady/Wavering/Routed 三态表达多输入判定
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Cohesion/CohesionThreeDimensionTests.cs`（9 测全绿，294/294 总）
+**Code Review**: Complete（APPROVED）
