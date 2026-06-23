@@ -5,9 +5,9 @@
 > **审查模式**：lean
 
 <!-- STATUS -->
-Epic: ✅ EPIC_010 Complete（全 10 epics）｜▶ 竖切：Application 层 + Unity 真实驱动一局
+Epic: ✅ EPIC_010 Complete（全 10 epics）｜✅ 竖切：Application 层 + Unity 真实驱动一局（Play 签核通过）
 Feature: src/Application 会话层 + Unity 端到端竖切（MainMenu 新游戏→HUD 真实世界状态→推进时段）
-Task: 新建 src/Application（GameSession/WorldStatusProjection/SessionService）+ WorldStatusView（Presentation）；dotnet 390/390 绿（+11）；Unity 壳接线 batchmode 编译干净；三 DLL 桥重建含 Application｜待 commit｜下一步 ▶ 用户 Play 实测（新游戏→HUD→推进时段，跨日提示）
+Task: 竖切完成并 push tk/main（92c9094）。✅ 用户 Play 签核：新游戏→HUD「第1日·黎明」、推进时段走时辰、第4次跨「第2日」带跨日提示，三项全有。dotnet 390/390 绿。CD-C3/TD「接缝在表现层未实证」悬案闭合｜下一步 ▶ 用户定方向（沿同一接缝复制其余命令 / 里程碑回顾 / 其他）
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）
