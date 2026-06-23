@@ -1,0 +1,29 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- HUD 视觉壳（design/ux/hud.md §3/§4；绑定 HudContextView。中央 40% 不放常驻面板） -->
+    <ui:VisualElement name="hud-root" class="hud-root">
+        <ui:VisualElement name="time-bar" class="hud-top">
+            <ui:Label name="time-bar-label" text="时辰" />
+        </ui:VisualElement>
+        <ui:VisualElement name="hud-left" class="hud-left">
+            <ui:VisualElement name="own-ledger" class="card">
+                <ui:Label text="己方账本" class="card-title" />
+            </ui:VisualElement>
+            <ui:VisualElement name="advisor-entry" class="card">
+                <ui:Label text="军师" class="card-title" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="hud-right" class="hud-right">
+            <ui:VisualElement name="enemy-report" class="card">
+                <ui:Label text="敌情探报" class="card-title" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="hud-bottom" class="hud-bottom">
+            <ui:VisualElement name="command-tray" class="tray">
+                <ui:Label text="命令" class="card-title" />
+            </ui:VisualElement>
+            <ui:VisualElement name="outcome-chain" class="tray">
+                <ui:Label text="战果因果链" class="card-title" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

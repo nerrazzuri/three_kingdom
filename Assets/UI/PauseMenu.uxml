@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 暂停菜单视觉壳（design/ux/pause-menu.md §5；绑定 PauseMenuViewModel。背景暗化静止） -->
+    <ui:VisualElement name="dim" class="pause-dim">
+        <ui:VisualElement name="panel" class="pause-panel">
+            <ui:Label name="pause-title" text="暂停" class="pause-title" />
+            <ui:Button name="resume" text="继续游戏" class="pause-button" />
+            <ui:Button name="save" text="保存" class="pause-button" />
+            <ui:Button name="load" text="读取" class="pause-button" />
+            <ui:Button name="settings" text="设置" class="pause-button" />
+            <ui:Button name="quit" text="退出到主菜单" class="pause-button" />
+            <ui:Label name="draft-prompt" class="draft-prompt" />
+            <ui:Label name="save-error" class="error" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

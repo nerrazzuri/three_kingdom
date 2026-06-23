@@ -1,0 +1,39 @@
+/* 暂停菜单样式（占位）。背景暗化 60% 且静止。 */
+.pause-dim {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(20, 18, 15, 0.6); /* 暗化 60% */
+}
+
+.pause-panel {
+    width: 360px;
+    padding: 24px;
+    background-color: rgb(229, 226, 216);
+    align-items: stretch;
+}
+
+.pause-title {
+    font-size: 28px;
+    color: rgb(45, 42, 36);
+    margin-bottom: 20px;
+    -unity-text-align: middle-center;
+}
+
+.pause-button {
+    height: 44px;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.draft-prompt {
+    margin-top: 12px;
+    color: rgb(120, 90, 30);
+    white-space: normal;
+}
+
+.error {
+    margin-top: 12px;
+    color: rgb(150, 40, 30);
+    white-space: normal;
+}

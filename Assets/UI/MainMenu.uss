@@ -1,0 +1,37 @@
+/* 主菜单样式（art-bible 色彩锚：宣纸白/山水墨/朱批朱红；占位，非最终美术） */
+.menu-root {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(229, 226, 216); /* 宣纸白 H35S12L90 占位 */
+}
+
+.title {
+    font-size: 42px;
+    color: rgb(45, 42, 36); /* 山水墨 */
+    margin-bottom: 32px;
+    -unity-text-align: middle-center;
+}
+
+.actions {
+    width: 320px;
+}
+
+.menu-button {
+    height: 48px;
+    margin-bottom: 12px;
+    font-size: 20px;
+}
+
+.slot-version {
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgb(90, 86, 78);
+}
+
+.error {
+    margin-top: 16px;
+    color: rgb(150, 40, 30); /* 朱批朱红 */
+    white-space: normal;
+    max-width: 480px;
+}

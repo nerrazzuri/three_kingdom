@@ -1,0 +1,59 @@
+/* HUD 样式（占位；art-bible §3 五态光照后续）。中央留空，信息靠边。 */
+.hud-root {
+    flex-grow: 1;
+}
+
+.hud-top {
+    height: 40px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 16px;
+    background-color: rgba(45, 42, 36, 0.85);
+}
+
+.hud-top Label {
+    color: rgb(229, 226, 216);
+}
+
+.hud-left {
+    position: absolute;
+    left: 12px;
+    top: 56px;
+    width: 240px;
+}
+
+.hud-right {
+    position: absolute;
+    right: 12px;
+    top: 56px;
+    width: 240px;
+}
+
+.hud-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 12px;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.card {
+    margin-bottom: 10px;
+    padding: 8px;
+    background-color: rgba(229, 226, 216, 0.92);
+    border-left-width: 3px;
+    border-left-color: rgb(150, 40, 30);
+}
+
+.tray {
+    margin-left: 8px;
+    margin-right: 8px;
+    padding: 8px 16px;
+    background-color: rgba(229, 226, 216, 0.92);
+}
+
+.card-title {
+    font-size: 14px;
+    color: rgb(45, 42, 36);
+}

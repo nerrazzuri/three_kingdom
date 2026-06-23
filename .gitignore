@@ -37,6 +37,10 @@ dist/
 *.so
 *.dylib
 *.app
+# 例外：Unity 表现层经 Assets/Plugins 引用的权威 Domain/Presentation 构建产物（netstandard2.1）。
+# 这是 dotnet 源（src/）与 Unity 之间的桥；改动 src/ 后须 `dotnet build -c Release` 重建并替换（见 Assets/Plugins/README.md）。
+!Assets/Plugins/ThreeKingdom.Domain.dll
+!Assets/Plugins/ThreeKingdom.Presentation.dll
 
 # === Engine: Godot ===
 .godot/
