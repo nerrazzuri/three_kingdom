@@ -1,0 +1,32 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 无障碍设置视觉壳（design/accessibility-requirements + hud.md §10；绑定 AccessibilitySettingsViewModel）。
+         本屏标签刻意不设固定字号，使「文本缩放」class 可见生效（自我演示）。 -->
+    <ui:VisualElement name="root" class="settings-root">
+        <ui:Style src="AccessibilitySettings.uss" />
+        <ui:Label name="settings-title" text="无障碍设置" class="settings-title" />
+
+        <ui:VisualElement name="row-text-scale" class="settings-row">
+            <ui:Label text="文本缩放" class="settings-label" />
+            <ui:Button name="text-scale-cycle" text="100%" class="settings-value-button" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="row-colorblind" class="settings-row">
+            <ui:Label text="色盲模式" class="settings-label" />
+            <ui:Button name="colorblind-cycle" text="无" class="settings-value-button" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="row-reduce-motion" class="settings-row">
+            <ui:Label text="减少动态" class="settings-label" />
+            <ui:Toggle name="reduce-motion-toggle" />
+        </ui:VisualElement>
+
+        <ui:Label text="HUD 元素可见性" class="settings-subhead" />
+        <ui:VisualElement name="hud-toggles" class="settings-group" />
+
+        <ui:Label name="settings-status" class="settings-status" />
+
+        <ui:VisualElement name="actions" class="settings-actions">
+            <ui:Button name="back" text="返回" class="settings-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

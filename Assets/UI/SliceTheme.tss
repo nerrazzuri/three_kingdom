@@ -1,2 +1,21 @@
 /* Slice 运行时主题：引用 Unity 内置默认运行时主题，使 UXML 控件具备基础皮肤（占位，非最终美术）。 */
 @import url("unity-theme://default");
+
+/* ---- 无障碍：全局可应用的 class（由 AccessibilityApplier 切换到各屏 root）---- */
+
+/* 文本缩放：root 字号百分比，未设固定字号的标签按继承缩放（accessibility-requirements / hud.md §10）。 */
+.text-scale-100 { font-size: 100%; }
+.text-scale-125 { font-size: 125%; }
+.text-scale-150 { font-size: 150%; }
+.text-scale-175 { font-size: 175%; }
+.text-scale-200 { font-size: 200%; }
+
+/* 减少动态：关闭过渡动效；信息字段不依赖动画（无信息丢失，guardrail）。 */
+.reduce-motion { transition-duration: 0s; }
+
+/* 色盲模式占位钩子：量产期在此切换调色板/纹样冗余通道（冗余信号见 Presentation.StatusChannels）。
+   slice 阶段仅保留 class 钩子，不改色（避免与占位美术冲突）。 */
+.cb-none { }
+.cb-protanopia { }
+.cb-deuteranopia { }
+.cb-tritanopia { }

@@ -1,0 +1,65 @@
+/* 无障碍设置样式（art-bible 色彩锚：宣纸白/山水墨/朱批朱红；占位，非最终美术）。
+   关键：本屏标签不设固定 font-size，靠继承，使 text-scale-* 主题 class 在此可见生效。 */
+.settings-root {
+    flex-grow: 1;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding-top: 32px;
+    padding-bottom: 32px;
+    padding-left: 64px;
+    padding-right: 64px;
+    background-color: rgb(229, 226, 216); /* 宣纸白 H35S12L90 占位 */
+}
+
+.settings-title {
+    color: rgb(45, 42, 36); /* 山水墨 */
+    -unity-text-align: middle-center;
+    margin-bottom: 24px;
+    -unity-font-style: bold;
+}
+
+.settings-subhead {
+    color: rgb(45, 42, 36);
+    margin-top: 16px;
+    margin-bottom: 8px;
+    -unity-font-style: bold;
+}
+
+.settings-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 44px;
+    margin-bottom: 6px;
+}
+
+.settings-label {
+    color: rgb(45, 42, 36);
+}
+
+.settings-value-button {
+    min-width: 120px;
+    height: 36px;
+}
+
+.settings-group {
+    flex-direction: column;
+}
+
+.settings-status {
+    margin-top: 16px;
+    color: rgb(150, 40, 30); /* 朱批朱红 */
+    white-space: normal;
+    min-height: 20px;
+}
+
+.settings-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.settings-button {
+    height: 44px;
+    min-width: 120px;
+}

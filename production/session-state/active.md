@@ -7,7 +7,7 @@
 <!-- STATUS -->
 Epic: EPIC_010 Slice UX（前 9 epics 全 ✅ Complete）
 Feature: Presentation 表现层（三屏 + 无障碍）
-Task: 5 story 可测逻辑 dotnet 370/370 绿；三屏 UXML 壳 + 可 Play 场景 batchmode 通过；用户已确认 MainMenu 进 Play OK｜HEAD=baa77d3｜下一步 ▶ (b) S5 无障碍设置面板+挂接 / 三屏视觉签核 / 其余两屏 Play 确认
+Task: S5 无障碍面板+挂接完成 — dotnet 379/379 绿（+9 store/viewmodel）；无障碍 UXML 壳+四屏挂接 batchmode 编译干净；AccessibilitySettings.unity 场景已建（共 4 屏可 Play）｜未 commit，待用户审批｜下一步 ▶ 用户侧 Play/截图签核（ADVISORY）→ commit → EPIC_010 收尾判定
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）
@@ -571,3 +571,34 @@ ADR-0003（数据驱动配置的正式锁定）。
 - `tools/_unity_probe/` 物理文件夹待用户删（`rm -rf` 被权限策略拒）。
 - Assets/Plugins 两 DLL 是 src/ 构建产物桥，改 src/ 须重建（tech-debt：未来可改 UPM 包 asmdef 或 CI dotnet build 注入）。
 - GitHub Actions 首次绿待确认（Unity job license-gated；domain-tests job 无许可应可绿）。
+
+## ▶ EPIC_010 S5 无障碍面板 + 三屏挂接完成（2026-06-23 本会话）
+
+**可测逻辑（BLOCKING，dotnet 379/379 绿，+9 新测）—— 已落 src/Presentation/Accessibility/**：
+- `ISettingsMedium`（命名键读写 + 原子改名原语端口，与存档 ISaveMedium 分离）。
+- `ISettingsStore` + `SettingsStore`（临时键写→原子改名编排，镜像 epic-009 SaveRepository；加载时损坏文本回落默认不砸档，区别于存档拒绝语义）。
+- `AccessibilitySettingsViewModel`（不可变 with 变换：文本缩放循环档位 100/125/150/175/200、色盲设定、减少动态翻转、HUD 元素可见性翻转；persist/load 经 store）。
+- 测试：`AccessibilitySettingsStoreTests`（4：round-trip / 缺失回落 / 损坏回落 / 写失败保留旧 + 临时键清理）+ `AccessibilitySettingsViewModelTests`（5：缩放循环回环 / 变换不可变 / 色盲 / HUD 翻转 / persist-load）。
+
+**Unity 视觉壳（ADVISORY，batchmode 编译干净，227 节点，Assembly-CSharp 产出，无 error CS）—— Assets/UI/**：
+- `AccessibilityRuntime`（进程内单一来源；首访从 store 加载，面板提交即写回刷新 Current；默认 PlayerPrefs 介质）。
+- `AccessibilityApplier`（把设置应用到任一屏 root：text-scale-*/cb-*/reduce-motion 经 USS class + HUD 元素显隐；**与情境可见性复合——只额外隐藏用户关闭的元素，绝不强制显示**）。
+- `AccessibilitySettingsController` + `AccessibilitySettings.uxml/.uss`（自我演示面板：改设置即时应用到本屏）。
+- `PlayerPrefsSettingsMedium`（ISettingsMedium 的 Unity 侧 PlayerPrefs 实现；原子改名经键值搬移）。
+- `SliceTheme.tss` 增全局 class（text-scale 百分比 / reduce-motion 关过渡 / cb-* slice 阶段仅留钩子不改色）。
+- **三屏挂接**：MainMenu/Hud/PauseMenu 的 Controller `OnEnable` 调 `AccessibilityApplier.Apply(root, AccessibilityRuntime.Current)`（HUD 额外含元素可见性复合）。
+- **场景**：`SliceSceneBuilder` 增 AccessibilitySettings 屏 → `Assets/Scenes/AccessibilitySettings.unity` 已建（共 4 屏可 Play，batchmode 生成干净）。
+
+**验证**：dotnet test 379/379 -warnaserror 0 warning；batchmode 编译 exit 0 无 error CS；6 个新 Assets/UI .meta + 1 新场景 + .meta 已生成。
+
+### 🐞 修复：SliceSceneBuilder PanelSettings 引用失效（2026-06-23）
+- **症状**（用户截图 `D:\Projects\三国演义\UI Test\AccessibilitySettings.png`）：AccessibilitySettings 屏进 Editor 只见空天空、UIDocument 报错。
+- **根因**：`BuildAll` 在循环**外**只捕获一次 `PanelSettings panel`；`NewScene(Single)` 每次卸载场景域使该引用在第 2+ 迭代失效 → **只有首屏 MainMenu 序列化到 PanelSettings，其余三屏 m_PanelSettings=None**（不渲染）。上一轮重生连带把 Hud/PauseMenu 也改坏（之前只 Play 过首屏故未暴露）。
+- **修复**：PanelSettings 改为**循环内逐场景 `LoadAssetAtPath` 重新加载** + 非空守卫（`Assets/Editor/SliceSceneBuilder.cs`）。
+- **验证**（Unity 关闭后 batchmode 重生，exit 0 无 error CS）：四屏 m_PanelSettings 均指向 `guid e8806f1c…`；各屏 sourceAsset 指向各自 UXML；Build Settings 4 屏。Hud/PauseMenu/MainMenu.unity 一并修回（git 显示 M）。
+
+**状态**：S5 BLOCKING（可测逻辑 + 编译级壳）完成 + 四屏场景 PanelSettings 修复并验证。
+- **✅ 用户 Play 签核通过（2026-06-23）**：四屏渲染正常 + 按钮可点击 + 功能全测 OK（文本缩放/色盲/减少动态/HUD 可见性即时生效；三屏挂接生效）。视觉+交互 ADVISORY 签核第一步通过。
+- **未 commit，待用户审批入库**。
+**剩余 ADVISORY（用户侧 graphics Editor）**：打开 4 屏进 Play 截图签核（文本 150% 无溢出 / 色盲冗余 / 减少动态生效 / HUD 可见性切换）→ 证据落 production/qa/evidence/ → 各 story In Progress→Complete → EPIC_010 收尾判定。
+**改动文件清单（待 commit）**：M Assets/Plugins/{Domain,Presentation}.dll、Assets/UI/{Hud,MainMenu,PauseMenu}Controller.cs、Assets/UI/SliceTheme.tss、Assets/Editor/SliceSceneBuilder.cs；?? Assets/UI/Accessibility*{.cs,.uss,.uxml}、Assets/UI/PlayerPrefsSettingsMedium.cs、各 .meta、Assets/Scenes/AccessibilitySettings.unity(.meta)、src/Presentation/Accessibility/{ISettingsMedium,SettingsStore,AccessibilitySettingsViewModel}.cs、tests/.../Presentation/AccessibilitySettings{Store,ViewModel}Tests.cs。

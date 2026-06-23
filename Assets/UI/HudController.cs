@@ -27,7 +27,14 @@ namespace ThreeKingdom.Unity.UI
             [HudElement.OutcomeChain] = "outcome-chain",
         };
 
-        private void OnEnable() => Apply(GetComponent<UIDocument>().rootVisualElement);
+        private void OnEnable()
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            Apply(root);
+            // 无障碍横切挂接（story-005）：文本缩放/色盲/减少动态 + HUD 元素可见性。
+            // 复合于情境可见性之上——只额外隐藏用户关闭的元素，不强制显示。
+            AccessibilityApplier.Apply(root, AccessibilityRuntime.Current);
+        }
 
         /// <summary>按当前情境绑定元素可见性（slice 演示入口；运行期由状态驱动）。</summary>
         public void Apply(VisualElement root)

@@ -21,6 +21,9 @@ namespace ThreeKingdom.Unity.UI
             _vm = PauseMenuViewModel.Open(_hasDraft);
             Render(root);
 
+            // 无障碍横切挂接（story-005）：文本缩放/色盲/减少动态。
+            AccessibilityApplier.Apply(root, AccessibilityRuntime.Current);
+
             Wire(root, "quit", () =>
             {
                 _vm = _vm.RequestExitOrLoad();

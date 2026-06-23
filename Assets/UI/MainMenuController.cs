@@ -25,6 +25,9 @@ namespace ThreeKingdom.Unity.UI
             _vm = MainMenuViewModel.FromSlot(SaveSlotView.Empty("campaign"));
             Render(root);
 
+            // 应用当前无障碍设置（文本缩放/色盲/减少动态；story-005 横切挂接）。
+            AccessibilityApplier.Apply(root, AccessibilityRuntime.Current);
+
             Wire(root, "new-game", () => SubmitAndRefresh(root, new NewGameIntent()));
             Wire(root, "continue", () => SubmitAndRefresh(root, new LoadGameIntent("campaign")));
             Wire(root, "quit", () =>
