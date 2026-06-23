@@ -33,19 +33,27 @@ namespace ThreeKingdom.Unity.EditorTools
             new ScreenDef { Name = "MainMenu", Uxml = "Assets/UI/MainMenu.uxml", Controller = typeof(MainMenuController) },
             new ScreenDef { Name = "Hud", Uxml = "Assets/UI/Hud.uxml", Controller = typeof(HudController) },
             new ScreenDef { Name = "PauseMenu", Uxml = "Assets/UI/PauseMenu.uxml", Controller = typeof(PauseMenuController) },
+            // story-005 无障碍设置面板：自我演示屏（改设置即时应用文本缩放/色盲/减少动态到本屏）。
+            new ScreenDef { Name = "AccessibilitySettings", Uxml = "Assets/UI/AccessibilitySettings.uxml", Controller = typeof(AccessibilitySettingsController) },
         };
 
         /// <summary>菜单与 batchmode -executeMethod 共用入口。</summary>
         [MenuItem("三国/构建 Slice 场景")]
         public static void BuildAll()
         {
-            PanelSettings panel = EnsurePanelSettings();
+            EnsurePanelSettings(); // 确保资源存在；引用在循环内逐场景重新加载（见下）
             Directory.CreateDirectory(SceneDir);
 
             var scenePaths = new List<string>();
             foreach (var screen in Screens)
             {
                 var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+
+                // PanelSettings 引用须在每个新场景内重新加载：NewScene(Single) 会卸载场景域，
+                // 循环外捕获的同一引用在后续迭代可能失效（曾致末屏 m_PanelSettings=None 不渲染）。
+                var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath);
+                if (panel == null)
+                    throw new InvalidOperationException($"PanelSettings 缺失：{PanelSettingsPath}（{screen.Name} 将无法渲染）。");
 
                 var go = new GameObject("UI");
                 var doc = go.AddComponent<UIDocument>();
@@ -72,7 +80,7 @@ namespace ThreeKingdom.Unity.EditorTools
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[SliceSceneBuilder] 完成：3 场景 + PanelSettings + Build Settings。");
+            Debug.Log($"[SliceSceneBuilder] 完成：{scenePaths.Count} 场景 + PanelSettings + Build Settings。");
         }
 
         private static PanelSettings EnsurePanelSettings()
