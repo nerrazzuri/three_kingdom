@@ -3,7 +3,7 @@
 > **Layer**: Presentation
 > **GDD**: design/ux/main-menu.md · design/ux/hud.md · design/ux/pause-menu.md（均 Approved）+ design/accessibility-requirements.md + design/ux/interaction-patterns.md
 > **Architecture Module**: Presentation Layer（ADR-0002：MonoBehaviour/UI/输入/Scene；只提交 Command、执行 Query、订阅只读投影，不改核心状态）
-> **Status**: Ready
+> **Status**: ✅ Complete（5/5 stories Done，2026-06-23）
 > **Stories**: 见下方 Stories 表（详见 `/create-stories epic-010-slice-ux`）
 
 ## Overview
@@ -46,10 +46,10 @@ This epic is complete when:
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | 投影→展示模型 + UI 意图→Command 映射底座（可测表现逻辑） | Logic | ✅ Complete | ADR-0002 |
-| 002 | 主菜单屏（新游戏/继续/读档错误态 + 键鼠可达） | UI | 🔶 逻辑✅ + UXML 壳 compile✅ · 视觉签核待 Editor(ADVISORY) | ADR-0002/0005 |
-| 003 | HUD 五态呈现（不完全信息 + 多维不合并 + 因果链） | UI | 🔶 逻辑✅ + UXML 壳 compile✅ · 视觉签核待 Editor(ADVISORY) | ADR-0002/0004 |
-| 004 | 暂停菜单（存档/读档/设置 + 失败延续「继续」契约） | UI | 🔶 逻辑✅ + UXML 壳 compile✅ · 视觉签核待 Editor(ADVISORY) | ADR-0002/0005 |
-| 005 | 无障碍横切（文本缩放/色盲冗余/减少动态/HUD 可见性） | UI | 🔶 逻辑✅ · 屏内 UI 集成待（设置面板未建） | ADR-0002 |
+| 002 | 主菜单屏（新游戏/继续/读档错误态 + 键鼠可达） | UI | ✅ Complete（逻辑✅ + 编译✅ + Play 签核✅） | ADR-0002/0005 |
+| 003 | HUD 五态呈现（不完全信息 + 多维不合并 + 因果链） | UI | ✅ Complete（逻辑✅ + 编译✅ + Play 签核✅） | ADR-0002/0004 |
+| 004 | 暂停菜单（存档/读档/设置 + 失败延续「继续」契约） | UI | ✅ Complete（逻辑✅ + 编译✅ + Play 签核✅） | ADR-0002/0005 |
+| 005 | 无障碍横切（文本缩放/色盲冗余/减少动态/HUD 可见性 + 设置面板 + 三屏挂接） | UI | ✅ Complete（逻辑✅ + 编译✅ + Play 签核✅） | ADR-0002 |
 
 ## Unity 视觉壳进度（2026-06-23）
 
@@ -61,6 +61,18 @@ This epic is complete when:
 
 > 上表为预期分解；以 `/create-stories epic-010-slice-ux` 正式产出为准。
 
-## Next Step
+## 收尾判定（2026-06-23）
 
-Run `/create-stories epic-010-slice-ux` to break this epic into implementable stories.
+**裁定：✅ EPIC_010 Complete。** Definition of Done 逐条核对：
+
+- ✅ 5/5 stories 关闭（001 早闭；002–005 本会话 Complete）。
+- ✅ 可测表现逻辑（投影→展示模型、UI 意图→Command、各屏 ViewModel、无障碍设置/持久）有通过的单元测试（**dotnet 379/379 全绿，`-warnaserror` 0 warning**，BLOCKING）。
+- ✅ Presentation 仅经只读投影/Command 交互；反向依赖禁令由 `PresentationLockTests` 反射断言固化（Domain/Presentation 不引用 UnityEngine 边界回归）。
+- ✅ 设计锁负向断言通过：无真值泄露（P10）、无最优解高亮（P11）、多维不合并（P6）、键鼠全可达 —— 单测固化。
+- ✅ UXML/USS/Scene 视觉与无障碍：四屏 batchmode 编译干净（无 `error CS`）+ **lead（用户）Play 签核通过**（渲染 + 可交互 + 文本缩放/色盲/减少动态/HUD 可见性即时生效）。证据：`production/qa/evidence/{main-menu,hud,pause-menu,accessibility}-evidence.md`。
+
+**ADVISORY 可选后续（非阻断，不阻断 epic 关闭）**：精确视觉度量取证——文本 150% × 多分辨率无溢出逐截图、对比度 ≥3:1 / ≥4.5:1 实测、色盲调色板（slice 阶段 `cb-*` 仅留 USS 钩子，量产期补调色板/纹样冗余）。
+
+**入库**：S5 两提交 `0e986d5`（feat）+ `ffad0fc`（fix）已 push `tk/main`；本收尾文档批次随后提交。
+
+> 前置：本 epic 为 Presentation 层，依赖 epic-001~009（全 ✅ Complete）。后续工作见 `production/epics/index.md`。

@@ -1,7 +1,7 @@
 # Story 004: 暂停菜单（原子存档错误态 + 草稿处置 P9 + 失败延续「继续」）
 
 > **Epic**: Slice UX 与可访问性
-> **Status**: In Progress（可测逻辑 BLOCKING 完成；UXML 视觉壳待 Unity）
+> **Status**: Complete（BLOCKING 逻辑 dotnet 379/379 + batchmode 编译干净；视觉壳 lead Play 签核通过 2026-06-23）
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M（4h）
@@ -83,7 +83,7 @@
 **Required evidence**:
 - 可测逻辑：`tests/unit/ThreeKingdom.Domain.Tests/Presentation/PauseMenuViewModelTests.cs`（BLOCKING）
 - 视觉/交互：`production/qa/evidence/pause-menu-evidence.md` + Unity 截图 + lead 签核（ADVISORY）
-**Status**: [ ] Not yet created
+**Status**: [x] Passed — BLOCKING 全绿 + 编译干净 + lead Play 签核（见 pause-menu-evidence.md）；精确视觉度量留 ADVISORY 可选后续
 
 ---
 

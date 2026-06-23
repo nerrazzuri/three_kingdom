@@ -5,9 +5,9 @@
 > **审查模式**：lean
 
 <!-- STATUS -->
-Epic: EPIC_010 Slice UX（前 9 epics 全 ✅ Complete）
-Feature: Presentation 表现层（三屏 + 无障碍）
-Task: S5 无障碍面板+挂接完成 — dotnet 379/379 绿（+9 store/viewmodel）；无障碍 UXML 壳+四屏挂接 batchmode 编译干净；AccessibilitySettings.unity 场景已建（共 4 屏可 Play）｜未 commit，待用户审批｜下一步 ▶ 用户侧 Play/截图签核（ADVISORY）→ commit → EPIC_010 收尾判定
+Epic: ✅ EPIC_010 Slice UX Complete（全 10 epics 关闭）
+Feature: Presentation 表现层（三屏 + 无障碍）— 收尾完成
+Task: EPIC_010 收尾判定=Complete（5/5 stories Done；dotnet 379/379 绿；四屏 batchmode 编译干净 + lead Play 签核通过；evidence 落 production/qa/evidence/）｜S5 已 push tk/main（feat 0e986d5 + fix ffad0fc）｜收尾文档批次待 commit｜下一步 ▶ 用户定方向（全 10 epics 完，可选精确视觉度量 ADVISORY 尾 / 进入下一里程碑）
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）

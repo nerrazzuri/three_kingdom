@@ -1,12 +1,12 @@
 # Story 005: 无障碍横切（文本缩放/色盲冗余/减少动态/HUD 可见性持久）
 
 > **Epic**: Slice UX 与可访问性
-> **Status**: In Progress（可测逻辑 BLOCKING 完成；UXML 视觉壳待 Unity）
+> **Status**: Complete（BLOCKING 逻辑 dotnet 379/379 + batchmode 编译干净；设置面板+三屏挂接 lead Play 签核通过 2026-06-23）
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M（4h）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-23
 
 ## Context
 
@@ -80,9 +80,9 @@
 
 **Story Type**: UI
 **Required evidence**:
-- 可测逻辑：`tests/unit/ThreeKingdom.Domain.Tests/Presentation/AccessibilitySettingsTests.cs`（BLOCKING）
-- 视觉/交互：`production/qa/evidence/accessibility-evidence.md` + Unity 截图 + lead 签核（ADVISORY）
-**Status**: [ ] Not yet created
+- 可测逻辑：`tests/unit/ThreeKingdom.Domain.Tests/Presentation/AccessibilitySettings{,Store,ViewModel}Tests.cs`（BLOCKING，379/379 绿）
+- 视觉/交互：`production/qa/evidence/accessibility-evidence.md`（lead Play 签核 2026-06-23，ADVISORY）
+**Status**: [x] Passed — BLOCKING 全绿 + 编译干净 + lead Play 签核；精确视觉度量留 ADVISORY 可选后续
 
 ---
 
