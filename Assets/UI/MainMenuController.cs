@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using ThreeKingdom.Presentation.Screens;
 using ThreeKingdom.Presentation.Intents;
@@ -28,7 +29,7 @@ namespace ThreeKingdom.Unity.UI
             // 应用当前无障碍设置（文本缩放/色盲/减少动态；story-005 横切挂接）。
             AccessibilityApplier.Apply(root, AccessibilityRuntime.Current);
 
-            Wire(root, "new-game", () => SubmitAndRefresh(root, new NewGameIntent()));
+            Wire(root, "new-game", () => StartNewGame(root));
             Wire(root, "continue", () => SubmitAndRefresh(root, new LoadGameIntent("campaign")));
             Wire(root, "quit", () =>
             {
@@ -47,6 +48,17 @@ namespace ThreeKingdom.Unity.UI
 
             var error = root.Q<Label>("error");
             if (error != null) error.text = _vm.State == MainMenuState.LoadError ? (_vm.ErrorReason ?? string.Empty) : string.Empty;
+        }
+
+        /// <summary>
+        /// 「新游戏」端到端竖切：意图→命令载荷接缝演示 + 真实 Application 开局 + 进入 HUD 场景。
+        /// 进 HUD 后 <see cref="HudController"/> 读 <see cref="SessionRuntime"/> 的真实世界状态投影。
+        /// </summary>
+        private void StartNewGame(VisualElement root)
+        {
+            SubmitAndRefresh(root, new NewGameIntent()); // 接缝：意图→StartNewGameCommand 载荷（IntentTranslator）
+            SessionRuntime.NewGame();                    // 真实 Application 用例：开局至第 0 日黎明
+            SceneManager.LoadScene("Hud");               // 进入 HUD（展示真实世界状态，可推进时段）
         }
 
         private void SubmitAndRefresh(VisualElement root, IUiIntent intent)

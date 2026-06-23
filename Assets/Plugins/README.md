@@ -1,16 +1,19 @@
-# Assets/Plugins — Domain/Presentation 桥接 DLL
+# Assets/Plugins — Domain/Application/Presentation 桥接 DLL
 
-本目录的 `ThreeKingdom.Domain.dll` 与 `ThreeKingdom.Presentation.dll` 是 `src/Domain` 与
-`src/Presentation`（netstandard2.1）的**构建产物**，作为 Unity 表现层引用权威逻辑的桥。
+本目录的 `ThreeKingdom.Domain.dll`、`ThreeKingdom.Application.dll`、`ThreeKingdom.Presentation.dll`
+是 `src/Domain`、`src/Application`、`src/Presentation`（netstandard2.1）的**构建产物**，
+作为 Unity 表现层引用权威逻辑的桥。依赖链：Domain ← Application ← Presentation。
 
 ## 权威源与重建
 
-- **权威源是 `src/`，不是这两个 DLL。** dotnet 单元测试（BLOCKING）始终对 `src/` 源编译，永远新鲜。
-- 改动 `src/Domain` 或 `src/Presentation` 后，须重建并替换本目录 DLL：
+- **权威源是 `src/`，不是这三个 DLL。** dotnet 单元测试（BLOCKING）始终对 `src/` 源编译，永远新鲜。
+- 改动 `src/Domain` / `src/Application` / `src/Presentation` 后，须重建并替换本目录 DLL
+  （构建 Presentation 会连带产出 Application + Domain）：
 
   ```sh
   dotnet build src/Presentation/ThreeKingdom.Presentation.csproj -c Release
   cp src/Presentation/bin/Release/netstandard2.1/ThreeKingdom.Domain.dll       Assets/Plugins/
+  cp src/Presentation/bin/Release/netstandard2.1/ThreeKingdom.Application.dll  Assets/Plugins/
   cp src/Presentation/bin/Release/netstandard2.1/ThreeKingdom.Presentation.dll Assets/Plugins/
   ```
 

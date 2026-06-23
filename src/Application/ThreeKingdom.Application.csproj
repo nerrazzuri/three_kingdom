@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    纯 C# Application 层（ADR-0002 四层架构：Application 编排 Domain 用例，对 Presentation 暴露
+    用例 API + 只读投影 DTO）。承载「会话编排 + 命令执行 + 投影」的**可测逻辑**，不含 MonoBehaviour/UXML。
+    依赖方向：Application → Domain（单向）；不引用 Presentation/Unity。
+    TargetFramework=netstandard2.1 与 Unity 6.3 兼容；可由 `dotnet test` 在无 Unity 运行时下单元测试（BLOCKING）。
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>ThreeKingdom.Application</AssemblyName>
+    <RootNamespace>ThreeKingdom.Application</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\ThreeKingdom.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

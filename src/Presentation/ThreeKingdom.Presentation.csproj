@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\ThreeKingdom.Domain.csproj" />
+    <ProjectReference Include="..\Application\ThreeKingdom.Application.csproj" />
   </ItemGroup>
 
 </Project>

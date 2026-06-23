@@ -40,6 +40,7 @@ dist/
 # 例外：Unity 表现层经 Assets/Plugins 引用的权威 Domain/Presentation 构建产物（netstandard2.1）。
 # 这是 dotnet 源（src/）与 Unity 之间的桥；改动 src/ 后须 `dotnet build -c Release` 重建并替换（见 Assets/Plugins/README.md）。
 !Assets/Plugins/ThreeKingdom.Domain.dll
+!Assets/Plugins/ThreeKingdom.Application.dll
 !Assets/Plugins/ThreeKingdom.Presentation.dll
 
 # === Engine: Godot ===
@@ -63,6 +64,7 @@ export_presets.cfg
 # 例外：手写的权威 .NET 工程文件（非 Unity 生成）须入库，否则 CI 的 `dotnet test ThreeKingdom.slnx` 在干净克隆上无工程可构建。
 # prototype 下的 csproj 维持忽略（throwaway，铁律不 import）。
 !src/Domain/ThreeKingdom.Domain.csproj
+!src/Application/ThreeKingdom.Application.csproj
 !src/Presentation/ThreeKingdom.Presentation.csproj
 !tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj
 *.suo
