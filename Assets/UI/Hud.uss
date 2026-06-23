@@ -1,59 +1,129 @@
-/* HUD 样式（占位；art-bible §3 五态光照后续）。中央留空，信息靠边。 */
+/* HUD 样式（slice 可玩布局：顶栏 / 双列可滚动主区 / 底栏；非最终美术）。
+   弃用早期"稀疏角 + 绝对定位"布局——内容增多后会重叠；改为 flex 列布局保可读。 */
 .hud-root {
     flex-grow: 1;
+    flex-direction: column;
+    background-color: rgb(236, 233, 224);
+}
+
+/* ---- 顶栏 ---- */
+.hud-header {
+    flex-direction: column;
+    background-color: rgba(45, 42, 36, 0.92);
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.hud-objective {
+    color: rgb(235, 222, 200);
+    -unity-text-align: middle-left;
+    white-space: normal;
+    margin-bottom: 2px;
+}
+
+.hud-banner {
+    color: rgb(245, 200, 120);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: normal;
 }
 
 .hud-top {
-    height: 40px;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
-    padding-left: 16px;
-    background-color: rgba(45, 42, 36, 0.85);
+    margin-top: 4px;
 }
 
-.hud-top Label {
-    color: rgb(229, 226, 216);
+.time-label {
+    color: rgb(235, 230, 220);
+    -unity-font-style: bold;
+    min-width: 120px;
+    margin-right: 12px;
 }
 
-.hud-left {
-    position: absolute;
-    left: 12px;
-    top: 56px;
-    width: 240px;
+.hud-top Button {
+    margin-right: 8px;
+    height: 28px;
 }
 
-.hud-right {
-    position: absolute;
-    right: 12px;
-    top: 56px;
-    width: 240px;
+.hud-note {
+    color: rgb(220, 180, 120);
+    margin-left: 8px;
+    white-space: normal;
 }
 
-.hud-bottom {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 12px;
+/* ---- 主区：左右双列 ---- */
+.hud-main {
+    flex-grow: 1;
     flex-direction: row;
-    justify-content: center;
 }
 
+.hud-col {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+.hud-left, .hud-right {
+    flex-direction: column;
+}
+
+/* ---- 卡片 ---- */
 .card {
     margin-bottom: 10px;
-    padding: 8px;
-    background-color: rgba(229, 226, 216, 0.92);
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: rgb(247, 244, 236);
     border-left-width: 3px;
     border-left-color: rgb(150, 40, 30);
+}
+
+.card Label {
+    color: rgb(45, 42, 36);
+    white-space: normal;
+    margin-bottom: 1px;
+}
+
+.card Button {
+    margin-top: 6px;
+    margin-bottom: 2px;
+    height: 28px;
+}
+
+.card-title {
+    font-size: 15px;
+    -unity-font-style: bold;
+    color: rgb(45, 42, 36);
+    margin-bottom: 4px;
+}
+
+.ledger-warning {
+    color: rgb(150, 40, 30);
+    white-space: normal;
+}
+
+/* ---- 底栏 ---- */
+.hud-bottom {
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 6px;
+    padding-bottom: 10px;
 }
 
 .tray {
     margin-left: 8px;
     margin-right: 8px;
-    padding: 8px 16px;
-    background-color: rgba(229, 226, 216, 0.92);
-}
-
-.card-title {
-    font-size: 14px;
-    color: rgb(45, 42, 36);
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+    background-color: rgb(247, 244, 236);
 }
