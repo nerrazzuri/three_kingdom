@@ -5,9 +5,9 @@
 > **审查模式**：lean
 
 <!-- STATUS -->
-Epic: ✅ EPIC_010 Complete｜▶ 竖切扩展：City（账本）+ Intel（敌情）+ Save/Load（存档读档）全接通
-Feature: GameSession 编排城市/敌情/存档；HUD 三面板 + 推进/侦察/存档/返回主菜单；MainMenu 继续真读档
-Task: 存档经真实 epic-009 持久栈（SaveCoordinator + SaveMapper 会话↔SaveSnapshot；CanonicalSaveSerializer/SaveRepository/SaveLoadService；PlayerPrefsSaveMedium）。HUD 存档/返回主菜单；MainMenu「继续」按 HasSave 启用并真读档恢复（失败显错因）。dotnet 408/408 绿（+4）；Unity batchmode 编译干净；三 DLL 桥重建｜待 commit｜下一步 ▶ 用户 Play 实测三条竖切（账本/敌情/存档读档）
+Epic: ✅ EPIC_010 Complete｜✅ 可玩 slice：推进时段 + 账本 + 敌情侦察/时效 + 存档读档（三竖切 Play 签核通过）
+Feature: GameSession 编排时间/城市/敌情/存档；HUD 多面板 + 推进/侦察/存档/返回；MainMenu 继续真读档
+Task: 三条竖切全部 Play 签核通过（用户实测）：①账本随日结算/触底短缺 ②敌情侦察/过时/重侦察 ③存档→返回→继续恢复一致 + 跨 Play 会话持久。dotnet 408/408 绿。Application 层补全（Session/Save）｜下一步 ▶ 用户定方向（里程碑回顾 / 扩玩法 / 其他）
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）
