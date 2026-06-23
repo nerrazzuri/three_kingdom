@@ -49,6 +49,13 @@ namespace ThreeKingdom.Application.Session
         private bool _hasRaidResult;          // 是否有可展示的已结算袭扰结果
         private bool _lastDispatchPerformed;  // 最近一次派出操作是否真正派出（用于 UI 反馈）
 
+        // 假退伏击（第三取胜路线；一次性高风险决战赌注）
+        private DeterministicRandom _ambushRng;
+        private bool _ambushUsed;
+        private long _pendingAmbushIndex = -1; // 伏击发动的绝对时段索引；-1 = 无在途
+        private bool _ambushResolved;
+        private bool _ambushSucceeded;
+
         // 外交（求粮受控入口，GDD_012 §8）
         private readonly DiplomacyService _diplomacy = new DiplomacyService();
         private DeterministicRandom _diploRng;
@@ -72,6 +79,7 @@ namespace ThreeKingdom.Application.Session
 
             _diploRng = new DeterministicRandom(scenario.DiplomacyRngSeed);
             _raidRng = new DeterministicRandom(scenario.RaidRngSeed);
+            _ambushRng = new DeterministicRandom(scenario.AmbushRngSeed);
         }
 
         /// <summary>
@@ -106,6 +114,7 @@ namespace ThreeKingdom.Application.Session
 
             _diploRng = new DeterministicRandom(scenario.DiplomacyRngSeed); // 位置由 RestoreDiplomacy 覆盖
             _raidRng = new DeterministicRandom(scenario.RaidRngSeed);       // 位置由 RestoreRaid 覆盖
+            _ambushRng = new DeterministicRandom(scenario.AmbushRngSeed);   // 位置由 RestoreAmbush 覆盖
         }
 
         /// <summary>当前权威世界时间（只读）。</summary>
@@ -148,6 +157,7 @@ namespace ThreeKingdom.Application.Session
 
             ResolveScout();
             ResolveRaid();
+            ResolveAmbush();
 
             return result.DayBoundaries.Count;
         }
@@ -160,6 +170,40 @@ namespace ThreeKingdom.Application.Session
             IntelReport report = _intel.ToReport(observation, _scenario.PlayerFaction, IntelSource.Scouting);
             _playerIntel.ApplyReport(report);
             _pendingScoutIndex = -1;
+        }
+
+        /// <summary>
+        /// 伏击发动：抵达发动时刻后判定（消费伏击随机流）。成立 = 敌将性烈（非战斗前提）且未暴露
+        /// （r ≥ 失败概率 base−skill×cap）。得手则重创敌真实兵力 + 复原工事 + 提振民心；
+        /// 失败则示弱失策、重挫民心、工事维持降低（高风险高回报）。
+        /// </summary>
+        private void ResolveAmbush()
+        {
+            if (_pendingAmbushIndex < 0 || _clock.Current.AbsoluteIndex < _pendingAmbushIndex) return;
+            _pendingAmbushIndex = -1;
+            _ambushResolved = true;
+
+            FixedPoint failProb = (_scenario.AmbushExposureBase - _scenario.AmbushSkillWeight * _scenario.AmbushCapability)
+                .Clamp(FixedPoint.Zero, FixedPoint.One);
+            FixedPoint r = _ambushRng.NextUnit();
+            // 非战斗前提：敌将不性烈则诱敌必败（条件不完整不自动补齐）。
+            _ambushSucceeded = _scenario.EnemyGeneralRash && r >= failProb;
+
+            if (_ambushSucceeded)
+            {
+                int reduced = _truth.Get(_scenario.EnemySubject).ActualStrength - _scenario.AmbushSuccessDamage;
+                if (reduced < 0) reduced = 0;
+                _truth.SetStrength(_scenario.EnemySubject, reduced);
+                int fort = System.Math.Min(_city.FortificationMax, _city.FortificationCurrent + _scenario.AmbushFortCost); // 复原示弱开口
+                int morale = System.Math.Min(_scenario.CityConfig.CivMoraleMax, _city.CivMorale + _scenario.AmbushSuccessMoraleBonus);
+                _city = _city.With(fortificationCurrent: fort, civMorale: morale);
+            }
+            else
+            {
+                int morale = _city.CivMorale - _scenario.AmbushFailMoralePenalty;
+                if (morale < 0) morale = 0;
+                _city = _city.With(civMorale: morale); // 工事维持降低（开口未复原），民心重挫
+            }
         }
 
         /// <summary>袭扰见效：抵达时段后判定暴露（消费袭扰随机流）。未暴露削敌真实兵力，暴露损民心。</summary>
@@ -261,6 +305,35 @@ namespace ThreeKingdom.Application.Session
         internal bool HasRaidResult => _hasRaidResult;
         internal bool LastRaidExposed => _lastRaidExposed;
 
+        /// <summary>是否有伏击在途（已设伏诱敌未发动）。</summary>
+        internal bool AmbushInFlight => _pendingAmbushIndex >= 0;
+
+        /// <summary>是否可设伏诱敌（一局一次 + 无在途 + 工事足够示弱 + 局未终）。</summary>
+        internal bool CanDispatchAmbush =>
+            Outcome == GameOutcome.Ongoing && !_ambushUsed && !AmbushInFlight
+            && _city.FortificationCurrent - _scenario.AmbushFortCost >= 0;
+
+        /// <summary>伏击预计发动的世界日（0 基；-1 = 无在途）。</summary>
+        internal int AmbushArrivalDay => _pendingAmbushIndex < 0 ? -1 : (int)(_pendingAmbushIndex / WorldTime.SegmentsPerDay);
+
+        internal bool AmbushUsed => _ambushUsed;
+        internal bool AmbushResolved => _ambushResolved;
+        internal bool AmbushSucceeded => _ambushSucceeded;
+
+        /// <summary>
+        /// 设伏诱敌（假退伏击，一局一次）：示弱即降工事（开口诱敌），伏击队往返
+        /// <see cref="SliceScenario.AmbushLeadSegments"/> 个时段后于 <see cref="Advance"/> 发动判定。非即时；
+        /// 成立须敌将性烈（非战斗前提，花名册可见）。
+        /// </summary>
+        internal void DispatchAmbush()
+        {
+            if (!CanDispatchAmbush) { _lastDispatchPerformed = false; return; }
+            _ambushUsed = true;
+            _city = _city.With(fortificationCurrent: _city.FortificationCurrent - _scenario.AmbushFortCost); // 示弱开口
+            _pendingAmbushIndex = _clock.Current.Advance(_scenario.AmbushLeadSegments).AbsoluteIndex;
+            _lastDispatchPerformed = true;
+        }
+
         /// <summary>
         /// 召开军议（GDD_008）：读当前只读知识投影，整理为条件化建议集（并列、无最优解）。
         /// 建议绑定当前知识快照 ID；之后侦察改变知识则建议过时（不静默更新）。
@@ -335,9 +408,10 @@ namespace ThreeKingdom.Application.Session
         /// <summary>败因（仅 <see cref="GameOutcome.Defeat"/> 非空）。</summary>
         internal string DefeatReason => _city.CivMorale <= 0 ? "民心崩溃，城池陷落。" : string.Empty;
 
-        /// <summary>胜利方式（仅 <see cref="GameOutcome.Victory"/> 非空）：区分断粮退兵 / 守至援军。</summary>
+        /// <summary>胜利方式（仅 <see cref="GameOutcome.Victory"/> 非空）：区分伏击大破 / 断粮退兵 / 守至援军。</summary>
         internal string VictoryReason =>
             Outcome != GameOutcome.Victory ? string.Empty
+            : (_ambushSucceeded && EnemyWithdrew) ? "假退伏击得手，敌军溃乱败退——大破之。"
             : EnemyWithdrew ? "敌军粮道断绝、师老兵疲，已退兵——汜水关解围。"
             : "已守至援军抵达——汜水关守住了。";
 
@@ -356,8 +430,22 @@ namespace ThreeKingdom.Application.Session
         /// <summary>抓取袭扰随机流位置（存档）。</summary>
         internal RngStreamState CaptureRaidRng() => RngStreamState.Capture("raid", _raidRng);
 
+        /// <summary>抓取伏击随机流位置（存档）。</summary>
+        internal RngStreamState CaptureAmbushRng() => RngStreamState.Capture("ambush", _ambushRng);
+
         internal long PendingScoutIndex => _pendingScoutIndex;
         internal long PendingRaidIndex => _pendingRaidIndex;
+        internal long PendingAmbushIndex => _pendingAmbushIndex;
+
+        /// <summary>恢复伏击状态（<see cref="SaveMapper"/> 用）：一局一次标记 + 在途发动时刻 + 已结算结果 + 随机流位置。</summary>
+        internal void RestoreAmbush(bool used, long pendingIndex, bool resolved, bool succeeded, RngStreamState rng)
+        {
+            _ambushUsed = used;
+            _pendingAmbushIndex = pendingIndex;
+            _ambushResolved = resolved;
+            _ambushSucceeded = succeeded;
+            _ambushRng = rng.Rebuild();
+        }
 
         /// <summary>恢复侦察在途（<see cref="SaveMapper"/> 用）。</summary>
         internal void RestoreScout(long pendingScoutIndex) => _pendingScoutIndex = pendingScoutIndex;

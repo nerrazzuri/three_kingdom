@@ -61,6 +61,9 @@
                         <!-- 断粮疲敌（第二取胜路线）：派出袭扰→在途→见效，花粮草、有暴露风险。 -->
                         <ui:Button name="raid" text="派出袭扰" />
                         <ui:Label name="raid-status" class="hud-note" />
+                        <!-- 假退伏击（第三取胜路线）：示弱诱敌→设伏→发动，一局一次、降工事、高风险高回报。 -->
+                        <ui:Button name="ambush" text="设伏诱敌" />
+                        <ui:Label name="ambush-status" class="hud-note" />
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:ScrollView>

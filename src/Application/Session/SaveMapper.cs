@@ -39,6 +39,11 @@ namespace ThreeKingdom.Application.Session
         private const string KeyRaidHasResult = "raid.hasResult";
         private const string KeyRaidExposed = "raid.lastExposed";
         private const string KeyScoutPendingIndex = "scout.pendingIndex";
+        private const string KeyAmbushUsed = "ambush.used";
+        private const string KeyAmbushPendingIndex = "ambush.pendingIndex";
+        private const string KeyAmbushResolved = "ambush.resolved";
+        private const string KeyAmbushSucceeded = "ambush.succeeded";
+        private const string RngAmbush = "ambush";
         private const string RngDiplomacy = "diplomacy";
         private const string RngRaid = "raid";
 
@@ -75,6 +80,10 @@ namespace ThreeKingdom.Application.Session
                 [KeyRaidHasResult] = session.HasRaidResult ? 1 : 0,
                 [KeyRaidExposed] = session.LastRaidExposed ? 1 : 0,
                 [KeyScoutPendingIndex] = session.PendingScoutIndex,
+                [KeyAmbushUsed] = session.AmbushUsed ? 1 : 0,
+                [KeyAmbushPendingIndex] = session.PendingAmbushIndex,
+                [KeyAmbushResolved] = session.AmbushResolved ? 1 : 0,
+                [KeyAmbushSucceeded] = session.AmbushSucceeded ? 1 : 0,
             };
 
             var knowledge = new Dictionary<string, long>(StringComparer.Ordinal);
@@ -85,7 +94,7 @@ namespace ThreeKingdom.Application.Session
                 knowledge[KeyKnownSource] = (long)entry.Source;
             }
 
-            var rngStreams = new[] { session.CaptureDiplomacyRng(), session.CaptureRaidRng() };
+            var rngStreams = new[] { session.CaptureDiplomacyRng(), session.CaptureRaidRng(), session.CaptureAmbushRng() };
             return new SaveSnapshot(version, fingerprint, rngStreams, worldTruth, knowledge);
         }
 
@@ -138,6 +147,14 @@ namespace ThreeKingdom.Application.Session
                 lastExposed: GetOr(t, KeyRaidExposed, 0) != 0,
                 rng: FindRng(snapshot, RngRaid, scenario.RaidRngSeed));
             session.RestoreScout(GetOr(t, KeyScoutPendingIndex, -1));
+
+            // 恢复伏击（一局一次标记 + 在途发动时刻 + 已结算结果 + 随机流位置）。
+            session.RestoreAmbush(
+                used: GetOr(t, KeyAmbushUsed, 0) != 0,
+                pendingIndex: GetOr(t, KeyAmbushPendingIndex, -1),
+                resolved: GetOr(t, KeyAmbushResolved, 0) != 0,
+                succeeded: GetOr(t, KeyAmbushSucceeded, 0) != 0,
+                rng: FindRng(snapshot, RngAmbush, scenario.AmbushRngSeed));
 
             return session;
         }

@@ -48,6 +48,7 @@ namespace ThreeKingdom.Unity.UI
             RenderRoster(root, SessionRuntime.Roster());
             RenderScout(root, SessionRuntime.ScoutStatus());
             RenderRaid(root, SessionRuntime.RaidStatus());
+            RenderAmbush(root, SessionRuntime.AmbushStatus());
             RenderObjective(root);
 
             var convene = root.Q<Button>("convene");
@@ -64,6 +65,7 @@ namespace ThreeKingdom.Unity.UI
                     RenderCouncil(root, SessionRuntime.Council());      // 知识/时间变化，建议可能过时
                     RenderScout(root, SessionRuntime.ScoutStatus());    // 侦察队可能已返报
                     RenderRaid(root, SessionRuntime.RaidStatus());      // 袭扰队可能已见效
+                    RenderAmbush(root, SessionRuntime.AmbushStatus());  // 伏击可能已发动
                     RenderObjective(root);                       // 推进可能触发胜负
                 };
 
@@ -80,6 +82,14 @@ namespace ThreeKingdom.Unity.UI
                 {
                     RenderRaid(root, SessionRuntime.DispatchRaid()); // 派出（即兑付粮草代价）
                     RenderLedger(root, SessionRuntime.Ledger());     // 反映粮草扣减
+                };
+
+            var ambush = root.Q<Button>("ambush");
+            if (ambush != null)
+                ambush.clicked += () =>
+                {
+                    RenderAmbush(root, SessionRuntime.DispatchAmbush()); // 设伏（即降工事示弱）
+                    RenderLedger(root, SessionRuntime.Ledger());         // 反映工事下降
                 };
 
             // 竖切：存档（原子写，真实持久栈）+ 返回主菜单。
@@ -120,6 +130,7 @@ namespace ThreeKingdom.Unity.UI
                 SetEnabled(root, "request-aid", false);
                 SetEnabled(root, "convene", false);
                 SetEnabled(root, "raid", false);
+                SetEnabled(root, "ambush", false);
                 SetEnabled(root, "save-game", false);
             }
         }
@@ -136,6 +147,13 @@ namespace ThreeKingdom.Unity.UI
         {
             SetEnabled(root, "raid", view.CanDispatch);
             SetLabel(root, "raid-status", view.StatusLabel);
+        }
+
+        /// <summary>渲染假退伏击（设伏→在途→发动；一局一次）：按钮可用性 + 中文状态（不泄露敌真值）。</summary>
+        private void RenderAmbush(VisualElement root, AmbushView view)
+        {
+            SetEnabled(root, "ambush", view.CanDispatch);
+            SetLabel(root, "ambush-status", view.StatusLabel);
         }
 
         /// <summary>渲染外交求粮状态（中文）+ 求援按钮可用性（受控一局一次）。</summary>

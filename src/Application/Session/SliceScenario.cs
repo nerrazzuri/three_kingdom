@@ -100,6 +100,28 @@ namespace ThreeKingdom.Application.Session
         /// <summary>侦察队往返返报所需时段数（≥1；营地距离，避免即时暴露敌情）。</summary>
         public int ScoutLeadSegments { get; }
 
+        // ---- 假退伏击（第三取胜路线，GDD_010；一次性高风险决战赌注）----
+        /// <summary>设伏诱敌的工事代价（示弱开口诱敌，降工事；非战斗投入）。</summary>
+        public int AmbushFortCost { get; }
+        /// <summary>设伏→诱敌→发动所需时段数（≥1）。</summary>
+        public int AmbushLeadSegments { get; }
+        /// <summary>敌将是否性烈易诱（成立的非战斗前提：来自敌将性格，花名册可见）。不成立则诱敌必败。</summary>
+        public bool EnemyGeneralRash { get; }
+        /// <summary>伏击得手对敌真实兵力的重创（早发动可一举击溃；晚发动敌已壮大仅重挫）。</summary>
+        public int AmbushSuccessDamage { get; }
+        /// <summary>伏击暴露/失败基础概率（[0,1]）。</summary>
+        public FixedPoint AmbushExposureBase { get; }
+        /// <summary>主将统御对伏击成败的折减权重（≥0）。</summary>
+        public FixedPoint AmbushSkillWeight { get; }
+        /// <summary>设伏主将能力（[0,1]，取守将统御归一）。</summary>
+        public FixedPoint AmbushCapability { get; }
+        /// <summary>伏击失败的民心损耗（示弱失策，军心受挫）。</summary>
+        public int AmbushFailMoralePenalty { get; }
+        /// <summary>伏击得手的民心提振（大捷鼓舞）。</summary>
+        public int AmbushSuccessMoraleBonus { get; }
+        /// <summary>伏击判定随机流种子（确定性，位置可存档）。</summary>
+        public ulong AmbushRngSeed { get; }
+
         private SliceScenario()
         {
             Start = new WorldTime(0, DaySegment.Dawn);
@@ -192,6 +214,18 @@ namespace ThreeKingdom.Application.Session
             RaidRngSeed = 0x5A1D_2026_0001UL;
             RaidLeadSegments = WorldTime.SegmentsPerDay;         // 袭扰队往返约一日见效
             ScoutLeadSegments = 2;                              // 侦察返报约半日（4 时段/日）
+
+            // 假退伏击（第三取胜路线）：示弱诱敌→设伏→发动。敌将性烈易诱（非战斗前提）。
+            AmbushFortCost = 25;                                // 示弱开口，降工事（投入/风险）
+            AmbushLeadSegments = WorldTime.SegmentsPerDay;       // 设伏诱敌约一日发动
+            EnemyGeneralRash = true;                            // 敌将·夏侯烈 性烈（花名册 Risk 高）→ 可诱
+            AmbushSuccessDamage = 760;                          // 早发动可一举击溃（计入发动日敌增援后仍压至退兵阈值）
+            AmbushExposureBase = FixedPoint.FromFraction(13, 20); // 0.65 基础失败/暴露
+            AmbushSkillWeight = FixedPoint.FromFraction(1, 2);  // 0.5
+            AmbushCapability = FixedPoint.FromFraction(78, 100); // 守将统御 0.78 → 净失败率≈0.26
+            AmbushFailMoralePenalty = 18;                       // 失败重挫民心（高风险）
+            AmbushSuccessMoraleBonus = 12;
+            AmbushRngSeed = 0xC0FFEEUL; // 基线种子：首次诱敌得手（净失败率≈0.26，此流首掷 0.79）
 
             // 人物花名册（GDD_005）：关键四人，能力/性格/职责/健康（数据驱动，原创角色，守红线①）。
             Roster = new List<CharacterState>

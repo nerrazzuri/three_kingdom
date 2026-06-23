@@ -77,6 +77,23 @@ namespace ThreeKingdom.Application.Session
                 session.HasRaidResult, session.LastRaidExposed);
         }
 
+        /// <summary>设伏诱敌（假退伏击，一局一次；非即时，发动经推进），返回更新后的伏击投影。</summary>
+        public AmbushProjection DispatchAmbush(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            session.DispatchAmbush();
+            return ProjectAmbush(session);
+        }
+
+        /// <summary>取伏击投影（可设伏/在途/预计发动日/结算结果；不含敌真值）。</summary>
+        public AmbushProjection ProjectAmbush(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            return new AmbushProjection(
+                session.CanDispatchAmbush, session.AmbushInFlight, session.AmbushArrivalDay,
+                session.AmbushResolved, session.AmbushSucceeded);
+        }
+
         /// <summary>求粮（受控外交入口，一局一次），返回更新后的外交投影。</summary>
         public DiplomacyProjection RequestAid(GameSession session)
         {

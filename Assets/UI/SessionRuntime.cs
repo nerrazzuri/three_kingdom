@@ -83,6 +83,14 @@ namespace ThreeKingdom.Unity.UI
         public static RaidView DispatchRaid()
             => new RaidView(_service.DispatchRaid(Current));
 
+        /// <summary>取假退伏击视图（第三取胜路线；不含敌真值）。</summary>
+        public static AmbushView AmbushStatus()
+            => new AmbushView(_service.ProjectAmbush(Current));
+
+        /// <summary>设伏诱敌（假退伏击，一局一次；非即时，发动经推进）并返回更新后的伏击视图。</summary>
+        public static AmbushView DispatchAmbush()
+            => new AmbushView(_service.DispatchAmbush(Current));
+
         /// <summary>取外交求粮视图（GDD_012 §8）。</summary>
         public static DiplomacyView Diplomacy()
             => new DiplomacyView(_service.ProjectDiplomacy(Current));
