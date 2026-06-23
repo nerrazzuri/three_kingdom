@@ -56,7 +56,8 @@ This epic is complete when:
 - repo 根 Unity 6000.3.18f1 项目（matches CI 默认 projectPath）；`Assets/Plugins` 经 DLL 桥引用 `src/` 权威逻辑。
 - 三屏 UXML/USS/Controller（MainMenu/Hud/PauseMenu）**batchmode 编译通过**（Assembly-CSharp.dll 产出，无 error CS）——证明视觉壳正确绑定 Presentation ViewModel/Intent。
 - Editor 预览窗 `三国/UXML 视觉壳预览`（无需 Play/Scene）供视觉+无障碍**截图签核（ADVISORY）**。
-- **剩余（ADVISORY，须 graphics 模式 Editor，属用户侧）**：三屏视觉/无障碍截图签核（对比度实测、文本 150%、键鼠焦点、色盲冗余）；可选 Scene+PanelSettings 进 Play 模式；S5 无障碍设置面板 + 各屏挂接。
+- **三屏可 Play 场景已建**（`Assets/Scenes/{MainMenu,Hud,PauseMenu}.unity`）：各含 UIDocument（指向 UXML + 共享 `SlicePanelSettings`，主题 `SliceTheme.tss` 引内置默认运行时主题）+ 对应 Controller + EventSystem（旧 Input Manager → StandaloneInputModule，已加 `com.unity.ugui`）。生成器 `Assets/Editor/SliceSceneBuilder.cs`（菜单「三国/构建 Slice 场景」/ batchmode -executeMethod）。batchmode 生成 + 编译通过。
+- **剩余（ADVISORY，须 graphics 模式 Editor，属用户侧）**：打开三场景进 Play → 视觉/无障碍截图签核（对比度实测、文本 150%、键鼠焦点、色盲冗余、点击交互确认）；S5 无障碍设置面板 + 各屏挂接。
 
 > 上表为预期分解；以 `/create-stories epic-010-slice-ux` 正式产出为准。
 

@@ -1,0 +1,2 @@
+/* Slice 运行时主题：引用 Unity 内置默认运行时主题，使 UXML 控件具备基础皮肤（占位，非最终美术）。 */
+@import url("unity-theme://default");

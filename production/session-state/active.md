@@ -541,3 +541,10 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **全部 BLOCKING 完成**：5 story 可测逻辑 dotnet 370/370 绿；3 屏 UXML 壳 batchmode 编译通过。
 - **剩余皆 ADVISORY（须 graphics 模式 Editor，用户侧）**：三屏视觉/无障碍截图签核（对比度实测/文本150%/键鼠焦点/色盲冗余）；可选 Scene+PanelSettings 进 Play；S5 无障碍设置面板 + 各屏挂接。
 - **挂账**：`tools/_unity_probe/` 物理文件夹待用户删（rm 被权限拒）；Assets/Plugins DLL 改 src/ 后须重建。
+
+### ▶ EPIC_010 可 Play 场景搭建（2026-06-23，选项 a）
+- **三屏 Scene 已建**：`Assets/Scenes/{MainMenu,Hud,PauseMenu}.unity`，各含 UIDocument（→ 对应 UXML + 共享 `Assets/UI/SlicePanelSettings.asset`，主题 `Assets/UI/SliceTheme.tss` = `@import unity-theme://default`）+ 对应 Controller + EventSystem（StandaloneInputModule；activeInputHandler=0 旧输入，已加 `com.unity.ugui@2.0.0`）。
+- **生成器** `Assets/Editor/SliceSceneBuilder.cs`：菜单「三国/构建 Slice 场景」或 batchmode `-executeMethod ThreeKingdom.Unity.EditorTools.SliceSceneBuilder.BuildAll`，程序化建场景/PanelSettings/BuildSettings（避免手写 YAML/GUID）。
+- batchmode 已跑通：ugui 解析、生成器编译、三场景生成（含 EventSystem）、无 error CS、退出码 0。MainMenu 为 BuildSettings 首场景。
+- **用户侧（ADVISORY，graphics Editor）**：打开任一场景进 Play → 看渲染 + 点击 → 截图签核。
+- commit 见下；push tk/main。
