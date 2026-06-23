@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Diplomacy;
@@ -70,6 +71,10 @@ namespace ThreeKingdom.Application.Session
         public IReadOnlyList<AdviceTemplate> AdviceTemplates { get; }
         /// <summary>已知主题的依据置信（slice：已侦察即中等可靠，[0,1] 定点）。</summary>
         public FixedPoint KnownClaimConfidence { get; }
+
+        // ---- 人物花名册（关键人物，GDD_005）----
+        /// <summary>关键人物（主将/军师/外勤武将/敌将；展示其能力/性格/职责/健康）。</summary>
+        public IReadOnlyList<CharacterState> Roster { get; }
 
         private SliceScenario()
         {
@@ -151,6 +156,46 @@ namespace ThreeKingdom.Application.Session
                     new[] { "诱敌不成反失城门", "伏击暴露则两面受敌" },
                     enemyRef),
             };
+
+            // 人物花名册（GDD_005）：关键四人，能力/性格/职责/健康（数据驱动，原创角色，守红线①）。
+            Roster = new List<CharacterState>
+            {
+                MakeCharacter("守将", "守将·秦烈", new[] { 78, 82, 55, 60, 40 }, HealthLevel.Healthy,
+                    (PersonalityTrait.Discipline, 6), (PersonalityTrait.Honor, 5)),
+                MakeCharacter("军师", "军师·陈疏", new[] { 50, 30, 85, 70, 65 }, HealthLevel.Healthy,
+                    (PersonalityTrait.Patience, 7), (PersonalityTrait.Risk, -3)),
+                MakeCharacter("外勤", "校尉·方武", new[] { 60, 80, 45, 35, 30 }, HealthLevel.Injured,
+                    (PersonalityTrait.Risk, 6), (PersonalityTrait.Discipline, -2)),
+                MakeCharacter("敌将", "敌将·夏侯烈", new[] { 75, 88, 40, 30, 25 }, HealthLevel.Healthy,
+                    (PersonalityTrait.Risk, 8), (PersonalityTrait.Patience, -6)),
+            };
+        }
+
+        // 人物构造助手：能力五域百分值 + 性格倾向（十分制→[-1,1] 定点）+ 健康。
+        private static CharacterState MakeCharacter(
+            string roleId, string identity, int[] caps, HealthLevel health,
+            params (PersonalityTrait Trait, int TenScale)[] traits)
+        {
+            var capMap = new Dictionary<CapabilityDomain, int>
+            {
+                [CapabilityDomain.Command] = caps[0],
+                [CapabilityDomain.Valor] = caps[1],
+                [CapabilityDomain.Strategy] = caps[2],
+                [CapabilityDomain.Governance] = caps[3],
+                [CapabilityDomain.Diplomacy] = caps[4],
+            };
+            var traitMap = new Dictionary<PersonalityTrait, FixedPoint>();
+            foreach (var (trait, ten) in traits)
+                traitMap[trait] = FixedPoint.FromFraction(ten, 10);
+
+            FixedPoint factor = health == HealthLevel.Healthy ? FixedPoint.One
+                : health == HealthLevel.Injured ? FixedPoint.FromFraction(7, 10)
+                : FixedPoint.Zero;
+
+            return new CharacterState(
+                new CharacterId(identity), identity,
+                new CapabilitySet(capMap), new PersonalityProfile(traitMap),
+                new HealthState(health, factor), new RoleId(roleId));
         }
 
         /// <summary>slice 默认场景（确定性初值）。</summary>

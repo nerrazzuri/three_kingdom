@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
@@ -78,6 +80,23 @@ namespace ThreeKingdom.Application.Session
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             return (session.LastAdvice, session.CurrentKnowledgeSnapshotId);
+        }
+
+        /// <summary>取人物花名册投影（GDD_005 §3 关键人物；静态场景数据）。</summary>
+        public RosterProjection ProjectRoster(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            var list = new List<CharacterProjection>();
+            foreach (CharacterState c in session.Scenario.Roster)
+                list.Add(new CharacterProjection(
+                    c.Identity, c.Role.ToString(),
+                    c.Capabilities.Level(CapabilityDomain.Command),
+                    c.Capabilities.Level(CapabilityDomain.Valor),
+                    c.Capabilities.Level(CapabilityDomain.Strategy),
+                    c.Capabilities.Level(CapabilityDomain.Governance),
+                    c.Capabilities.Level(CapabilityDomain.Diplomacy),
+                    (int)c.Health.Level));
+            return new RosterProjection(list);
         }
 
         /// <summary>取外交求粮投影（GDD_012 §8）。</summary>

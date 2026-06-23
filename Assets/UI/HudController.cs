@@ -44,6 +44,7 @@ namespace ThreeKingdom.Unity.UI
             RenderEnemy(root, SessionRuntime.Enemy());
             RenderDiplomacy(root, SessionRuntime.Diplomacy());
             RenderCouncil(root, SessionRuntime.Council());
+            RenderRoster(root, SessionRuntime.Roster());
             RenderObjective(root);
 
             var convene = root.Q<Button>("convene");
@@ -118,6 +119,19 @@ namespace ThreeKingdom.Unity.UI
         {
             SetLabel(root, "diplo-status", view.StatusLabel);
             SetEnabled(root, "request-aid", view.CanRequest);
+        }
+
+        /// <summary>渲染人物花名册（GDD_005：身份/职责/健康 + 能力五域）。</summary>
+        private void RenderRoster(VisualElement root, RosterView view)
+        {
+            var list = root.Q<VisualElement>("roster-list");
+            if (list == null) return;
+            list.Clear();
+            foreach (var c in view.Characters)
+            {
+                list.Add(new Label(c.Title));
+                list.Add(new Label("　" + c.Capabilities));
+            }
         }
 
         /// <summary>渲染军议建议（GDD_008：并列条件化建议；过时提示；无最优解高亮，P11）。view 为 null = 未召开。</summary>

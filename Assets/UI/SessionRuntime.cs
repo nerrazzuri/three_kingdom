@@ -41,6 +41,10 @@ namespace ThreeKingdom.Unity.UI
         public static ObjectiveView Objective()
             => new ObjectiveView(_service.ProjectObjective(Current));
 
+        /// <summary>取人物花名册视图（GDD_005）。</summary>
+        public static RosterView Roster()
+            => new RosterView(_service.ProjectRoster(Current));
+
         /// <summary>取己方城市账本视图（GDD_004）。</summary>
         public static CityLedgerView Ledger()
             => new CityLedgerView(_service.ProjectCity(Current));

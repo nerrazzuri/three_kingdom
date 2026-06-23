@@ -27,6 +27,11 @@
                 <ui:Button name="request-aid" text="求援（求粮）" />
                 <ui:Label name="diplo-status" />
             </ui:VisualElement>
+            <ui:VisualElement name="roster" class="card">
+                <ui:Label text="麾下人物" class="card-title" />
+                <!-- 竖切 B7：关键人物花名册（GDD_005，能力/职责/健康；能力为量表非解锁门槛）。 -->
+                <ui:VisualElement name="roster-list" />
+            </ui:VisualElement>
             <ui:VisualElement name="advisor-entry" class="card">
                 <ui:Label text="军师" class="card-title" />
                 <!-- 竖切 B1：军师条件化建议（GDD_008，并列无最优解；侦察后过时需重开）。 -->
