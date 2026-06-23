@@ -5,9 +5,9 @@
 > **审查模式**：lean
 
 <!-- STATUS -->
-Epic: ✅ EPIC_010 Complete｜▶ 竖切扩展：沿接缝叠 City（己方账本）+ Intel（敌情侦察/时效）
-Feature: GameSession 编排城市日界结算 + 敌情四层；HUD 三面板（时间/账本/敌情）+ 推进/侦察
-Task: City（CityDaySettlementService 跨日结算→CityLedgerProjection/View）+ Intel（真值/知识四层 + Scout + 真值每日漂移致情报过时→EnemyReportView）；数值集中 SliceScenario（数据驱动）。dotnet 404/404 绿（+14）；Unity batchmode 编译干净；三 DLL 桥重建｜待 commit｜下一步 ▶ 用户 Play 实测（账本随日结算、敌情侦察/过时/重侦察）
+Epic: ✅ EPIC_010 Complete｜▶ 竖切扩展：City（账本）+ Intel（敌情）+ Save/Load（存档读档）全接通
+Feature: GameSession 编排城市/敌情/存档；HUD 三面板 + 推进/侦察/存档/返回主菜单；MainMenu 继续真读档
+Task: 存档经真实 epic-009 持久栈（SaveCoordinator + SaveMapper 会话↔SaveSnapshot；CanonicalSaveSerializer/SaveRepository/SaveLoadService；PlayerPrefsSaveMedium）。HUD 存档/返回主菜单；MainMenu「继续」按 HasSave 启用并真读档恢复（失败显错因）。dotnet 408/408 绿（+4）；Unity batchmode 编译干净；三 DLL 桥重建｜待 commit｜下一步 ▶ 用户 Play 实测三条竖切（账本/敌情/存档读档）
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）

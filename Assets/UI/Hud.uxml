@@ -6,6 +6,10 @@
             <!-- 竖切：真实 Application 会话驱动的推进入口（点击经 SessionService 推进世界时钟）。 -->
             <ui:Button name="advance-time" text="推进时段" />
             <ui:Label name="advance-note" />
+            <!-- 竖切：存档/读档（ADR-0005，经真实持久栈 PlayerPrefs 介质）。 -->
+            <ui:Button name="save-game" text="存档" />
+            <ui:Button name="to-menu" text="返回主菜单" />
+            <ui:Label name="save-status" />
         </ui:VisualElement>
         <ui:VisualElement name="hud-left" class="hud-left">
             <ui:VisualElement name="own-ledger" class="card">

@@ -41,6 +41,37 @@ namespace ThreeKingdom.Application.Session
             _truth.Set(new TruthRecord(scenario.EnemySubject, scenario.EnemyInitialStrength, scenario.EnemyFaction));
         }
 
+        /// <summary>
+        /// 从存档恢复会话（<see cref="SaveMapper"/> 用）：以显式状态重建时钟/城市/敌方真值/玩家知识。
+        /// 知识经合成报告并入（与正常侦察同路径），保证恢复后行为与存档前一致。
+        /// </summary>
+        internal GameSession(
+            SliceScenario scenario,
+            WorldTime time,
+            CityEconomyState city,
+            long logistics,
+            long lastDayShortage,
+            bool highUnrestRisk,
+            int enemyTruthStrength,
+            bool hasKnownEnemy,
+            int knownEnemyStrength,
+            IntelSource knownEnemySource,
+            WorldTime knownEnemyObservedAt)
+        {
+            _scenario = scenario;
+            _clock = new WorldClock(time);
+            _city = city;
+            _logistics = logistics;
+            _lastDayShortage = lastDayShortage;
+            _highUnrestRisk = highUnrestRisk;
+
+            _playerIntel = new FactionIntel(scenario.PlayerFaction);
+            _truth.Set(new TruthRecord(scenario.EnemySubject, enemyTruthStrength, scenario.EnemyFaction));
+            if (hasKnownEnemy)
+                _playerIntel.ApplyReport(new IntelReport(
+                    scenario.EnemySubject, scenario.PlayerFaction, knownEnemyStrength, knownEnemySource, knownEnemyObservedAt));
+        }
+
         /// <summary>当前权威世界时间（只读）。</summary>
         public WorldTime CurrentTime => _clock.Current;
 
@@ -87,8 +118,15 @@ namespace ThreeKingdom.Application.Session
         // ---- 只读快照（internal：供 SessionService 构造投影）----
 
         internal CityEconomyState City => _city;
+        internal long Logistics => _logistics;
         internal long LastDayShortage => _lastDayShortage;
         internal bool HighUnrestRisk => _highUnrestRisk;
+
+        /// <summary>敌方真值兵力（仅供存档映射读取；绝不进入显示投影）。</summary>
+        internal int EnemyTruthStrength => _truth.Get(_scenario.EnemySubject).ActualStrength;
+
+        /// <summary>会话场景（供存档映射读取主题/阵营等稳定标识）。</summary>
+        internal SliceScenario Scenario => _scenario;
 
         /// <summary>玩家阵营知识的只读投影（GDD_007；结构上不含真值）。</summary>
         internal IntelProjection IntelProjection => _playerIntel.Project();

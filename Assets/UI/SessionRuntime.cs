@@ -1,4 +1,5 @@
 using ThreeKingdom.Application.Session;
+using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Presentation.Projections;
 using ThreeKingdom.Presentation.Screens;
 
@@ -14,6 +15,8 @@ namespace ThreeKingdom.Unity.UI
     public static class SessionRuntime
     {
         private static readonly SessionService _service = new SessionService();
+        private static readonly SaveCoordinator _saves = new SaveCoordinator(new PlayerPrefsSaveMedium());
+        private const string DefaultSlot = "campaign";
         private static GameSession _session;
 
         /// <summary>当前会话（首访自动开局，保证 HUD 单独打开也可玩）。</summary>
@@ -45,5 +48,27 @@ namespace ThreeKingdom.Unity.UI
         /// <summary>侦察敌方并返回更新后的探报视图。</summary>
         public static EnemyReportView Scout()
             => new EnemyReportView(_service.Scout(Current), Current.CurrentTime);
+
+        // ---- 存档 / 读档（ADR-0005，经真实持久栈）----
+
+        /// <summary>默认槽是否有存档（主菜单「继续」可用性）。</summary>
+        public static bool HasSave() => new PlayerPrefsSaveMedium().Exists(DefaultSlot);
+
+        /// <summary>原子存档当前会话到默认槽；返回是否成功。</summary>
+        public static bool Save() => _saves.Save(DefaultSlot, Current).Succeeded;
+
+        /// <summary>读取默认槽恢复会话；成功则切换当前会话并返回 true，失败返回 false 且不动当前会话。</summary>
+        public static bool Load(out string reason)
+        {
+            SessionLoadResult result = _saves.Load(DefaultSlot);
+            if (result.Succeeded)
+            {
+                _session = result.Session;
+                reason = string.Empty;
+                return true;
+            }
+            reason = result.Reason;
+            return false;
+        }
     }
 }

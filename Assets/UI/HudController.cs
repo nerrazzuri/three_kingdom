@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using ThreeKingdom.Presentation.Projections;
 using ThreeKingdom.Presentation.Screens;
@@ -53,6 +54,18 @@ namespace ThreeKingdom.Unity.UI
 
             var scout = root.Q<Button>("scout");
             if (scout != null) scout.clicked += () => RenderEnemy(root, SessionRuntime.Scout());
+
+            // 竖切：存档（原子写，真实持久栈）+ 返回主菜单。
+            var save = root.Q<Button>("save-game");
+            if (save != null)
+                save.clicked += () =>
+                {
+                    bool ok = SessionRuntime.Save();
+                    SetLabel(root, "save-status", ok ? "已存档" : "存档失败");
+                };
+
+            var toMenu = root.Q<Button>("to-menu");
+            if (toMenu != null) toMenu.clicked += () => SceneManager.LoadScene("MainMenu");
         }
 
         /// <summary>把真实世界状态投影渲染到时间条（合成时辰标签 + 跨日提示）。</summary>

@@ -30,12 +30,35 @@ namespace ThreeKingdom.Unity.UI
             AccessibilityApplier.Apply(root, AccessibilityRuntime.Current);
 
             Wire(root, "new-game", () => StartNewGame(root));
-            Wire(root, "continue", () => SubmitAndRefresh(root, new LoadGameIntent("campaign")));
+            Wire(root, "continue", () => Continue(root));
             Wire(root, "quit", () =>
             {
                 _vm = _vm.RequestQuit();
                 Render(root);
             });
+
+            // 竖切：「继续」可用性反映真实存档是否存在（默认槽 campaign）。
+            var continueBtn = root.Q<Button>("continue");
+            if (continueBtn != null) continueBtn.SetEnabled(SessionRuntime.HasSave());
+        }
+
+        /// <summary>
+        /// 「继续」端到端竖切：经真实持久栈读档恢复会话 → 进入 HUD；失败显示可行动原因（零部分载入）。
+        /// </summary>
+        private void Continue(VisualElement root)
+        {
+            if (!SessionRuntime.HasSave()) return;
+
+            SubmitAndRefresh(root, new LoadGameIntent("campaign")); // 接缝：意图→LoadGameCommand 载荷
+            if (SessionRuntime.Load(out string reason))
+            {
+                SceneManager.LoadScene("Hud"); // 进入 HUD（恢复的真实世界状态）
+            }
+            else
+            {
+                var error = root.Q<Label>("error");
+                if (error != null) error.text = reason; // 可行动原因（不兼容/损坏/指纹不符）
+            }
         }
 
         private void Render(VisualElement root)
