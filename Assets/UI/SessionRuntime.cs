@@ -37,6 +37,10 @@ namespace ThreeKingdom.Unity.UI
         public static WorldStatusView Status()
             => new WorldStatusView(_service.Project(Current));
 
+        /// <summary>取一局目标/胜负视图（守城待变）。</summary>
+        public static ObjectiveView Objective()
+            => new ObjectiveView(_service.ProjectObjective(Current));
+
         /// <summary>取己方城市账本视图（GDD_004）。</summary>
         public static CityLedgerView Ledger()
             => new CityLedgerView(_service.ProjectCity(Current));

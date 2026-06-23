@@ -48,6 +48,14 @@ namespace ThreeKingdom.Application.Session
             return session.IntelProjection;
         }
 
+        /// <summary>取一局目标/胜负投影（守城待变：守至援军 = 胜；民心崩溃 = 败）。</summary>
+        public ObjectiveProjection ProjectObjective(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            return new ObjectiveProjection(
+                session.CurrentTime.Day, session.Scenario.ReliefDay, session.Outcome, session.DefeatReason);
+        }
+
         /// <summary>侦察敌方并返回更新后的情报投影。</summary>
         public IntelProjection Scout(GameSession session)
         {

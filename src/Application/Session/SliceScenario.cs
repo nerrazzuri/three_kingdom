@@ -17,6 +17,9 @@ namespace ThreeKingdom.Application.Session
         /// <summary>开局世界时间（第 0 日黎明）。</summary>
         public WorldTime Start { get; }
 
+        /// <summary>援军抵达日（守住至此日 = 胜；0 基日序号，展示为「第 ReliefDay+1 日」）。守城待变核心目标。</summary>
+        public int ReliefDay { get; }
+
         // ---- 城市（己方账本，GDD_004）----
         /// <summary>开局城市经济状态。</summary>
         public CityEconomyState InitialCity { get; }
@@ -42,6 +45,7 @@ namespace ThreeKingdom.Application.Session
         private SliceScenario()
         {
             Start = new WorldTime(0, DaySegment.Dawn);
+            ReliefDay = 8; // 第 9 日（0 基 8）援军抵达 = 胜；守不到则可能民心崩溃失城。
 
             InitialCity = new CityEconomyState(
                 id: new CityId("汜水关"),

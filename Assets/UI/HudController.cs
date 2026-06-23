@@ -42,6 +42,7 @@ namespace ThreeKingdom.Unity.UI
             RenderTime(root, SessionRuntime.Status());
             RenderLedger(root, SessionRuntime.Ledger());
             RenderEnemy(root, SessionRuntime.Enemy());
+            RenderObjective(root);
 
             var advance = root.Q<Button>("advance-time");
             if (advance != null)
@@ -50,6 +51,7 @@ namespace ThreeKingdom.Unity.UI
                     RenderTime(root, SessionRuntime.Advance()); // 推进 + 跨日提示
                     RenderLedger(root, SessionRuntime.Ledger()); // 跨日结算后账本更新
                     RenderEnemy(root, SessionRuntime.Enemy());   // 情报随时间过时
+                    RenderObjective(root);                       // 推进可能触发胜负
                 };
 
             var scout = root.Q<Button>("scout");
@@ -76,6 +78,28 @@ namespace ThreeKingdom.Unity.UI
 
             var note = root.Q<Label>("advance-note");
             if (note != null) note.text = status.CrossDayNotice;
+        }
+
+        /// <summary>渲染一局目标/胜负（守城待变）；局终禁用推进/侦察/存档并显示横幅。</summary>
+        private void RenderObjective(VisualElement root)
+        {
+            var view = SessionRuntime.Objective();
+            SetLabel(root, "hud-objective", view.ObjectiveLabel);
+            SetLabel(root, "hud-banner", view.BannerLabel);
+
+            if (view.IsOver)
+            {
+                // 一局已结束：冻结推进/侦察/存档（返回主菜单仍可用，可继续/读档）。
+                SetEnabled(root, "advance-time", false);
+                SetEnabled(root, "scout", false);
+                SetEnabled(root, "save-game", false);
+            }
+        }
+
+        private static void SetEnabled(VisualElement root, string name, bool enabled)
+        {
+            var button = root.Q<Button>(name);
+            if (button != null) button.SetEnabled(enabled);
         }
 
         /// <summary>把己方城市账本渲染到 own-ledger 卡（多维分列，P6 不合并；短缺/骚乱警示）。</summary>

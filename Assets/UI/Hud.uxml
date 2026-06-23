@@ -1,6 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <!-- HUD 视觉壳（design/ux/hud.md §3/§4；绑定 HudContextView。中央 40% 不放常驻面板） -->
     <ui:VisualElement name="hud-root" class="hud-root">
+        <!-- 竖切 Phase A：一局目标（守城待变）+ 局终横幅（胜/败）。 -->
+        <ui:Label name="hud-objective" class="hud-objective" />
+        <ui:Label name="hud-banner" class="hud-banner" />
         <ui:VisualElement name="time-bar" class="hud-top">
             <ui:Label name="time-bar-label" text="时辰" />
             <!-- 竖切：真实 Application 会话驱动的推进入口（点击经 SessionService 推进世界时钟）。 -->

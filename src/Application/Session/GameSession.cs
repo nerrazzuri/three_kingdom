@@ -130,5 +130,22 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>玩家阵营知识的只读投影（GDD_007；结构上不含真值）。</summary>
         internal IntelProjection IntelProjection => _playerIntel.Project();
+
+        /// <summary>
+        /// 当前胜负态（守城待变）：民心崩溃（≤0）即失城为败；否则守至援军抵达日为胜；其余进行中。
+        /// 败优先于胜（同日既崩溃又达援军日，判败——城已陷落）。
+        /// </summary>
+        internal GameOutcome Outcome
+        {
+            get
+            {
+                if (_city.CivMorale <= 0) return GameOutcome.Defeat;
+                if (_clock.Current.Day >= _scenario.ReliefDay) return GameOutcome.Victory;
+                return GameOutcome.Ongoing;
+            }
+        }
+
+        /// <summary>败因（仅 <see cref="GameOutcome.Defeat"/> 非空）。</summary>
+        internal string DefeatReason => _city.CivMorale <= 0 ? "民心崩溃，城池陷落。" : string.Empty;
     }
 }
