@@ -1,35 +1,62 @@
 using System;
+using ThreeKingdom.Domain.City;
+using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Time;
 
 namespace ThreeKingdom.Application.Session
 {
     /// <summary>
     /// 会话用例服务（ADR-0002 状态变更协议 2：Application 执行命令、推进 Domain、产出投影）。
-    /// 这是 Presentation→Application 接缝的<b>执行端</b>：表现层调用本服务的用例方法（开局/推进/投影），
-    /// 服务编排 Domain（<see cref="WorldClock"/>）并返回<b>只读投影</b>。确定性——同一会话同一推进序列产生同一结果
-    /// （ADR-0004）。无副作用泄露：表现层拿不到可变聚合，只拿 <see cref="WorldStatusProjection"/>。
+    /// 这是 Presentation→Application 接缝的<b>执行端</b>：表现层调用本服务的用例方法（开局/推进时段/侦察/取投影），
+    /// 服务编排 <see cref="GameSession"/> 聚合并返回<b>只读投影</b>。确定性——同一会话同一操作序列产生同一结果
+    /// （ADR-0004）。无副作用泄露：表现层拿不到可变聚合，只拿投影 DTO。
     /// </summary>
     public sealed class SessionService
     {
-        /// <summary>开新局：世界时间起于第 0 日黎明（确定性初值）。</summary>
-        public GameSession NewGame() => new GameSession(new WorldTime(0, DaySegment.Dawn));
+        /// <summary>开新局：以 slice 默认场景构造会话（世界第 0 日黎明 + 己方城市 + 敌方真值）。</summary>
+        public GameSession NewGame() => new GameSession(SliceScenario.Default());
 
         /// <summary>推进会话 <paramref name="segments"/> 个时段（默认 1），返回推进后的世界状态投影。</summary>
         public WorldStatusProjection Advance(GameSession session, int segments = 1)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            AdvanceResult result = session.Advance(segments);
-            return Project(session, result.DayBoundaries.Count);
+            int daysCrossed = session.Advance(segments);
+            return WorldStatus(session, daysCrossed);
         }
 
         /// <summary>取当前世界状态投影（不推进；DaysCrossedLastAdvance=0）。</summary>
         public WorldStatusProjection Project(GameSession session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            return Project(session, 0);
+            return WorldStatus(session, 0);
         }
 
-        private static WorldStatusProjection Project(GameSession session, int daysCrossed)
+        /// <summary>取己方城市账本投影（GDD_004）。</summary>
+        public CityLedgerProjection ProjectCity(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            CityEconomyState c = session.City;
+            return new CityLedgerProjection(
+                c.Id.ToString(), c.Stock, c.Available, c.CivMorale, c.Security,
+                c.FortificationCurrent, c.FortificationMax, session.LastDayShortage, session.HighUnrestRisk);
+        }
+
+        /// <summary>取敌方情报的只读投影（GDD_007；结构上不含真值）。</summary>
+        public IntelProjection ProjectIntel(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            return session.IntelProjection;
+        }
+
+        /// <summary>侦察敌方并返回更新后的情报投影。</summary>
+        public IntelProjection Scout(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            session.Scout();
+            return session.IntelProjection;
+        }
+
+        private static WorldStatusProjection WorldStatus(GameSession session, int daysCrossed)
         {
             WorldTime t = session.CurrentTime;
             return new WorldStatusProjection(t.Day, t.Segment, t.AbsoluteIndex, daysCrossed);

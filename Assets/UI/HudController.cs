@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using ThreeKingdom.Presentation.Projections;
 using ThreeKingdom.Presentation.Screens;
 
 namespace ThreeKingdom.Unity.UI
@@ -35,10 +36,23 @@ namespace ThreeKingdom.Unity.UI
             // 复合于情境可见性之上——只额外隐藏用户关闭的元素，不强制显示。
             AccessibilityApplier.Apply(root, AccessibilityRuntime.Current);
 
-            // 竖切：真实 Application 会话驱动时间条。开局状态 + 推进按钮经 SessionService 推进世界时钟。
+            // 竖切：真实 Application 会话驱动 HUD。开局渲染三面板（时间/己方账本/敌情），
+            // 推进时段经 SessionService 推进世界时钟 + 跨日结算城市；侦察刷新敌情（含时效）。
             RenderTime(root, SessionRuntime.Status());
+            RenderLedger(root, SessionRuntime.Ledger());
+            RenderEnemy(root, SessionRuntime.Enemy());
+
             var advance = root.Q<Button>("advance-time");
-            if (advance != null) advance.clicked += () => RenderTime(root, SessionRuntime.Advance());
+            if (advance != null)
+                advance.clicked += () =>
+                {
+                    RenderTime(root, SessionRuntime.Advance()); // 推进 + 跨日提示
+                    RenderLedger(root, SessionRuntime.Ledger()); // 跨日结算后账本更新
+                    RenderEnemy(root, SessionRuntime.Enemy());   // 情报随时间过时
+                };
+
+            var scout = root.Q<Button>("scout");
+            if (scout != null) scout.clicked += () => RenderEnemy(root, SessionRuntime.Scout());
         }
 
         /// <summary>把真实世界状态投影渲染到时间条（合成时辰标签 + 跨日提示）。</summary>
@@ -49,6 +63,41 @@ namespace ThreeKingdom.Unity.UI
 
             var note = root.Q<Label>("advance-note");
             if (note != null) note.text = status.CrossDayNotice;
+        }
+
+        /// <summary>把己方城市账本渲染到 own-ledger 卡（多维分列，P6 不合并；短缺/骚乱警示）。</summary>
+        private void RenderLedger(VisualElement root, CityLedgerView ledger)
+        {
+            SetLabel(root, "ledger-stock", ledger.StockLabel);
+            SetLabel(root, "ledger-morale", ledger.MoraleLabel);
+            SetLabel(root, "ledger-security", ledger.SecurityLabel);
+            SetLabel(root, "ledger-fort", ledger.FortificationLabel);
+            SetLabel(root, "ledger-warning", ledger.WarningLabel);
+        }
+
+        /// <summary>把敌情探报渲染到 enemy-report 卡（只呈现估计值/时效，无真值；无情报给提示）。</summary>
+        private void RenderEnemy(VisualElement root, EnemyReportView report)
+        {
+            var empty = root.Q<Label>("enemy-report-empty");
+            if (empty != null)
+            {
+                empty.text = report.EmptyLabel;
+                empty.style.display = report.HasIntel ? DisplayStyle.None : DisplayStyle.Flex;
+            }
+
+            var lines = root.Q<VisualElement>("enemy-report-lines");
+            if (lines != null)
+            {
+                lines.Clear();
+                foreach (var line in report.Lines)
+                    lines.Add(new Label(line));
+            }
+        }
+
+        private static void SetLabel(VisualElement root, string name, string text)
+        {
+            var label = root.Q<Label>(name);
+            if (label != null) label.text = text;
         }
 
         /// <summary>按当前情境绑定元素可见性（slice 演示入口；运行期由状态驱动）。</summary>

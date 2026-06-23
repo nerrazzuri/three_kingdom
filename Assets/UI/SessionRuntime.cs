@@ -1,4 +1,5 @@
 using ThreeKingdom.Application.Session;
+using ThreeKingdom.Presentation.Projections;
 using ThreeKingdom.Presentation.Screens;
 
 namespace ThreeKingdom.Unity.UI
@@ -32,5 +33,17 @@ namespace ThreeKingdom.Unity.UI
         /// <summary>取当前世界状态视图（不推进）。</summary>
         public static WorldStatusView Status()
             => new WorldStatusView(_service.Project(Current));
+
+        /// <summary>取己方城市账本视图（GDD_004）。</summary>
+        public static CityLedgerView Ledger()
+            => new CityLedgerView(_service.ProjectCity(Current));
+
+        /// <summary>取敌情探报视图（GDD_007；时效以当前世界时间计）。</summary>
+        public static EnemyReportView Enemy()
+            => new EnemyReportView(_service.ProjectIntel(Current), Current.CurrentTime);
+
+        /// <summary>侦察敌方并返回更新后的探报视图。</summary>
+        public static EnemyReportView Scout()
+            => new EnemyReportView(_service.Scout(Current), Current.CurrentTime);
     }
 }

@@ -5,9 +5,9 @@
 > **审查模式**：lean
 
 <!-- STATUS -->
-Epic: ✅ EPIC_010 Complete（全 10 epics）｜✅ 竖切：Application 层 + Unity 真实驱动一局（Play 签核通过）
-Feature: src/Application 会话层 + Unity 端到端竖切（MainMenu 新游戏→HUD 真实世界状态→推进时段）
-Task: 竖切完成并 push tk/main（92c9094）。✅ 用户 Play 签核：新游戏→HUD「第1日·黎明」、推进时段走时辰、第4次跨「第2日」带跨日提示，三项全有。dotnet 390/390 绿。CD-C3/TD「接缝在表现层未实证」悬案闭合｜下一步 ▶ 用户定方向（沿同一接缝复制其余命令 / 里程碑回顾 / 其他）
+Epic: ✅ EPIC_010 Complete｜▶ 竖切扩展：沿接缝叠 City（己方账本）+ Intel（敌情侦察/时效）
+Feature: GameSession 编排城市日界结算 + 敌情四层；HUD 三面板（时间/账本/敌情）+ 推进/侦察
+Task: City（CityDaySettlementService 跨日结算→CityLedgerProjection/View）+ Intel（真值/知识四层 + Scout + 真值每日漂移致情报过时→EnemyReportView）；数值集中 SliceScenario（数据驱动）。dotnet 404/404 绿（+14）；Unity batchmode 编译干净；三 DLL 桥重建｜待 commit｜下一步 ▶ 用户 Play 实测（账本随日结算、敌情侦察/过时/重侦察）
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）

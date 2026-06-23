@@ -10,6 +10,12 @@
         <ui:VisualElement name="hud-left" class="hud-left">
             <ui:VisualElement name="own-ledger" class="card">
                 <ui:Label text="己方账本" class="card-title" />
+                <!-- 竖切：真实城市日界结算（GDD_004），多维分列（P6 不合并）。推进时段跨日即更新。 -->
+                <ui:Label name="ledger-stock" text="粮草 —" />
+                <ui:Label name="ledger-morale" text="民心 —" />
+                <ui:Label name="ledger-security" text="治安 —" />
+                <ui:Label name="ledger-fort" text="工事 —" />
+                <ui:Label name="ledger-warning" class="ledger-warning" />
             </ui:VisualElement>
             <ui:VisualElement name="advisor-entry" class="card">
                 <ui:Label text="军师" class="card-title" />
@@ -18,6 +24,10 @@
         <ui:VisualElement name="hud-right" class="hud-right">
             <ui:VisualElement name="enemy-report" class="card">
                 <ui:Label text="敌情探报" class="card-title" />
+                <!-- 竖切：真实情报投影（GDD_007，只呈现估计值/时效，无真值）。点「侦察」刷新；不侦察则随时间过时。 -->
+                <ui:Label name="enemy-report-empty" text="尚无敌情——点「侦察」获取" />
+                <ui:VisualElement name="enemy-report-lines" />
+                <ui:Button name="scout" text="侦察" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="hud-bottom" class="hud-bottom">
