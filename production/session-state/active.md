@@ -5,9 +5,9 @@
 > **审查模式**：lean
 
 <!-- STATUS -->
-Epic: ✅ EPIC_010 Complete｜✅ 可玩 slice：推进时段 + 账本 + 敌情侦察/时效 + 存档读档（三竖切 Play 签核通过）
-Feature: GameSession 编排时间/城市/敌情/存档；HUD 多面板 + 推进/侦察/存档/返回；MainMenu 继续真读档
-Task: 三条竖切全部 Play 签核通过（用户实测）：①账本随日结算/触底短缺 ②敌情侦察/过时/重侦察 ③存档→返回→继续恢复一致 + 跨 Play 会话持久。dotnet 408/408 绿。Application 层补全（Session/Save）｜下一步 ▶ 用户定方向（里程碑回顾 / 扩玩法 / 其他）
+Epic: ✅ EPIC_010 + 可玩 MVP 切片（A-B-C-D 大半完成；两条取胜路线 + 自动验收）
+Feature: GameSession 编排时间/城市/敌情/军议/外交/花名册/袭扰 + 存档；守城待变 & 断粮疲敌双胜路
+Task: 自主完成 A(一局闭环胜负) + B1(军议)/B6(外交求粮)/B7(花名册) + 断粮疲敌第二胜路 + D(MVP 验收测试+报告)。dotnet 443/443 绿。已 push tk/main。报告 production/milestones/mvp-verification-2026-06-23.md｜★这些 Play 未实测（待用户：A/B1/B6/B7/断粮/求粮全是本轮新增，用户只 Play 过更早的三竖切）｜差距见报告 §四（完整战役/准备 B2/B3、假退伏击链、内容平衡、打包/视觉签核）｜下一步 ▶ 用户 Play 试玩 + 定后续
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）
