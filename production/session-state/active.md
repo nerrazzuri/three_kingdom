@@ -1,13 +1,13 @@
-# 会话状态 — Foundation 实现中（epic-001）
+# 会话状态 — EPIC_010 Presentation 实现中
 
-> **最后更新**：2026-06-22
+> **最后更新**：2026-06-23
 > **语言**：全程中文（见用户偏好 memory）
 > **审查模式**：lean
 
 <!-- STATUS -->
-Epic: ★ 全部 9 epics（28 stories）✅ Complete（2026-06-22）
-Feature: Domain 四层内核 + 后果结算 + 存档/复现底座
-Task: 329/329 全绿 0 warning，全推 tk/main（HEAD=c470fd1）｜下一阶段 ▶ Presentation EPIC_010 或 Unity 表现层切片重验幻想
+Epic: EPIC_010 Slice UX（前 9 epics 全 ✅ Complete）
+Feature: Presentation 表现层（三屏 + 无障碍）
+Task: 5 story 可测逻辑 dotnet 370/370 绿；三屏 UXML 壳 + 可 Play 场景 batchmode 通过；用户已确认 MainMenu 进 Play OK｜HEAD=baa77d3｜下一步 ▶ (b) S5 无障碍设置面板+挂接 / 三屏视觉签核 / 其余两屏 Play 确认
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）
@@ -548,3 +548,26 @@ ADR-0003（数据驱动配置的正式锁定）。
 - batchmode 已跑通：ugui 解析、生成器编译、三场景生成（含 EventSystem）、无 error CS、退出码 0。MainMenu 为 BuildSettings 首场景。
 - **用户侧（ADVISORY，graphics Editor）**：打开任一场景进 Play → 看渲染 + 点击 → 截图签核。
 - commit 见下；push tk/main。
+
+## ⏹ 会话收尾 — 2026-06-23（用户确认 Play OK，新会话接续）
+
+- **用户已确认**：Unity Hub 6000.3.18f1 打开项目根 → `Assets/Scenes/MainMenu.unity` → Play **可正常运行**（视觉签核第一步通过）。
+- **当前 HEAD = tk/main = `baa77d3`**，工作区干净。测试 **370/370 全绿**（dotnet，BLOCKING）。
+
+### ▶ 新会话入口（EPIC_010 续）
+按优先级三选一（lean 节奏，沿用红线）：
+1. **(b) Story 005 无障碍设置面板 + 挂接**：建一个无障碍设置屏（UXML/USS/Controller）绑定 `AccessibilitySettings`（已测：缩放/色盲/减动/HUD 可见性 + 序列化 round-trip），并把这些设置挂到 MainMenu/Hud/PauseMenu 三屏（文本缩放应用、reduceMotion 关动效、HUD 元素可见性切换、色盲冗余通道）。+ 可加 `ISettingsStore` 端口持久（复用 epic-009 原子写模式）。逻辑走 dotnet BLOCKING，UXML 壳走 batchmode 编译 + 可选场景。
+2. **三屏视觉/无障碍截图签核（ADVISORY，须 graphics Editor）**：打开三场景进 Play，逐项核 hud §12 / 三屏 §12（对比度实测、文本 150% 无溢出、键鼠焦点环可见、色盲去色可辨、点击交互）。证据落 `production/qa/evidence/{main-menu,hud,pause-menu,accessibility}-evidence.md` + 截图。通过后各 story 由 In Progress → Complete。
+3. **EPIC_010 收尾判定**：5 story BLOCKING 全绿后，视 ADVISORY 签核进度，决定 epic 关闭或挂 ADVISORY 尾。
+
+### 关键路径与命令
+- **跑测试（BLOCKING）**：`dotnet test tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj -warnaserror`（370/370）。
+- **改 src/ 后重建 Unity 桥 DLL**：`dotnet build src/Presentation/ThreeKingdom.Presentation.csproj -c Release` → 复制两 DLL 到 `Assets/Plugins/`（见该目录 README）。
+- **重建/新增 Unity 场景**：菜单「三国/构建 Slice 场景」或 batchmode `-executeMethod ThreeKingdom.Unity.EditorTools.SliceSceneBuilder.BuildAll`。
+- **batchmode 编译校验**：`Unity.exe -batchmode -nographics -quit -projectPath . -logFile -`，看无 `error CS` + `Library/ScriptAssemblies/Assembly-CSharp*.dll` 产出。
+- **Presentation 源**：`src/Presentation/`（Projections/Intents/Screens/Accessibility/Display）；测试 `tests/.../Presentation/`。Unity 壳：`Assets/UI`（UXML/USS/Controller）+ `Assets/Scenes` + `Assets/Editor`。
+
+### 挂账（非阻断）
+- `tools/_unity_probe/` 物理文件夹待用户删（`rm -rf` 被权限策略拒）。
+- Assets/Plugins 两 DLL 是 src/ 构建产物桥，改 src/ 须重建（tech-debt：未来可改 UPM 包 asmdef 或 CI dotnet build 注入）。
+- GitHub Actions 首次绿待确认（Unity job license-gated；domain-tests job 无许可应可绿）。
