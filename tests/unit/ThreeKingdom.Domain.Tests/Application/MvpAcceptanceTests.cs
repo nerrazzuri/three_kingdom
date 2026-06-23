@@ -37,17 +37,17 @@ namespace ThreeKingdom.Domain.Tests.Application
             var service = new SessionService();
             var session = service.NewGame();
 
+            var sc = SliceScenario.Default();
             int dayWon = -1;
-            for (int day = 0; day < SliceScenario.Default().ReliefDay; day++)
+            for (int i = 0; i < sc.ReliefDay; i++)
             {
-                service.Raid(session); // 断粮疲敌：花粮草削敌，暴露损民心（不同代价）
-                if (service.ProjectObjective(session).Outcome == GameOutcome.Victory) { dayWon = day; break; }
-                service.Advance(session, WorldTime.SegmentsPerDay);
-                if (service.ProjectObjective(session).Outcome == GameOutcome.Victory) { dayWon = day; break; }
+                service.DispatchRaid(session);                  // 派出袭扰（断粮疲敌：花粮草，有暴露风险）
+                service.Advance(session, sc.RaidLeadSegments);  // 推进至见效（非即时）
+                if (service.ProjectObjective(session).Outcome == GameOutcome.Victory) { dayWon = session.CurrentTime.Day; break; }
             }
 
             Assert.That(dayWon, Is.GreaterThanOrEqualTo(0), "断粮疲敌应能取胜（敌退兵）。");
-            Assert.That(dayWon, Is.LessThan(SliceScenario.Default().ReliefDay),
+            Assert.That(dayWon, Is.LessThan(sc.ReliefDay),
                 "断粮路线以不同代价（粮草/暴露风险）早于援军日取胜——与守城待变形成两条有效路线。");
         }
 
@@ -60,13 +60,13 @@ namespace ThreeKingdom.Domain.Tests.Application
             {
                 var service = new SessionService();
                 var s = service.NewGame();
-                // 固定命令脚本：侦察 → 袭扰 → 推进 → 求援 → 推进 → 袭扰 → 推进。
-                service.Scout(s);
-                service.Raid(s);
+                // 固定命令脚本：派出侦察 → 派出袭扰 → 推进 → 求援 → 推进 → 派出袭扰 → 推进。
+                service.DispatchScout(s);
+                service.DispatchRaid(s);
                 service.Advance(s, WorldTime.SegmentsPerDay);
                 service.RequestAid(s);
                 service.Advance(s, WorldTime.SegmentsPerDay);
-                service.Raid(s);
+                service.DispatchRaid(s);
                 service.Advance(s, WorldTime.SegmentsPerDay);
                 return Fingerprint(service, s);
             }
@@ -86,14 +86,15 @@ namespace ThreeKingdom.Domain.Tests.Application
             service.Advance(noRaid, WorldTime.SegmentsPerDay * 4);
             var noRaidObj = service.ProjectObjective(noRaid);
 
-            // 实验组：每日袭扰 4 日——断粮路线推进至（或接近）退兵。
+            // 实验组：反复派出袭扰 + 推进至见效——断粮路线推进至退兵。
+            var sc = SliceScenario.Default();
             var withRaid = service.NewGame();
             bool wonByAttrition = false;
-            for (int day = 0; day < 4; day++)
+            for (int i = 0; i < sc.ReliefDay; i++)
             {
-                service.Raid(withRaid);
+                service.DispatchRaid(withRaid);
+                service.Advance(withRaid, sc.RaidLeadSegments);
                 if (service.ProjectObjective(withRaid).Outcome == GameOutcome.Victory) { wonByAttrition = true; break; }
-                service.Advance(withRaid, WorldTime.SegmentsPerDay);
             }
 
             // 单变量（是否袭扰）显著改变局面：控制组仍进行中/未由断粮取胜，实验组由断粮取胜。

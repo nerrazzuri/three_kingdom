@@ -41,7 +41,7 @@ namespace ThreeKingdom.Presentation.Projections
 
             Lines = lines;
             HasIntel = lines.Count > 0;
-            EmptyLabel = HasIntel ? string.Empty : "尚无敌情——点「侦察」获取";
+            EmptyLabel = HasIntel ? string.Empty : "尚无敌情——派出侦察以获取（返报需时）";
         }
     }
 }

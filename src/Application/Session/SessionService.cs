@@ -60,19 +60,21 @@ namespace ThreeKingdom.Application.Session
                 session.DefeatReason, session.VictoryReason);
         }
 
-        /// <summary>袭扰敌补给（断粮疲敌，一日一袭），返回更新后的袭扰投影。</summary>
-        public RaidProjection Raid(GameSession session)
+        /// <summary>派出袭扰（断粮疲敌；非即时，见效经时间推进），返回更新后的袭扰投影。</summary>
+        public RaidProjection DispatchRaid(GameSession session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            session.Raid();
+            session.DispatchRaid();
             return ProjectRaid(session);
         }
 
-        /// <summary>取袭扰投影（可袭扰性 + 上次结果；不含敌真值）。</summary>
+        /// <summary>取袭扰投影（可派出/在途/预计见效日/上次结果；不含敌真值）。</summary>
         public RaidProjection ProjectRaid(GameSession session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            return new RaidProjection(session.CanRaid, session.LastRaidPerformed, session.LastRaidExposed);
+            return new RaidProjection(
+                session.CanDispatchRaid, session.RaidInFlight, session.RaidArrivalDay,
+                session.HasRaidResult, session.LastRaidExposed);
         }
 
         /// <summary>求粮（受控外交入口，一局一次），返回更新后的外交投影。</summary>
@@ -126,12 +128,19 @@ namespace ThreeKingdom.Application.Session
                 arrivalDay, session.PendingDeliveryAmount, session.DiplomacyDeliveredAmount);
         }
 
-        /// <summary>侦察敌方并返回更新后的情报投影。</summary>
-        public IntelProjection Scout(GameSession session)
+        /// <summary>派出侦察（GDD_007；非即时，返报经时间推进），返回更新后的侦察派出投影。</summary>
+        public ScoutProjection DispatchScout(GameSession session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            session.Scout();
-            return session.IntelProjection;
+            session.DispatchScout();
+            return ProjectScout(session);
+        }
+
+        /// <summary>取侦察派出投影（可派出/在途/预计返报日）。</summary>
+        public ScoutProjection ProjectScout(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            return new ScoutProjection(session.CanDispatchScout, session.ScoutInFlight, session.ScoutArrivalDay);
         }
 
         private static WorldStatusProjection WorldStatus(GameSession session, int daysCrossed)

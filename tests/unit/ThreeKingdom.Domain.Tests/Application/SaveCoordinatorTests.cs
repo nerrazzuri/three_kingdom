@@ -35,7 +35,8 @@ namespace ThreeKingdom.Domain.Tests.Application
             var coordinator = new SaveCoordinator(new MemMedium());
             var session = service.NewGame();
             service.Advance(session, WorldTime.SegmentsPerDay * 3); // 推进三日（城市结算 + 敌真值漂移）
-            service.Scout(session);                                 // 第 3 日侦察，留下情报 + 时效基准
+            service.DispatchScout(session);                         // 派出侦察
+            service.Advance(session, SliceScenario.Default().ScoutLeadSegments); // 返报，留下情报 + 时效基准
 
             SaveResult saved = coordinator.Save("campaign", session);
             SessionLoadResult loaded = coordinator.Load("campaign");

@@ -53,9 +53,13 @@ namespace ThreeKingdom.Unity.UI
         public static EnemyReportView Enemy()
             => new EnemyReportView(_service.ProjectIntel(Current), Current.CurrentTime);
 
-        /// <summary>侦察敌方并返回更新后的探报视图。</summary>
-        public static EnemyReportView Scout()
-            => new EnemyReportView(_service.Scout(Current), Current.CurrentTime);
+        /// <summary>取侦察派出视图（在途/可派出状态）。</summary>
+        public static ScoutView ScoutStatus()
+            => new ScoutView(_service.ProjectScout(Current));
+
+        /// <summary>派出侦察（非即时，返报经推进）并返回更新后的侦察派出视图。</summary>
+        public static ScoutView DispatchScout()
+            => new ScoutView(_service.DispatchScout(Current));
 
         /// <summary>取最近军议建议视图（GDD_008；未召开返回 null）。</summary>
         public static CouncilView Council()
@@ -71,13 +75,13 @@ namespace ThreeKingdom.Unity.UI
             return set == null ? null : CouncilView.FromSet(set, snapshot);
         }
 
-        /// <summary>取袭扰投影（断粮疲敌；不含敌真值）。</summary>
-        public static RaidProjection Raid()
-            => _service.ProjectRaid(Current);
+        /// <summary>取袭扰视图（断粮疲敌；在途/可派出/上次结果；不含敌真值）。</summary>
+        public static RaidView RaidStatus()
+            => new RaidView(_service.ProjectRaid(Current));
 
-        /// <summary>发起袭扰（断粮疲敌，一日一袭）并返回更新后的袭扰投影。</summary>
-        public static RaidProjection DoRaid()
-            => _service.Raid(Current);
+        /// <summary>派出袭扰（断粮疲敌；非即时，见效经推进）并返回更新后的袭扰视图。</summary>
+        public static RaidView DispatchRaid()
+            => new RaidView(_service.DispatchRaid(Current));
 
         /// <summary>取外交求粮视图（GDD_012 §8）。</summary>
         public static DiplomacyView Diplomacy()

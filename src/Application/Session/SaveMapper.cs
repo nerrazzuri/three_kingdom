@@ -35,8 +35,10 @@ namespace ThreeKingdom.Application.Session
         private const string KeyDiploPendingIndex = "diplo.pendingIndex";
         private const string KeyDiploPendingAmount = "diplo.pendingAmount";
         private const string KeyDiploDelivered = "diplo.delivered";
-        private const string KeyRaidLastDay = "raid.lastDay";
+        private const string KeyRaidPendingIndex = "raid.pendingIndex";
+        private const string KeyRaidHasResult = "raid.hasResult";
         private const string KeyRaidExposed = "raid.lastExposed";
+        private const string KeyScoutPendingIndex = "scout.pendingIndex";
         private const string RngDiplomacy = "diplomacy";
         private const string RngRaid = "raid";
 
@@ -69,8 +71,10 @@ namespace ThreeKingdom.Application.Session
                 [KeyDiploPendingIndex] = session.PendingDeliveryIndex,
                 [KeyDiploPendingAmount] = session.PendingDeliveryAmount,
                 [KeyDiploDelivered] = session.DiplomacyDeliveredAmount,
-                [KeyRaidLastDay] = session.LastRaidDay,
+                [KeyRaidPendingIndex] = session.PendingRaidIndex,
+                [KeyRaidHasResult] = session.HasRaidResult ? 1 : 0,
                 [KeyRaidExposed] = session.LastRaidExposed ? 1 : 0,
+                [KeyScoutPendingIndex] = session.PendingScoutIndex,
             };
 
             var knowledge = new Dictionary<string, long>(StringComparer.Ordinal);
@@ -129,12 +133,18 @@ namespace ThreeKingdom.Application.Session
 
             // 恢复袭扰（一日一袭日 + 随机流位置）。
             session.RestoreRaid(
-                lastRaidDay: checked((int)t[KeyRaidLastDay]),
-                lastExposed: t[KeyRaidExposed] != 0,
+                pendingRaidIndex: GetOr(t, KeyRaidPendingIndex, -1),
+                hasResult: GetOr(t, KeyRaidHasResult, 0) != 0,
+                lastExposed: GetOr(t, KeyRaidExposed, 0) != 0,
                 rng: FindRng(snapshot, RngRaid, scenario.RaidRngSeed));
+            session.RestoreScout(GetOr(t, KeyScoutPendingIndex, -1));
 
             return session;
         }
+
+        /// <summary>读取键值；缺失则回落默认（向后兼容旧存档新增字段）。</summary>
+        private static long GetOr(IReadOnlyDictionary<string, long> map, string key, long fallback)
+            => map.TryGetValue(key, out var v) ? v : fallback;
 
         /// <summary>从快照取命名随机流位置；缺失则回落到种子起点（确定性）。</summary>
         private static RngStreamState FindRng(SaveSnapshot snapshot, string name, ulong fallbackSeed)

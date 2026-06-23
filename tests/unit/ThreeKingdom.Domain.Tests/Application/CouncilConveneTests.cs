@@ -55,7 +55,8 @@ namespace ThreeKingdom.Domain.Tests.Application
             var session = service.NewGame();
             var (set, snapAtConvene) = service.Convene(session); // 召开（知识=空）
 
-            service.Scout(session); // 侦察改变知识 → 快照变
+            service.DispatchScout(session);                       // 侦察非即时
+            service.Advance(session, SliceScenario.Default().ScoutLeadSegments); // 返报 → 知识变 → 快照变
 
             var current = service.ProjectCouncil(session).Snapshot;
             var view = CouncilView.FromSet(set!, current);
@@ -68,7 +69,8 @@ namespace ThreeKingdom.Domain.Tests.Application
         {
             var service = new SessionService();
             var session = service.NewGame();
-            service.Scout(session); // 有依据
+            service.DispatchScout(session);                       // 派出侦察
+            service.Advance(session, SliceScenario.Default().ScoutLeadSegments); // 返报 → 有依据
             var (set, snapshot) = service.Convene(session);
 
             var view = CouncilView.FromSet(set!, snapshot);

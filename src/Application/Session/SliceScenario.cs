@@ -93,6 +93,12 @@ namespace ThreeKingdom.Application.Session
         public int EnemyWithdrawThreshold { get; }
         /// <summary>袭扰判定随机流种子（确定性，位置可存档）。</summary>
         public ulong RaidRngSeed { get; }
+        /// <summary>袭扰队往返见效所需时段数（≥1；营地距离，非点击即到）。</summary>
+        public int RaidLeadSegments { get; }
+
+        // ---- 侦察行军时延（GDD_007；派出→在途→返报，非即时暴露）----
+        /// <summary>侦察队往返返报所需时段数（≥1；营地距离，避免即时暴露敌情）。</summary>
+        public int ScoutLeadSegments { get; }
 
         private SliceScenario()
         {
@@ -184,6 +190,8 @@ namespace ThreeKingdom.Application.Session
             RaidExposureMoralePenalty = 6;
             EnemyWithdrawThreshold = 400;                       // 敌力≤400 → 疲敝退兵（胜）
             RaidRngSeed = 0x5A1D_2026_0001UL;
+            RaidLeadSegments = WorldTime.SegmentsPerDay;         // 袭扰队往返约一日见效
+            ScoutLeadSegments = 2;                              // 侦察返报约半日（4 时段/日）
 
             // 人物花名册（GDD_005）：关键四人，能力/性格/职责/健康（数据驱动，原创角色，守红线①）。
             Roster = new List<CharacterState>

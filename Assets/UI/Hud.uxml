@@ -53,11 +53,13 @@
                     <ui:VisualElement name="enemy-report" class="card">
                         <ui:Label text="敌情探报" class="card-title" />
                         <!-- 情报投影（GDD_007，只呈现估计值/时效，无真值）。 -->
-                        <ui:Label name="enemy-report-empty" text="尚无敌情——点「侦察」获取" />
+                        <ui:Label name="enemy-report-empty" text="尚无敌情——派出侦察以获取（返报需时）" />
                         <ui:VisualElement name="enemy-report-lines" />
-                        <ui:Button name="scout" text="侦察" />
-                        <!-- 断粮疲敌（第二取胜路线）：袭扰敌补给，一日一袭，花粮草、有暴露风险。 -->
-                        <ui:Button name="raid" text="袭扰敌补给" />
+                        <!-- 侦察非即时：派出→在途→返报（避免即时暴露敌情）。 -->
+                        <ui:Button name="scout" text="派出侦察" />
+                        <ui:Label name="scout-status" class="hud-note" />
+                        <!-- 断粮疲敌（第二取胜路线）：派出袭扰→在途→见效，花粮草、有暴露风险。 -->
+                        <ui:Button name="raid" text="派出袭扰" />
                         <ui:Label name="raid-status" class="hud-note" />
                     </ui:VisualElement>
                 </ui:VisualElement>

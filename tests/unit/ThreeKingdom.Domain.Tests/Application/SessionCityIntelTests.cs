@@ -84,17 +84,40 @@ namespace ThreeKingdom.Domain.Tests.Application
             Assert.That(intel.Count, Is.EqualTo(0), "未侦察前阵营知识为空（不泄露真值）。");
         }
 
+        /// <summary>派出侦察并推进至返报（非即时）；返回返报后的情报投影。</summary>
+        private static ThreeKingdom.Domain.Intel.IntelProjection ScoutAndResolve(SessionService service, GameSession session)
+        {
+            service.DispatchScout(session);
+            service.Advance(session, Scenario.ScoutLeadSegments);
+            return service.ProjectIntel(session);
+        }
+
         [Test]
-        public void test_scout_records_current_truth_at_current_time()
+        public void test_scout_is_not_instant_intel_only_arrives_after_return()
         {
             var service = new SessionService();
             var session = service.NewGame();
 
-            var intel = service.Scout(session);
+            service.DispatchScout(session);
+            Assert.That(service.ProjectIntel(session).Count, Is.EqualTo(0), "派出当时尚无情报——返报需时（非即时暴露）。");
+            Assert.That(service.ProjectScout(session).InFlight, Is.True);
+
+            var intel = ScoutAndResolve(new SessionService(), service.NewGame()); // 另证：返报后有情报
+            Assert.That(intel.Count, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void test_scout_records_truth_at_return_time()
+        {
+            var service = new SessionService();
+            var session = service.NewGame();
+
+            var intel = ScoutAndResolve(service, session); // 派出 + 推进 ScoutLead 返报
 
             Assert.That(intel.TryGet(Scenario.EnemySubject, out var entry), Is.True);
+            // 返报在同日内（ScoutLead=2<一日），未跨日界 → 敌真值仍为初值。
             Assert.That(entry.KnownStrength, Is.EqualTo(Scenario.EnemyInitialStrength));
-            Assert.That(entry.ObservedAt, Is.EqualTo(new WorldTime(0, DaySegment.Dawn)));
+            Assert.That(entry.ObservedAt, Is.EqualTo(new WorldTime(0, DaySegment.Dawn).Advance(Scenario.ScoutLeadSegments)));
             Assert.That(entry.Source, Is.EqualTo(IntelSource.Scouting));
         }
 
@@ -103,28 +126,29 @@ namespace ThreeKingdom.Domain.Tests.Application
         {
             var service = new SessionService();
             var session = service.NewGame();
-            service.Scout(session);                              // 第 0 日黎明侦察
-            service.Advance(session, WorldTime.SegmentsPerDay * 2); // 过两日，敌真值已漂移
+            ScoutAndResolve(service, session);                      // 侦察返报，留下情报基准
+            var atScout = service.ProjectIntel(session);
+            atScout.TryGet(Scenario.EnemySubject, out var baseline);
+
+            service.Advance(session, WorldTime.SegmentsPerDay * 2);  // 过两日，敌真值已漂移
 
             var intel = service.ProjectIntel(session);
             intel.TryGet(Scenario.EnemySubject, out var entry);
-
-            Assert.That(entry.KnownStrength, Is.EqualTo(Scenario.EnemyInitialStrength), "不再侦察 → 所持估计值停在旧值（过时）。");
-            Assert.That(entry.ObservedAt, Is.EqualTo(new WorldTime(0, DaySegment.Dawn)), "观察时间停在上次侦察时刻。");
+            Assert.That(entry.KnownStrength, Is.EqualTo(baseline.KnownStrength), "不再侦察 → 所持估计值停在旧值（过时）。");
+            Assert.That(entry.ObservedAt, Is.EqualTo(baseline.ObservedAt), "观察时间停在上次返报时刻。");
         }
 
         [Test]
-        public void test_rescout_after_days_reflects_grown_truth_and_new_time()
+        public void test_rescout_after_days_reflects_grown_truth()
         {
             var service = new SessionService();
             var session = service.NewGame();
             service.Advance(session, WorldTime.SegmentsPerDay * 2); // 敌真值 +2 日增援
-            var intel = service.Scout(session);                    // 重新侦察
+            var intel = ScoutAndResolve(service, session);          // 重新侦察返报
 
             intel.TryGet(Scenario.EnemySubject, out var entry);
             int expected = Scenario.EnemyInitialStrength + Scenario.EnemyReinforcePerDay * 2;
             Assert.That(entry.KnownStrength, Is.EqualTo(expected), "重新侦察反映漂移后的真值。");
-            Assert.That(entry.ObservedAt, Is.EqualTo(new WorldTime(2, DaySegment.Dawn)));
         }
     }
 }

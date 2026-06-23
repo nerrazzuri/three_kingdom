@@ -37,13 +37,17 @@ namespace ThreeKingdom.Application.Session
 
         // 军议（军师条件化建议，GDD_008）——瞬时，不入存档（读档后重新召开）
         private readonly WarCouncilService _council = new WarCouncilService();
-        private CouncilAdviceSet _lastAdvice; // null = 未召开
+        private CouncilAdviceSet? _lastAdvice; // null = 未召开
 
-        // 袭扰敌补给（断粮疲敌，第二取胜路线）
+        // 侦察（派出→在途→返报；非即时暴露，GDD_007）
+        private long _pendingScoutIndex = -1; // 侦察队返报的绝对时段索引；-1 = 无在途
+
+        // 袭扰敌补给（断粮疲敌，第二取胜路线；派出→在途→见效）
         private DeterministicRandom _raidRng;
-        private int _lastRaidDay = -1;     // 一日一袭（须推进日界才能再袭）
-        private bool _lastRaidExposed;
-        private bool _lastRaidPerformed;
+        private long _pendingRaidIndex = -1;  // 袭扰队见效的绝对时段索引；-1 = 无在途
+        private bool _lastRaidExposed;        // 最近一次「已结算」袭扰是否暴露
+        private bool _hasRaidResult;          // 是否有可展示的已结算袭扰结果
+        private bool _lastDispatchPerformed;  // 最近一次派出操作是否真正派出（用于 UI 反馈）
 
         // 外交（求粮受控入口，GDD_012 §8）
         private readonly DiplomacyService _diplomacy = new DiplomacyService();
@@ -142,7 +146,46 @@ namespace ThreeKingdom.Application.Session
                 _pendingDeliveryAmount = 0;
             }
 
+            ResolveScout();
+            ResolveRaid();
+
             return result.DayBoundaries.Count;
+        }
+
+        /// <summary>侦察队返报：抵达时段后读真值生成观察→报告→并入知识（GDD_007，观察时间=返报时刻）。</summary>
+        private void ResolveScout()
+        {
+            if (_pendingScoutIndex < 0 || _clock.Current.AbsoluteIndex < _pendingScoutIndex) return;
+            Observation observation = _intel.Observe(_truth, _scenario.EnemySubject, _scenario.PlayerFaction, _clock.Current);
+            IntelReport report = _intel.ToReport(observation, _scenario.PlayerFaction, IntelSource.Scouting);
+            _playerIntel.ApplyReport(report);
+            _pendingScoutIndex = -1;
+        }
+
+        /// <summary>袭扰见效：抵达时段后判定暴露（消费袭扰随机流）。未暴露削敌真实兵力，暴露损民心。</summary>
+        private void ResolveRaid()
+        {
+            if (_pendingRaidIndex < 0 || _clock.Current.AbsoluteIndex < _pendingRaidIndex) return;
+            _pendingRaidIndex = -1;
+            _hasRaidResult = true;
+
+            FixedPoint prob = (_scenario.RaidExposureBase - _scenario.RaidSkillWeight * _scenario.RaidCapability)
+                .Clamp(FixedPoint.Zero, FixedPoint.One);
+            FixedPoint r = _raidRng.NextUnit();
+            _lastRaidExposed = r < prob;
+
+            if (_lastRaidExposed)
+            {
+                int morale = _city.CivMorale - _scenario.RaidExposureMoralePenalty;
+                if (morale < 0) morale = 0;
+                _city = _city.With(civMorale: morale);
+            }
+            else
+            {
+                int reduced = _truth.Get(_scenario.EnemySubject).ActualStrength - _scenario.RaidEnemyDamage;
+                if (reduced < 0) reduced = 0;
+                _truth.SetStrength(_scenario.EnemySubject, reduced);
+            }
         }
 
         /// <summary>
@@ -171,57 +214,52 @@ namespace ThreeKingdom.Application.Session
             }
         }
 
-        /// <summary>
-        /// 侦察敌方：读世界真值生成观察→报告→并入玩家阵营知识（GDD_007 单向四层流转，绝不写回真值）。
-        /// 报告以当前世界时间为观察基准（时效）。
-        /// </summary>
-        internal void Scout()
-        {
-            Observation observation = _intel.Observe(_truth, _scenario.EnemySubject, _scenario.PlayerFaction, _clock.Current);
-            IntelReport report = _intel.ToReport(observation, _scenario.PlayerFaction, IntelSource.Scouting);
-            _playerIntel.ApplyReport(report);
-        }
+        /// <summary>是否有侦察队在途（已派出未返报）。</summary>
+        internal bool ScoutInFlight => _pendingScoutIndex >= 0;
 
-        /// <summary>本日是否可袭扰（一日一袭 + 粮草足够 + 局未终）。</summary>
-        internal bool CanRaid =>
-            Outcome == GameOutcome.Ongoing
-            && _lastRaidDay != _clock.Current.Day
-            && _city.Stock - _scenario.RaidStockCost >= 0;
+        /// <summary>当前是否可派出侦察（无在途侦察 + 局未终）。</summary>
+        internal bool CanDispatchScout => Outcome == GameOutcome.Ongoing && !ScoutInFlight;
+
+        /// <summary>侦察队预计返报的世界日（0 基；-1 = 无在途）。</summary>
+        internal int ScoutArrivalDay => _pendingScoutIndex < 0 ? -1 : (int)(_pendingScoutIndex / WorldTime.SegmentsPerDay);
 
         /// <summary>
-        /// 袭扰敌补给（断粮疲敌）：消耗城内粮草，按暴露概率（base − skill×cap）判定（消费袭扰随机流）。
-        /// 未暴露 → 削减敌真实兵力（疲敌）；暴露 → 损民心（袭扰队受挫）。一日一袭。
+        /// 派出侦察（GDD_007）：非即时——侦察队往返 <see cref="SliceScenario.ScoutLeadSegments"/> 个时段后，
+        /// 在 <see cref="Advance"/> 抵达返报时刻时读真值生成报告并入知识。在途期间不可重复派出。
         /// </summary>
-        internal void Raid()
+        internal void DispatchScout()
         {
-            if (!CanRaid) { _lastRaidPerformed = false; return; }
-
-            _lastRaidDay = _clock.Current.Day;
-            _lastRaidPerformed = true;
-            _city = _city.With(stock: checked(_city.Stock - _scenario.RaidStockCost));
-
-            FixedPoint prob = (_scenario.RaidExposureBase - _scenario.RaidSkillWeight * _scenario.RaidCapability)
-                .Clamp(FixedPoint.Zero, FixedPoint.One);
-            FixedPoint r = _raidRng.NextUnit();
-            _lastRaidExposed = r < prob;
-
-            if (_lastRaidExposed)
-            {
-                int morale = _city.CivMorale - _scenario.RaidExposureMoralePenalty;
-                if (morale < 0) morale = 0;
-                _city = _city.With(civMorale: morale);
-            }
-            else
-            {
-                int reduced = _truth.Get(_scenario.EnemySubject).ActualStrength - _scenario.RaidEnemyDamage;
-                if (reduced < 0) reduced = 0;
-                _truth.SetStrength(_scenario.EnemySubject, reduced);
-            }
+            if (!CanDispatchScout) { _lastDispatchPerformed = false; return; }
+            _pendingScoutIndex = _clock.Current.Advance(_scenario.ScoutLeadSegments).AbsoluteIndex;
+            _lastDispatchPerformed = true;
         }
 
-        internal bool LastRaidPerformed => _lastRaidPerformed;
+        /// <summary>是否有袭扰队在途（已派出未见效）。</summary>
+        internal bool RaidInFlight => _pendingRaidIndex >= 0;
+
+        /// <summary>当前是否可派出袭扰（无在途袭扰 + 粮草足够 + 局未终）。</summary>
+        internal bool CanDispatchRaid =>
+            Outcome == GameOutcome.Ongoing && !RaidInFlight && _city.Stock - _scenario.RaidStockCost >= 0;
+
+        /// <summary>袭扰队预计见效的世界日（0 基；-1 = 无在途）。</summary>
+        internal int RaidArrivalDay => _pendingRaidIndex < 0 ? -1 : (int)(_pendingRaidIndex / WorldTime.SegmentsPerDay);
+
+        /// <summary>
+        /// 派出袭扰（断粮疲敌）：派出即兑付粮草代价（投送辎重/兵力），袭扰队往返
+        /// <see cref="SliceScenario.RaidLeadSegments"/> 个时段后于 <see cref="Advance"/> 见效（暴露判定）。
+        /// 非即时；在途期间不可重复派出。
+        /// </summary>
+        internal void DispatchRaid()
+        {
+            if (!CanDispatchRaid) { _lastDispatchPerformed = false; return; }
+            _city = _city.With(stock: checked(_city.Stock - _scenario.RaidStockCost)); // 派出即兑付代价
+            _pendingRaidIndex = _clock.Current.Advance(_scenario.RaidLeadSegments).AbsoluteIndex;
+            _lastDispatchPerformed = true;
+        }
+
+        internal bool LastDispatchPerformed => _lastDispatchPerformed;
+        internal bool HasRaidResult => _hasRaidResult;
         internal bool LastRaidExposed => _lastRaidExposed;
-        internal int LastRaidDay => _lastRaidDay;
 
         /// <summary>
         /// 召开军议（GDD_008）：读当前只读知识投影，整理为条件化建议集（并列、无最优解）。
@@ -240,7 +278,7 @@ namespace ThreeKingdom.Application.Session
         }
 
         /// <summary>最近一次军议建议集（null = 未召开）。</summary>
-        internal CouncilAdviceSet LastAdvice => _lastAdvice;
+        internal CouncilAdviceSet? LastAdvice => _lastAdvice;
 
         /// <summary>
         /// 当前知识快照 ID（GDD_008 §Formula 4）：由已知条目（主题+估计值+观察时间）确定性派生。
@@ -318,12 +356,19 @@ namespace ThreeKingdom.Application.Session
         /// <summary>抓取袭扰随机流位置（存档）。</summary>
         internal RngStreamState CaptureRaidRng() => RngStreamState.Capture("raid", _raidRng);
 
-        /// <summary>恢复袭扰状态（<see cref="SaveMapper"/> 用）：含一日一袭日 + 随机流位置。</summary>
-        internal void RestoreRaid(int lastRaidDay, bool lastExposed, RngStreamState rng)
+        internal long PendingScoutIndex => _pendingScoutIndex;
+        internal long PendingRaidIndex => _pendingRaidIndex;
+
+        /// <summary>恢复侦察在途（<see cref="SaveMapper"/> 用）。</summary>
+        internal void RestoreScout(long pendingScoutIndex) => _pendingScoutIndex = pendingScoutIndex;
+
+        /// <summary>恢复袭扰状态（<see cref="SaveMapper"/> 用）：在途见效时刻 + 已结算结果 + 随机流位置。</summary>
+        internal void RestoreRaid(long pendingRaidIndex, bool hasResult, bool lastExposed, RngStreamState rng)
         {
-            _lastRaidDay = lastRaidDay;
+            _pendingRaidIndex = pendingRaidIndex;
+            _hasRaidResult = hasResult;
             _lastRaidExposed = lastExposed;
-            _lastRaidPerformed = false;
+            _lastDispatchPerformed = false;
             _raidRng = rng.Rebuild();
         }
 
