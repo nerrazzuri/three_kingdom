@@ -53,6 +53,20 @@ namespace ThreeKingdom.Unity.UI
         public static EnemyReportView Scout()
             => new EnemyReportView(_service.Scout(Current), Current.CurrentTime);
 
+        /// <summary>取最近军议建议视图（GDD_008；未召开返回 null）。</summary>
+        public static CouncilView Council()
+        {
+            var (set, snapshot) = _service.ProjectCouncil(Current);
+            return set == null ? null : CouncilView.FromSet(set, snapshot);
+        }
+
+        /// <summary>召开军议并返回建议视图（GDD_008）。</summary>
+        public static CouncilView Convene()
+        {
+            var (set, snapshot) = _service.Convene(Current);
+            return set == null ? null : CouncilView.FromSet(set, snapshot);
+        }
+
         /// <summary>取外交求粮视图（GDD_012 §8）。</summary>
         public static DiplomacyView Diplomacy()
             => new DiplomacyView(_service.ProjectDiplomacy(Current));

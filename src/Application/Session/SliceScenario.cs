@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using ThreeKingdom.Domain.City;
+using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Diplomacy;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Map;
@@ -59,6 +61,16 @@ namespace ThreeKingdom.Application.Session
         /// <summary>外交兑现判定随机流种子（确定性，位置可存档）。</summary>
         public ulong DiplomacyRngSeed { get; }
 
+        // ---- 军议（军师条件化建议，GDD_008）----
+        /// <summary>军师视角（能力影响缺口发现与置信）。</summary>
+        public AdvisorPerspective Advisor { get; }
+        /// <summary>军议平衡配置。</summary>
+        public CouncilConfig CouncilConfig { get; }
+        /// <summary>条件化建议模板（数据驱动，覆盖 slice 三链）。</summary>
+        public IReadOnlyList<AdviceTemplate> AdviceTemplates { get; }
+        /// <summary>已知主题的依据置信（slice：已侦察即中等可靠，[0,1] 定点）。</summary>
+        public FixedPoint KnownClaimConfidence { get; }
+
         private SliceScenario()
         {
             Start = new WorldTime(0, DaySegment.Dawn);
@@ -109,6 +121,36 @@ namespace ThreeKingdom.Application.Session
             DiplomacyStanding = FixedPoint.FromFraction(3, 5);    // 0.6
             DiplomacyPressure = FixedPoint.FromFraction(1, 5);    // 0.2
             DiplomacyRngSeed = 0xD17_0ACE_2026UL;
+
+            // 军议（GDD_008）：三条条件化建议，依据敌情主题；并列呈现，无最优解。
+            Advisor = new AdvisorPerspective(new AdvisorId("随军军师"), FixedPoint.FromFraction(7, 10)); // adv_cap 0.7
+            CouncilConfig = new CouncilConfig(gapDetectionWeight: FixedPoint.One);
+            KnownClaimConfidence = FixedPoint.FromFraction(1, 2); // 0.5 已侦察=依据中等
+            var enemyRef = new[] { EnemySubject };
+            AdviceTemplates = new List<AdviceTemplate>
+            {
+                new AdviceTemplate(
+                    "断粮疲敌",
+                    "敌前锋深入，补给线拉长。",
+                    "若敌补给可被持续袭扰，其战力随时日衰减。",
+                    new[] { "需查明敌补给路线与护卫强度", "需投入袭扰兵力且承担暴露风险" },
+                    new[] { "袭扰队可能被反伏", "敌可能改道补给" },
+                    enemyRef),
+                new AdviceTemplate(
+                    "守城待变",
+                    "援军定于第 9 日抵达。",
+                    "若粮草民心可支撑至援军，则不必决战。",
+                    new[] { "需粮草撑至援军日", "可向外求粮缓解" },
+                    new[] { "久守民心易崩", "敌或在援军前强攻" },
+                    enemyRef),
+                new AdviceTemplate(
+                    "假退伏击",
+                    "敌将性烈，易受诱。",
+                    "若示弱诱敌冒进，可于隘口设伏。",
+                    new[] { "需摸清敌将性格与追击倾向", "需预设伏兵与退路" },
+                    new[] { "诱敌不成反失城门", "伏击暴露则两面受敌" },
+                    enemyRef),
+            };
         }
 
         /// <summary>slice 默认场景（确定性初值）。</summary>

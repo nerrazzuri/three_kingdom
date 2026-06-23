@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Globalization;
 using ThreeKingdom.Domain.City;
+using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Diplomacy;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Numerics;
@@ -31,6 +34,10 @@ namespace ThreeKingdom.Application.Session
         private readonly IntelService _intel = new IntelService();
         private readonly WorldTruthLedger _truth = new WorldTruthLedger();
         private readonly FactionIntel _playerIntel;
+
+        // 军议（军师条件化建议，GDD_008）——瞬时，不入存档（读档后重新召开）
+        private readonly WarCouncilService _council = new WarCouncilService();
+        private CouncilAdviceSet _lastAdvice; // null = 未召开
 
         // 外交（求粮受控入口，GDD_012 §8）
         private readonly DiplomacyService _diplomacy = new DiplomacyService();
@@ -165,6 +172,44 @@ namespace ThreeKingdom.Application.Session
             Observation observation = _intel.Observe(_truth, _scenario.EnemySubject, _scenario.PlayerFaction, _clock.Current);
             IntelReport report = _intel.ToReport(observation, _scenario.PlayerFaction, IntelSource.Scouting);
             _playerIntel.ApplyReport(report);
+        }
+
+        /// <summary>
+        /// 召开军议（GDD_008）：读当前只读知识投影，整理为条件化建议集（并列、无最优解）。
+        /// 建议绑定当前知识快照 ID；之后侦察改变知识则建议过时（不静默更新）。
+        /// </summary>
+        internal void Convene()
+        {
+            var confidences = new Dictionary<IntelSubjectId, FixedPoint>();
+            IntelProjection knowledge = _playerIntel.Project();
+            foreach (var entry in knowledge.Entries)
+                confidences[entry.Subject] = _scenario.KnownClaimConfidence;
+
+            _lastAdvice = _council.Convene(
+                CurrentKnowledgeSnapshotId, knowledge, confidences,
+                _scenario.Advisor, _scenario.AdviceTemplates, _scenario.CouncilConfig);
+        }
+
+        /// <summary>最近一次军议建议集（null = 未召开）。</summary>
+        internal CouncilAdviceSet LastAdvice => _lastAdvice;
+
+        /// <summary>
+        /// 当前知识快照 ID（GDD_008 §Formula 4）：由已知条目（主题+估计值+观察时间）确定性派生。
+        /// 侦察改变知识 → 快照变 → 已召开建议被标过时。
+        /// </summary>
+        internal KnowledgeSnapshotId CurrentKnowledgeSnapshotId
+        {
+            get
+            {
+                var entries = new List<IntelKnowledgeEntry>(_playerIntel.Project().Entries);
+                entries.Sort((a, b) => string.CompareOrdinal(a.Subject.Value, b.Subject.Value));
+                var sb = new System.Text.StringBuilder("k");
+                foreach (var e in entries)
+                    sb.Append('|').Append(e.Subject.Value).Append(':')
+                      .Append(e.KnownStrength.ToString(CultureInfo.InvariantCulture)).Append('@')
+                      .Append(e.ObservedAt.AbsoluteIndex.ToString(CultureInfo.InvariantCulture));
+                return new KnowledgeSnapshotId(sb.ToString());
+            }
         }
 
         // ---- 只读快照（internal：供 SessionService 构造投影）----

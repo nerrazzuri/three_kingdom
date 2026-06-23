@@ -43,7 +43,11 @@ namespace ThreeKingdom.Unity.UI
             RenderLedger(root, SessionRuntime.Ledger());
             RenderEnemy(root, SessionRuntime.Enemy());
             RenderDiplomacy(root, SessionRuntime.Diplomacy());
+            RenderCouncil(root, SessionRuntime.Council());
             RenderObjective(root);
+
+            var convene = root.Q<Button>("convene");
+            if (convene != null) convene.clicked += () => RenderCouncil(root, SessionRuntime.Convene());
 
             var advance = root.Q<Button>("advance-time");
             if (advance != null)
@@ -53,6 +57,7 @@ namespace ThreeKingdom.Unity.UI
                     RenderLedger(root, SessionRuntime.Ledger()); // 跨日结算后账本更新
                     RenderEnemy(root, SessionRuntime.Enemy());   // 情报随时间过时
                     RenderDiplomacy(root, SessionRuntime.Diplomacy()); // 援粮可能抵达
+                    RenderCouncil(root, SessionRuntime.Council());      // 时间推进，建议可能过时
                     RenderObjective(root);                       // 推进可能触发胜负
                 };
 
@@ -60,7 +65,12 @@ namespace ThreeKingdom.Unity.UI
             if (requestAid != null) requestAid.clicked += () => RenderDiplomacy(root, SessionRuntime.RequestAid());
 
             var scout = root.Q<Button>("scout");
-            if (scout != null) scout.clicked += () => RenderEnemy(root, SessionRuntime.Scout());
+            if (scout != null)
+                scout.clicked += () =>
+                {
+                    RenderEnemy(root, SessionRuntime.Scout());
+                    RenderCouncil(root, SessionRuntime.Council()); // 侦察改变知识 → 建议过时
+                };
 
             // 竖切：存档（原子写，真实持久栈）+ 返回主菜单。
             var save = root.Q<Button>("save-game");
@@ -98,6 +108,7 @@ namespace ThreeKingdom.Unity.UI
                 SetEnabled(root, "advance-time", false);
                 SetEnabled(root, "scout", false);
                 SetEnabled(root, "request-aid", false);
+                SetEnabled(root, "convene", false);
                 SetEnabled(root, "save-game", false);
             }
         }
@@ -107,6 +118,26 @@ namespace ThreeKingdom.Unity.UI
         {
             SetLabel(root, "diplo-status", view.StatusLabel);
             SetEnabled(root, "request-aid", view.CanRequest);
+        }
+
+        /// <summary>渲染军议建议（GDD_008：并列条件化建议；过时提示；无最优解高亮，P11）。view 为 null = 未召开。</summary>
+        private void RenderCouncil(VisualElement root, CouncilView view)
+        {
+            SetLabel(root, "council-stale", view != null && view.IsStale ? "（情报已变，建议过时——请重开军议）" : string.Empty);
+
+            var list = root.Q<VisualElement>("council-advice");
+            if (list == null) return;
+            list.Clear();
+            if (view == null) return;
+
+            foreach (var a in view.Advice)
+            {
+                // 每条建议：路线名 + 依据可靠性（定性）+ 所需条件 + 风险 + 缺失情报。并列，无优劣排序。
+                list.Add(new Label("【" + a.CandidateLabel + "】" + a.EvidenceConfidenceLabel));
+                foreach (var cond in a.RequiredConditions) list.Add(new Label("　需：" + cond));
+                foreach (var risk in a.Risks) list.Add(new Label("　险：" + risk));
+                foreach (var miss in a.MissingIntel) list.Add(new Label("　缺情报：" + miss));
+            }
         }
 
         private static void SetEnabled(VisualElement root, string name, bool enabled)

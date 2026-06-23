@@ -29,6 +29,10 @@
             </ui:VisualElement>
             <ui:VisualElement name="advisor-entry" class="card">
                 <ui:Label text="军师" class="card-title" />
+                <!-- 竖切 B1：军师条件化建议（GDD_008，并列无最优解；侦察后过时需重开）。 -->
+                <ui:Button name="convene" text="召开军议" />
+                <ui:Label name="council-stale" class="ledger-warning" />
+                <ui:VisualElement name="council-advice" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="hud-right" class="hud-right">

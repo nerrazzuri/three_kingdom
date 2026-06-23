@@ -1,5 +1,6 @@
 using System;
 using ThreeKingdom.Domain.City;
+using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Time;
 
@@ -62,6 +63,21 @@ namespace ThreeKingdom.Application.Session
             if (session == null) throw new ArgumentNullException(nameof(session));
             session.RequestAid();
             return ProjectDiplomacy(session);
+        }
+
+        /// <summary>召开军议（GDD_008）并返回建议集 + 当前知识快照（供过时判定）。</summary>
+        public (CouncilAdviceSet? Set, KnowledgeSnapshotId Snapshot) Convene(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            session.Convene();
+            return (session.LastAdvice, session.CurrentKnowledgeSnapshotId);
+        }
+
+        /// <summary>取最近军议建议集 + 当前知识快照（未召开则 Set 为 null）。</summary>
+        public (CouncilAdviceSet? Set, KnowledgeSnapshotId Snapshot) ProjectCouncil(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            return (session.LastAdvice, session.CurrentKnowledgeSnapshotId);
         }
 
         /// <summary>取外交求粮投影（GDD_012 §8）。</summary>
