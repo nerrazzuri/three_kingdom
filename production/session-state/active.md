@@ -599,6 +599,7 @@ ADR-0003（数据驱动配置的正式锁定）。
 
 **状态**：S5 BLOCKING（可测逻辑 + 编译级壳）完成 + 四屏场景 PanelSettings 修复并验证。
 - **✅ 用户 Play 签核通过（2026-06-23）**：四屏渲染正常 + 按钮可点击 + 功能全测 OK（文本缩放/色盲/减少动态/HUD 可见性即时生效；三屏挂接生效）。视觉+交互 ADVISORY 签核第一步通过。
-- **未 commit，待用户审批入库**。
+- **✅ 已入库 push tk/main**（HEAD=`ffad0fc`，工作树干净）：两提交 `0e986d5`（feat S5 面板+挂接）+ `ffad0fc`（fix PanelSettings 引用失效）。
+- **▶ 下一步：EPIC_010 收尾判定**。5 story BLOCKING 全绿（dotnet 379/379 + batchmode 编译干净 + 四屏 Play 可交互签核）。可选 ADVISORY 尾：把四屏截图/逐项核对（对比度实测/文本150%无溢出/色盲去色可辨）落 `production/qa/evidence/` → 各 story In Progress→Complete → 决定 epic 关闭。
 **剩余 ADVISORY（用户侧 graphics Editor）**：打开 4 屏进 Play 截图签核（文本 150% 无溢出 / 色盲冗余 / 减少动态生效 / HUD 可见性切换）→ 证据落 production/qa/evidence/ → 各 story In Progress→Complete → EPIC_010 收尾判定。
 **改动文件清单（待 commit）**：M Assets/Plugins/{Domain,Presentation}.dll、Assets/UI/{Hud,MainMenu,PauseMenu}Controller.cs、Assets/UI/SliceTheme.tss、Assets/Editor/SliceSceneBuilder.cs；?? Assets/UI/Accessibility*{.cs,.uss,.uxml}、Assets/UI/PlayerPrefsSettingsMedium.cs、各 .meta、Assets/Scenes/AccessibilitySettings.unity(.meta)、src/Presentation/Accessibility/{ISettingsMedium,SettingsStore,AccessibilitySettingsViewModel}.cs、tests/.../Presentation/AccessibilitySettings{Store,ViewModel}Tests.cs。
