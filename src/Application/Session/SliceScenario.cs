@@ -76,6 +76,24 @@ namespace ThreeKingdom.Application.Session
         /// <summary>关键人物（主将/军师/外勤武将/敌将；展示其能力/性格/职责/健康）。</summary>
         public IReadOnlyList<CharacterState> Roster { get; }
 
+        // ---- 袭扰敌补给（断粮疲敌第二取胜路线，GDD_010/012）----
+        /// <summary>一次袭扰消耗的城内粮草（资源代价）。</summary>
+        public long RaidStockCost { get; }
+        /// <summary>袭扰成功对敌真实兵力的削减（断其粮道，疲敌）。</summary>
+        public int RaidEnemyDamage { get; }
+        /// <summary>袭扰暴露基础概率（[0,1] 定点）。</summary>
+        public FixedPoint RaidExposureBase { get; }
+        /// <summary>袭扰者能力对暴露概率的折减权重（≥0）。</summary>
+        public FixedPoint RaidSkillWeight { get; }
+        /// <summary>袭扰者能力（[0,1]，取外勤武勇归一）。</summary>
+        public FixedPoint RaidCapability { get; }
+        /// <summary>袭扰暴露时的民心损耗（袭扰队受挫）。</summary>
+        public int RaidExposureMoralePenalty { get; }
+        /// <summary>敌兵力降至此阈值及以下 → 敌疲退兵（断粮疲敌取胜）。</summary>
+        public int EnemyWithdrawThreshold { get; }
+        /// <summary>袭扰判定随机流种子（确定性，位置可存档）。</summary>
+        public ulong RaidRngSeed { get; }
+
         private SliceScenario()
         {
             Start = new WorldTime(0, DaySegment.Dawn);
@@ -156,6 +174,16 @@ namespace ThreeKingdom.Application.Session
                     new[] { "诱敌不成反失城门", "伏击暴露则两面受敌" },
                     enemyRef),
             };
+
+            // 袭扰敌补给（断粮疲敌，第二取胜路线）：花粮草削敌力，暴露损民心；敌降至阈值则退兵。
+            RaidStockCost = 25;
+            RaidEnemyDamage = 320;                              // 数次成功可压过敌每日 +120 增援，断粮快于守城
+            RaidExposureBase = FixedPoint.FromFraction(11, 20); // 0.55
+            RaidSkillWeight = FixedPoint.FromFraction(2, 5);    // 0.4
+            RaidCapability = FixedPoint.FromFraction(80, 100);  // 外勤武勇 0.8
+            RaidExposureMoralePenalty = 6;
+            EnemyWithdrawThreshold = 400;                       // 敌力≤400 → 疲敝退兵（胜）
+            RaidRngSeed = 0x5A1D_2026_0001UL;
 
             // 人物花名册（GDD_005）：关键四人，能力/性格/职责/健康（数据驱动，原创角色，守红线①）。
             Roster = new List<CharacterState>

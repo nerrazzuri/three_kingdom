@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+using ThreeKingdom.Application.Session;
 using ThreeKingdom.Presentation.Projections;
 using ThreeKingdom.Presentation.Screens;
 
@@ -45,6 +46,7 @@ namespace ThreeKingdom.Unity.UI
             RenderDiplomacy(root, SessionRuntime.Diplomacy());
             RenderCouncil(root, SessionRuntime.Council());
             RenderRoster(root, SessionRuntime.Roster());
+            RenderRaid(root, SessionRuntime.Raid(), null);
             RenderObjective(root);
 
             var convene = root.Q<Button>("convene");
@@ -59,6 +61,7 @@ namespace ThreeKingdom.Unity.UI
                     RenderEnemy(root, SessionRuntime.Enemy());   // 情报随时间过时
                     RenderDiplomacy(root, SessionRuntime.Diplomacy()); // 援粮可能抵达
                     RenderCouncil(root, SessionRuntime.Council());      // 时间推进，建议可能过时
+                    RenderRaid(root, SessionRuntime.Raid(), null);      // 跨日后可再袭
                     RenderObjective(root);                       // 推进可能触发胜负
                 };
 
@@ -71,6 +74,16 @@ namespace ThreeKingdom.Unity.UI
                 {
                     RenderEnemy(root, SessionRuntime.Scout());
                     RenderCouncil(root, SessionRuntime.Council()); // 侦察改变知识 → 建议过时
+                };
+
+            var raid = root.Q<Button>("raid");
+            if (raid != null)
+                raid.clicked += () =>
+                {
+                    var result = SessionRuntime.DoRaid();
+                    RenderRaid(root, result, result); // 显示本次结果
+                    RenderLedger(root, SessionRuntime.Ledger()); // 花粮草/暴露损民心
+                    RenderObjective(root);                       // 断粮可能触发退兵胜利
                 };
 
             // 竖切：存档（原子写，真实持久栈）+ 返回主菜单。
@@ -110,8 +123,21 @@ namespace ThreeKingdom.Unity.UI
                 SetEnabled(root, "scout", false);
                 SetEnabled(root, "request-aid", false);
                 SetEnabled(root, "convene", false);
+                SetEnabled(root, "raid", false);
                 SetEnabled(root, "save-game", false);
             }
+        }
+
+        /// <summary>渲染袭扰（断粮疲敌）：可袭扰性 + 本次结果（成功削补给/暴露损民心；不泄露敌真值）。</summary>
+        private void RenderRaid(VisualElement root, RaidProjection state, RaidProjection justPerformed)
+        {
+            SetEnabled(root, "raid", state.CanRaid);
+            if (justPerformed != null && justPerformed.LastPerformed)
+                SetLabel(root, "raid-status", justPerformed.LastExposed
+                    ? "袭扰暴露，袭扰队受挫（民心受损）"
+                    : "袭扰得手，敌补给受创（再探可知敌情变化）");
+            else if (!state.CanRaid)
+                SetLabel(root, "raid-status", "本日已袭扰或粮草不足（推进次日再袭）");
         }
 
         /// <summary>渲染外交求粮状态（中文）+ 求援按钮可用性（受控一局一次）。</summary>

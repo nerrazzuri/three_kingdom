@@ -32,7 +32,10 @@ namespace ThreeKingdom.Presentation.Screens
             {
                 case GameOutcome.Victory:
                     ObjectiveLabel = string.Empty;
-                    BannerLabel = "已守至援军抵达——汜水关守住了。";
+                    // 区分两条取胜路线（断粮退兵 / 守至援军）；缺省回落守城措辞。
+                    BannerLabel = string.IsNullOrEmpty(projection.VictoryReason)
+                        ? "已守至援军抵达——汜水关守住了。"
+                        : projection.VictoryReason;
                     break;
                 case GameOutcome.Defeat:
                     ObjectiveLabel = string.Empty;

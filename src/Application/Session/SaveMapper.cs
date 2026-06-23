@@ -35,7 +35,10 @@ namespace ThreeKingdom.Application.Session
         private const string KeyDiploPendingIndex = "diplo.pendingIndex";
         private const string KeyDiploPendingAmount = "diplo.pendingAmount";
         private const string KeyDiploDelivered = "diplo.delivered";
+        private const string KeyRaidLastDay = "raid.lastDay";
+        private const string KeyRaidExposed = "raid.lastExposed";
         private const string RngDiplomacy = "diplomacy";
+        private const string RngRaid = "raid";
 
         // 阵营知识段键（玩家已知敌情；不含真值）。
         private const string KeyKnownStrength = "enemy.knownStrength";
@@ -66,6 +69,8 @@ namespace ThreeKingdom.Application.Session
                 [KeyDiploPendingIndex] = session.PendingDeliveryIndex,
                 [KeyDiploPendingAmount] = session.PendingDeliveryAmount,
                 [KeyDiploDelivered] = session.DiplomacyDeliveredAmount,
+                [KeyRaidLastDay] = session.LastRaidDay,
+                [KeyRaidExposed] = session.LastRaidExposed ? 1 : 0,
             };
 
             var knowledge = new Dictionary<string, long>(StringComparer.Ordinal);
@@ -76,7 +81,7 @@ namespace ThreeKingdom.Application.Session
                 knowledge[KeyKnownSource] = (long)entry.Source;
             }
 
-            var rngStreams = new[] { session.CaptureDiplomacyRng() };
+            var rngStreams = new[] { session.CaptureDiplomacyRng(), session.CaptureRaidRng() };
             return new SaveSnapshot(version, fingerprint, rngStreams, worldTruth, knowledge);
         }
 
@@ -121,6 +126,12 @@ namespace ThreeKingdom.Application.Session
                 pendingAmount: t[KeyDiploPendingAmount],
                 deliveredAmount: t[KeyDiploDelivered],
                 rng: FindRng(snapshot, RngDiplomacy, scenario.DiplomacyRngSeed));
+
+            // 恢复袭扰（一日一袭日 + 随机流位置）。
+            session.RestoreRaid(
+                lastRaidDay: checked((int)t[KeyRaidLastDay]),
+                lastExposed: t[KeyRaidExposed] != 0,
+                rng: FindRng(snapshot, RngRaid, scenario.RaidRngSeed));
 
             return session;
         }

@@ -47,6 +47,9 @@
                 <ui:Label name="enemy-report-empty" text="尚无敌情——点「侦察」获取" />
                 <ui:VisualElement name="enemy-report-lines" />
                 <ui:Button name="scout" text="侦察" />
+                <!-- 断粮疲敌（第二取胜路线）：袭扰敌补给，一日一袭，花粮草、有暴露风险。 -->
+                <ui:Button name="raid" text="袭扰敌补给" />
+                <ui:Label name="raid-status" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="hud-bottom" class="hud-bottom">

@@ -26,12 +26,16 @@ namespace ThreeKingdom.Application.Session
         /// <summary>败因（仅 Defeat 非空）。</summary>
         public string DefeatReason { get; }
 
-        public ObjectiveProjection(int currentDay, int reliefDay, GameOutcome outcome, string defeatReason)
+        /// <summary>胜利方式文案（仅 Victory 非空：断粮退兵 / 守至援军）。</summary>
+        public string VictoryReason { get; }
+
+        public ObjectiveProjection(int currentDay, int reliefDay, GameOutcome outcome, string defeatReason, string victoryReason = "")
         {
             CurrentDay = currentDay;
             ReliefDay = reliefDay;
             Outcome = outcome;
             DefeatReason = defeatReason ?? string.Empty;
+            VictoryReason = victoryReason ?? string.Empty;
         }
     }
 }

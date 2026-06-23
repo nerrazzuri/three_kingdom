@@ -56,7 +56,23 @@ namespace ThreeKingdom.Application.Session
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             return new ObjectiveProjection(
-                session.CurrentTime.Day, session.Scenario.ReliefDay, session.Outcome, session.DefeatReason);
+                session.CurrentTime.Day, session.Scenario.ReliefDay, session.Outcome,
+                session.DefeatReason, session.VictoryReason);
+        }
+
+        /// <summary>袭扰敌补给（断粮疲敌，一日一袭），返回更新后的袭扰投影。</summary>
+        public RaidProjection Raid(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            session.Raid();
+            return ProjectRaid(session);
+        }
+
+        /// <summary>取袭扰投影（可袭扰性 + 上次结果；不含敌真值）。</summary>
+        public RaidProjection ProjectRaid(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            return new RaidProjection(session.CanRaid, session.LastRaidPerformed, session.LastRaidExposed);
         }
 
         /// <summary>求粮（受控外交入口，一局一次），返回更新后的外交投影。</summary>

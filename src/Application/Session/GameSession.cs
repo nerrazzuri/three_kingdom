@@ -39,6 +39,12 @@ namespace ThreeKingdom.Application.Session
         private readonly WarCouncilService _council = new WarCouncilService();
         private CouncilAdviceSet _lastAdvice; // null = 未召开
 
+        // 袭扰敌补给（断粮疲敌，第二取胜路线）
+        private DeterministicRandom _raidRng;
+        private int _lastRaidDay = -1;     // 一日一袭（须推进日界才能再袭）
+        private bool _lastRaidExposed;
+        private bool _lastRaidPerformed;
+
         // 外交（求粮受控入口，GDD_012 §8）
         private readonly DiplomacyService _diplomacy = new DiplomacyService();
         private DeterministicRandom _diploRng;
@@ -61,6 +67,7 @@ namespace ThreeKingdom.Application.Session
             _truth.Set(new TruthRecord(scenario.EnemySubject, scenario.EnemyInitialStrength, scenario.EnemyFaction));
 
             _diploRng = new DeterministicRandom(scenario.DiplomacyRngSeed);
+            _raidRng = new DeterministicRandom(scenario.RaidRngSeed);
         }
 
         /// <summary>
@@ -94,6 +101,7 @@ namespace ThreeKingdom.Application.Session
                     scenario.EnemySubject, scenario.PlayerFaction, knownEnemyStrength, knownEnemySource, knownEnemyObservedAt));
 
             _diploRng = new DeterministicRandom(scenario.DiplomacyRngSeed); // 位置由 RestoreDiplomacy 覆盖
+            _raidRng = new DeterministicRandom(scenario.RaidRngSeed);       // 位置由 RestoreRaid 覆盖
         }
 
         /// <summary>当前权威世界时间（只读）。</summary>
@@ -174,6 +182,47 @@ namespace ThreeKingdom.Application.Session
             _playerIntel.ApplyReport(report);
         }
 
+        /// <summary>本日是否可袭扰（一日一袭 + 粮草足够 + 局未终）。</summary>
+        internal bool CanRaid =>
+            Outcome == GameOutcome.Ongoing
+            && _lastRaidDay != _clock.Current.Day
+            && _city.Stock - _scenario.RaidStockCost >= 0;
+
+        /// <summary>
+        /// 袭扰敌补给（断粮疲敌）：消耗城内粮草，按暴露概率（base − skill×cap）判定（消费袭扰随机流）。
+        /// 未暴露 → 削减敌真实兵力（疲敌）；暴露 → 损民心（袭扰队受挫）。一日一袭。
+        /// </summary>
+        internal void Raid()
+        {
+            if (!CanRaid) { _lastRaidPerformed = false; return; }
+
+            _lastRaidDay = _clock.Current.Day;
+            _lastRaidPerformed = true;
+            _city = _city.With(stock: checked(_city.Stock - _scenario.RaidStockCost));
+
+            FixedPoint prob = (_scenario.RaidExposureBase - _scenario.RaidSkillWeight * _scenario.RaidCapability)
+                .Clamp(FixedPoint.Zero, FixedPoint.One);
+            FixedPoint r = _raidRng.NextUnit();
+            _lastRaidExposed = r < prob;
+
+            if (_lastRaidExposed)
+            {
+                int morale = _city.CivMorale - _scenario.RaidExposureMoralePenalty;
+                if (morale < 0) morale = 0;
+                _city = _city.With(civMorale: morale);
+            }
+            else
+            {
+                int reduced = _truth.Get(_scenario.EnemySubject).ActualStrength - _scenario.RaidEnemyDamage;
+                if (reduced < 0) reduced = 0;
+                _truth.SetStrength(_scenario.EnemySubject, reduced);
+            }
+        }
+
+        internal bool LastRaidPerformed => _lastRaidPerformed;
+        internal bool LastRaidExposed => _lastRaidExposed;
+        internal int LastRaidDay => _lastRaidDay;
+
         /// <summary>
         /// 召开军议（GDD_008）：读当前只读知识投影，整理为条件化建议集（并列、无最优解）。
         /// 建议绑定当前知识快照 ID；之后侦察改变知识则建议过时（不静默更新）。
@@ -229,21 +278,30 @@ namespace ThreeKingdom.Application.Session
         internal IntelProjection IntelProjection => _playerIntel.Project();
 
         /// <summary>
-        /// 当前胜负态（守城待变）：民心崩溃（≤0）即失城为败；否则守至援军抵达日为胜；其余进行中。
-        /// 败优先于胜（同日既崩溃又达援军日，判败——城已陷落）。
+        /// 当前胜负态：民心崩溃（≤0）即失城为败（优先）；否则<b>两条取胜路线</b>任一达成即胜——
+        /// 守至援军抵达日（守城待变）或敌兵力降至退兵阈值（断粮疲敌）；其余进行中。
         /// </summary>
         internal GameOutcome Outcome
         {
             get
             {
                 if (_city.CivMorale <= 0) return GameOutcome.Defeat;
-                if (_clock.Current.Day >= _scenario.ReliefDay) return GameOutcome.Victory;
+                if (EnemyWithdrew || _clock.Current.Day >= _scenario.ReliefDay) return GameOutcome.Victory;
                 return GameOutcome.Ongoing;
             }
         }
 
+        /// <summary>敌兵力是否已降至退兵阈值（断粮疲敌取胜条件；读真值，仅系统判定，不进显示投影）。</summary>
+        private bool EnemyWithdrew => _truth.Get(_scenario.EnemySubject).ActualStrength <= _scenario.EnemyWithdrawThreshold;
+
         /// <summary>败因（仅 <see cref="GameOutcome.Defeat"/> 非空）。</summary>
         internal string DefeatReason => _city.CivMorale <= 0 ? "民心崩溃，城池陷落。" : string.Empty;
+
+        /// <summary>胜利方式（仅 <see cref="GameOutcome.Victory"/> 非空）：区分断粮退兵 / 守至援军。</summary>
+        internal string VictoryReason =>
+            Outcome != GameOutcome.Victory ? string.Empty
+            : EnemyWithdrew ? "敌军粮道断绝、师老兵疲，已退兵——汜水关解围。"
+            : "已守至援军抵达——汜水关守住了。";
 
         // ---- 外交只读快照 + 存档（internal）----
 
@@ -256,6 +314,18 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>抓取外交随机流位置（存档；读档据 (seed,position) 重建续判，不重抽）。</summary>
         internal RngStreamState CaptureDiplomacyRng() => RngStreamState.Capture("diplomacy", _diploRng);
+
+        /// <summary>抓取袭扰随机流位置（存档）。</summary>
+        internal RngStreamState CaptureRaidRng() => RngStreamState.Capture("raid", _raidRng);
+
+        /// <summary>恢复袭扰状态（<see cref="SaveMapper"/> 用）：含一日一袭日 + 随机流位置。</summary>
+        internal void RestoreRaid(int lastRaidDay, bool lastExposed, RngStreamState rng)
+        {
+            _lastRaidDay = lastRaidDay;
+            _lastRaidExposed = lastExposed;
+            _lastRaidPerformed = false;
+            _raidRng = rng.Rebuild();
+        }
 
         /// <summary>恢复外交状态（<see cref="SaveMapper"/> 用）：含在途交付与随机流位置。</summary>
         internal void RestoreDiplomacy(

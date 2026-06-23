@@ -71,6 +71,14 @@ namespace ThreeKingdom.Unity.UI
             return set == null ? null : CouncilView.FromSet(set, snapshot);
         }
 
+        /// <summary>取袭扰投影（断粮疲敌；不含敌真值）。</summary>
+        public static RaidProjection Raid()
+            => _service.ProjectRaid(Current);
+
+        /// <summary>发起袭扰（断粮疲敌，一日一袭）并返回更新后的袭扰投影。</summary>
+        public static RaidProjection DoRaid()
+            => _service.Raid(Current);
+
         /// <summary>取外交求粮视图（GDD_012 §8）。</summary>
         public static DiplomacyView Diplomacy()
             => new DiplomacyView(_service.ProjectDiplomacy(Current));
