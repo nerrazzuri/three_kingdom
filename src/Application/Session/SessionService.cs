@@ -56,6 +56,25 @@ namespace ThreeKingdom.Application.Session
                 session.CurrentTime.Day, session.Scenario.ReliefDay, session.Outcome, session.DefeatReason);
         }
 
+        /// <summary>求粮（受控外交入口，一局一次），返回更新后的外交投影。</summary>
+        public DiplomacyProjection RequestAid(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            session.RequestAid();
+            return ProjectDiplomacy(session);
+        }
+
+        /// <summary>取外交求粮投影（GDD_012 §8）。</summary>
+        public DiplomacyProjection ProjectDiplomacy(GameSession session)
+        {
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            long idx = session.PendingDeliveryIndex;
+            int arrivalDay = idx >= 0 ? (int)(idx / WorldTime.SegmentsPerDay) : -1;
+            return new DiplomacyProjection(
+                session.DiplomacyUsed, session.DiplomacyResponse, session.DiplomacyFulfilledRoll,
+                arrivalDay, session.PendingDeliveryAmount, session.DiplomacyDeliveredAmount);
+        }
+
         /// <summary>侦察敌方并返回更新后的情报投影。</summary>
         public IntelProjection Scout(GameSession session)
         {

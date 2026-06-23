@@ -42,6 +42,7 @@ namespace ThreeKingdom.Unity.UI
             RenderTime(root, SessionRuntime.Status());
             RenderLedger(root, SessionRuntime.Ledger());
             RenderEnemy(root, SessionRuntime.Enemy());
+            RenderDiplomacy(root, SessionRuntime.Diplomacy());
             RenderObjective(root);
 
             var advance = root.Q<Button>("advance-time");
@@ -51,8 +52,12 @@ namespace ThreeKingdom.Unity.UI
                     RenderTime(root, SessionRuntime.Advance()); // 推进 + 跨日提示
                     RenderLedger(root, SessionRuntime.Ledger()); // 跨日结算后账本更新
                     RenderEnemy(root, SessionRuntime.Enemy());   // 情报随时间过时
+                    RenderDiplomacy(root, SessionRuntime.Diplomacy()); // 援粮可能抵达
                     RenderObjective(root);                       // 推进可能触发胜负
                 };
+
+            var requestAid = root.Q<Button>("request-aid");
+            if (requestAid != null) requestAid.clicked += () => RenderDiplomacy(root, SessionRuntime.RequestAid());
 
             var scout = root.Q<Button>("scout");
             if (scout != null) scout.clicked += () => RenderEnemy(root, SessionRuntime.Scout());
@@ -89,11 +94,19 @@ namespace ThreeKingdom.Unity.UI
 
             if (view.IsOver)
             {
-                // 一局已结束：冻结推进/侦察/存档（返回主菜单仍可用，可继续/读档）。
+                // 一局已结束：冻结推进/侦察/求援/存档（返回主菜单仍可用，可继续/读档）。
                 SetEnabled(root, "advance-time", false);
                 SetEnabled(root, "scout", false);
+                SetEnabled(root, "request-aid", false);
                 SetEnabled(root, "save-game", false);
             }
+        }
+
+        /// <summary>渲染外交求粮状态（中文）+ 求援按钮可用性（受控一局一次）。</summary>
+        private void RenderDiplomacy(VisualElement root, DiplomacyView view)
+        {
+            SetLabel(root, "diplo-status", view.StatusLabel);
+            SetEnabled(root, "request-aid", view.CanRequest);
         }
 
         private static void SetEnabled(VisualElement root, string name, bool enabled)

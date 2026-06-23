@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
+using ThreeKingdom.Domain.Diplomacy;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.Time;
@@ -28,6 +29,13 @@ namespace ThreeKingdom.Application.Session
         private const string KeyLastShortage = "city.lastShortage";
         private const string KeyUnrest = "city.unrest";
         private const string KeyEnemyTruth = "enemy.truthStrength";
+        private const string KeyDiploUsed = "diplo.used";
+        private const string KeyDiploResponse = "diplo.response";
+        private const string KeyDiploFulfilled = "diplo.fulfilled";
+        private const string KeyDiploPendingIndex = "diplo.pendingIndex";
+        private const string KeyDiploPendingAmount = "diplo.pendingAmount";
+        private const string KeyDiploDelivered = "diplo.delivered";
+        private const string RngDiplomacy = "diplomacy";
 
         // 阵营知识段键（玩家已知敌情；不含真值）。
         private const string KeyKnownStrength = "enemy.knownStrength";
@@ -52,6 +60,12 @@ namespace ThreeKingdom.Application.Session
                 [KeyLastShortage] = session.LastDayShortage,
                 [KeyUnrest] = session.HighUnrestRisk ? 1 : 0,
                 [KeyEnemyTruth] = session.EnemyTruthStrength,
+                [KeyDiploUsed] = session.DiplomacyUsed ? 1 : 0,
+                [KeyDiploResponse] = (long)session.DiplomacyResponse,
+                [KeyDiploFulfilled] = session.DiplomacyFulfilledRoll ? 1 : 0,
+                [KeyDiploPendingIndex] = session.PendingDeliveryIndex,
+                [KeyDiploPendingAmount] = session.PendingDeliveryAmount,
+                [KeyDiploDelivered] = session.DiplomacyDeliveredAmount,
             };
 
             var knowledge = new Dictionary<string, long>(StringComparer.Ordinal);
@@ -62,7 +76,8 @@ namespace ThreeKingdom.Application.Session
                 knowledge[KeyKnownSource] = (long)entry.Source;
             }
 
-            return new SaveSnapshot(version, fingerprint, Array.Empty<RngStreamState>(), worldTruth, knowledge);
+            var rngStreams = new[] { session.CaptureDiplomacyRng() };
+            return new SaveSnapshot(version, fingerprint, rngStreams, worldTruth, knowledge);
         }
 
         /// <summary>把（已校验/迁移的）快照恢复为新会话。</summary>
@@ -86,7 +101,7 @@ namespace ThreeKingdom.Application.Session
             WorldTime knownObserved = hasKnown ? TimeFromIndex(k[KeyKnownObservedAt]) : time;
             IntelSource knownSource = hasKnown ? (IntelSource)checked((int)k[KeyKnownSource]) : IntelSource.Scouting;
 
-            return new GameSession(
+            var session = new GameSession(
                 scenario, time, city,
                 logistics: t[KeyLogistics],
                 lastDayShortage: t[KeyLastShortage],
@@ -96,6 +111,26 @@ namespace ThreeKingdom.Application.Session
                 knownEnemyStrength: knownStrength,
                 knownEnemySource: knownSource,
                 knownEnemyObservedAt: knownObserved);
+
+            // 恢复外交（含在途交付与随机流位置；读档据 (seed,position) 续判不重抽）。
+            session.RestoreDiplomacy(
+                used: t[KeyDiploUsed] != 0,
+                response: (DiplomaticResponse)checked((int)t[KeyDiploResponse]),
+                fulfilledRoll: t[KeyDiploFulfilled] != 0,
+                pendingIndex: t[KeyDiploPendingIndex],
+                pendingAmount: t[KeyDiploPendingAmount],
+                deliveredAmount: t[KeyDiploDelivered],
+                rng: FindRng(snapshot, RngDiplomacy, scenario.DiplomacyRngSeed));
+
+            return session;
+        }
+
+        /// <summary>从快照取命名随机流位置；缺失则回落到种子起点（确定性）。</summary>
+        private static RngStreamState FindRng(SaveSnapshot snapshot, string name, ulong fallbackSeed)
+        {
+            foreach (var s in snapshot.RngStreams)
+                if (s.Name == name) return s;
+            return new RngStreamState(name, fallbackSeed, 0);
         }
 
         /// <summary>由绝对时间索引重建世界时间（T = Day×SegmentsPerDay + Segment 的逆）。</summary>

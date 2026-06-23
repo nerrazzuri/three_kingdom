@@ -1,5 +1,8 @@
 using ThreeKingdom.Domain.City;
+using ThreeKingdom.Domain.Diplomacy;
 using ThreeKingdom.Domain.Intel;
+using ThreeKingdom.Domain.Numerics;
+using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.Time;
 
 namespace ThreeKingdom.Application.Session
@@ -29,6 +32,16 @@ namespace ThreeKingdom.Application.Session
         private readonly WorldTruthLedger _truth = new WorldTruthLedger();
         private readonly FactionIntel _playerIntel;
 
+        // 外交（求粮受控入口，GDD_012 §8）
+        private readonly DiplomacyService _diplomacy = new DiplomacyService();
+        private DeterministicRandom _diploRng;
+        private bool _diplomacyUsed;
+        private DiplomaticResponse _diploResponse;
+        private bool _diploFulfilledRoll;
+        private long _pendingDeliveryIndex = -1; // -1 = 无在途交付
+        private long _pendingDeliveryAmount;
+        private long _diploDeliveredAmount;       // >0 = 援粮已抵达入城
+
         internal GameSession(SliceScenario scenario)
         {
             _scenario = scenario;
@@ -39,6 +52,8 @@ namespace ThreeKingdom.Application.Session
 
             _playerIntel = new FactionIntel(scenario.PlayerFaction);
             _truth.Set(new TruthRecord(scenario.EnemySubject, scenario.EnemyInitialStrength, scenario.EnemyFaction));
+
+            _diploRng = new DeterministicRandom(scenario.DiplomacyRngSeed);
         }
 
         /// <summary>
@@ -70,6 +85,8 @@ namespace ThreeKingdom.Application.Session
             if (hasKnownEnemy)
                 _playerIntel.ApplyReport(new IntelReport(
                     scenario.EnemySubject, scenario.PlayerFaction, knownEnemyStrength, knownEnemySource, knownEnemyObservedAt));
+
+            _diploRng = new DeterministicRandom(scenario.DiplomacyRngSeed); // 位置由 RestoreDiplomacy 覆盖
         }
 
         /// <summary>当前权威世界时间（只读）。</summary>
@@ -101,7 +118,42 @@ namespace ThreeKingdom.Application.Session
                 _truth.SetStrength(_scenario.EnemySubject, grown);
             }
 
+            // 外交援粮到达：到达时段后入城粮草（延迟交付，非点击即到）。
+            if (_pendingDeliveryIndex >= 0 && _clock.Current.AbsoluteIndex >= _pendingDeliveryIndex)
+            {
+                _city = _city.With(stock: checked(_city.Stock + _pendingDeliveryAmount));
+                _diploDeliveredAmount = _pendingDeliveryAmount;
+                _pendingDeliveryIndex = -1;
+                _pendingDeliveryAmount = 0;
+            }
+
             return result.DayBoundaries.Count;
+        }
+
+        /// <summary>
+        /// 求粮（受控外交入口，一局一次）：评估响应 + 兑现判定（消费外交随机流）。接受且兑现则安排
+        /// <see cref="SliceScenario.DiplomacyConfig"/> 交付时段后入城（延迟、可背约、代价已付不返还，GDD_012 §8）。
+        /// </summary>
+        internal void RequestAid()
+        {
+            if (_diplomacyUsed) return; // 受控入口：一局一次
+            _diplomacyUsed = true;
+
+            var request = new DiplomaticRequest(
+                DiplomaticRequestType.Supply, _scenario.DiplomacyPower,
+                _scenario.DiplomacyPledgeCost, _scenario.DiplomacySupplyAmount,
+                _scenario.DiplomacyStanding, _scenario.DiplomacyPressure);
+
+            DiplomaticPledge pledge = _diplomacy.Evaluate(request, _clock.Current, _scenario.DiplomacyConfig);
+            _diploResponse = pledge.Response;
+
+            DiplomaticOutcome outcome = _diplomacy.Resolve(pledge, _diploRng, true, false, _scenario.DiplomacyConfig);
+            _diploFulfilledRoll = outcome.Fulfilled;
+            if (outcome.Fulfilled && pledge.ArrivalTime.HasValue)
+            {
+                _pendingDeliveryIndex = pledge.ArrivalTime.Value.AbsoluteIndex;
+                _pendingDeliveryAmount = pledge.DeliveredAmount;
+            }
         }
 
         /// <summary>
@@ -147,5 +199,31 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>败因（仅 <see cref="GameOutcome.Defeat"/> 非空）。</summary>
         internal string DefeatReason => _city.CivMorale <= 0 ? "民心崩溃，城池陷落。" : string.Empty;
+
+        // ---- 外交只读快照 + 存档（internal）----
+
+        internal bool DiplomacyUsed => _diplomacyUsed;
+        internal DiplomaticResponse DiplomacyResponse => _diploResponse;
+        internal bool DiplomacyFulfilledRoll => _diploFulfilledRoll;
+        internal long PendingDeliveryIndex => _pendingDeliveryIndex;
+        internal long PendingDeliveryAmount => _pendingDeliveryAmount;
+        internal long DiplomacyDeliveredAmount => _diploDeliveredAmount;
+
+        /// <summary>抓取外交随机流位置（存档；读档据 (seed,position) 重建续判，不重抽）。</summary>
+        internal RngStreamState CaptureDiplomacyRng() => RngStreamState.Capture("diplomacy", _diploRng);
+
+        /// <summary>恢复外交状态（<see cref="SaveMapper"/> 用）：含在途交付与随机流位置。</summary>
+        internal void RestoreDiplomacy(
+            bool used, DiplomaticResponse response, bool fulfilledRoll,
+            long pendingIndex, long pendingAmount, long deliveredAmount, RngStreamState rng)
+        {
+            _diplomacyUsed = used;
+            _diploResponse = response;
+            _diploFulfilledRoll = fulfilledRoll;
+            _pendingDeliveryIndex = pendingIndex;
+            _pendingDeliveryAmount = pendingAmount;
+            _diploDeliveredAmount = deliveredAmount;
+            _diploRng = rng.Rebuild();
+        }
     }
 }

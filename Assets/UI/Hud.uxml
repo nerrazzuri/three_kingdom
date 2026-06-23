@@ -23,6 +23,9 @@
                 <ui:Label name="ledger-security" text="治安 —" />
                 <ui:Label name="ledger-fort" text="工事 —" />
                 <ui:Label name="ledger-warning" class="ledger-warning" />
+                <!-- 竖切 B6：外交求粮（受控一局一次，延迟交付/可背约）。 -->
+                <ui:Button name="request-aid" text="求援（求粮）" />
+                <ui:Label name="diplo-status" />
             </ui:VisualElement>
             <ui:VisualElement name="advisor-entry" class="card">
                 <ui:Label text="军师" class="card-title" />

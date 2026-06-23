@@ -1,4 +1,5 @@
 using ThreeKingdom.Domain.City;
+using ThreeKingdom.Domain.Diplomacy;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
@@ -42,6 +43,22 @@ namespace ThreeKingdom.Application.Session
         /// <summary>敌方每日增援（真值漂移；玩家不再侦察则情报随时间过时）。</summary>
         public int EnemyReinforcePerDay { get; }
 
+        // ---- 外交（求粮受控入口，GDD_012 §8）----
+        /// <summary>目标外势力。</summary>
+        public ForeignPowerId DiplomacyPower { get; }
+        /// <summary>外交平衡配置。</summary>
+        public DiplomacyConfig DiplomacyConfig { get; }
+        /// <summary>求援承诺代价。</summary>
+        public long DiplomacyPledgeCost { get; }
+        /// <summary>求粮兑现到达时入城的粮草量。</summary>
+        public long DiplomacySupplyAmount { get; }
+        /// <summary>对外势力声望 standing（[0,1]）。</summary>
+        public FixedPoint DiplomacyStanding { get; }
+        /// <summary>敌方反向外交压力（[0,1]）。</summary>
+        public FixedPoint DiplomacyPressure { get; }
+        /// <summary>外交兑现判定随机流种子（确定性，位置可存档）。</summary>
+        public ulong DiplomacyRngSeed { get; }
+
         private SliceScenario()
         {
             Start = new WorldTime(0, DaySegment.Dawn);
@@ -72,6 +89,26 @@ namespace ThreeKingdom.Application.Session
             EnemySubject = new IntelSubjectId("敌前锋");
             EnemyInitialStrength = 1000;
             EnemyReinforcePerDay = 120;
+
+            // 外交（求粮，GDD_012 §8）：静态背景外势力，延迟交付 + 可背约（确定性随机流）。
+            DiplomacyPower = new ForeignPowerId("江东");
+            DiplomacyConfig = new DiplomacyConfig(
+                baseGrant: FixedPoint.FromFraction(2, 5),         // 0.4
+                weightStanding: FixedPoint.FromFraction(1, 2),    // 0.5
+                weightCost: FixedPoint.FromFraction(3, 10),       // 0.3
+                weightPressure: FixedPoint.FromFraction(2, 5),    // 0.4
+                acceptThreshold: FixedPoint.FromFraction(3, 5),   // 0.6
+                conditionalThreshold: FixedPoint.FromFraction(2, 5), // 0.4
+                costNormalizer: 100,
+                commitLeadSegments: WorldTime.SegmentsPerDay * 2, // 两日后抵达
+                betrayRiskBase: FixedPoint.FromFraction(1, 5),    // 0.2
+                betrayPressureWeight: FixedPoint.FromFraction(3, 10), // 0.3
+                betrayalStandingPenalty: 5);
+            DiplomacyPledgeCost = 50;
+            DiplomacySupplyAmount = 120;        // 兑现则到达时入城粮草
+            DiplomacyStanding = FixedPoint.FromFraction(3, 5);    // 0.6
+            DiplomacyPressure = FixedPoint.FromFraction(1, 5);    // 0.2
+            DiplomacyRngSeed = 0xD17_0ACE_2026UL;
         }
 
         /// <summary>slice 默认场景（确定性初值）。</summary>

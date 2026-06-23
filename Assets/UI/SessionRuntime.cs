@@ -53,6 +53,14 @@ namespace ThreeKingdom.Unity.UI
         public static EnemyReportView Scout()
             => new EnemyReportView(_service.Scout(Current), Current.CurrentTime);
 
+        /// <summary>取外交求粮视图（GDD_012 §8）。</summary>
+        public static DiplomacyView Diplomacy()
+            => new DiplomacyView(_service.ProjectDiplomacy(Current));
+
+        /// <summary>求粮（受控一局一次）并返回更新后的外交视图。</summary>
+        public static DiplomacyView RequestAid()
+            => new DiplomacyView(_service.RequestAid(Current));
+
         // ---- 存档 / 读档（ADR-0005，经真实持久栈）----
 
         /// <summary>默认槽是否有存档（主菜单「继续」可用性）。</summary>
