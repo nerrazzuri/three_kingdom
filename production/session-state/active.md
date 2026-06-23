@@ -530,3 +530,14 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 剩余只差 4 屏的 UXML/USS/Scene + asmdef 引用 Presentation。需在 repo 根建真实 Unity 6.3 项目（Assets/ProjectSettings/Packages）。
 - 验证：batchmode 可编译 asmdef + 跑 EditMode（BLOCKING 编译级）；视觉截图需 graphics 模式（较重）。
 - 结构性改动（reshape repo 根 + CI），待用户拍板再搭。
+
+### ▶ EPIC_010 Unity 视觉壳（2026-06-23）
+- **repo 根 Unity 6000.3.18f1 项目**（batchmode 建，matches CI 默认 projectPath）。`Assets/Plugins` 经 ThreeKingdom.{Domain,Presentation}.dll 桥引用 src/ 权威逻辑（权威源仍 src/，dotnet 测试对源编译；重建步骤见 Assets/Plugins/README.md；tech-debt：未来可改 UPM 包 asmdef 或 CI dotnet build 注入）。
+- **三屏 UXML/USS/Controller**（MainMenu/Hud/PauseMenu，Assets/UI）：薄壳绑定只读 ViewModel + 按钮意图经 IntentTranslator → 命令载荷。**batchmode 编译通过**（Assembly-CSharp.dll 产出，无 error CS）= 视觉壳正确引用 Presentation DLL（compile-verified BLOCKING 级）。
+- **Editor 预览窗** `Assets/Editor/UxmlPreviewWindow.cs`（菜单「三国/UXML 视觉壳预览」）：无需 Play/Scene 即可加载三屏 UXML+USS 供截图签核（编译通过）。
+- commit `69f57a8`（Unity 项目+三屏壳）+ 本次（Editor 预览+文档）。push tk/main。
+
+### 📌 EPIC_010 收尾状态
+- **全部 BLOCKING 完成**：5 story 可测逻辑 dotnet 370/370 绿；3 屏 UXML 壳 batchmode 编译通过。
+- **剩余皆 ADVISORY（须 graphics 模式 Editor，用户侧）**：三屏视觉/无障碍截图签核（对比度实测/文本150%/键鼠焦点/色盲冗余）；可选 Scene+PanelSettings 进 Play；S5 无障碍设置面板 + 各屏挂接。
+- **挂账**：`tools/_unity_probe/` 物理文件夹待用户删（rm 被权限拒）；Assets/Plugins DLL 改 src/ 后须重建。

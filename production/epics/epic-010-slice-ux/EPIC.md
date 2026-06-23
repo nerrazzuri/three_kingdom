@@ -46,10 +46,17 @@ This epic is complete when:
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | 投影→展示模型 + UI 意图→Command 映射底座（可测表现逻辑） | Logic | ✅ Complete | ADR-0002 |
-| 002 | 主菜单屏（新游戏/继续/读档错误态 + 键鼠可达） | UI | 🔶 逻辑 BLOCKING 完成 · 视觉壳待 Unity | ADR-0002/0005 |
-| 003 | HUD 五态呈现（不完全信息 + 多维不合并 + 因果链） | UI | 🔶 逻辑 BLOCKING 完成 · 视觉壳待 Unity | ADR-0002/0004 |
-| 004 | 暂停菜单（存档/读档/设置 + 失败延续「继续」契约） | UI | 🔶 逻辑 BLOCKING 完成 · 视觉壳待 Unity | ADR-0002/0005 |
-| 005 | 无障碍横切（文本缩放/色盲冗余/减少动态/HUD 可见性） | UI | 🔶 逻辑 BLOCKING 完成 · 视觉壳待 Unity | ADR-0002 |
+| 002 | 主菜单屏（新游戏/继续/读档错误态 + 键鼠可达） | UI | 🔶 逻辑✅ + UXML 壳 compile✅ · 视觉签核待 Editor(ADVISORY) | ADR-0002/0005 |
+| 003 | HUD 五态呈现（不完全信息 + 多维不合并 + 因果链） | UI | 🔶 逻辑✅ + UXML 壳 compile✅ · 视觉签核待 Editor(ADVISORY) | ADR-0002/0004 |
+| 004 | 暂停菜单（存档/读档/设置 + 失败延续「继续」契约） | UI | 🔶 逻辑✅ + UXML 壳 compile✅ · 视觉签核待 Editor(ADVISORY) | ADR-0002/0005 |
+| 005 | 无障碍横切（文本缩放/色盲冗余/减少动态/HUD 可见性） | UI | 🔶 逻辑✅ · 屏内 UI 集成待（设置面板未建） | ADR-0002 |
+
+## Unity 视觉壳进度（2026-06-23）
+
+- repo 根 Unity 6000.3.18f1 项目（matches CI 默认 projectPath）；`Assets/Plugins` 经 DLL 桥引用 `src/` 权威逻辑。
+- 三屏 UXML/USS/Controller（MainMenu/Hud/PauseMenu）**batchmode 编译通过**（Assembly-CSharp.dll 产出，无 error CS）——证明视觉壳正确绑定 Presentation ViewModel/Intent。
+- Editor 预览窗 `三国/UXML 视觉壳预览`（无需 Play/Scene）供视觉+无障碍**截图签核（ADVISORY）**。
+- **剩余（ADVISORY，须 graphics 模式 Editor，属用户侧）**：三屏视觉/无障碍截图签核（对比度实测、文本 150%、键鼠焦点、色盲冗余）；可选 Scene+PanelSettings 进 Play 模式；S5 无障碍设置面板 + 各屏挂接。
 
 > 上表为预期分解；以 `/create-stories epic-010-slice-ux` 正式产出为准。
 
