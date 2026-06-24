@@ -61,6 +61,8 @@
 
 **重启 A 的下一步动作**：重跑 `/review-all-gdds` → 走完 Phase 2-4 → 出报告（verdict 预期为 **CONCERNS**：无 Blocking，上述 2/3/4 为 Warning）→ 经批准写 `design/gdd/gdd-cross-review-2026-06-24.md` → 按 handoff 决定是否把 ADR-0006 转 Accepted / 进实现。
 
+<!-- QA-PLAN: 2026-06-24 | System: sprint-02 | Plan written: production/qa/qa-plan-sprint-02-2026-06-24.md -->
+
 ## Session Extract — /sprint-plan new 2026-06-24（Sprint 02）
 - 新建 `production/sprints/sprint-02.md` + `production/sprint-status.yaml`（首个 yaml；2026-06-24~07-07）
 - Goal：epic-011 生涯 + epic-012 世界模型的 Domain 内核与标志性机制
