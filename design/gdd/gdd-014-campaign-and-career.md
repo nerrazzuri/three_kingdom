@@ -1,7 +1,7 @@
 # GDD_014 — 战役与生涯
 
-- 状态：Reviewed（跨系统审查 2026-06-24 通过，Warning 已落）
-- **Status**: Reviewed
+- 状态：Locked for Slice（跨系统审查 + 架构审查 2026-06-24 通过；ADR-0008 城池控制权契约 Accepted）
+- **Status**: Locked for Slice
 - 范围：Meta（连接各战役为一段可持续人生；跨切片）
 
 ## System Purpose

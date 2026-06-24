@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-06-22
+Last Updated: 2026-06-24
 Engine: Unity 6.3 LTS + C#
 Manifest Version: 1 (2026-06-21)
 
@@ -32,9 +32,20 @@ Manifest Version: 1 (2026-06-21)
 |------|-------|--------|-----|---------|--------|
 | [Slice UX 与可访问性](epic-010-slice-ux/EPIC.md) | Presentation | Slice UX/无障碍 | design/ux/* + accessibility | 5 stories | ✅ Complete |
 
+## Feature 层（Meta 连接层 — 大规划）
+
+| Epic | Layer | System | GDD | Stories | Status |
+|------|-------|--------|-----|---------|--------|
+| [战役与生涯](epic-011-campaign-career/EPIC.md) | Feature | 生涯/晋升/自立 | gdd-014 | 5 stories | Ready |
+| [条件历史世界模型](epic-012-historical-world-model/EPIC.md) | Feature | 世界骨架/历史推进 | gdd-015 | 6 stories | Ready |
+
+> 这两个 Meta epic 把单场战役连接成可持续人生（014）+ 提供历史世界骨架（015）。
+> 014/015 已 Locked for Slice；governing ADR-0007/0008 + 0002~0005 全 Accepted；无 untraced 需求。
+> 敌方 AI（gdd-016，ADR-0006）仍 Reviewed，未建 epic。
+
 ## 后续层（未展开）
 
-- **Feature**：MVP 不含；slice 后按需。
+- **Feature（其余）**：完整 8 阶梯队、全时间线事件网络等见各 GDD §Future Scope，MVP 不含。
 
 ## 统计
 

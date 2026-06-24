@@ -1,7 +1,7 @@
 # GDD_015 — 条件历史世界模型
 
-- 状态：Reviewed（跨系统审查 2026-06-24 通过，Warning 已落）
-- **Status**: Reviewed
+- 状态：Locked for Slice（跨系统审查 + 架构审查 2026-06-24 通过；ADR-0007 条件历史模型 + ADR-0008 控制权契约 Accepted）
+- **Status**: Locked for Slice
 - 范围：Meta（世界骨架与历史推进；跨切片）
 
 ## System Purpose

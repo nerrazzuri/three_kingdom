@@ -61,6 +61,16 @@
 
 **重启 A 的下一步动作**：重跑 `/review-all-gdds` → 走完 Phase 2-4 → 出报告（verdict 预期为 **CONCERNS**：无 Blocking，上述 2/3/4 为 Warning）→ 经批准写 `design/gdd/gdd-cross-review-2026-06-24.md` → 按 handoff 决定是否把 ADR-0006 转 Accepted / 进实现。
 
+## Session Extract — /create-epics + /create-stories 2026-06-24（014/015 Meta 层进实现管线）
+- 014/015 → **Locked for Slice**（gdd-index + 各文件状态行；016 仍 Reviewed）
+- 新建 2 epic：**epic-011-campaign-career**（生涯，5 story：3 Logic+2 Integration）+ **epic-012-historical-world-model**（世界模型，6 story：4 Logic+2 Integration）
+- 全部 11 story 嵌 TR-ID + governing ADR（全 Accepted，0 Blocked）+ 控制清单规则 + inline QA 用例（lean，未派 qa-lead）
+- epic-011 story：001 CareerState 骨架 · 002 忠臣晋升 · 003 自立三分支 · 004 太守开局+守城后果(跨epic软依赖 CitySeed/epic-012) · 005 生涯存档
+- epic-012 story：001 WorldState 骨架 · 002 事件四元组+reachability门+配置校验 · 003 分叉传播 · 004 归属订阅004 · 005 抽象结算器 · 006 世界存档
+- 跨 epic 注意：epic-011 story-004 用最小 CitySeed 配置占位（待 epic-012）；epic-012 story-004 需确认 epic-004 的 CityControlChanged 接口落地
+- EPIC.md + epics index 已更新（11/12 epic 有 stories；016 epic 未建）
+- **下一步**：/sprint-plan 排期 或 /story-readiness→/dev-story 从 epic-011 story-001 起实现。本批未 commit。
+
 ## Session Extract — /architecture-review 2026-06-24（验证重跑 coverage）
 - Verdict: **CONCERNS → PASS**（014/015 Meta 层范围）
 - 4 缺口 TR（world-002/004、career-004、world-003）全部闭合（grep 确认 ADR-0007/0008 GDD Requirements Addressed 实际命名）
