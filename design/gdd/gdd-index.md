@@ -25,6 +25,16 @@
 | GDD_012 | 后勤与补给 | [GDD_012_LOGISTICS_SUPPLY](gdd-012-logistics-supply.md) | Draft |
 | GDD_013 | 存档与读档 | [GDD_013_SAVE_LOAD](gdd-013-save-load.md) | Draft |
 
+## Meta / 大规划 GDD（连接战役为可持续游戏）
+
+| ID | 系统 | 路径 | 状态 |
+|---|---|---|---|
+| GDD_014 | 战役与生涯 | [GDD_014_CAMPAIGN_AND_CAREER](gdd-014-campaign-and-career.md) | Draft |
+| GDD_015 | 条件历史世界模型 | [GDD_015_HISTORICAL_WORLD_MODEL](gdd-015-historical-world-model.md) | Draft |
+| GDD_016 | 敌方 AI | [GDD_016_ENEMY_AI](gdd-016-enemy-ai.md) | Draft |
+
+这三篇定义游戏三层结构的上两层（历史世界模型 + 太守生涯）与让“自由布阵”有深度的敌方 AI，锁定整体大方向（见 [game-concept.md](game-concept.md)），防止竖切与大规划脱节。GDD_016 关联 [ADR-0006](../../docs/architecture/adr-0006-deterministic-enemy-ai.md)。
+
 ## 编写与审查顺序
 
 1. 时间、天气、地图定义共同尺度。
