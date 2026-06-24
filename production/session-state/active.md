@@ -61,6 +61,16 @@
 
 **重启 A 的下一步动作**：重跑 `/review-all-gdds` → 走完 Phase 2-4 → 出报告（verdict 预期为 **CONCERNS**：无 Blocking，上述 2/3/4 为 Warning）→ 经批准写 `design/gdd/gdd-cross-review-2026-06-24.md` → 按 handoff 决定是否把 ADR-0006 转 Accepted / 进实现。
 
+## Session Extract — /sprint-plan new 2026-06-24（Sprint 02）
+- 新建 `production/sprints/sprint-02.md` + `production/sprint-status.yaml`（首个 yaml；2026-06-24~07-07）
+- Goal：epic-011 生涯 + epic-012 世界模型的 Domain 内核与标志性机制
+- Must(5)：11-1 CareerState骨架 · 12-1 WorldState骨架 · 11-2 晋升 · 11-3 自立 · 12-2 事件触发门（~20h）
+- Should(3)：11-4 太守开局守城 · 12-3 分叉传播 · 11-5 生涯存档
+- Nice(3)：12-4 归属投影(需epic-004接口) · 12-5 抽象结算 · 12-6 世界存档
+- lean → PR-SPRINT 跳过。**QA plan 缺**（qa-plan-sprint-02.md 未建）——Production→Polish 门需要，建议 /qa-plan sprint
+- sprint-01（Foundation）随竖切已 Complete，无 carryover
+- **下一步**：/qa-plan sprint（实现前）→ /story-readiness 11-1 → /dev-story。本批 sprint 文件未 commit。
+
 ## Session Extract — /create-epics + /create-stories 2026-06-24（014/015 Meta 层进实现管线）
 - 014/015 → **Locked for Slice**（gdd-index + 各文件状态行；016 仍 Reviewed）
 - 新建 2 epic：**epic-011-campaign-career**（生涯，5 story：3 Logic+2 Integration）+ **epic-012-historical-world-model**（世界模型，6 story：4 Logic+2 Integration）
