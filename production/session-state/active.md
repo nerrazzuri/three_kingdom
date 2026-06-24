@@ -61,6 +61,16 @@
 
 **重启 A 的下一步动作**：重跑 `/review-all-gdds` → 走完 Phase 2-4 → 出报告（verdict 预期为 **CONCERNS**：无 Blocking，上述 2/3/4 为 Warning）→ 经批准写 `design/gdd/gdd-cross-review-2026-06-24.md` → 按 handoff 决定是否把 ADR-0006 转 Accepted / 进实现。
 
+## Session Extract — /architecture-review 2026-06-24（聚焦 014/015 Meta 层）
+- Verdict: CONCERNS（3 缺口全 Meta 层，不阻断竖切 MVP）
+- Requirements: 11 total — 7 covered, 0 partial, 3 gaps
+- New TR-IDs registered: TR-career-001~005 + TR-world-001~006（tr-registry version→3）
+- 缺口 → 已补 ADR：缺口1 条件历史触发模型 → **ADR-0007 Accepted**；缺口2 城池控制权契约（W1 裁定固化）→ **ADR-0008 Accepted**
+- GDD revision flags: None；引擎专家咨询跳过（014/015 纯 Domain 无引擎面）
+- Report: docs/architecture/architecture-review-2026-06-24.md
+- ADR 日志：technical-preferences 已加 0007/0008（现共 8 份全 Accepted）
+- **下一步**：014/015 可 Reviewed→Locked for Slice（缺口已补）；可重跑 /architecture-review 验证全覆盖；或进 016 §MVP 敌方 AI 切片。本批未 commit。
+
 ## Session Extract — /review-all-gdds 2026-06-24（重启 A 完成）
 - Verdict: CONCERNS
 - GDDs reviewed: 5 焦点（014/015/016 + game-concept + 010）对照 001-013 + pillars + systems-index

@@ -24,8 +24,8 @@
 #
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
-version: 2
-last_updated: "2026-06-21"
+version: 3
+last_updated: "2026-06-24"   # 追加 Meta 层 GDD_014/015 的 TR（architecture-review-2026-06-24）
 
 requirements:
   # --- 时间 (GDD_001) ---
@@ -268,5 +268,86 @@ requirements:
     gdd: design/gdd/gdd-013-save-load.md
     requirement: "加载先验证 schema/配置指纹/校验；不兼容不得部分载入当前会话"
     created: 2026-06-21
+    revised: ""
+    status: active
+
+  # --- 战役与生涯 (GDD_014) ---
+  - id: TR-career-001
+    system: career
+    gdd: design/gdd/gdd-014-campaign-and-career.md
+    requirement: "CareerState（merit/renown/lord_standing/rank）为权威 Domain 状态；晋升/自立结算确定性、纳入状态哈希"
+    created: 2026-06-24
+    revised: ""
+    status: active
+  - id: TR-career-002
+    system: career
+    gdd: design/gdd/gdd-014-campaign-and-career.md
+    requirement: "晋升逐级门槛与自立三分支由配置阈值 + 好感快照确定性判定，无隐式随机；非战斗功绩源须速率有竞争力"
+    created: 2026-06-24
+    revised: ""
+    status: active
+  - id: TR-career-003
+    system: career
+    gdd: design/gdd/gdd-014-campaign-and-career.md
+    requirement: "生涯状态（CareerState/RetinueState/RebellionState/LordMissionLog）存档 round-trip 一致"
+    created: 2026-06-24
+    revised: ""
+    status: active
+  - id: TR-career-004
+    system: career
+    gdd: design/gdd/gdd-014-campaign-and-career.md
+    requirement: "城池归属只读；夺城/易主经 GDD_004 控制权变更事件，本层不独立写归属（ADR-0008）"
+    created: 2026-06-24
+    revised: ""
+    status: active
+  - id: TR-career-005
+    system: career
+    gdd: design/gdd/gdd-014-campaign-and-career.md
+    requirement: "非法操作（门槛未达却申请晋升/自立）返回稳定错误码，无部分写入"
+    created: 2026-06-24
+    revised: ""
+    status: active
+
+  # --- 条件历史世界模型 (GDD_015) ---
+  - id: TR-world-001
+    system: world
+    gdd: design/gdd/gdd-015-historical-world-model.md
+    requirement: "WorldState（势力存续/疆域、各城归属反映、已触发/已分叉事件集合）为权威；历史推进确定性"
+    created: 2026-06-24
+    revised: ""
+    status: active
+  - id: TR-world-002
+    system: world
+    gdd: design/gdd/gdd-015-historical-world-model.md
+    requirement: "HistoricalEvent 四元组 + reachability 门触发 + 分叉下游重评估；同一行动序列产生同一历史走向（ADR-0007）"
+    created: 2026-06-24
+    revised: ""
+    status: active
+  - id: TR-world-003
+    system: world
+    gdd: design/gdd/gdd-015-historical-world-model.md
+    requirement: "城池归属为只读投影、订阅 GDD_004 控制权变更事件，世界模型不独立写归属（ADR-0008）"
+    created: 2026-06-24
+    revised: ""
+    status: active
+  - id: TR-world-004
+    system: world
+    gdd: design/gdd/gdd-015-historical-world-model.md
+    requirement: "玩家不在场势力混战用抽象结算（非完整战役）、确定性；脱稿深度可配置（ADR-0007）"
+    created: 2026-06-24
+    revised: ""
+    status: active
+  - id: TR-world-005
+    system: world
+    gdd: design/gdd/gdd-015-historical-world-model.md
+    requirement: "配置校验拒绝缺前置或缺分叉分支的历史事件（不得只有正常结局却允许被玩家破坏）"
+    created: 2026-06-24
+    revised: ""
+    status: active
+  - id: TR-world-006
+    system: world
+    gdd: design/gdd/gdd-015-historical-world-model.md
+    requirement: "WorldState + HistoricalEvent diverged 标志存档 round-trip 一致"
+    created: 2026-06-24
     revised: ""
     status: active

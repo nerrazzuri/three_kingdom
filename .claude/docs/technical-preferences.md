@@ -84,6 +84,8 @@
 - [ADR-0003](../docs/architecture/adr-0003-data-driven-configuration.md): 数据驱动配置（SO 编辑期 + 构建时转不可变配置 + 配置指纹）— Accepted（2026-06-21）
 - [ADR-0005](../docs/architecture/adr-0005-save-versioning-migration.md): 存档版本与迁移（显式 DTO/JSON + 原子写入 + 逆序逐版迁移链）— Accepted（2026-06-21）
 - [ADR-0006](../docs/architecture/adr-0006-deterministic-enemy-ai.md): 确定性效用敌方 AI（种子化 softmax + 反全知锁 + LLM 隔离）— Accepted（2026-06-24）
+- [ADR-0007](../docs/architecture/adr-0007-conditional-history-world-model.md): 条件历史世界模型（事件四元组 + reachability 触发门 + 分叉传播 + 抽象结算）— Accepted（2026-06-24）
+- [ADR-0008](../docs/architecture/adr-0008-city-control-ownership-contract.md): 城池控制权跨系统所有权契约（GDD_004 唯一权威 + 控制权变更事件；015 订阅/014 只读）— Accepted（2026-06-24）
 
 ## Engine Specialists
 
