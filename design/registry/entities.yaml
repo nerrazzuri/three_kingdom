@@ -36,8 +36,8 @@
 #   Sections: entities | items | formulas | constants
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
-version: 1
-last_updated: ""
+version: 2
+last_updated: "2026-06-24"   # 首次填充：GDD_014/015/016 + 010/004 跨系统命名事实（经 gdd-cross-review-2026-06-24）
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -48,7 +48,76 @@ last_updated: ""
 # Attribute fields: any key stats that could appear in another GDD
 #   (health, damage, drops, faction, etc.)
 
-entities: []
+# 注：本项目跨系统事实多为「系统组件 / 状态权威字段」，非 RPG 战利品。
+# entities 段在此登记跨多份 GDD 引用的命名系统组件与权威概念。
+entities:
+  - name: city_control          # 城池控制权（权威边界，跨系统裁定 2026-06-24）
+    status: active
+    source: design/gdd/gdd-004-city-economy.md      # 唯一权威 + 唯一变更事件
+    referenced_by:
+      - design/gdd/gdd-004-city-economy.md
+      - design/gdd/gdd-015-historical-world-model.md   # 战略尺度只读反映、订阅 004 变更事件
+      - design/gdd/gdd-014-campaign-and-career.md       # 生涯只读
+    authority: GDD_004 独占「控制权变更事件」；历史事件/战果/夺城一律经 004 落地后回流 015
+    added: 2026-06-24
+    revised: ""
+  - name: TacticRecognizer      # 只读事后兵法识别器
+    status: active
+    source: design/gdd/gdd-010-battle-tactics-sandbox.md
+    referenced_by:
+      - design/gdd/gdd-010-battle-tactics-sandbox.md
+      - design/gdd/gdd-016-enemy-ai.md                  # OpponentModel 消费其事后标签
+      - docs/architecture/adr-0006-deterministic-enemy-ai.md
+    role: 扫描已结算事件 + CausalTrace 产出复盘标签（火攻/夜袭/诱敌/断粮…），不参与结算、不改状态
+    added: 2026-06-24
+    revised: ""
+  - name: AiWorldView           # 反全知锁：AI 的唯一敌情入口
+    status: active
+    source: design/gdd/gdd-016-enemy-ai.md
+    referenced_by:
+      - design/gdd/gdd-016-enemy-ai.md
+      - design/gdd/gdd-007-intelligence-recon.md         # 由 IntelProjection+IntelAssessment 构造
+      - docs/architecture/adr-0006-deterministic-enemy-ai.md
+    lock: 构造签名不接受任何真值类型（MapTruth/WorldTruth）——编译级反全知
+    added: 2026-06-24
+    revised: ""
+  - name: StrategicAction       # 敌方战略意图枚举
+    status: active
+    source: design/gdd/gdd-016-enemy-ai.md
+    referenced_by:
+      - design/gdd/gdd-016-enemy-ai.md
+      - design/gdd/gdd-010-battle-tactics-sandbox.md     # 翻成 010 基础命令；追击成形由 010 §7 唯一结算
+    values: 强攻/围困/侦察/断粮/佯攻/撤退/求援
+    boundary: ActionScorer 只决「想不想」；具体战术结算归 GDD_010
+    added: 2026-06-24
+    revised: ""
+  - name: OpponentModel         # AI 渐进记忆（玩家套路 EWMA）
+    status: active
+    source: design/gdd/gdd-016-enemy-ai.md
+    referenced_by:
+      - design/gdd/gdd-016-enemy-ai.md
+      - design/gdd/gdd-010-battle-tactics-sandbox.md     # 喂入 TacticRecognizer 标签
+    rule: 反制偏置仅在 样本数≥N ∧ 时间跨度≥M 时非零，且随时间衰减；入状态哈希与存档
+    added: 2026-06-24
+    revised: ""
+  - name: HistoricalEvent       # 历史事件四元组
+    status: active
+    source: design/gdd/gdd-015-historical-world-model.md
+    referenced_by:
+      - design/gdd/gdd-015-historical-world-model.md
+      - design/gdd/gdd-014-campaign-and-career.md        # 君主任务/态势挂钩（Open Question）
+    shape: "{时间窗 + 前置条件 + 正常结局 + 分叉结局}；玩家够不着则前置恒成立"
+    added: 2026-06-24
+    revised: ""
+  - name: FactionKnowledge      # 阵营知识投影（AI 与玩家各自独立）
+    status: active
+    source: design/gdd/gdd-007-intelligence-recon.md
+    referenced_by:
+      - design/gdd/gdd-007-intelligence-recon.md
+      - design/gdd/gdd-016-enemy-ai.md                   # AI 唯一敌情源，永不读真值
+    rule: 世界真值→观察→报告→阵营知识 四层分离；UI/AI 只读阵营知识
+    added: 2026-06-24
+    revised: ""
 
 # Example (remove when first real entry is added):
 #
@@ -106,7 +175,42 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: combat_power           # 有效战斗力（非战斗系统影响战争的传导路径）
+    status: active
+    source: design/gdd/gdd-010-battle-tactics-sandbox.md
+    referenced_by:
+      - design/gdd/gdd-010-battle-tactics-sandbox.md
+      - design/gdd/gdd-011-morale-fatigue.md     # morale/fatigue/discipline 输入
+    variables: [force, morale, fatigue, discipline, terr_mod, posture_mod, support]
+    output_range: [0, "uncapped"]
+    expression: "force × morale × (1−fatigue) × discipline × terr_mod × posture_mod × (1+support)"
+    notes: "GDD_010 §3。morale/fatigue 由 GDD_011 唯一施加；本式只读，不重复扣减（GDD_010 §8）"
+    added: 2026-06-24
+    revised: ""
+  - name: pursue_decision        # 追击决策（敌方由条件判定，无强制中计脚本）
+    status: active
+    source: design/gdd/gdd-010-battle-tactics-sandbox.md     # §7 唯一战术结算点
+    referenced_by:
+      - design/gdd/gdd-010-battle-tactics-sandbox.md
+      - design/gdd/gdd-016-enemy-ai.md            # ActionScorer 决意图，成形归此式
+    variables: [knows_target, goal_fit, personality_aggression, discipline_restraint, perceived_risk]
+    output_range: [0, 1]
+    expression: "(w_k·knows + w_g·goal + w_p·aggr − w_d·restraint − w_r·risk) ≥ pursue_threshold"
+    notes: "诱敌成立 = 假退保形 + 本式追击满足 + 伏兵链就位"
+    added: 2026-06-24
+    revised: ""
+  - name: can_promote            # 忠臣晋升逐级门槛
+    status: active
+    source: design/gdd/gdd-014-campaign-and-career.md
+    referenced_by:
+      - design/gdd/gdd-014-campaign-and-career.md
+    variables: [merit, renown, lord_standing, rank]
+    output_range: [0, 1]
+    expression: "merit≥merit_req[r+1] ∧ renown≥renown_req[r+1] ∧ lord_standing≥standing_req[r+1]"
+    notes: "GDD_014 §1。门槛闸而非消耗；merit/renown 单调累积（见 constants 说明）"
+    added: 2026-06-24
+    revised: ""
 
 # Example:
 #
@@ -139,7 +243,54 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+# 注：以下为生涯/补给跨系统状态字段（非固定数值常量，数值本身配置化 ADR-0003）；
+# 在此登记是为锁定「权威来源 + 消费者 + 语义」，防跨 GDD 同名异义。
+constants:
+  - name: merit                  # 功绩
+    status: active
+    source: design/gdd/gdd-014-campaign-and-career.md
+    referenced_by:
+      - design/gdd/gdd-014-campaign-and-career.md
+      - design/gdd/game-concept.md
+      - design/gdd/gdd-010-battle-tactics-sandbox.md   # 战役胜负产功绩
+    value: "≥0 整数（阈值配置化）"
+    unit: 功绩点
+    semantics: 忠臣线晋升硬性指标；单调累积门槛闸、无 sink（见 GDD_014 Balancing N10）；非战斗来源须速率有竞争力（W5）
+    added: 2026-06-24
+    revised: ""
+  - name: renown                 # 名望
+    status: active
+    source: design/gdd/gdd-014-campaign-and-career.md
+    referenced_by:
+      - design/gdd/gdd-014-campaign-and-career.md
+      - design/gdd/game-concept.md
+    value: "≥0 整数（阈值配置化）"
+    unit: 名望点
+    semantics: 影响人才登用/部下信服/自立号召力 + 晋升软门槛；单调累积、无 sink
+    added: 2026-06-24
+    revised: ""
+  - name: lord_standing          # 君主好感
+    status: active
+    source: design/gdd/gdd-014-campaign-and-career.md
+    referenced_by:
+      - design/gdd/gdd-014-campaign-and-career.md
+    value: "[0,1] 定点"
+    unit: 定点比例
+    semantics: 只影响忠臣线晋升速度与授权；可升可降（任务失败下降）——有源有汇
+    added: 2026-06-24
+    revised: ""
+  - name: supply_state           # 补给状态（断粮传导单一权威）
+    status: active
+    source: design/gdd/gdd-012-logistics-supply.md     # §5 持有并结算
+    referenced_by:
+      - design/gdd/gdd-012-logistics-supply.md
+      - design/gdd/gdd-010-battle-tactics-sandbox.md   # §8 只读，不自行再减
+      - design/gdd/gdd-011-morale-fatigue.md           # §1/§2 唯一施加 morale/fatigue
+    value: "[0,1] 定点"
+    unit: 定点比例
+    semantics: 断粮经 012→011→010 单一链，杜绝同一饥饿惩罚被算两次
+    added: 2026-06-24
+    revised: ""
 
 # Example:
 #

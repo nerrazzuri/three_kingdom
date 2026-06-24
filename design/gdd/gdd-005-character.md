@@ -115,7 +115,7 @@ rep'(audience) = rep(audience) + Δrep_event − rep_decay × rep(audience)
 
 ## Dependencies
 
-依赖 GDD_001 时间、GDD_003 位置、GDD_006 关系/权限和 GDD_011 疲劳。向城市、情报、军议、准备、战斗、GDD_006 关系（人物为关系主体）与 GDD_011 士气疲劳（指挥者影响）提供执行者状态。（005↔006、005↔011 为生产者/消费者双向关系，破环顺序见 systems-index §跨系统结算顺序）
+依赖 GDD_001 时间、GDD_003 位置、GDD_006 关系/权限和 GDD_011 疲劳。向城市、情报、军议、准备、战斗、GDD_006 关系（人物为关系主体）与 GDD_011 士气疲劳（指挥者影响）提供执行者状态。（005↔006、005↔011 为生产者/消费者双向关系，破环顺序见 systems-index §跨系统结算顺序）亦被 GDD_014（生涯：人物身份变化写回）、GDD_016（敌将 PersonalityProfile 性格倾向）消费。
 
 ## Edge Cases
 

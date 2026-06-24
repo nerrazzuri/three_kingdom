@@ -1,7 +1,7 @@
 # GDD_016 — 敌方 AI（离线确定性效用 AI）
 
-- 状态：Draft
-- **Status**: Draft
+- 状态：Reviewed（跨系统审查 2026-06-24 通过，Warning 已落；ADR-0006 已 Accepted）
+- **Status**: Reviewed
 - 范围：战术层（战区内敌将决策）为主；战略层（势力态势）随 GDD_015 触及边界启用
 - 关联：[ADR-0006](../../docs/architecture/adr-0006-deterministic-enemy-ai.md)
 
@@ -80,7 +80,7 @@ CounterBias(action) = (samples[tag] ≥ N ∧ span ≥ M) ? bias(freq[tag]) · d
 ## Data Model
 
 - `AiWorldView`：AI 的“我以为的世界”——由 `IntelProjection`+`IntelAssessment` 构造，**签名不接受任何真值类型**（反全知锁）；含 believedEnemy/置信/区间、自有兵力补给、环境、目标压力。
-- `StrategicAction`：枚举（强攻/围困/侦察/断粮/佯攻/撤退/求援）。
+- `StrategicAction`：枚举（强攻/围困/侦察/断粮/佯攻/撤退/求援）。**边界（与 GDD_010 §7）**：`ActionScorer` 只决定敌方**想不想**采取某意图（含追击），翻成 GDD_010 基础命令后，"追击是否真的成形"由 **GDD_010 §7 追击决策公式唯一结算**；本 AI 不重复判定追击成败。
 - `ScoredAction` / `DecisionRecord`：效用分 + 缘由码 + 是否淘汰；最终选择 + 种子（供 UI 与 LLM 读）。
 - `StrategicPlan`：意图、起始时间、承诺期、放弃/继续条件。
 - `OpponentModel`：每种玩家套路标签的 EWMA 频率 + 样本数 + 末次时间。

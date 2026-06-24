@@ -130,7 +130,7 @@ exposed = ( r < P(exposed) )
 
 ## Dependencies
 
-依赖 GDD_001 时间、GDD_002 环境、GDD_003 地图、GDD_005 人物和 GDD_006 信息共享。向 GDD_008—010 与敌我 AI 提供知识。
+依赖 GDD_001 时间、GDD_002 环境、GDD_003 地图、GDD_005 人物和 GDD_006 信息共享。向 GDD_008—010 与敌我 AI 提供知识。被 GDD_015（玩家对世界态势的认知受本系统情报限制）、GDD_016（敌方 AI 的唯一敌情来源，AI 只读自身 FactionKnowledge、永不读真值）消费。
 
 ## Edge Cases
 

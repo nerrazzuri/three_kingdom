@@ -83,7 +83,7 @@
 - [ADR-0004](../docs/architecture/adr-0004-deterministic-battle-simulation.md): 确定性战斗模拟（整数/定点 + 注入随机流 + 状态哈希）— Accepted（2026-06-21）
 - [ADR-0003](../docs/architecture/adr-0003-data-driven-configuration.md): 数据驱动配置（SO 编辑期 + 构建时转不可变配置 + 配置指纹）— Accepted（2026-06-21）
 - [ADR-0005](../docs/architecture/adr-0005-save-versioning-migration.md): 存档版本与迁移（显式 DTO/JSON + 原子写入 + 逆序逐版迁移链）— Accepted（2026-06-21）
-- [ADR-0006](../docs/architecture/adr-0006-deterministic-enemy-ai.md): 确定性效用敌方 AI（种子化 softmax + 反全知锁 + LLM 隔离）— Proposed（2026-06-24）
+- [ADR-0006](../docs/architecture/adr-0006-deterministic-enemy-ai.md): 确定性效用敌方 AI（种子化 softmax + 反全知锁 + LLM 隔离）— Accepted（2026-06-24）
 
 ## Engine Specialists
 

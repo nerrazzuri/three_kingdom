@@ -121,7 +121,7 @@ replay_valid(pkg) = ( replay(pkg.起始快照, pkg.命令流).checkpoint_hashes 
 
 ## Dependencies
 
-依赖所有权威 GDD 状态、ARCHITECTURE 的 Application/Infrastructure 边界，以及 ADR_0005 将锁定的版本策略。UI 只调用保存/加载用例，不直接序列化 Domain。
+依赖所有权威 GDD 状态、ARCHITECTURE 的 Application/Infrastructure 边界，以及 ADR_0005 将锁定的版本策略。UI 只调用保存/加载用例，不直接序列化 Domain。**权威状态边界含 Meta 层** GDD_014（CareerState/RetinueState/RebellionState）、GDD_015（WorldState/历史事件 diverged 标志）、GDD_016（StrategicPlan/OpponentModel/随机流位置），三者与战役/世界同一存档边界 round-trip。
 
 ## Edge Cases
 

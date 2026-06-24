@@ -34,6 +34,17 @@
 - 文档已更新完。**待与用户讨论：先做哪些事**。候选：① 把 014/015/016 三篇新 GDD 逐节细化/过 design-review；② ADR-0006 转 Accepted；③ 直接进 GDD_016 §MVP"便宜80%"敌方AI最小切片；④ 先做 GDD_010 §MVP 的"可玩战区"（火攻+三招+人心杠杆）。
 - 注：014/015/016 为 Draft，**未过跨系统审查**，按 gdd-index 控制规则不得直接进实现。
 
+### ✅ A（`/review-all-gdds`）已完成（2026-06-24 重启后跑完）
+> **重启 A 已走完 Phase 1-6**。裁定 **CONCERNS**（如预期）。报告已落盘 `design/gdd/gdd-cross-review-2026-06-24.md`。
+> **W1 城池归属已由用户裁定**：GDD_004 城级控制权唯一权威 + 唯一变更事件；GDD_015 战略尺度只反映、订阅 004 事件、不独立写；GDD_014 只读。
+> **5 项 Warning 已全部落盘编辑（2026-06-24）**：W1 改 004（声明城级控制权唯一权威+变更事件）/015（city.owner 改只读投影、订阅 004 事件）/014（System Outputs 归属改"经 004 触发"）· W2 **反向依赖已彻底补齐**：004←014/015 · 010←016/014 · 015→004 · 007←015/016 · 006←014 · 005←014/016 · 001←015 · 003←015 · 011←016 · 012←016 · 013 显式含 014/015/016 存档边界· W3 GDD_010 命名 TacticRecognizer（§招式库 + Data Model）· W4 010 §7 + 016 StrategicAction 各加追击边界一句 · W5 014 Balancing 加反支柱护栏（非战斗源速率竞争力）+ N10 sink 说明。
+> **①②③ 已全部完成（2026-06-24）**：① registry 填充（design/registry/entities.yaml v2：7 entities + 3 formulas + 4 constants——city_control/TacticRecognizer/AiWorldView/StrategicAction/OpponentModel/HistoricalEvent/FactionKnowledge + combat_power/pursue_decision/can_promote + merit/renown/lord_standing/supply_state）。② ADR-0006 → **Accepted**（§Decision 1 补 N-#5 随机源契合 ADR-0004；technical-preferences ADR 日志同步 Accepted）。③ GDD_014/015/016 → **Reviewed**（gdd-index + 各文件状态行）。
+> **下一步**：④ commit 本批（进行中）；之后可 push tk/main、或进 014/015/016 §MVP 实现切片。
+
+<!-- CONSISTENCY-CHECK: 2026-06-24 | registry 由空首次填充（v2，14 条跨系统命名事实）| Conflicts: 0（填充模式，非检查）| 来源 gdd-cross-review-2026-06-24 -->
+<!-- consistency-check 说明：registry 原为空，按技能 Phase 1 应停（检查工具需已填 registry）；改走 Phase 6 新增路径直接填充真正跨系统事实 -->
+> 以下为重启时的原始中断记录与已确认发现，保留备查。
+
 ### ⏸ A（`/review-all-gdds`）中断记录 + 重启指引（2026-06-24）
 > 用户选择做 A（验证新文档），跑到一半被中断，**未出最终报告/未定 verdict**。新会话**重启 A**：重跑 `/review-all-gdds`，参数聚焦 014/015/016 + 改动的 game-concept/gdd-010，对照 GDD_001-013。下列**已确认发现**可直接带入加速，不必重新发现。
 
@@ -49,6 +60,15 @@
 7. **自洽 PASS**：015「玩家触及边界」与 016 战略层（够得着才跑 AI、够不着抽象推进）、014 自立线三者一致。
 
 **重启 A 的下一步动作**：重跑 `/review-all-gdds` → 走完 Phase 2-4 → 出报告（verdict 预期为 **CONCERNS**：无 Blocking，上述 2/3/4 为 Warning）→ 经批准写 `design/gdd/gdd-cross-review-2026-06-24.md` → 按 handoff 决定是否把 ADR-0006 转 Accepted / 进实现。
+
+## Session Extract — /review-all-gdds 2026-06-24（重启 A 完成）
+- Verdict: CONCERNS
+- GDDs reviewed: 5 焦点（014/015/016 + game-concept + 010）对照 001-013 + pillars + systems-index
+- Flagged for revision: gdd-004, gdd-010, gdd-014, gdd-015, gdd-016（均 Warning，无 Blocking）
+- Blocking issues: None
+- Key Warnings: W1 城池归属（已裁定 004 唯一权威/015 订阅/014 只读）· W2 反向依赖缺失 · W3 TacticRecognizer 未命名 · W4 追击决策边界 · W5 非战斗功绩源速率
+- Recommended next: 落 W1-W5 轻量 Edit → /consistency-check 填 registry → ADR-0006 转 Accepted（确认 N-#5）
+- Report: design/gdd/gdd-cross-review-2026-06-24.md
 
 ---
 

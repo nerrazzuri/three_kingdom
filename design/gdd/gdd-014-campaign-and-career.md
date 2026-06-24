@@ -1,7 +1,7 @@
 # GDD_014 — 战役与生涯
 
-- 状态：Draft
-- **Status**: Draft
+- 状态：Reviewed（跨系统审查 2026-06-24 通过，Warning 已落）
+- **Status**: Reviewed
 - 范围：Meta（连接各战役为一段可持续人生；跨切片）
 
 ## System Purpose
@@ -110,7 +110,7 @@ troop_cap = base_cap × rank_cap_multiplier[rank] × city_support_factor(cities_
 
 ## System Outputs
 
-功绩/名望/君主好感变化；晋升/降职事件；自立结局与新势力建立；带兵上限/治理范围/授权变化；写回 GDD_005 身份变化、GDD_006 关系后果、GDD_004 城池控制权、GDD_015 世界态势。
+功绩/名望/君主好感变化；晋升/降职事件；自立结局与新势力建立；带兵上限/治理范围/授权变化；写回 GDD_005 身份变化、GDD_006 关系后果、GDD_015 世界态势。城池夺取/易主**经 GDD_004 控制权变更事件触发**（本层只读控制权，不直接写归属——见 GDD_004 城池控制权权威裁定）。
 
 ## Dependencies
 
@@ -130,7 +130,11 @@ troop_cap = base_cap × rank_cap_multiplier[rank] × city_support_factor(cities_
 
 ## Balancing Parameters
 
-各阶 `merit_req/renown_req/standing_req`；自立 `rebel_city_min/renown_min/affinity_min`；结局分支阈值 `hi/mid/defect_threshold`；官阶兵权倍率与俸禄；任务奖惩数值；名望各来源权重。全部配置化并带范围。
+各阶 `merit_req/renown_req/standing_req`；自立 `rebel_city_min/renown_min/affinity_min`；结局分支阈值 `hi/mid/defect_threshold`；官阶兵权倍率与俸禄；任务奖惩数值；功绩/名望各来源权重。
+
+> **反支柱护栏（防「最优玩法只需刷战斗」）**：功绩/名望的**非战斗来源**（治理城池/完成君主任务/招揽贤才/平叛/治理盛世）权重须配置成与作战来源**速率上有竞争力**，使忠臣治理路径与刷战斗路径机会成本相当；该平衡须在后续体验验证中确认（呼应跨系统审查 W5 / CD-C1）。
+>
+> **功绩/名望 sink 说明（N10）**：`merit`/`renown` 为单调累积的**里程碑门槛闸**（非消耗资源），满阶后不再驱动晋升。为防晚期空转，可选加入恩赏/赏赐等 sink，或显式接受其为里程碑闸；`lord_standing` 为可升可降的有源有汇值。全部配置化并带范围。
 
 ## UI Requirements
 

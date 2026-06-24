@@ -1,7 +1,7 @@
 # GDD_015 — 条件历史世界模型
 
-- 状态：Draft
-- **Status**: Draft
+- 状态：Reviewed（跨系统审查 2026-06-24 通过，Warning 已落）
+- **Status**: Reviewed
 - 范围：Meta（世界骨架与历史推进；跨切片）
 
 ## System Purpose
@@ -55,11 +55,17 @@ on time_window_enter(e):
         reevaluate(downstream(e))         # 依赖 e 的下游事件重检前置
 ```
 
-### 2. 城池归属更新（事件或战果驱动）
+### 2. 城池归属（只读投影，订阅 GDD_004 控制权变更）
+
+> **权威边界（跨系统裁定 2026-06-24）**：城级控制权的**唯一权威是 GDD_004**（独占「控制权变更事件」）。
+> 本世界模型在战略尺度**只读反映**归属，**不独立写** `city.owner`——历史事件结局、GDD_010 战果、GDD_014 夺城
+> 一律经 GDD_004 控制权变更事件落地后，由本模型订阅同步。
 
 ```
-city.owner ← outcome.owner_change            # 历史事件结局 或 GDD_010 战果/GDD_014 夺城
-city.garrison ← outcome.garrison
+on GDD_004.ControlChanged(city, newOwner, garrison):   # 唯一更新源
+    world.city[city].owner    ← newOwner               # 只读投影
+    world.city[city].garrison ← garrison
+# 历史事件的 owner_change 不直接写世界模型，而是发起 GDD_004 控制权变更，再回流至此
 ```
 
 ## Data Model
@@ -80,7 +86,7 @@ city.garrison ← outcome.garrison
 
 ## Dependencies
 
-依赖 GDD_001（时间）、GDD_003（地图/城池拓扑）。被 GDD_014（开局禀赋/态势写回）、GDD_016（势力态势）、GDD_007（玩家对世界的认知受情报限制）消费。
+依赖 GDD_001（时间）、GDD_003（地图/城池拓扑）、GDD_004（订阅城级控制权变更事件以同步城池归属，本模型不独立写归属）。被 GDD_014（开局禀赋/态势写回）、GDD_016（势力态势）、GDD_007（玩家对世界的认知受情报限制）消费。
 
 ## Edge Cases
 
