@@ -61,6 +61,14 @@
 
 **重启 A 的下一步动作**：重跑 `/review-all-gdds` → 走完 Phase 2-4 → 出报告（verdict 预期为 **CONCERNS**：无 Blocking，上述 2/3/4 为 Warning）→ 经批准写 `design/gdd/gdd-cross-review-2026-06-24.md` → 按 handoff 决定是否把 ADR-0006 转 Accepted / 进实现。
 
+## Session Extract — /architecture-review 2026-06-24（验证重跑 coverage）
+- Verdict: **CONCERNS → PASS**（014/015 Meta 层范围）
+- 4 缺口 TR（world-002/004、career-004、world-003）全部闭合（grep 确认 ADR-0007/0008 GDD Requirements Addressed 实际命名）
+- Cross-ADR 无依赖环（0007/0008 仅 Related/Ordering 互引，未互列 Depends On）；依赖链全 Accepted；W1 状态所有权冲突由 ADR-0008 消解
+- 014/015/016 全覆盖；遗留 3 历史 cosmetic partial（map-001/council-002/supply-001，非阻断）
+- 报告更新：docs/architecture/architecture-review-2026-06-24.md（加「验证重跑」节 + 顶部裁定上调）
+- 014/015 仍为 Reviewed（未推进 Locked for Slice，留用户定）；本次仅报告 + active.md 改动，未 commit
+
 ## Session Extract — /architecture-review 2026-06-24（聚焦 014/015 Meta 层）
 - Verdict: CONCERNS（3 缺口全 Meta 层，不阻断竖切 MVP）
 - Requirements: 11 total — 7 covered, 0 partial, 3 gaps
