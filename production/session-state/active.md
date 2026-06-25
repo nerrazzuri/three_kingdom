@@ -1,12 +1,44 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
-> **最后更新**：2026-06-24
+> **最后更新**：2026-06-25
 > **语言**：全程中文（见用户偏好 memory）
 > **审查模式**：lean
 
 ---
 
-## ▶▶ 最新：整体大方向已锁定并写入文档（2026-06-24）— 新会话优先从这里读起
+## ▶▶▶ 新会话从这里读起（2026-06-25）— Meta 层（014/015）已走完文档→实现管线，待开工
+
+> 上个会话从「重启 A」一路推进到 Sprint 02 + QA plan，全部已 commit+push。**HEAD = tk/main = `fddf4c3`，工作树干净。**
+
+### 已完成的整条管线（按提交序，全部 push tk/main）
+1. `fcb8e90` 重启 A — 跨系统审查（CONCERNS，5 Warning 全落，W1 城池归属裁定 004 唯一权威）+ 014/015/016 转 Reviewed + registry 首填
+2. `761a4fe` 补 014/015 架构 — **ADR-0007**（条件历史世界模型）+ **ADR-0008**（城池控制权契约）均 Accepted + 审查报告 + TR v3
+3. `2fe240e` 架构审查验证重跑 — 缺口全闭，裁定 **PASS**
+4. `4bc397c` 014/015 → **Locked for Slice** + **epic-011**（生涯，5 story）+ **epic-012**（世界模型，6 story）= 11 story
+5. `3168fc0` **Sprint 02** 排期（sprint-02.md + sprint-status.yaml）
+6. `fddf4c3` **QA plan**（qa-plan-sprint-02-2026-06-24.md）
+
+### 当前可立即做的下一步（二选一）
+- **A. 直接开工**：`/dev-story production/epics/epic-011-campaign-career/story-001-career-state-skeleton.md`
+  实现 11-1 CareerState 骨架（DAG 根，解锁 11-2/3/4/5）。已 /story-readiness=**READY**。
+- **B. 先清理**：把估算（M/4h）回写进全部 11 个 story header（现为占位符 `[待 sprint 规划填]`，估算实际已在 sprint-02 + sprint-status.yaml）。10 分钟杂活，然后再开工。
+
+### Sprint 02 关键事实（实现时须知）
+- **Must(5)**：11-1 CareerState骨架 · 12-1 WorldState骨架 · 11-2 忠臣晋升 · 11-3 自立三分支 · 12-2 历史事件触发门。**Should(3)**：11-4 太守开局守城 · 12-3 分叉传播 · 11-5 生涯存档。**Nice(3)**：12-4 归属投影 · 12-5 抽象结算 · 12-6 世界存档。
+- 全 0 Blocked，governing ADR 全 Accepted（8 份）。纯 C# Domain Logic/Integration，NUnit + dotnet test 旁路 Unity 许可。
+- **两处跨 epic 接缝**（非阻断）：① 11-4 用最小 CitySeed 配置占位（CitySeed 权威在 epic-012）；② 12-4/11-4 需确认 epic-004（已 Complete）的 `CityControlChanged`/`ICityControlAuthority` 接口（ADR-0008）已落地——缺则先补最小实现。
+- **确定性专项回归门**（QA plan）：状态哈希一致 / 存档 round-trip 矩阵 / 自立好感快照隔离 / 历史够不着短路 / 无旁路随机（System.Random/UnityEngine.Random/float 权威路径）。
+- 既有：dotnet 451/451 绿（竖切+epic-001~010 全 Complete）；复用 epic-001 Numerics + epic-009 存档信封。
+
+### 状态机要点
+- gdd-index：014/015 = **Locked for Slice**；016 = **Reviewed**（未建 epic）。
+- ADR：0001~0008 全 **Accepted**（technical-preferences 日志同步）。
+- registry：entities.yaml v2（14 跨系统事实）；tr-registry v3（含 TR-career-001~005 + TR-world-001~006）。
+- 验证命令：`dotnet test tests/unit/ThreeKingdom.Domain.Tests/...csproj -warnaserror`。
+
+---
+
+## ▶▶ 大方向已锁定并写入文档（2026-06-24）— 历史背景
 
 > 用户休息后重想了整个游戏完整品，经长讨论澄清了一直以来"竖切 vs 大规划"的混淆根源。**结论已落文档，防后续跑偏。**
 
@@ -151,9 +183,9 @@
 ---
 
 <!-- STATUS -->
-Epic: ✅ EPIC_010 + 可玩 MVP 切片（三条取胜路线全可玩 + 自动验收 + 设计边界对齐）
-Feature: GameSession 编排 时间/城市/敌情/军议/外交/花名册/袭扰/伏击 + 存档；守城待变·断粮疲敌·假退伏击 三胜路
-Task: HEAD=a1b10a3，dotnet 451/451 绿，工作树干净，全部 push tk/main。★用户休息中，思路整理后再续★。本轮：①三条链全可玩 + HUD 双列布局修复 + 侦察/袭扰改"派出→在途→见效"延迟（堵即时暴露漏洞）②与用户对齐「竖切 vs 正式」边界 + 军师建议边界（已写入 GDD_008）。下一步待定 → 见下「▶ 休息后接续（2026-06-24）」
+Epic: Sprint 02 — epic-011 战役与生涯 + epic-012 条件历史世界模型（Meta 层 Domain 内核）
+Feature: 11 story 已就绪（7 Logic + 4 Integration），QA plan 齐备；进 /dev-story 实现
+Task: HEAD=fddf4c3，全部 push tk/main，工作树干净。Sprint 02 已排 + sprint-status.yaml + QA plan。11-1 已 /story-readiness=READY（仅 estimate 占位琐碎项）。★用户在新会话续接，下一步：把估算回写 11 个 story header，或直接 /dev-story 实现 11-1（CareerState 骨架，DAG 根）★。详见顶部「▶▶ 新会话从这里读起（2026-06-25）」
 <!-- /STATUS -->
 
 ## ▶ Pre-Production→Production 闸门补完（2026-06-21 续）
