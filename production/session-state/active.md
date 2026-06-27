@@ -5,7 +5,7 @@
 > **审查模式**：lean
 
 > **▶ 进行中批次（2026-06-27）**：用户授权「把 Must 完成后继续所有 Should」。顺序 11-2→11-3→12-2（Must 余）→11-4→12-3→11-5（Should）。每 story：实现+测试→inline lean review→story-done→commit+push。
-> **已完成并 push**：11-1 `cf00edb` · 12-1 `6414b32` · 11-2 `51039f6`（晋升门槛+W5护栏）· **11-3 自立三分支**（RebellionConfig/Service 三组触发+好感快照三分支+流浪可继续；503/503 绿）。**Must 余 1：12-2 历史事件触发门。** 然后 Should：11-4/12-3/11-5。
+> **已完成并 push**：11-1 `cf00edb` · 12-1 `6414b32` · 11-2 `51039f6` · 11-3 `dfed215` · **12-2 历史事件触发门**（HistoricalEvent 四元组+reachability 短路+配置校验 Result；513/513 绿）。**★ Sprint 02 全部 Must 完成。** 进 Should：11-4 太守开局守城(Integration) → 12-3 分叉传播 → 11-5 生涯存档(Integration)。
 
 ---
 

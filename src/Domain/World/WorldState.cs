@@ -93,6 +93,34 @@ namespace ThreeKingdom.Domain.World
         internal WorldState WithTime(WorldTime newTime)
             => new WorldState(newTime, _factions, _cities, _triggeredEvents, _divergedEvents);
 
+        /// <summary>该事件 id 是否已触发。</summary>
+        public bool IsTriggered(string eventId)
+        {
+            foreach (string s in _triggeredEvents)
+                if (string.Equals(s, eventId, StringComparison.Ordinal)) return true;
+            return false;
+        }
+
+        /// <summary>该事件 id 是否已分叉。</summary>
+        public bool IsDiverged(string eventId)
+        {
+            foreach (string s in _divergedEvents)
+                if (string.Equals(s, eventId, StringComparison.Ordinal)) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// 产出"已触发某历史事件"后的新状态（仅供历史推进服务使用，story-002）。
+        /// <paramref name="diverged"/>=true 时同时计入已分叉集合。调用方须先确认未触发（构造去重，重复将抛）。
+        /// </summary>
+        internal WorldState WithTriggeredEvent(string eventId, bool diverged)
+        {
+            var triggered = new List<string>(_triggeredEvents) { eventId };
+            var divergedSet = new List<string>(_divergedEvents);
+            if (diverged) divergedSet.Add(eventId);
+            return new WorldState(CurrentTime, _factions, _cities, triggered, divergedSet);
+        }
+
         /// <summary>
         /// 以规范顺序追加到状态哈希（ADR-0004）。顺序：时间.AbsoluteIndex → 势力数 + 各势力
         /// → 城池数 + 各城(City 长度+字符, owner 有无+长度+字符, 守备) → 已触发集合 → 已分叉集合。

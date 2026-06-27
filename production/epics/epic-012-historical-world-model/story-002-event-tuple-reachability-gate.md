@@ -1,12 +1,12 @@
 # Story 002: 历史事件四元组 + reachability 触发门 + 配置校验
 
 > **Epic**: 条件历史世界模型
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Logic
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: M / 1d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-27
 
 ## Context
 
@@ -95,8 +95,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/world/historical_event_trigger_test.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/World/HistoricalEventTriggerTests.cs` — must exist and pass
+**Status**: [x] Created — 10 test functions, all passing（全套 513/513 绿，-warnaserror 0）
+**Path note**: 统一测试工程 `ThreeKingdom.Domain.Tests/World/`（沿 epic-001 约定）。
 
 ---
 
@@ -104,3 +105,13 @@
 
 - Depends on: Story 001（WorldState 骨架）必须 DONE
 - Unlocks: Story 003（分叉传播）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-27
+**Criteria**: 7/7 passing（全部 COVERED）
+**Deviations**: ADVISORY — 测试路径统一工程（同 11-1）。事件结局类型命名 `HistoricalOutcome`（避免与既有 `ThreeKingdom.Domain.Outcome` 命名空间冲突）。结局应用仅置 triggered/diverged + 携稳定 Label；态势/归属变更经抽象结算器(story-005)与 GDD_004(story-004)，本 story 不写（ADR-0008 城池归属只读边界）。
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/World/HistoricalEventTriggerTests.cs`（10 测；全套 513/513 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean，ADR-0007（四元组 + reachability 短路 + diverged，下游重评估留 003）/ADR-0003（配置校验 Result 拒绝缺前置/缺分叉/重复/坏引用）COMPLIANT
+**实现文件**: `src/Domain/World/`（EventId/TimeWindow/Precondition/HistoricalOutcome/HistoricalEvent/HistoricalEventCatalog/PlayerReach/IReachPredicate+SubjectReachPredicate/HistoryAdvanceResult/HistoryAdvancer + WorldState 追加 WithTriggeredEvent/IsTriggered/IsDiverged）
