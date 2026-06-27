@@ -1,12 +1,12 @@
 # Story 003: 自立触发判定与三分支结局
 
 > **Epic**: 战役与生涯
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Logic
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: M / 0.5d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-27
 
 ## Context
 
@@ -88,8 +88,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/career/rebellion_test.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Career/RebellionTests.cs` — must exist and pass
+**Status**: [x] Created — 14 test functions, all passing（全套 503/503 绿，-warnaserror 0）
+**Path note**: 统一测试工程 `ThreeKingdom.Domain.Tests/Career/`（沿 epic-001 约定）。
 
 ---
 
@@ -97,3 +98,13 @@
 
 - Depends on: Story 001（CareerState/RetinueState/RebellionState 骨架）必须 DONE
 - Unlocks: None（自立线 MVP 闭环；与忠臣线 story-002 并列）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-27
+**Criteria**: 6/6 passing（全部 COVERED）
+**Deviations**: ADVISORY — 测试路径统一工程（同 11-1）。RebellionState 在本 story 建（11-1 未含，其 Out of Scope 指向本 story）。在 CareerState 补 `IntoOwnFaction`/`IntoWandering` 自立转换（11-1 review 时移除的 faction 转换以专门方法回归，避免 null 哨兵）。
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Career/RebellionTests.cs`（14 测；全套 503/503 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean，ADR-0004（确定性+好感快照隔离+N=0 不除零+零 float）/ADR-0003（阈值配置化+指纹）COMPLIANT
+**实现文件**: `src/Domain/Career/`（RebellionOutcome/RebellionConfig/RebellionContext+Eligibility/RebellionState/RebellionResult/RebellionService + CareerState 转换方法）+ `src/Application/Career/RebellionCommandService.cs`

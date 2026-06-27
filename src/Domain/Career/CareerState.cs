@@ -106,6 +106,20 @@ namespace ThreeKingdom.Domain.Career
                 IsUnaffiliated);
 
         /// <summary>
+        /// 自立成立：脱离原君主、建立/归属自有势力，成为该势力之主（story-003）。
+        /// 不再有上级君主，故 lord_standing 归零；merit/renown/rank 保留（结局后玩法简化，MVP）。
+        /// </summary>
+        internal CareerState IntoOwnFaction(FactionId newFaction)
+            => new CareerState(Merit, Renown, FixedPoint.Zero, Rank, newFaction, isUnaffiliated: false);
+
+        /// <summary>
+        /// 沦为流浪势力（自立众叛亲离 / 君主已灭转在野，story-003/004）：无所属、无君主好感，
+        /// 合法可继续状态（非卡死）。merit/renown/rank 保留。
+        /// </summary>
+        internal CareerState IntoWandering()
+            => new CareerState(Merit, Renown, FixedPoint.Zero, Rank, faction: null, isUnaffiliated: true);
+
+        /// <summary>
         /// 以规范顺序追加权威字段到状态哈希（ADR-0004）。顺序固定：
         /// merit → renown → lord_standing.Raw → (int)rank → isUnaffiliated → faction（长度+序数字符，在野为长度 0）。
         /// </summary>

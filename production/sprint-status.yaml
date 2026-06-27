@@ -48,11 +48,11 @@ stories:
     name: "自立触发判定与三分支结局"
     file: "production/epics/epic-011-campaign-career/story-003-rebellion-trigger-branches.md"
     priority: must-have
-    status: ready-for-dev
+    status: done
     owner: ""
     estimate_days: 0.5
     blocker: ""
-    completed: ""
+    completed: "2026-06-27"
   - id: "12-2"
     name: "历史事件四元组 + reachability 触发门 + 配置校验"
     file: "production/epics/epic-012-historical-world-model/story-002-event-tuple-reachability-gate.md"
