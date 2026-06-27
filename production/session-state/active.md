@@ -4,8 +4,10 @@
 > **语言**：全程中文（见用户偏好 memory）
 > **审查模式**：lean
 
-> **▶ 进行中批次（2026-06-27）**：用户授权「把 Must 完成后继续所有 Should」。顺序 11-2→11-3→12-2（Must 余）→11-4→12-3→11-5（Should）。每 story：实现+测试→inline lean review→story-done→commit+push。
-> **已完成并 push**：11-1 `cf00edb` · 12-1 `6414b32` · 11-2 `51039f6` · 11-3 `dfed215` · 12-2 `1003b4e`（★全 Must 毕）· **11-4 太守开局守城**（补 ADR-0008 `ICityControlAuthority` 最小实现+CitySeed+守城胜败→生涯/归属经 004 事件；520/520 绿，同时解锁 12-4）。12-3 `<本次>` 分叉传播（稳定序+深度+环安全终止；528/528 绿）。**Should 余 1：11-5 生涯存档(Integration)——最后一个。**
+> **▶ 批次完成（2026-06-27）**：用户授权「把 Must 完成后继续所有 Should」——**全部 8 story（5 Must + 3 Should）已实现+审查+收尾+push**。每 story：实现+测试→inline lean review→story-done→commit+push。**全套 dotnet 536/536 绿，-warnaserror 0。**
+> **提交链（push tk/main）**：11-1 `cf00edb` · 12-1 `6414b32` · 11-2 `51039f6` · 11-3 `dfed215` · 12-2 `1003b4e` · 11-4 `ff3b284` · 12-3 `43dd9af` · **11-5 生涯存档**（CareerSaveCodec 版本化 DTO+版本/指纹校验+LordMissionLog；536/536）。
+> **★ Sprint 02 Must+Should 全清（8/8）。epic-011 = 5/5 Complete。** 仅剩 Nice(3)：12-4 归属投影（已被 11-4 的 ICityControlAuthority 解锁）/12-5 抽象结算/12-6 世界存档——**未做（用户未要求）**。
+> **下一步候选**：① 做 Nice 三项收尾 epic-012；② `/smoke-check sprint`→`/team-qa sprint`→`/retrospective` 走 Sprint 02 收尾门；③ 判 epic-011 关闭。
 
 ---
 

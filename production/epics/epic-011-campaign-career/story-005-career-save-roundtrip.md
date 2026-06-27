@@ -1,12 +1,12 @@
 # Story 005: 生涯状态存档 round-trip
 
 > **Epic**: 战役与生涯
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Integration
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: M / 1d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-27
 
 ## Context
 
@@ -86,8 +86,9 @@
 ## Test Evidence
 
 **Story Type**: Integration
-**Required evidence**: `tests/integration/career/career_save_roundtrip_test.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Career/CareerSaveRoundtripTests.cs` — must exist and pass
+**Status**: [x] Created — 8 test functions, all passing（全套 536/536 绿，-warnaserror 0）
+**Path note**: 集成测试落统一 NUnit 工程（沿 epic-001 约定），无 I/O（codec round-trip via string）。
 
 ---
 
@@ -95,3 +96,16 @@
 
 - Depends on: Story 001（CareerState 骨架）必须 DONE；story 002/003/004 完成后 round-trip 覆盖面更全（可在其后实现）；复用 epic-009 存档信封
 - Unlocks: None（生涯 epic MVP 存档闭环）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-27
+**Criteria**: 5/5 passing（全部 COVERED）
+**Deviations / Decisions**:
+- ADVISORY — 集成测试落统一 NUnit 工程（同 11-1），codec round-trip via string，无 I/O。
+- **补缺实现**：AC 要求保存 LordMissionLog，此前未建——本 story 在 `src/Domain/Career/LordMissionLog.cs` 落最小实现（任务 id + 结果，保序）。
+- 范围 — 生涯段独立 `CareerSaveCodec`（版本化 DTO + 规范文本，复用 Persistence 的 SaveVersion/ConfigFingerprint/SaveFormatException）；原子写/迁移链/三段统一信封物理整合属 epic-009 复用，本 story 只产「生涯 DTO 段」（GDD_013 同边界）。
+**Test Evidence**: Integration — `tests/unit/ThreeKingdom.Domain.Tests/Career/CareerSaveRoundtripTests.cs`（8 测；全套 536/536 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean，ADR-0005（版本化 DTO + 禁 Unity 序列化 + 版本/指纹校验拒不部分载入）/ADR-0002 COMPLIANT
+**实现文件**: `src/Domain/Career/`（LordMissionLog/CareerSaveState/CareerSaveCodec）
