@@ -1,12 +1,12 @@
 # Story 004: 太守开局 + 守城事件胜败后果接入
 
 > **Epic**: 战役与生涯
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Integration
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: M / 1d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-27
 
 ## Context
 
@@ -94,8 +94,9 @@
 ## Test Evidence
 
 **Story Type**: Integration
-**Required evidence**: `tests/integration/career/governor_start_siege_test.cs` OR 文档化 playtest
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Career/GovernorStartSiegeTests.cs` — must exist and pass
+**Status**: [x] Created — 7 test functions, all passing（全套 520/520 绿，-warnaserror 0）
+**Path note**: 集成测试落统一 NUnit 工程（无独立 integration 工程，沿 epic-001 约定）。多系统编排（CitySeed→生涯→GDD_004 控制权事件），无 I/O。
 
 ---
 
@@ -104,3 +105,17 @@
 - Depends on: Story 001（CareerState 骨架）、Story 002（晋升接收初始功绩）必须 DONE；GDD_004 控制权变更事件可用（epic-004 已 Complete，需确认 CityControlChanged 接口落地——若缺则补一最小实现 story）
 - 软依赖：epic-012 CitySeed（用配置占位解耦，不硬阻断）
 - Unlocks: Story 005（存档含开局/守城后果态）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-27
+**Criteria**: 5/5 passing（全部 COVERED）
+**Deviations / Decisions**:
+- ADVISORY — 集成测试落统一 NUnit 工程（无独立 integration 工程，沿 epic-001 约定）。
+- **补缺实现**：ADR-0008 的 `ICityControlAuthority`/`CityControlChanged`/`Garrison`/`ChangeCause` 此前未落地（epic-004 已 Complete 但契约系 ADR-0008 后补）。本 story 按 story 指示「若缺则补一最小实现」在 `src/Domain/City/` 落地最小内存权威 `CityControlAuthority`（GDD_004 唯一写点）。**同时解锁 12-4（归属投影订阅）**。
+- 占位 — CitySeed 为 MVP 配置占位（权威终归 epic-012 世界模型）；BattleOutcome 以最小 `SiegeOutcome{Defended,Fallen}` 摘要消费（战役解算属 epic-007/008，Out of Scope）。
+- ADR-0008 分离天然满足：CareerState 无 city.owner 字段，生涯层结构上无法直接写归属；失城归属经 `RequestControlChange` 发起、`CityControlChanged` 发布。
+**Test Evidence**: Integration — `tests/unit/ThreeKingdom.Domain.Tests/Career/GovernorStartSiegeTests.cs`（7 测；全套 520/520 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean，ADR-0008（归属唯一权威 GDD_004 + 事件）/ADR-0002（编排）/ADR-0003（CitySeed 数据驱动）COMPLIANT
+**实现文件**: `src/Domain/City/`（CityControl + CityControlAuthority）· `src/Domain/Career/`（CitySeed/SiegeOutcome+GovernorStartConfig+SiegeContext/GovernorOutcomeService）· `src/Application/Career/GovernorCampaignService.cs`

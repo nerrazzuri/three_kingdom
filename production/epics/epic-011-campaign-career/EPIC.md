@@ -13,7 +13,7 @@
 | 001 | CareerState 权威状态与确定性结算骨架 | Logic | ✅ Complete | ADR-0002/0004 |
 | 002 | 忠臣晋升逐级门槛与功绩/名望累积 | Logic | ✅ Complete | ADR-0003/0004 |
 | 003 | 自立触发判定与三分支结局 | Logic | ✅ Complete | ADR-0004/0003 |
-| 004 | 太守开局 + 守城事件胜败后果接入 | Integration | Ready | ADR-0008/0002 |
+| 004 | 太守开局 + 守城事件胜败后果接入 | Integration | ✅ Complete | ADR-0008/0002 |
 | 005 | 生涯状态存档 round-trip | Integration | Ready | ADR-0005 |
 
 ## Overview
