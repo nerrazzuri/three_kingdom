@@ -30,11 +30,11 @@ stories:
     name: "WorldState 权威骨架"
     file: "production/epics/epic-012-historical-world-model/story-001-worldstate-skeleton.md"
     priority: must-have
-    status: ready-for-dev
+    status: done
     owner: ""
     estimate_days: 0.5
     blocker: ""
-    completed: ""
+    completed: "2026-06-27"
   - id: "11-2"
     name: "忠臣晋升逐级门槛与功绩/名望累积"
     file: "production/epics/epic-011-campaign-career/story-002-loyalist-promotion-ladder.md"

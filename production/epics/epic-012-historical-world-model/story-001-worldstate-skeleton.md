@@ -1,12 +1,12 @@
 # Story 001: WorldState 权威状态与确定性推进骨架
 
 > **Epic**: 条件历史世界模型
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Logic
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: M / 0.5d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-27
 
 ## Context
 
@@ -87,8 +87,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/world/worldstate_test.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/World/WorldStateTests.cs` — must exist and pass
+**Status**: [x] Created — 12 test functions, all passing（全套 477/477 绿，-warnaserror 0）
+**Path note**: 实际落点为统一测试工程 `ThreeKingdom.Domain.Tests/World/`（沿 epic-001 约定），非原 story 拟的 `tests/unit/world/`（不在编译工程内）。
 
 ---
 
@@ -96,3 +97,16 @@
 
 - Depends on: None（复用 GDD_001 WorldTime + Numerics StateHasher，已在 epic-002 落地）
 - Unlocks: Story 002、003、004、005、006
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-27
+**Criteria**: 5/5 passing（无 deferred；全部 COVERED）
+**Deviations**:
+- ADVISORY — 测试落统一工程 `tests/unit/ThreeKingdom.Domain.Tests/World/WorldStateTests.cs`（沿 epic-001 约定），非 story 原拟 `tests/unit/world/`（不在编译工程内）。
+- ADVISORY — QA AC-3/4 edge「推进顺序变化→哈希不同」：本骨架时间推进为线性可交换（GDD_001），严格非交换序敏感性随 story-002 历史事件触发到来；已改以「不同序列→不同哈希」+「输入集合序无关」证明确定性。
+- 简化 — `WorldState.Cities`（城侧只读投影）与 `FactionRecord.OwnedCities`（势力侧领有）为两视图，本骨架不交叉校验一致性；权威同步随 story-004 订阅 GDD_004 接入。
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/World/WorldStateTests.cs`（12 测；全套 dotnet 477/477 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean review，ADR-0002/0004 COMPLIANT，AC-5 归属只读编译级（无 setter + 反射断言）
+**实现文件**: `src/Domain/World/`（SurvivalStatus/RelationToPlayer/CityOwnership/FactionRecord/WorldState/WorldProgressionService）

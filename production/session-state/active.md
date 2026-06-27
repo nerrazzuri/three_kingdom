@@ -29,6 +29,16 @@
 - Tech debt logged: None
 - Next recommended: epic-012 story-001 WorldState 骨架（DAG 根）或 epic-011 story-002 忠臣晋升
 
+## Session Extract — 12-1 WorldState 骨架 实现+审查+收尾 2026-06-27
+- **HEAD 进度**：11-1 已 commit+push `cf00edb`（tk/main）。12-1 实现完成，待 commit+push。
+- **产出**（epic-012 story-001，Status: Ready → Complete）：
+  - Domain（`src/Domain/World/`，6 文件）：`SurvivalStatus`/`RelationToPlayer` 枚举 · `CityOwnership`(城归属**只读投影**，无写 API，TR-world-003/ADR-0008) · `FactionRecord`(势力 id/君主/存续/领有城池/对玩家关系，规范序+不变量) · `WorldState`(时间引用+势力+城投影+已触发/已分叉事件集合；不可变+规范序哈希+只读访问器) · `WorldProgressionService`(纯函数确定性时间推进，story-002 事件触发的单一注入点)。
+  - Test（`tests/unit/ThreeKingdom.Domain.Tests/World/WorldStateTests.cs`，12 测）：AC-1/2 字段+空集合/单势力合法+存续须有君主、AC-3/4 同序列哈希一致+不同序列哈希异+输入序无关+0段恒等、AC-5 归属只读（反射断言无 setter + WorldState 无 public 变更方法）。
+  - 验证：全套 **dotnet 477/477 绿**（465+12），-warnaserror 0。
+- **Deviations（ADVISORY）**：① 测试路径统一工程（非 story 拟 tests/unit/world/）；② 线性时间可交换，严格非交换序敏感随 story-002 到来（已以不同序列+输入序无关证确定性）；③ Cities 城侧投影与 FactionRecord.OwnedCities 势力侧两视图未交叉校验，权威同步随 story-004 接入。
+- **追踪已更**：story header + Completion Notes + sprint-status.yaml(12-1 done) + EPIC.md(✅) + active.md。
+- **▶ 下一步**：commit+push 12-1 → 续 sprint-02 Must 链最后一项 **11-2 忠臣晋升**（merit/renown/standing_req 配置化门槛，接 11-1）。之后 Should 层 11-4/12-3/11-5。
+
 ---
 
 ## ▶▶▶ 新会话从这里读起（2026-06-25）— Meta 层（014/015）已走完文档→实现管线，待开工
