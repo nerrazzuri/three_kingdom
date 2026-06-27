@@ -1,8 +1,33 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
-> **最后更新**：2026-06-25
+> **最后更新**：2026-06-27
 > **语言**：全程中文（见用户偏好 memory）
 > **审查模式**：lean
+
+---
+
+## ▶▶▶ 新会话从这里读起（2026-06-27）— Sprint 02 开工：11-1 已实现，待 review/done
+
+> 用户授权直接开工 A（不逐步确认）。已用 `/dev-story` 实现 **epic-011 story-001 CareerState 骨架**。**全套 dotnet 465/465 绿（451+14 新），-warnaserror 0**。**尚未 commit**（按惯例待用户指示）。
+
+### 本轮产出（11-1，Status: Ready → In Progress）
+- **Domain**（`src/Domain/Career/`，10 文件）：`Rank`(0–7 官阶梯队) · `OfficeRole`(城守/副将/内政主事/军师) · `CareerErrorCode`(稳定码) · `CareerState`(merit/renown int≥0 + lord_standing Q16.16∈[0,1] + rank + FactionId? + 在野标志；不可变+不变量校验+AppendTo 哈希) · `RetinueMember` · `RetinueState`(僚属+好感+官职任免，规范序哈希) · `CareerSnapshot`(Career+Retinue 组合哈希) · `CareerCommand`(4 命令：GainMerit/AdjustLordStanding/PromoteRank/AssignOffice) · `CareerCommandResult`(成功/失败+稳定码，失败=原态不变) · `CareerStateService`(Domain 解析，纯函数确定性)。
+- **Application**（`src/Application/Career/CareerCommandService.cs`）：唯一写路径，前置校验(空命令→NullCommand)后委派 Domain。
+- **Test**（`tests/unit/ThreeKingdom.Domain.Tests/Career/CareerStateTests.cs`，14 测）：覆盖 AC-1/5 字段类型+越界拒、AC-3 非法操作稳定码+无部分写入(负功绩/越级/空命令/非成员任免/在野晋升)、AC-4 同前态同命令流哈希一致 + 顺序敏感(同职位先后任免→哈希异)。
+- **路径偏差**：测试落统一工程 `ThreeKingdom.Domain.Tests/Career/`（沿 epic-001 约定），非 story 原拟 `tests/unit/career/`（不在编译工程内）。
+- **结构性边界**：晋升只校验逐级结构（不做 merit/renown/standing 门槛——属 story-002）；lord_standing 钳制非报错（N10 有源有汇）。
+- **已改追踪**：story header(Status/Last Updated/Estimate/Test Evidence✓) + sprint-status.yaml(11-1 in_progress, updated 2026-06-27)。
+
+### ▶ 下一步
+1. ✅ `/code-review` APPROVED + `/story-done` **COMPLETE WITH NOTES** — 11-1 已关闭（Status: Complete；sprint-status done；EPIC.md ✅）。
+2. **接着做（sprint-02 Must 链）**：12-1 WorldState 骨架（epic-012 DAG 根）或 11-2 忠臣晋升。建议先 12-1（另一 DAG 根，并行解锁 12 链）。
+3. **commit 时机由用户定**（本轮全部未 commit）。建议命令：`git add src/Domain/Career src/Application/Career tests/unit/ThreeKingdom.Domain.Tests/Career production/epics/epic-011-campaign-career production/sprint-status.yaml production/session-state/active.md && git commit -m "feat: CareerState 权威状态与确定性结算骨架 (TR-career-001/005)"`
+
+## Session Extract — /story-done 2026-06-27
+- Verdict: COMPLETE WITH NOTES
+- Story: epic-011 story-001 — CareerState 权威状态与确定性结算骨架
+- Tech debt logged: None
+- Next recommended: epic-012 story-001 WorldState 骨架（DAG 根）或 epic-011 story-002 忠臣晋升
 
 ---
 

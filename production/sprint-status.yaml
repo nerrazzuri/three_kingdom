@@ -14,18 +14,18 @@ goal: "落地生涯（epic-011）与条件历史世界模型（epic-012）的 Do
 start: "2026-06-24"
 end: "2026-07-07"
 generated: "2026-06-24"
-updated: "2026-06-24"
+updated: "2026-06-27"
 
 stories:
   - id: "11-1"
     name: "CareerState 权威骨架"
     file: "production/epics/epic-011-campaign-career/story-001-career-state-skeleton.md"
     priority: must-have
-    status: ready-for-dev
+    status: done
     owner: ""
     estimate_days: 0.5
     blocker: ""
-    completed: ""
+    completed: "2026-06-27"
   - id: "12-1"
     name: "WorldState 权威骨架"
     file: "production/epics/epic-012-historical-world-model/story-001-worldstate-skeleton.md"

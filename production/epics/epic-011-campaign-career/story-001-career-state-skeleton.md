@@ -1,12 +1,12 @@
 # Story 001: CareerState 权威状态与确定性结算骨架
 
 > **Epic**: 战役与生涯
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Logic
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: M / 0.5d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-27
 
 ## Context
 
@@ -89,8 +89,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/career/career_state_test.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Career/CareerStateTests.cs` — must exist and pass
+**Status**: [x] Created — 14 test functions, all passing（全套 465/465 绿，-warnaserror 0）
+**Path note**: 实际落点为统一测试工程 `ThreeKingdom.Domain.Tests/Career/`（沿 epic-001 起的项目约定），非原 story 拟的 `tests/unit/career/`——后者不在编译工程内。
 
 ---
 
@@ -98,3 +99,13 @@
 
 - Depends on: None（复用既有 Numerics FixedPoint/StateHasher、ADR-0002 Command 框架——已在 epic-001 落地）
 - Unlocks: Story 002、003、004、005
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-27
+**Criteria**: 5/5 passing（无 deferred；全部 COVERED）
+**Deviations**: ADVISORY — 测试落统一工程 `tests/unit/ThreeKingdom.Domain.Tests/Career/CareerStateTests.cs`（沿 epic-001 约定），非 story 原拟 `tests/unit/career/`（不在编译工程内）。晋升数值门槛、自立线按 Out of Scope 留 story-002/003。
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Career/CareerStateTests.cs`（14 测；全套 dotnet 465/465 绿，-warnaserror 0）
+**Code Review**: Complete — `/code-review` APPROVED（含 1 处 quality 修正：移除 `CareerState.With` 未用且 null 哨兵歧义的 faction/unaffiliated 参数，重验绿）
+**实现文件**: `src/Domain/Career/`（Rank/OfficeRole/CareerErrorCode/CareerState/RetinueMember/RetinueState/CareerSnapshot/CareerCommand/CareerCommandResult/CareerStateService）+ `src/Application/Career/CareerCommandService.cs`
