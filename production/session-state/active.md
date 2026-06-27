@@ -4,6 +4,9 @@
 > **语言**：全程中文（见用户偏好 memory）
 > **审查模式**：lean
 
+> **▶ 进行中批次（2026-06-27）**：用户授权「把 Must 完成后继续所有 Should」。顺序 11-2→11-3→12-2（Must 余）→11-4→12-3→11-5（Should）。每 story：实现+测试→inline lean review→story-done→commit+push。
+> **已完成并 push**：11-1 `cf00edb` · 12-1 `6414b32` · **11-2 忠臣晋升 `<本次提交>`**（PromotionLadderConfig 配置门槛 + W5 护栏 + CareerProgressionService；489/489 绿）。**下一个：11-3 自立三分支。**
+
 ---
 
 ## ▶▶▶ 新会话从这里读起（2026-06-27）— Sprint 02 开工：11-1 已实现，待 review/done

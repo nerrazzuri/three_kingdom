@@ -29,5 +29,11 @@ namespace ThreeKingdom.Domain.Career
 
         /// <summary>任免对象不在僚属列表（无法授予官职位）。</summary>
         UnknownRetinueMember = 7,
+
+        /// <summary>晋升门槛未达（merit/renown/lord_standing 任一不足；story-002 配置门槛判定）。</summary>
+        PromotionThresholdNotMet = 8,
+
+        /// <summary>自立发动条件未满足（story-003）。</summary>
+        RebellionConditionNotMet = 9,
     }
 }

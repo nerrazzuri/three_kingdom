@@ -1,12 +1,12 @@
 # Story 002: 忠臣晋升逐级门槛与功绩/名望累积
 
 > **Epic**: 战役与生涯
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Logic
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: M / 1d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-27
 
 ## Context
 
@@ -88,8 +88,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/career/promotion_test.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Career/PromotionLadderTests.cs` — must exist and pass
+**Status**: [x] Created — 12 test functions, all passing（全套 489/489 绿，-warnaserror 0）
+**Path note**: 统一测试工程 `ThreeKingdom.Domain.Tests/Career/`（沿 epic-001 约定），非原拟 `tests/unit/career/`。
 
 ---
 
@@ -97,3 +98,13 @@
 
 - Depends on: Story 001（CareerState/PromotionLadder 骨架 + Command 路径）必须 DONE
 - Unlocks: Story 004（守城产初始功绩接入晋升）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-27
+**Criteria**: 6/6 passing（全部 COVERED）
+**Deviations**: ADVISORY — 测试路径统一工程（同 11-1）。在 11-1 的 `CareerErrorCode` 追加 `PromotionThresholdNotMet=8`、`RebellionConditionNotMet=9`（后者为 11-3 预留，additive 稳定不破坏既有码）。
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/Career/PromotionLadderTests.cs`（12 测；全套 489/489 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean，ADR-0003（配置门槛+指纹+按阶递增/长度校验，零硬编码）/ADR-0004（确定性+定点 W5 护栏）COMPLIANT；组合于 11-1 命令路径未改其 switch
+**实现文件**: `src/Domain/Career/`（CareerGainSource/CareerGain/PromotionLadderConfig/PromotionCheck/PromotionGate/CareerProgressionService + CareerErrorCode 追加码）+ `src/Application/Career/LoyalistAdvancementService.cs`
