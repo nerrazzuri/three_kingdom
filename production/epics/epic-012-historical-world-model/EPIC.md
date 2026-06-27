@@ -12,7 +12,7 @@
 |---|-------|------|--------|-----|
 | 001 | WorldState 权威状态与确定性推进骨架 | Logic | ✅ Complete | ADR-0002/0004 |
 | 002 | 历史事件四元组 + reachability 触发门 + 配置校验 | Logic | ✅ Complete | ADR-0007/0003 |
-| 003 | 分叉传播（下游按 EventId 稳定序重评估） | Logic | Ready | ADR-0007/0004 |
+| 003 | 分叉传播（下游按 EventId 稳定序重评估） | Logic | ✅ Complete | ADR-0007/0004 |
 | 004 | 城池归属只读投影（订阅 GDD_004 控制权变更） | Integration | Ready | ADR-0008/0007 |
 | 005 | 抽象结算器（不在场势力混战） | Logic | Ready | ADR-0007/0004 |
 | 006 | WorldState 存档 round-trip | Integration | Ready | ADR-0005 |

@@ -1,12 +1,12 @@
 # Story 003: 分叉传播（下游按 EventId 稳定序重评估）
 
 > **Epic**: 条件历史世界模型
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Logic
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: M / 0.5d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-27
 
 ## Context
 
@@ -84,8 +84,9 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/world/divergence_propagation_test.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/World/DivergencePropagationTests.cs` — must exist and pass
+**Status**: [x] Created — 8 test functions, all passing（全套 528/528 绿，-warnaserror 0）
+**Path note**: 统一测试工程 `ThreeKingdom.Domain.Tests/World/`（沿 epic-001 约定）。
 
 ---
 
@@ -93,3 +94,13 @@
 
 - Depends on: Story 002（事件触发 + diverged 置标）必须 DONE
 - Unlocks: None（触发模型 MVP 闭环）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-27
+**Criteria**: 4/4 passing（全部 COVERED）
+**Deviations / Decisions**: ADVISORY — 测试路径统一工程（同 11-1）。下游分叉由「同一世界变更使下游前置亦被破坏」驱动 + reachability 门 + 深度上限；够不着的下游短路留在轨（与 story-002 一致）。环/钻石依赖经「已处理集合」安全终止（非配置期拒绝）。
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/World/DivergencePropagationTests.cs`（8 测；全套 528/528 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean，ADR-0007 §3（EventId 稳定序 + 深度受限 + reachability 门 + 去重终止）/ADR-0004（确定性）COMPLIANT
+**实现文件**: `src/Domain/World/`（DivergencePropagationConfig/DivergencePropagationResult/DivergencePropagationService）
