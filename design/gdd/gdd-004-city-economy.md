@@ -1,7 +1,7 @@
 # GDD_004 — 城市经济
 
-- 状态：Draft
-- **Status**: Draft
+- 状态：Implemented
+- **Status**: Implemented
 - 范围：Vertical Slice
 
 ## System Purpose
@@ -66,6 +66,7 @@ stock_2 = max(STOCK_FLOOR, stock_1 − consumed)  （结算后库存）
 ```
 
 - **约束**：`stock_2 ≥ STOCK_FLOOR`，资源不凭空补齐；短缺转化为后果（见步骤 4）。
+- **库存上限与和平期汇（防「源>>汇、断粮杠杆晚期失效」，ADV-2）**：`stock_2 = min(stock_2, STOCK_CEIL(fort_level, governance))`——库存有**上限**（仓容由工事/治理派生）；超出部分**不无界累积**：溢出按 `spoilage = (stock − STOCK_CEIL) × spoil_rate` 腐损丢弃，或转为可上缴/恩赏的外部 sink（喂 GDD_014 名望/君主好感）。使已稳城池粮食不无界膨胀，断粮/补给杠杆（GDD_010 六杠杆）晚期仍有效。`STOCK_CEIL/spoil_rate` 配置化。
 - **示例**：stock_0=50，base_yield=20 → stock_1=70；civ_demand=90 → consumed=70，shortage=20，stock_2=0（若 FLOOR=0）。
 
 ### 3. 民用消耗需求
@@ -87,6 +88,7 @@ unrest_risk = (shortage > shortage_threshold) ? high : low
 ```
 
 - 短缺越大，民心下降越多，超阈值触发骚乱风险（见 §Failure Cases 饥饿/骚乱）。
+- **民心被动回升项（防单调下行死亡螺旋，ADV-4）**：非短缺、非高征用的稳定日，民心按 `civ_morale' = min(CIV_MORALE_MAX, civ_morale + recovery_rate × (1 − shortage_pressure))` **被动回升**——温饱且无骚乱时缓慢恢复，使民心成为**有源有汇**值，而非只靠"安抚"主动动作的单向下行。长围/连续征用仍压过回升（回升随 `shortage_pressure` 归零），符合"围城民心恶化"。`recovery_rate` 配置化（建议小于短缺扣减系数，使压力期净下行）。
 - **示例**：civ_morale=60，k_shortage=0.5，shortage=20 → `60−0.5×20=50`。
 
 ### 5. 征用军粮对民心的影响

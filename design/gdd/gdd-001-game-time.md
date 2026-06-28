@@ -1,7 +1,7 @@
 # GDD_001 — 游戏时间
 
-- 状态：Draft
-- **Status**: Draft
+- 状态：Implemented
+- **Status**: Implemented
 - 范围：Vertical Slice
 
 ## System Purpose
@@ -129,7 +129,7 @@ sort_key(e) = ( T(e.d, e.s), e.priority, e.stable_id )
 
 ## Dependencies
 
-依赖版本化节奏配置和确定性事件排序。被季节天气、城市经济、侦察、战前准备、战斗、士气疲劳、后勤和存档消费。亦被 GDD_015（条件历史世界模型按世界时间推进、检查历史事件时间窗）消费。
+依赖版本化节奏配置和确定性事件排序。被季节天气、世界地图、城市经济、人物、关系、军议、侦察、战前准备、战斗、士气疲劳、后勤和存档消费。亦被 GDD_014（生涯结算按日界推进）、GDD_015（条件历史世界模型按世界时间推进、检查历史事件时间窗）、GDD_016（敌方 AI 决策按 worldTick）消费。
 
 ## Edge Cases
 

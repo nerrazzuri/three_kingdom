@@ -1,7 +1,7 @@
 # GDD_012 — 后勤与补给
 
-- 状态：Draft
-- **Status**: Draft
+- 状态：Implemented
+- **Status**: Implemented
 - 范围：Vertical Slice
 
 ## System Purpose

@@ -1,7 +1,7 @@
 # GDD_011 — 士气与疲劳
 
-- 状态：Draft
-- **Status**: Draft
+- 状态：Implemented
+- **Status**: Implemented
 - 范围：Vertical Slice
 
 ## System Purpose

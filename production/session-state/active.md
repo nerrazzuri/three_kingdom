@@ -12,6 +12,15 @@
 > **下一步候选**：① 敌方 AI（gdd-016/ADR-0006，仍 Reviewed）建 epic 进实现；② Presentation 把 Meta 层接 UI；③ 存档三段统一信封整合（retro 行动项 #2）；④ 统一测试路径约定（retro 行动项 #1）。
 <!-- QA RUN: 2026-06-28 | Sprint: sprint-02 | Verdict: PASS（APPROVED）| Report: production/qa/qa-signoff-sprint-02-2026-06-28.md -->
 
+## Session Extract — 全游戏 review 2026-06-28（6 层）
+- 报告：`docs/reviews/full-game-review-2026-06-28.md`（未 commit）
+- 核心结论：**内核质量极高、装配极薄**。代码零禁则违反/零确定性泄漏/556 绿/8 ADR 全 Accepted；但 Meta 层(011/012)+~13 Domain 系统是**孤岛**，可玩装配≈竖切守城那一局。
+- 🔴 Blocking：① BLK-1 Meta 层+多数系统未装配成可玩太守循环（GameSession 只驱动竖切系统）；② BLK-2 敌方 AI（gdd-016/ADR-0006）整块未建（无 epic/无代码）。
+- 🟠 Concern：CON-1 治理状态全面漂移（gdd-index/epics-index/**control-manifest 卡在 Foundation**）；CON-2 Meta 层未纳入全局结算顺序（装配后即确定性 bug 源）；CON-3 gdd-016 三处设计缺陷（悬空引用 IntelProjection/负 softmax/lerp 未 clamp）；CON-4 自立新势力创建权威 014↔015 未裁；CON-5 SliceScenario 硬编码(ADR-0003)。
+- 🟡 Advisory：雪球/粮源汇/刷战斗护栏未验证/民心恢复薄；依赖双向缺口；015 抽象结算随机源代码已对但 GDD 未声明；无目标循环端到端测试；存档三段未统一。
+- **建议处置序**：①廉价校准治理状态 →②编辑级补结算顺序+裁自立权威 →③**裁决方向：先装配可玩太守循环（建议）vs 继续造内核** →④裁决敌方 AI 去留。
+- **下一步等用户裁决**：是否（a）先做廉价治理校准；（b）开"装配集成 epic"；（c）建敌方 AI epic。
+
 ---
 
 ## ▶▶▶ 新会话从这里读起（2026-06-27）— Sprint 02 开工：11-1 已实现，待 review/done

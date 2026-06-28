@@ -1,7 +1,7 @@
 # GDD_015 — 条件历史世界模型
 
-- 状态：Locked for Slice（跨系统审查 + 架构审查 2026-06-24 通过；ADR-0007 条件历史模型 + ADR-0008 控制权契约 Accepted）
-- **Status**: Locked for Slice
+- 状态：Implemented（跨系统审查 + 架构审查 2026-06-24 通过；ADR-0007 条件历史模型 + ADR-0008 控制权契约 Accepted）
+- **Status**: Implemented
 - 范围：Meta（世界骨架与历史推进；跨切片）
 
 ## System Purpose
@@ -72,7 +72,7 @@ on GDD_004.ControlChanged(city, newOwner, garrison):   # 唯一更新源
 
 - `HistoricalEvent`：id、时间窗、前置条件谓词、正常结局、分叉结局、diverged 标志、下游事件引用。
 - `WorldState`：当前时间、各势力存续与疆域、各城归属/守备、已触发/已分叉事件集合。
-- `FactionRecord`：势力 id、君主、存续状态、领有城池、对玩家关系。
+- `FactionRecord`：势力 id、君主、存续状态、领有城池、对玩家关系。**本模型为势力实体（含玩家自立新势力）的创建与存续的唯一权威**（裁定 2026-06-28，类比 ADR-0008 城池归属契约）：GDD_014 自立成立时向本模型**发起**创建请求，由本模型创建 `FactionRecord` 并写势力存续；014 只读，不独立创建势力。城池归属仍只读反映、订阅 GDD_004。
 - `CitySeed`：可开局城池的历史初始禀赋（供 GDD_014 绑定）。
 - `ReachPredicate`：判定玩家势力圈是否触及某事件前置主体的规则。
 
@@ -106,6 +106,8 @@ on GDD_004.ControlChanged(city, newOwner, garrison):   # 唯一更新源
 ## AI Requirements
 
 历史事件的“正常结局”不依赖玩家，由脚本/抽象推进；玩家不在场的势力混战可用**抽象结算**（不必跑完整战役）。AI 势力的扩张/结盟在玩家够得着的范围内由 GDD_016 战略层驱动，够不着的范围按历史抽象推进。
+
+> **抽象结算随机源声明（ADR-0004，ADV-7）**：抽象结算的任何随机性**只经注入式 `IDeterministicRandom`**（种子由世界状态派生）、在声明检查点取值，**禁止旁路随机源**（System/UnityEngine.Random），结果**纳入状态哈希**——保证「同一行动序列→同一历史走向」（§Test Requirements）。实现见 `StrengthAbstractResolver`（epic-012 story-005，已落地并有确定性测试）。
 
 ## Save / Load Requirements
 

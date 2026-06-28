@@ -61,6 +61,15 @@ entities:
     authority: GDD_004 独占「控制权变更事件」；历史事件/战果/夺城一律经 004 落地后回流 015
     added: 2026-06-24
     revised: ""
+  - name: faction_existence      # 势力实体创建与存续（权威边界，裁定 2026-06-28）
+    status: active
+    source: design/gdd/gdd-015-historical-world-model.md   # WorldState/FactionRecord 唯一创建与存续权威
+    referenced_by:
+      - design/gdd/gdd-015-historical-world-model.md
+      - design/gdd/gdd-014-campaign-and-career.md           # 自立时发起「创建新势力」请求，只读存续
+    authority: GDD_015 为势力实体（含玩家自立新势力）创建与存续唯一权威；014 发起请求、不独立创建（类比 ADR-0008 city_control）
+    added: 2026-06-28
+    revised: ""
   - name: TacticRecognizer      # 只读事后兵法识别器
     status: active
     source: design/gdd/gdd-010-battle-tactics-sandbox.md
@@ -76,11 +85,11 @@ entities:
     source: design/gdd/gdd-016-enemy-ai.md
     referenced_by:
       - design/gdd/gdd-016-enemy-ai.md
-      - design/gdd/gdd-007-intelligence-recon.md         # 由 IntelProjection+IntelAssessment 构造
+      - design/gdd/gdd-007-intelligence-recon.md         # 由 FactionKnowledge + effective_conf 置信评估构造（AI 只读自身知识，反全知）
       - docs/architecture/adr-0006-deterministic-enemy-ai.md
     lock: 构造签名不接受任何真值类型（MapTruth/WorldTruth）——编译级反全知
     added: 2026-06-24
-    revised: ""
+    revised: "2026-06-28"   # 旧注「IntelProjection+IntelAssessment」改为 GDD_007 实名 FactionKnowledge/effective_conf（full-game-review CON-3）
   - name: StrategicAction       # 敌方战略意图枚举
     status: active
     source: design/gdd/gdd-016-enemy-ai.md

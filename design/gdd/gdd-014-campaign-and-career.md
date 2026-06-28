@@ -1,7 +1,7 @@
 # GDD_014 — 战役与生涯
 
-- 状态：Locked for Slice（跨系统审查 + 架构审查 2026-06-24 通过；ADR-0008 城池控制权契约 Accepted）
-- **Status**: Locked for Slice
+- 状态：Implemented（跨系统审查 + 架构审查 2026-06-24 通过；ADR-0008 城池控制权契约 Accepted）
+- **Status**: Implemented
 - 范围：Meta（连接各战役为一段可持续人生；跨切片）
 
 ## System Purpose
@@ -95,6 +95,7 @@ troop_cap = base_cap × rank_cap_multiplier[rank] × city_support_factor(cities_
 ```
 
 - 高阶解锁更高带兵上限，但俸禄消耗同步上升，需城池经济（GDD_004）支撑。
+- **雪球追赶护栏（防"城→兵→城"乘性失控，ADV-1）**：① **俸禄为乘性 sink**——`upkeep = troop_cap × upkeep_rate × cities_owned^upkeep_pressure`（`upkeep_pressure ≥ 1` 使规模越大维持越贵，抵消乘性扩张）；② **守备摊薄**——`city_support_factor` 随 `cities_owned` 超过 `governance_capacity` 后**递减**（治理半径外的城贡献下降，甚至拖累），非线性增益；③ **敌对面橡皮筋**——体量超阈值时 GDD_015 `reachable` 扩张 + GDD_016 战略层对最强势力的反制权重上升（落点在 015/016，本层只读其压力）。三者使净扩张收益**次线性**，无玩家侧无限雪球。`upkeep_rate/upkeep_pressure/governance_capacity` 全配置化。
 
 ## Data Model
 
@@ -112,6 +113,11 @@ troop_cap = base_cap × rank_cap_multiplier[rank] × city_support_factor(cities_
 
 功绩/名望/君主好感变化；晋升/降职事件；自立结局与新势力建立；带兵上限/治理范围/授权变化；写回 GDD_005 身份变化、GDD_006 关系后果、GDD_015 世界态势。城池夺取/易主**经 GDD_004 控制权变更事件触发**（本层只读控制权，不直接写归属——见 GDD_004 城池控制权权威裁定）。
 
+> **自立线权威边界裁定（2026-06-28，类比 ADR-0008）**：
+> - **城池倒戈/归还**（自立三分支中的城池易主）= 控制权变更，**一律经 GDD_004 `ControlChanged` 发起**，本层不直接写城池归属。
+> - **新势力（玩家自立势力）的实体创建与势力存续权威 = GDD_015 `WorldState/FactionRecord`**。本层 `RebellionState` 持自立意图、好感快照与分支结果，**向 GDD_015 发起"创建新势力"请求**（携新势力初始态：继承的城池/兵力/人才范围由分支决定），由 GDD_015 创建 `FactionRecord` 并写势力存续；本层只**读**该势力态势，不独立创建/写势力存续。
+> - 故自立结算顺序：014 定分支 → 请求 004 落城池倒戈 + 请求 015 创建新势力 → 015/004 单点结算 → 014 读已结算态势（与 systems-index Meta 层结算顺序一致，破环）。
+
 ## Dependencies
 
 依赖 GDD_004（城市资源/控制权）、GDD_005（人物身份）、GDD_006（关系/好感/授权）、GDD_010（战役胜负产功绩名望）、GDD_015（开局禀赋与世界态势写回）、GDD_013（生涯状态存档）。被 GDD_016（敌方 AI 读势力态势）消费。
@@ -122,7 +128,7 @@ troop_cap = base_cap × rank_cap_multiplier[rank] × city_support_factor(cities_
 - 自立发动瞬间好感临界：按结算时快照判定，发动后好感变化不回溯改分支。
 - 在野期间无城无僚属：进入“流浪发育”最小态，仍可投效或经战功重建。
 - 双线切换：忠臣可随时转自立；自立后不可回到原主忠臣线（关系已敌对）。
-- 继承基业后玩家成为君主：晋升线终止，进入势力君主玩法（与自立后玩法合流）。
+- 继承基业后玩家成为君主：晋升线终止，进入势力君主玩法（与自立后玩法合流）。**信息约束保持（ADV-5）**：君主玩法**仍受 GDD_007 四层信息分离约束**——君主对其他势力/战场的认知依旧经情报系统（来源/时效/置信/真值隔离），**不退化为全知君主面板**（game-concept 明确否定全知面板）。君主级国策放大的是"可下达的指令范围"，非"可见的真值范围"。
 
 ## Failure Cases
 
@@ -132,7 +138,7 @@ troop_cap = base_cap × rank_cap_multiplier[rank] × city_support_factor(cities_
 
 各阶 `merit_req/renown_req/standing_req`；自立 `rebel_city_min/renown_min/affinity_min`；结局分支阈值 `hi/mid/defect_threshold`；官阶兵权倍率与俸禄；任务奖惩数值；功绩/名望各来源权重。
 
-> **反支柱护栏（防「最优玩法只需刷战斗」）**：功绩/名望的**非战斗来源**（治理城池/完成君主任务/招揽贤才/平叛/治理盛世）权重须配置成与作战来源**速率上有竞争力**，使忠臣治理路径与刷战斗路径机会成本相当；该平衡须在后续体验验证中确认（呼应跨系统审查 W5 / CD-C1）。
+> **反支柱护栏（防「最优玩法只需刷战斗」）—— 已机制化（ADV-3）**：功绩/名望的**非战斗来源**（治理城池/完成君主任务/招揽贤才/平叛/治理盛世）权重须与作战来源**速率上有竞争力**。**此护栏不再仅是"待验证平衡参数"，已落为配置加载期的强制校验**：`PromotionLadderConfig` 校验 `非战斗最大单次 merit 增益 ≥ 战斗最大单次 merit 增益 × minRatio`（实现见 `PromotionLadderConfig.SatisfiesNonCombatGuardrail`，epic-011 story-002 已落地并有测试）。`minRatio` 配置化（建议 ≥0.5）。**注**：机制保证"非战斗源速率不被战斗源碾压"；具体 minRatio 取值与体感仍须体验验证（呼应 W5 / CD-C1）。
 >
 > **功绩/名望 sink 说明（N10）**：`merit`/`renown` 为单调累积的**里程碑门槛闸**（非消耗资源），满阶后不再驱动晋升。为防晚期空转，可选加入恩赏/赏赐等 sink，或显式接受其为里程碑闸；`lord_standing` 为可升可降的有源有汇值。全部配置化并带范围。
 

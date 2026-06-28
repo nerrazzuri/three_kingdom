@@ -39,15 +39,16 @@
 
 | 变量 | 含义 | 范围 | 来源 |
 |---|---|---|---|
-| `believedEnemy` | 性格扭曲后的敌兵力估计 | ≥ 0 | AiWorldView(GDD_007) |
-| `EffectiveConfidence` | 情报有效置信 | [0,1] | IntelAssessment |
+| `believedEnemy` | 性格扭曲后的敌兵力估计 | ≥ 0 | AiWorldView ← FactionKnowledge(GDD_007) |
+| `EffectiveConfidence` | 情报有效置信 | [0,1] | GDD_007 `effective_conf`（IntelAssessment 实现） |
 | `Aggression/Caution/...` | 性格倾向 | [-1,1] | PersonalityProfile |
 | `U(action)` | 行动效用分 | 定点 | ActionScorer |
 
 ### 1. 出兵（强攻）效用示例
 
 ```
-believedEnemy = lerp(interval.Low, interval.High, 0.5 − 0.5·Caution + 0.5·Aggression)
+tBelief        = clamp(0.5 − 0.5·Caution + 0.5·Aggression, 0, 1)   # 插值参数钳到 [0,1]，防极端性格外推出区间（含负值）
+believedEnemy = lerp(interval.Low, interval.High, tBelief)
 forceRatio    = OwnStrength / max(believedEnemy, 1)
 ratioScore    = clamp((forceRatio − BreakEven) / Spread, −1, 1)
 confPenalty   = (1 − EffectiveConfidence) · (0.5 + 0.5·Caution)
@@ -66,7 +67,7 @@ if (¬Mustered ∨ ¬PathExists ∨ TruceForbids) U(Assault) = DISQUALIFIED
 
 ```
 seed = Hash(worldTick, factionId, planId)
-temperature = BaseTemp · (1 + Deception + Adaptability)
+temperature = BaseTemp · max(TempFloor, 1 + Deception + Adaptability)   # 温度乘子钳到正下限 TempFloor(>0)，防性格[-1,1]下乘子≤0 致 softmax 反转/退化
 chosen = SoftmaxSample(qualifiedActions, temperature, IDeterministicRandom(seed))
 ```
 
@@ -79,7 +80,7 @@ CounterBias(action) = (samples[tag] ≥ N ∧ span ≥ M) ? bias(freq[tag]) · d
 
 ## Data Model
 
-- `AiWorldView`：AI 的“我以为的世界”——由 `IntelProjection`+`IntelAssessment` 构造，**签名不接受任何真值类型**（反全知锁）；含 believedEnemy/置信/区间、自有兵力补给、环境、目标压力。
+- `AiWorldView`：AI 的“我以为的世界”——由 GDD_007 `FactionKnowledge`（AI 自身阵营知识）+ `effective_conf` 置信评估构造，**签名不接受任何真值类型**（反全知锁，GDD_007 §AI Requirements「AI 只读自身 FactionKnowledge、永不读真值」）；含 believedEnemy/置信/区间、自有兵力补给、环境、目标压力。
 - `StrategicAction`：枚举（强攻/围困/侦察/断粮/佯攻/撤退/求援）。**边界（与 GDD_010 §7）**：`ActionScorer` 只决定敌方**想不想**采取某意图（含追击），翻成 GDD_010 基础命令后，"追击是否真的成形"由 **GDD_010 §7 追击决策公式唯一结算**；本 AI 不重复判定追击成败。
 - `ScoredAction` / `DecisionRecord`：效用分 + 缘由码 + 是否淘汰；最终选择 + 种子（供 UI 与 LLM 读）。
 - `StrategicPlan`：意图、起始时间、承诺期、放弃/继续条件。
@@ -110,7 +111,7 @@ AI 选出不可行动作 → 可行性门应已淘汰；若仍发生则记错误
 
 ## Balancing Parameters
 
-各效用权重 `w_*`、BreakEven/Spread、置信惩罚系数、性格偏置权重、softmax BaseTemp、记忆样本门槛 N/时间跨度 M/衰减曲线、计划承诺期。**调参期权重做成版本化配置并锁配置指纹**，避免“调参=改代码=破坏老存档复现”。
+各效用权重 `w_*`、BreakEven/Spread、置信惩罚系数、性格偏置权重、softmax BaseTemp、**TempFloor（温度乘子正下限，>0，防退化）**、记忆样本门槛 N/时间跨度 M/衰减曲线、计划承诺期。**调参期权重做成版本化配置并锁配置指纹**，避免“调参=改代码=破坏老存档复现”。
 
 ## AI Requirements
 

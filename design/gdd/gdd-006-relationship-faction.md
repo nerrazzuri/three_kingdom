@@ -1,7 +1,7 @@
 # GDD_006 — 关系与派系
 
-- 状态：Draft
-- **Status**: Draft
+- 状态：Implemented
+- **Status**: Implemented
 - 范围：Vertical Slice
 
 ## System Purpose
@@ -118,7 +118,7 @@ authority_valid(grant) = (now ≤ grant.期限)
 
 ## Dependencies
 
-依赖 GDD_005 人物、GDD_001 时间和事件知情信息。被城市、侦察、军议、战前准备、后果结算和 AI 消费。亦被 GDD_014（生涯：僚属好感/授权决定晋升与自立结局分支）消费。
+依赖 GDD_005 人物、GDD_001 时间和事件知情信息。被城市、侦察、军议、战前准备、战斗（GDD_010 读关系/权限）、后果结算和 AI 消费。亦被 GDD_014（生涯：僚属好感/授权决定晋升与自立结局分支）消费。
 
 ## Edge Cases
 

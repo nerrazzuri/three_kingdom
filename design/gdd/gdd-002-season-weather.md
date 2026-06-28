@@ -1,7 +1,7 @@
 # GDD_002 — 季节与天气
 
-- 状态：Draft
-- **Status**: Draft
+- 状态：Implemented
+- **Status**: Implemented
 - 范围：Vertical Slice
 
 ## System Purpose
@@ -124,7 +124,7 @@ consumer_value = base_value × env_mod_multiplier[consumer] + env_mod_offset[con
 
 ## Dependencies
 
-依赖 GDD_001 的世界时段、GDD_003 的地形标签和确定性随机源。被 GDD_007、009、010、011、012 消费。
+依赖 GDD_001 的世界时段、GDD_003 的地形标签和确定性随机源。被 GDD_003（世界地图通行耗时读已结算天气修正 mod_weather）、GDD_007、009、010、011、012 消费。
 
 ## Edge Cases
 

@@ -1,12 +1,16 @@
 # 项目控制清单
 
-Manifest Version: 1
+Manifest Version: 2 (2026-06-28)
 
 ## 当前阶段
 
-`PRODUCTION — FOUNDATION 实现开始`
+`PRODUCTION — Domain 内核全部实现，待装配可玩循环`
 
-Pre-Production→Production 闸门已通过（2026-06-21，裁定 CONCERNS，四总监 Panel：CD/TD/PR=CONCERNS、AD=READY，无 NOT READY；用户接受 CONCERNS 推进）。现允许按 story 实现 Foundation 层 Domain 代码（epic-001/002/009）。仍须遵守全部强制设计锁与层级；CONCERNS 作为 Production 早期 guardrail（见 active.md「四总监 Panel 裁定」段）。
+Pre-Production→Production 闸门已通过（2026-06-21，CONCERNS）。**2026-06-28 校准**：epic-001~012 全部 Complete（44 story、556 测试全绿、`-warnaserror` 0；零禁则违反、零确定性泄漏）——Foundation/Core/Feature/Meta 各层 Domain 内核均已落地并通过测试。
+
+**当前阶段焦点 = 装配（assembly）**：Domain 内核已就绪，但被装配进可运行 session 的仅竖切守城那一局；Meta 层（epic-011/012 生涯/世界模型）与多数 Domain 系统是已验证但**未接入可玩循环**的内核。下一阶段重心从"造内核"转向"装配可玩太守循环 + 敌方 AI"——详见 `docs/reviews/full-game-review-2026-06-28.md`（全游戏 review，2 项 Blocking）。
+
+仍须遵守全部强制设计锁与层级。CONCERNS guardrail 持续有效。
 
 ## 权威文档顺序
 
