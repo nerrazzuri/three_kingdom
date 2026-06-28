@@ -869,3 +869,9 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **▶ 下一步：EPIC_010 收尾判定**。5 story BLOCKING 全绿（dotnet 379/379 + batchmode 编译干净 + 四屏 Play 可交互签核）。可选 ADVISORY 尾：把四屏截图/逐项核对（对比度实测/文本150%无溢出/色盲去色可辨）落 `production/qa/evidence/` → 各 story In Progress→Complete → 决定 epic 关闭。
 **剩余 ADVISORY（用户侧 graphics Editor）**：打开 4 屏进 Play 截图签核（文本 150% 无溢出 / 色盲冗余 / 减少动态生效 / HUD 可见性切换）→ 证据落 production/qa/evidence/ → 各 story In Progress→Complete → EPIC_010 收尾判定。
 **改动文件清单（待 commit）**：M Assets/Plugins/{Domain,Presentation}.dll、Assets/UI/{Hud,MainMenu,PauseMenu}Controller.cs、Assets/UI/SliceTheme.tss、Assets/Editor/SliceSceneBuilder.cs；?? Assets/UI/Accessibility*{.cs,.uss,.uxml}、Assets/UI/PlayerPrefsSettingsMedium.cs、各 .meta、Assets/Scenes/AccessibilitySettings.unity(.meta)、src/Presentation/Accessibility/{ISettingsMedium,SettingsStore,AccessibilitySettingsViewModel}.cs、tests/.../Presentation/AccessibilitySettings{Store,ViewModel}Tests.cs。
+
+## Session Extract — CD 复审裁决1 + 护栏落盘 2026-06-28
+- creative-director 子代理审裁决1（代偿路线满足出关门/B3后置）：**APPROVE WITH GUARDRAILS**。
+- 核心判断：工程分期稳健（Domain已完成、BattleOutcome是稳定接缝、后置仅Presentation、零返工）；两代偿路线确是合规非按钮条件链。但只是兵法沙盒**底线**（2消耗路线），非**支柱**（杠杆相乘火×夜×伏）——过MVP门≠展示护城河。
+- 6条护栏已落 module-plan §5b.5 + epic-013 验收：①复盘穿透CausalTrace ②两路线非同质单变量可翻盘 ③非战斗状态作二元成立门非百分比 ④暴露真实可败 ⑤🔴M06硬退出门(宣称兵法沙盒MVP完成前必接≥1机动招式:假退伏击/火攻) ⑥BattleOutcome契约冻结。
+- **★ 全部评审与修订完成，可开工。** 等用户启动：/create-stories epic-013 → /story-readiness S1 → /dev-story。

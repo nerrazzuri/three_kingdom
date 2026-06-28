@@ -148,6 +148,8 @@ CampaignSession 是横切装配模块，不对应单一 GDD。它的需求来源
 
 > S1/S2/S6 可先行（无 ADR 前置）；S3 须 R-3 落 method spec、S4 须 R-1/R-2 落 method spec（ADR-0009 已写裁定，story 时细化）。Phase 1 余下（M02 完整开局打磨）+ M03+ 全部后置。
 
+> **CD 护栏（首个可玩循环额外验收，见 module-plan §5b.5）**：S5 目标循环 E2E 须额外满足——① `BattleOutcome` 携 ≤5 决定性因素 CausalTrace（复盘可读，非黑盒）；② S6 冻结 `BattleOutcome` 契约（代偿路径与未来 B3 路径同 schema）。② 非战斗状态作"可成立性"二元门（非仅调百分比）、两路线非同质单变量可翻盘、暴露真实可败——属内容层（M06/M02），登记为后续验收。**硬退出门**：M06 对外宣称"兵法沙盒 MVP 完成"前必须接入 ≥1 条机动依赖招式（假退伏击/火攻）。
+
 ## Next Step
 
 用户评审通过后：
