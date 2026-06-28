@@ -3,7 +3,7 @@
 > **Layer**: Feature（Assembly 连接层）
 > **GDD**: 横切 `gdd-001/004/009/010/011/012/013/014/015` + `systems-index.md`
 > **Architecture Module**: Application Session Assembly（CampaignSession / CampaignSessionService）
-> **Status**: In Progress（ADR-0009 Accepted；6 story 已创建 2026-06-28）
+> **Status**: ✅ Complete（6/6，2026-06-28；M00 脊梁达成）
 > **Stories**: 6（story-001~006，全 Integration；见下表与 §First Sprint Scope）
 
 ## Stories
@@ -15,7 +15,7 @@
 | 003 | 后果原子写回（ConsequenceTransaction） | Integration | ✅ Complete | ADR-0009/0008 |
 | 004 | 统一会话存档信封 round-trip | Integration | ✅ Complete | ADR-0005/0009 |
 | 005 | 目标循环端到端 + 确定性哈希 | Integration | ✅ Complete | ADR-0004/0009 |
-| 006 | 共享会话服务抽取 | Integration | Ready | ADR-0002/0009 |
+| 006 | 共享会话服务抽取 | Integration | ✅ Complete（WITH NOTES：YAGNI 延后实质抽取至 M03+）| ADR-0002/0009 |
 
 ## Overview
 

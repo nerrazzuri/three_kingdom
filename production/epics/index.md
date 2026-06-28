@@ -48,7 +48,7 @@ Manifest Version: 2 (2026-06-28)
 
 | Epic | Layer | System | GDD/ADR | Stories | Status |
 |------|-------|--------|---------|---------|--------|
-| [CampaignSession 完整会话装配](epic-013-campaign-session-assembly/EPIC.md) | Assembly | 会话脊梁 | ADR-0009 + systems-index + TR-session-* | 6 stories | 🔵 In Progress |
+| [CampaignSession 完整会话装配](epic-013-campaign-session-assembly/EPIC.md) | Assembly | 会话脊梁 | ADR-0009 + systems-index + TR-session-* | 6 stories | ✅ Complete |
 
 > epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）。ADR-0009 Accepted（2026-06-28，经子代理复审）。首批范围+估算见 EPIC.md §First Sprint Scope。后续装配 epic（M01~M16）见模块规划。
 

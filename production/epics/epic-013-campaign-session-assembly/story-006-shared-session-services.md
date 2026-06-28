@@ -1,12 +1,17 @@
 # Story 006: 共享会话服务抽取（新旧会话复用）
 
 > **Epic**: CampaignSession 完整会话装配
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Assembly 连接层）
 > **Type**: Integration
 > **Estimate**: S / 0.5d
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-28
+
+## Completion Notes（COMPLETE WITH NOTES）
+**Completed**: 2026-06-28 · 全套 593/593 绿
+**工程裁定（YAGNI）**：S1-S5 CampaignSession 用生涯+世界各自存档，与竖切 GameSession 的 RngStreamState/SaveMapper 捕获**尚无实质重叠**——共享服务抽取属过早抽象。本 story 验证①两会话独立共存互不干扰②竖切回归不破；**实质共享抽取延后到 CampaignSession 纳入竖切 RNG/情报时（M03+）**，届时才有真可复用件。
+**Test**: SessionCoexistenceTests（2 测：两会话独立共存/竖切回归未破）
 
 ## Context
 
