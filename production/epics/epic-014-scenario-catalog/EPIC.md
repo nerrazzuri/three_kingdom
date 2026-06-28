@@ -4,7 +4,7 @@
 > **GDD**: 横切 `gdd-003/004/014/015` + `systems-index.md`
 > **Architecture Module**: M01（`production/full-game-loop-module-plan-2026-06-28.md`）
 > **Governing ADR**: ADR-0003（数据驱动配置，primary）· ADR-0009（CampaignSession 装配）
-> **Status**: In Progress（2026-06-28）
+> **Status**: ✅ Complete（2026-06-28，2/2 stories）
 > **Stories**: 见下表
 
 ## Overview
@@ -16,7 +16,7 @@
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | ScenarioCatalog 多场景注册 + 校验 + 按 id 开局 | Integration | ✅ Complete | ADR-0003/0009 |
-| 002 | SliceScenario 数据驱动（SliceScenarioData，收尾 CON-5） | Integration | Ready | ADR-0003 |
+| 002 | SliceScenario 数据驱动（SliceScenarioData，收尾 CON-5） | Integration | ✅ Complete | ADR-0003 |
 
 ## Scope
 

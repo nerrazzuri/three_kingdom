@@ -916,3 +916,20 @@ ADR-0003（数据驱动配置的正式锁定）。
 
 ### 数字
 - 13 epics + epic-014(进行中)；测试 598/598 绿；ADR-0001~0009 全 Accepted；TR-session-001~005 已登记。
+
+---
+
+## ▶ epic-014 story-002 完成（2026-06-28 本会话）—— CON-5 收尾
+
+**一句话**：竖切硬编码场景工厂 → 数据/逻辑分离。新增不可变 `SliceScenarioData`（slice 全部字面值单一来源 + 嵌套 AdviceSpec/CharacterSpec），`SliceScenario` 改为读数据源组装 Domain 聚合，构造方法体内**无魔法数字**。`Default()` → `new SliceScenario(SliceScenarioData.Default)`。**行为逐字保持，确定性不变**。
+
+- 公共 API 不变 → 消费方（SessionService/SaveCoordinator）与既有测试零改动。
+- 新测 `SliceScenarioDataTests`（4：Default 单一实例 / 标量+聚合取自数据 / 集合数量+主题注入 / Default() 经数据源）。
+- 健康→战力因子映射保留为组装器内领域规则（非每场景平衡值，不属 CON-5）。
+- **测试 602/602 绿（-warnaserror 0，+4 新测）**。文件：`src/Application/Session/SliceScenarioData.cs`（新）+ `SliceScenario.cs`（重构）+ `tests/.../Application/SliceScenarioDataTests.cs`（新）。
+- **epic-014（M01 场景目录）2/2 Complete**：story-001 ScenarioCatalog ✅ + story-002 SliceScenarioData ✅。CON-5 闭。
+
+### ▶ 下一步（按 module-plan 依赖序）
+1. **epic-015 = M03 回合间治理/推进循环**（最大"可玩性"缺口）：城市治理跨日+君主任务+招揽+晋升申请+campaign loop 触发历史事件(12-2)/任务→下一情境。依赖 M00✅/M01✅。需先 /create-epics epic-015 → /create-stories。
+2. **epic-021 = M08 敌方AI便宜80%**：gdd-016 §MVP（CON-3 已修），可与 M03 并行。
+3. 其余 M04~M16 见 module-plan §6 epic 切分表。

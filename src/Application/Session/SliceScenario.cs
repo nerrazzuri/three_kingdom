@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
@@ -11,9 +12,10 @@ using ThreeKingdom.Domain.Time;
 namespace ThreeKingdom.Application.Session
 {
     /// <summary>
-    /// slice 会话的<b>数据驱动初始配置 + 场景设定</b>（ADR-0003：平衡数值集中于配置，逻辑不硬编码）。
-    /// 这是把分散的平衡数字收拢到<b>单一来源</b>的场景工厂——会话编排逻辑（<see cref="GameSession"/>）只读这些值，
-    /// 方法体内无魔法数字。量产期可由 ScriptableObject→不可变配置管线替换本工厂（ADR-0003）。
+    /// slice 会话的<b>场景组装器</b>：读取不可变数据源 <see cref="SliceScenarioData"/> 并构造 Domain 聚合
+    /// （ADR-0003：平衡数值集中于数据，逻辑不硬编码）。会话编排逻辑（<see cref="GameSession"/>）只读这些属性，
+    /// 本类方法体内<b>无魔法数字</b>——全部字面值来自注入的数据源（收尾 CON-5：数据/逻辑分离）。
+    /// 量产期可由 ScriptableObject→不可变配置管线产出 <see cref="SliceScenarioData"/> 替换 <see cref="SliceScenarioData.Default"/>。
     /// </summary>
     public sealed class SliceScenario
     {
@@ -122,130 +124,114 @@ namespace ThreeKingdom.Application.Session
         /// <summary>伏击判定随机流种子（确定性，位置可存档）。</summary>
         public ulong AmbushRngSeed { get; }
 
-        private SliceScenario()
+        /// <summary>
+        /// 从不可变数据源组装 slice 场景（ADR-0003）。本构造仅做<b>数据→Domain 聚合</b>的映射组装，无平衡数字。
+        /// </summary>
+        public SliceScenario(SliceScenarioData data)
         {
-            Start = new WorldTime(0, DaySegment.Dawn);
-            ReliefDay = 8; // 第 9 日（0 基 8）援军抵达 = 胜；守不到则可能民心崩溃失城。
+            if (data is null) throw new ArgumentNullException(nameof(data));
 
+            // ---- 时间 ----
+            Start = data.Start;
+            ReliefDay = data.ReliefDay;
+
+            // ---- 城市 ----
             InitialCity = new CityEconomyState(
-                id: new CityId("汜水关"),
-                stock: 300,
-                reserved: 0,
-                civMorale: 70,
-                security: 55,
-                fortificationCurrent: 60,
-                fortificationMax: 100);
+                id: new CityId(data.CityId),
+                stock: data.CityStock,
+                reserved: data.CityReserved,
+                civMorale: data.CityCivMorale,
+                security: data.CitySecurity,
+                fortificationCurrent: data.CityFortCurrent,
+                fortificationMax: data.CityFortMax);
             CityConfig = new CitySettlementConfig(
-                baseYield: 40,
-                baseCivConsume: 70,
-                baseMaintenance: 20,
-                stockFloor: 80,
-                civMoraleMax: 100,
-                shortageMoralePenalty: FixedPoint.FromInt(1),
-                unrestShortageThreshold: 30,
-                fortRepairRate: 5);
-            InitialLogistics = 0;
-            PopulationPressure = FixedPoint.One;
+                baseYield: data.BaseYield,
+                baseCivConsume: data.BaseCivConsume,
+                baseMaintenance: data.BaseMaintenance,
+                stockFloor: data.StockFloor,
+                civMoraleMax: data.CivMoraleMax,
+                shortageMoralePenalty: data.ShortageMoralePenalty,
+                unrestShortageThreshold: data.UnrestShortageThreshold,
+                fortRepairRate: data.FortRepairRate);
+            InitialLogistics = data.InitialLogistics;
+            PopulationPressure = data.PopulationPressure;
 
-            PlayerFaction = new FactionId("玩家势力");
-            EnemyFaction = new FactionId("曹魏");
-            EnemySubject = new IntelSubjectId("敌前锋");
-            EnemyInitialStrength = 1000;
-            EnemyReinforcePerDay = 120;
+            // ---- 情报 ----
+            PlayerFaction = new FactionId(data.PlayerFactionId);
+            EnemyFaction = new FactionId(data.EnemyFactionId);
+            EnemySubject = new IntelSubjectId(data.EnemySubjectId);
+            EnemyInitialStrength = data.EnemyInitialStrength;
+            EnemyReinforcePerDay = data.EnemyReinforcePerDay;
 
-            // 外交（求粮，GDD_012 §8）：静态背景外势力，延迟交付 + 可背约（确定性随机流）。
-            DiplomacyPower = new ForeignPowerId("江东");
+            // ---- 外交 ----
+            DiplomacyPower = new ForeignPowerId(data.DiplomacyPowerId);
             DiplomacyConfig = new DiplomacyConfig(
-                baseGrant: FixedPoint.FromFraction(2, 5),         // 0.4
-                weightStanding: FixedPoint.FromFraction(1, 2),    // 0.5
-                weightCost: FixedPoint.FromFraction(3, 10),       // 0.3
-                weightPressure: FixedPoint.FromFraction(2, 5),    // 0.4
-                acceptThreshold: FixedPoint.FromFraction(3, 5),   // 0.6
-                conditionalThreshold: FixedPoint.FromFraction(2, 5), // 0.4
-                costNormalizer: 100,
-                commitLeadSegments: WorldTime.SegmentsPerDay * 2, // 两日后抵达
-                betrayRiskBase: FixedPoint.FromFraction(1, 5),    // 0.2
-                betrayPressureWeight: FixedPoint.FromFraction(3, 10), // 0.3
-                betrayalStandingPenalty: 5);
-            DiplomacyPledgeCost = 50;
-            DiplomacySupplyAmount = 120;        // 兑现则到达时入城粮草
-            DiplomacyStanding = FixedPoint.FromFraction(3, 5);    // 0.6
-            DiplomacyPressure = FixedPoint.FromFraction(1, 5);    // 0.2
-            DiplomacyRngSeed = 0xD17_0ACE_2026UL;
+                baseGrant: data.DiploBaseGrant,
+                weightStanding: data.DiploWeightStanding,
+                weightCost: data.DiploWeightCost,
+                weightPressure: data.DiploWeightPressure,
+                acceptThreshold: data.DiploAcceptThreshold,
+                conditionalThreshold: data.DiploConditionalThreshold,
+                costNormalizer: data.DiploCostNormalizer,
+                commitLeadSegments: data.DiploCommitLeadSegments,
+                betrayRiskBase: data.DiploBetrayRiskBase,
+                betrayPressureWeight: data.DiploBetrayPressureWeight,
+                betrayalStandingPenalty: data.DiploBetrayalStandingPenalty);
+            DiplomacyPledgeCost = data.DiplomacyPledgeCost;
+            DiplomacySupplyAmount = data.DiplomacySupplyAmount;
+            DiplomacyStanding = data.DiplomacyStanding;
+            DiplomacyPressure = data.DiplomacyPressure;
+            DiplomacyRngSeed = data.DiplomacyRngSeed;
 
-            // 军议（GDD_008）：三条条件化建议，依据敌情主题；并列呈现，无最优解。
-            Advisor = new AdvisorPerspective(new AdvisorId("随军军师"), FixedPoint.FromFraction(7, 10)); // adv_cap 0.7
-            CouncilConfig = new CouncilConfig(gapDetectionWeight: FixedPoint.One);
-            KnownClaimConfidence = FixedPoint.FromFraction(1, 2); // 0.5 已侦察=依据中等
+            // ---- 军议 ----
+            Advisor = new AdvisorPerspective(new AdvisorId(data.AdvisorId), data.AdvisorCapability);
+            CouncilConfig = new CouncilConfig(data.GapDetectionWeight);
+            KnownClaimConfidence = data.KnownClaimConfidence;
             var enemyRef = new[] { EnemySubject };
-            AdviceTemplates = new List<AdviceTemplate>
-            {
-                new AdviceTemplate(
-                    "断粮疲敌",
-                    "敌前锋深入，补给线拉长。",
-                    "若敌补给可被持续袭扰，其战力随时日衰减。",
-                    new[] { "需查明敌补给路线与护卫强度", "需投入袭扰兵力且承担暴露风险" },
-                    new[] { "袭扰队可能被反伏", "敌可能改道补给" },
-                    enemyRef),
-                new AdviceTemplate(
-                    "守城待变",
-                    "援军定于第 9 日抵达。",
-                    "若粮草民心可支撑至援军，则不必决战。",
-                    new[] { "需粮草撑至援军日", "可向外求粮缓解" },
-                    new[] { "久守民心易崩", "敌或在援军前强攻" },
-                    enemyRef),
-                new AdviceTemplate(
-                    "假退伏击",
-                    "敌将性烈，易受诱。",
-                    "若示弱诱敌冒进，可于隘口设伏。",
-                    new[] { "需摸清敌将性格与追击倾向", "需预设伏兵与退路" },
-                    new[] { "诱敌不成反失城门", "伏击暴露则两面受敌" },
-                    enemyRef),
-            };
+            var advice = new List<AdviceTemplate>(data.AdviceSpecs.Count);
+            foreach (SliceScenarioData.AdviceSpec spec in data.AdviceSpecs)
+                advice.Add(new AdviceTemplate(
+                    spec.CandidateId, spec.Observation, spec.Assumption,
+                    spec.RequiredConditions, spec.Risks, enemyRef));
+            AdviceTemplates = advice;
 
-            // 袭扰敌补给（断粮疲敌，第二取胜路线）：花粮草削敌力，暴露损民心；敌降至阈值则退兵。
-            RaidStockCost = 25;
-            RaidEnemyDamage = 320;                              // 数次成功可压过敌每日 +120 增援，断粮快于守城
-            RaidExposureBase = FixedPoint.FromFraction(11, 20); // 0.55
-            RaidSkillWeight = FixedPoint.FromFraction(2, 5);    // 0.4
-            RaidCapability = FixedPoint.FromFraction(80, 100);  // 外勤武勇 0.8
-            RaidExposureMoralePenalty = 6;
-            EnemyWithdrawThreshold = 400;                       // 敌力≤400 → 疲敝退兵（胜）
-            RaidRngSeed = 0x5A1D_2026_0001UL;
-            RaidLeadSegments = WorldTime.SegmentsPerDay;         // 袭扰队往返约一日见效
-            ScoutLeadSegments = 2;                              // 侦察返报约半日（4 时段/日）
+            // ---- 袭扰敌补给 ----
+            RaidStockCost = data.RaidStockCost;
+            RaidEnemyDamage = data.RaidEnemyDamage;
+            RaidExposureBase = data.RaidExposureBase;
+            RaidSkillWeight = data.RaidSkillWeight;
+            RaidCapability = data.RaidCapability;
+            RaidExposureMoralePenalty = data.RaidExposureMoralePenalty;
+            EnemyWithdrawThreshold = data.EnemyWithdrawThreshold;
+            RaidRngSeed = data.RaidRngSeed;
+            RaidLeadSegments = data.RaidLeadSegments;
 
-            // 假退伏击（第三取胜路线）：示弱诱敌→设伏→发动。敌将性烈易诱（非战斗前提）。
-            AmbushFortCost = 25;                                // 示弱开口，降工事（投入/风险）
-            AmbushLeadSegments = WorldTime.SegmentsPerDay;       // 设伏诱敌约一日发动
-            EnemyGeneralRash = true;                            // 敌将·夏侯烈 性烈（花名册 Risk 高）→ 可诱
-            AmbushSuccessDamage = 760;                          // 早发动可一举击溃（计入发动日敌增援后仍压至退兵阈值）
-            AmbushExposureBase = FixedPoint.FromFraction(13, 20); // 0.65 基础失败/暴露
-            AmbushSkillWeight = FixedPoint.FromFraction(1, 2);  // 0.5
-            AmbushCapability = FixedPoint.FromFraction(78, 100); // 守将统御 0.78 → 净失败率≈0.26
-            AmbushFailMoralePenalty = 18;                       // 失败重挫民心（高风险）
-            AmbushSuccessMoraleBonus = 12;
-            AmbushRngSeed = 0xC0FFEEUL; // 基线种子：首次诱敌得手（净失败率≈0.26，此流首掷 0.79）
+            // ---- 侦察行军时延 ----
+            ScoutLeadSegments = data.ScoutLeadSegments;
 
-            // 人物花名册（GDD_005）：关键四人，能力/性格/职责/健康（数据驱动，原创角色，守红线①）。
-            Roster = new List<CharacterState>
-            {
-                MakeCharacter("守将", "守将·秦烈", new[] { 78, 82, 55, 60, 40 }, HealthLevel.Healthy,
-                    (PersonalityTrait.Discipline, 6), (PersonalityTrait.Honor, 5)),
-                MakeCharacter("军师", "军师·陈疏", new[] { 50, 30, 85, 70, 65 }, HealthLevel.Healthy,
-                    (PersonalityTrait.Patience, 7), (PersonalityTrait.Risk, -3)),
-                MakeCharacter("外勤", "校尉·方武", new[] { 60, 80, 45, 35, 30 }, HealthLevel.Injured,
-                    (PersonalityTrait.Risk, 6), (PersonalityTrait.Discipline, -2)),
-                MakeCharacter("敌将", "敌将·夏侯烈", new[] { 75, 88, 40, 30, 25 }, HealthLevel.Healthy,
-                    (PersonalityTrait.Risk, 8), (PersonalityTrait.Patience, -6)),
-            };
+            // ---- 假退伏击 ----
+            AmbushFortCost = data.AmbushFortCost;
+            AmbushLeadSegments = data.AmbushLeadSegments;
+            EnemyGeneralRash = data.EnemyGeneralRash;
+            AmbushSuccessDamage = data.AmbushSuccessDamage;
+            AmbushExposureBase = data.AmbushExposureBase;
+            AmbushSkillWeight = data.AmbushSkillWeight;
+            AmbushCapability = data.AmbushCapability;
+            AmbushFailMoralePenalty = data.AmbushFailMoralePenalty;
+            AmbushSuccessMoraleBonus = data.AmbushSuccessMoraleBonus;
+            AmbushRngSeed = data.AmbushRngSeed;
+
+            // ---- 人物花名册 ----
+            var roster = new List<CharacterState>(data.CharacterSpecs.Count);
+            foreach (SliceScenarioData.CharacterSpec spec in data.CharacterSpecs)
+                roster.Add(MakeCharacter(spec));
+            Roster = roster;
         }
 
         // 人物构造助手：能力五域百分值 + 性格倾向（十分制→[-1,1] 定点）+ 健康。
-        private static CharacterState MakeCharacter(
-            string roleId, string identity, int[] caps, HealthLevel health,
-            params (PersonalityTrait Trait, int TenScale)[] traits)
+        private static CharacterState MakeCharacter(SliceScenarioData.CharacterSpec spec)
         {
+            IReadOnlyList<int> caps = spec.Capabilities;
             var capMap = new Dictionary<CapabilityDomain, int>
             {
                 [CapabilityDomain.Command] = caps[0],
@@ -255,20 +241,20 @@ namespace ThreeKingdom.Application.Session
                 [CapabilityDomain.Diplomacy] = caps[4],
             };
             var traitMap = new Dictionary<PersonalityTrait, FixedPoint>();
-            foreach (var (trait, ten) in traits)
+            foreach (var (trait, ten) in spec.Traits)
                 traitMap[trait] = FixedPoint.FromFraction(ten, 10);
 
-            FixedPoint factor = health == HealthLevel.Healthy ? FixedPoint.One
-                : health == HealthLevel.Injured ? FixedPoint.FromFraction(7, 10)
+            FixedPoint factor = spec.Health == HealthLevel.Healthy ? FixedPoint.One
+                : spec.Health == HealthLevel.Injured ? FixedPoint.FromFraction(7, 10)
                 : FixedPoint.Zero;
 
             return new CharacterState(
-                new CharacterId(identity), identity,
+                new CharacterId(spec.Identity), spec.Identity,
                 new CapabilitySet(capMap), new PersonalityProfile(traitMap),
-                new HealthState(health, factor), new RoleId(roleId));
+                new HealthState(spec.Health, factor), new RoleId(spec.RoleId));
         }
 
-        /// <summary>slice 默认场景（确定性初值）。</summary>
-        public static SliceScenario Default() => new SliceScenario();
+        /// <summary>slice 默认场景（从 <see cref="SliceScenarioData.Default"/> 组装；确定性初值）。</summary>
+        public static SliceScenario Default() => new SliceScenario(SliceScenarioData.Default);
     }
 }
