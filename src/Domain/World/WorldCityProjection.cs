@@ -30,5 +30,16 @@ namespace ThreeKingdom.Domain.World
             // 唯一更新路径：订阅事件 → 同步只读投影（不独立写归属）。
             Current = Current.WithCityOwnership(e.City, e.NewOwner, e.Garrison.Value);
         }
+
+        /// <summary>
+        /// 确定性推进世界时间（GDD_015 / ADR-0004，story epic-013-002）。复用 <see cref="WorldProgressionService"/>，
+        /// 供 CampaignSession 日界推进编排调用——归属仍只经订阅事件更新，时间是另一独立确定性驱动。
+        /// </summary>
+        public void AdvanceTime(int segments)
+        {
+            Current = _progression.Advance(Current, segments);
+        }
+
+        private readonly WorldProgressionService _progression = new WorldProgressionService();
     }
 }

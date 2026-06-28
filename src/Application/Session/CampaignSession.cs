@@ -2,6 +2,7 @@ using System;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
+using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 
@@ -51,6 +52,18 @@ namespace ThreeKingdom.Application.Session
             Career = career ?? throw new ArgumentNullException(nameof(career));
             _worldProjection = worldProjection ?? throw new ArgumentNullException(nameof(worldProjection));
             Control = control ?? throw new ArgumentNullException(nameof(control));
+        }
+
+        /// <summary>日界推进世界时间（仅供 <see cref="CampaignSessionService"/> 按全局结算顺序编排调用）。</summary>
+        internal void AdvanceWorld(int segments) => _worldProjection.AdvanceTime(segments);
+
+        /// <summary>会话权威态的确定性哈希（生涯 ⊕ 世界）——支撑确定性回归与存档校验。</summary>
+        public StateHash ComputeHash()
+        {
+            var hasher = new StateHasher();
+            Career.AppendTo(hasher);
+            World.AppendTo(hasher);
+            return hasher.ToHash();
         }
     }
 }

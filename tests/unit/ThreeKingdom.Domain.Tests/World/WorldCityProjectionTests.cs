@@ -68,12 +68,17 @@ namespace ThreeKingdom.Domain.Tests.World
         [Test]
         public void test_projection_exposes_no_public_ownership_writer()
         {
-            // 唯一更新路径是订阅事件；投影不得暴露任何 public 写归属方法。
-            MethodInfo[] methods = typeof(WorldCityProjection)
+            // 归属唯一更新路径是订阅事件；投影不得暴露任何 public 写**归属**方法（AdvanceTime 是时间驱动，非归属写）。
+            foreach (MethodInfo m in typeof(WorldCityProjection)
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Where(m => !m.IsSpecialName) // 排除属性 getter
-                .ToArray();
-            Assert.That(methods, Is.Empty, "WorldCityProjection 不应暴露任何 public 方法（仅 Current 只读 + 事件订阅）。");
+                .Where(m => !m.IsSpecialName))
+            {
+                string n = m.Name;
+                bool ownershipWriter = n.IndexOf("Owner", StringComparison.Ordinal) >= 0
+                    || n.StartsWith("Set", StringComparison.Ordinal)
+                    || n.StartsWith("Write", StringComparison.Ordinal);
+                Assert.That(ownershipWriter, Is.False, $"WorldCityProjection 不应暴露 public 写归属方法：{n}（归属只经订阅事件）。");
+            }
         }
 
         [Test]

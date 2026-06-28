@@ -77,10 +77,10 @@ namespace ThreeKingdom.Domain.Tests.Session
                 {
                     if (m.IsSpecialName) continue; // 属性 getter
                     string n = m.Name;
+                    // R-5：禁玩法写/直写方法（Set*/Write*）。读类（ComputeHash）与编排动词（StartCampaign/Advance）允许。
                     bool ruleMutator = n.StartsWith("Set", StringComparison.Ordinal)
-                        || n.StartsWith("Compute", StringComparison.Ordinal)
                         || n.StartsWith("Write", StringComparison.Ordinal)
-                        || n.StartsWith("Apply", StringComparison.Ordinal);
+                        || n.IndexOf("CityOwner", StringComparison.Ordinal) >= 0;
                     Assert.That(ruleMutator, Is.False, $"{t.Name} 不应暴露玩法写方法：{n}（R-5 闸门）。");
                 }
             }

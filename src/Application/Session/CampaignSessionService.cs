@@ -49,5 +49,24 @@ namespace ThreeKingdom.Application.Session
 
             return CampaignStartResult.Success(session);
         }
+
+        /// <summary>
+        /// 日界推进（ADR-0009 §Day Boundary Order / TR-session-001）。按 `systems-index.md` 全局结算顺序编排：
+        /// 时间 → 环境(002) → 补给(012) → 城市/控制权(004) → 状态事件(011) → 历史世界模型(015) → 生涯(014) → 敌方AI(016)。
+        /// <para>
+        /// 本 story（002）实现 Meta 层片段（时间 + 世界模型 015 确定性推进）；基础层（002/012/004/011）随
+        /// 治理循环（M03）接入会话时叠加于本顺序之内。015/014/016 只读已结算值、不回读未结算（破环见 systems-index）。
+        /// 纯时间推进下生涯/敌方AI 为 no-op（生涯变更经后果写回 story-003，敌方 AI 属 epic-021）。
+        /// </para>
+        /// </summary>
+        public CampaignSession Advance(CampaignSession session, int segments)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (segments < 0) throw new ArgumentOutOfRangeException(nameof(segments), "推进时段数不可为负。");
+
+            // 时间 → 历史世界模型（015）：确定性推进，世界读已结算态（ADR-0004）。
+            session.AdvanceWorld(segments);
+            return session;
+        }
     }
 }

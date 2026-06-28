@@ -1,12 +1,18 @@
 # Story 002: 日界推进复用全局结算顺序
 
 > **Epic**: CampaignSession 完整会话装配
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Assembly 连接层）
 > **Type**: Integration
 > **Estimate**: S / 0.5d
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-28
+
+## Completion Notes
+**Completed**: 2026-06-28 · **Criteria**: 全过 · 全套 576/576 绿
+**Test**: `CampaignDayBoundaryTests`（6 测：时间确定性推进/同序列同哈希/不同量异哈希/0段恒等/负值拒/归属不受时间影响）
+**Code Review**: inline lean — ADR-0009 Day Boundary Order（Meta 层片段：时间+世界015）/ADR-0004（确定性）COMPLIANT；基础层 002/012/004/011 随 M03 叠加
+**实现**: WorldCityProjection 加 public `AdvanceTime`（复用 WorldProgressionService）；CampaignSession 加 `AdvanceWorld`+`ComputeHash`；CampaignSessionService 加 `Advance`（按全局序）。12-4 投影测试改为"无写归属方法"（AdvanceTime 是时间驱动非归属写）。
 
 ## Context
 
