@@ -929,7 +929,26 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **测试 602/602 绿（-warnaserror 0，+4 新测）**。文件：`src/Application/Session/SliceScenarioData.cs`（新）+ `SliceScenario.cs`（重构）+ `tests/.../Application/SliceScenarioDataTests.cs`（新）。
 - **epic-014（M01 场景目录）2/2 Complete**：story-001 ScenarioCatalog ✅ + story-002 SliceScenarioData ✅。CON-5 闭。
 
-### ▶ 下一步（按 module-plan 依赖序）
-1. **epic-015 = M03 回合间治理/推进循环**（最大"可玩性"缺口）：城市治理跨日+君主任务+招揽+晋升申请+campaign loop 触发历史事件(12-2)/任务→下一情境。依赖 M00✅/M01✅。需先 /create-epics epic-015 → /create-stories。
-2. **epic-021 = M08 敌方AI便宜80%**：gdd-016 §MVP（CON-3 已修），可与 M03 并行。
-3. 其余 M04~M16 见 module-plan §6 epic 切分表。
+### ▶ epic-015 stories 已创建（2026-06-28 本会话）
+
+**epic-015 = M02 太守开局循环**，4 story 全部 Ready：
+
+| # | Story | 测试文件 |
+|---|-------|---------|
+| S001 | 开局围城续局可用性——胜败两支 Advance 均可执行 | `CampaignOpeningContinuabilityTests.cs` |
+| S002 | 胜支后果——配置驱动生涯初值 + 胜支存读档 | `CampaignOpeningVictoryBranchTests.cs` |
+| S003 | 败支后果——在野延续存读档 + 部曲保留验证 | `CampaignOpeningDefeatBranchTests.cs` |
+| S004 | 两支 E2E 确定性——同种子同 hash + 两结果不同 hash | `CampaignOpeningDeterminismTests.cs` |
+
+全部为**纯测试 story（零新生产代码）**，复用既有 `CampaignSessionService.ResolveSiege` 两支实装。
+
+**核心 gap 填补**：
+- S001：败局可继续性（advance-after-defeat，control-manifest 强制设计锁）
+- S002：胜支存读档（SaveTests 只有败支 round-trip）
+- S003：defeat-then-advance 存读档（SaveTests 仅 advance-before-defeat）
+- S004：TR-session-005 Session 层确定性验证（含胜/败两支，两结果 hash 不同）
+
+### ▶ 下一步
+1. **story-001 开始实现**：`/story-readiness production/epics/epic-015-opening-governor-loop/story-001-opening-siege-continuability.md` 确认 Ready 再 `/dev-story`。
+2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
+3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。
