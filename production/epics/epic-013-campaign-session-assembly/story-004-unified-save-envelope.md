@@ -1,12 +1,18 @@
 # Story 004: 统一会话存档信封 round-trip
 
 > **Epic**: CampaignSession 完整会话装配
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Assembly 连接层）
 > **Type**: Integration
 > **Estimate**: M / 1d
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-28
+
+## Completion Notes
+**Completed**: 2026-06-28 · 全套 587/587 绿
+**Test**: CampaignSessionSaveTests（5 测：round-trip哈希一致/含后果非平凡态/读档后续推进=直推/指纹不符拒/损坏拒）
+**Code Review**: inline lean — ADR-0005（版本化+指纹校验+不部分载入）/ADR-0009 R-1（统一信封复用 CampaignSaveCodec）COMPLIANT
+**实现**: CampaignSessionService.CaptureSnapshot/Restore（会话元数据 + 复用 FIX-8 CampaignSaveCodec 的 career+world 段；恢复重建 004 权威登记 + 015 投影订阅）。注：RNG/情报/战役 checkpoint 段随对应模块接入会话后并入（R-1 段集合）
 
 ## Context
 

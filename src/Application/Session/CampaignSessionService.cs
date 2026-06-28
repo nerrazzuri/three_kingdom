@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using ThreeKingdom.Application.Career;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
+using ThreeKingdom.Domain.Configuration;
+using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.World;
 
 namespace ThreeKingdom.Application.Session
@@ -103,6 +106,64 @@ namespace ThreeKingdom.Application.Session
 
             return tx.Commit();
         }
+
+        // --- 统一会话存档（ADR-0009 §R-1/R-7 / TR-session-003，复用 FIX-8 CampaignSaveCodec）---
+
+        /// <summary>当前会话存档 schema 版本。</summary>
+        public static readonly SaveVersion CampaignSaveVersion = new SaveVersion(1, 0);
+
+        private readonly CampaignSaveCodec _saveCodec = new CampaignSaveCodec();
+        private const string SnapshotMagic = "TKSESSION/1";
+        private const string BodyMarker = "--BODY--";
+
+        /// <summary>
+        /// 捕获会话快照为确定性文本（ADR-0009 §R-1）。当前覆盖 生涯段 + 世界段（复用 CampaignSaveCodec）
+        /// 与会话元数据；时间在世界段。RNG/情报/战役 checkpoint 段随对应模块接入会话后并入（R-1 段集合）。
+        /// </summary>
+        public string CaptureSnapshot(CampaignSession session)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            var career = new CareerSaveState(CampaignSaveVersion, session.Fingerprint, session.Career, rebellion: null, missions: LordMissionLog.Empty);
+            var world = new WorldSaveState(CampaignSaveVersion, session.Fingerprint, session.World);
+            var campaign = new CampaignSaveState(CampaignSaveVersion, session.Fingerprint, career, world);
+
+            string body = _saveCodec.Serialize(campaign);
+            return SnapshotMagic + "\nid\t" + session.Id + "\nscenario\t" + session.ScenarioConfigId + "\n" + BodyMarker + "\n" + body;
+        }
+
+        /// <summary>
+        /// 从快照恢复会话（ADR-0009 §R-1 / TR-session-003）。版本不兼容/指纹不符 → 整体抛 <see cref="SaveFormatException"/>，
+        /// <b>不部分载入</b>。重建 GDD_004 权威（登记开局归属）+ GDD_015 投影订阅。
+        /// </summary>
+        public CampaignSession Restore(string text, ConfigFingerprint expectedFingerprint)
+        {
+            if (text is null) throw new SaveFormatException("会话存档文本为 null。");
+            string[] lines = text.Split('\n');
+            if (lines.Length < 4 || lines[0] != SnapshotMagic) throw new SaveFormatException("会话存档魔数不符。");
+            string id = Field("id", lines[1]);
+            string scenario = Field("scenario", lines[2]);
+            if (lines[3] != BodyMarker) throw new SaveFormatException("缺会话体标记。");
+            string body = string.Join("\n", new ArraySegment<string>(lines, 4, lines.Length - 4));
+
+            // 委派 CampaignSaveCodec：版本/指纹不符整体拒绝。
+            CampaignSaveState state = _saveCodec.Deserialize(body, CampaignSaveVersion, expectedFingerprint);
+
+            WorldState world = state.World.World;
+            var authority = new CityControlAuthority();
+            foreach (CityOwnership c in world.Cities)
+                if (c.Owner.HasValue) authority.RegisterInitial(c.City, c.Owner.Value, new Garrison(c.Garrison));
+            var projection = new WorldCityProjection(world, authority);
+
+            return new CampaignSession(id, scenario, expectedFingerprint, state.Career.Snapshot, projection, authority);
+        }
+
+        private static string Field(string key, string line)
+        {
+            string[] p = line.Split('\t');
+            if (p.Length < 2 || p[0] != key) throw new SaveFormatException($"期望字段「{key}」，实得「{line}」。");
+            return p[1];
+        }
     }
 }
+
 
