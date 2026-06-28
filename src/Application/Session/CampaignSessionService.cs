@@ -72,6 +72,19 @@ namespace ThreeKingdom.Application.Session
             return session;
         }
 
+        /// <summary>
+        /// 按场景 id 从目录配置驱动开局（M01 / ADR-0003）。未知 id → <see cref="CampaignErrorCode.SessionNotFound"/>。
+        /// 切换场景仅换 id、无代码改动。
+        /// </summary>
+        public CampaignStartResult StartCampaign(ScenarioCatalog catalog, string scenarioId)
+        {
+            if (catalog is null) throw new ArgumentNullException(nameof(catalog));
+            CampaignStartConfig? config = catalog.Find(scenarioId);
+            if (config is null)
+                return CampaignStartResult.Failure(CampaignErrorCode.SessionNotFound, $"场景不存在：{scenarioId}。");
+            return StartCampaign(config);
+        }
+
         /// <summary>开一个后果原子写回事务（ADR-0009 §R-6）。调用方暂存变更后 <see cref="ConsequenceTransaction.Commit"/>。</summary>
         public ConsequenceTransaction BeginConsequence(CampaignSession session)
             => new ConsequenceTransaction(session ?? throw new ArgumentNullException(nameof(session)));
