@@ -1,12 +1,12 @@
 # Story 004: 两支 E2E 确定性——同种子同 hash + 两结果不同 hash
 
 > **Epic**: Opening Governor Loop（太守开局循环 / M02）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Assembly（Integration 装配层）
 > **Type**: Integration
 > **Estimate**: S（2–3 h，纯测试，无新生产代码）
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-29
 
 ## Context
 
@@ -100,7 +100,7 @@
 **Required evidence**:
 - `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignOpeningDeterminismTests.cs` — 必须存在且全绿
 
-**Status**: [ ] 尚未创建
+**Status**: [x] `CampaignOpeningDeterminismTests.cs` — 4/4 通过（622/622 全绿）
 
 ---
 
@@ -108,3 +108,12 @@
 
 - Depends on: Story 002 DONE（胜支基线）；Story 003 DONE（败支基线）
 - Unlocks: epic-016（M03 城市治理）可安全开始——M02 确定性已验证
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-29
+**Criteria**: 4/4 passing
+**Deviations**: None
+**Test Evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignOpeningDeterminismTests.cs` — 4 tests, 4/4 pass（622/622 全绿）
+**Code Review**: Complete — APPROVED（内联 review 2026-06-29，Lean 模式）

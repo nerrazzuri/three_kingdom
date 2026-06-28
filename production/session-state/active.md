@@ -959,8 +959,14 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **story-001 ✅ Complete**（2026-06-29）：/code-review APPROVED → /story-done COMPLETE；606/606 全绿
 - **story-002 ✅ Complete**（2026-06-29）：胜支配置驱动生涯初值 + 胜支存读档；7 测试；613/613 全绿；内联 review APPROVED
 - **story-003 ✅ Complete**（2026-06-29）：败支在野延续存读档 + 部曲保留；5 测试；618/618 全绿；内联 review APPROVED
+- **story-004 ✅ Complete**（2026-06-29）：两支 E2E 确定性（胜/败各自重放同哈希 + 两支不同哈希 + 存档切割不破链）；4 测试；622/622 全绿；内联 review APPROVED
+
+### ✅ epic-015（M02 太守开局循环）全部完成（2026-06-29）
+- 4/4 stories Complete；新增 20 测试（4+7+5+4）；**622/622 全绿**
+- M02 达成：开局守城胜/败两支均可继续+存读档+部曲保留+城权经004易主+两支确定性哈希
 
 ### ▶ 下一步
-- story-004：两支 E2E 确定性——同种子同 hash + 两结果不同 hash（`CampaignOpeningDeterminismTests.cs`）
+- **M03 城市治理循环**（epic-016，待建）：`/create-epics epic-016` → `/create-stories` → 逐 story `/dev-story`
+- 可选并行：M08 敌方 AI 战术层（epic-021，gdd-016 + ADR-0006 已就绪）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

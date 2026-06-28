@@ -4,8 +4,8 @@
 > **GDD**: `design/gdd/gdd-014-campaign-and-career.md`（primary）+ gdd-010/011/008
 > **Architecture Module**: M02（`production/full-game-loop-module-plan-2026-06-28.md` §M02）
 > **Governing ADR**: ADR-0009（CampaignSession 装配）· ADR-0008（城池控制权契约）· ADR-0005（存档）· ADR-0004（确定性）
-> **Status**: In Progress（stories 已创建，2026-06-28）
-> **Stories**: 4（story-001~004 均为 Ready，见下表）
+> **Status**: ✅ Complete（4/4 stories，2026-06-29）
+> **Stories**: 4（story-001~004 均 ✅ Complete，见下表）
 
 ## Overview
 
@@ -45,7 +45,7 @@
 | [001](story-001-opening-siege-continuability.md) | 开局围城续局可用性——胜败两支 Advance 均可执行（败局可继续核心验证） | Integration | ✅ Complete | ADR-0009/0004 |
 | [002](story-002-victory-branch-config-driven-save.md) | 胜支后果——配置驱动生涯初值 + 胜支存读档 | Integration | ✅ Complete | ADR-0008/0009/0005 |
 | [003](story-003-defeat-branch-continuation-save.md) | 败支后果——在野延续存读档 + 部曲保留验证 | Integration | ✅ Complete | ADR-0009/0008/0005 |
-| [004](story-004-two-branch-e2e-determinism.md) | 两支 E2E 确定性——同种子同 hash + 两结果不同 hash | Integration | Ready | ADR-0004/0005 |
+| [004](story-004-two-branch-e2e-determinism.md) | 两支 E2E 确定性——同种子同 hash + 两结果不同 hash | Integration | ✅ Complete | ADR-0004/0005 |
 
 ## Scope
 
