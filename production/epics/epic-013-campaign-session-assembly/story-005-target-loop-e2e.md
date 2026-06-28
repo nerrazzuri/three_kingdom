@@ -1,12 +1,18 @@
 # Story 005: 目标循环端到端 + 确定性哈希
 
 > **Epic**: CampaignSession 完整会话装配
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Assembly 连接层）
 > **Type**: Integration
 > **Estimate**: S / 0.5d
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-28
+
+## Completion Notes
+**Completed**: 2026-06-28 · 全套 591/591 绿
+**Test**: CampaignTargetLoopE2ETests（4 测：目标循环端到端确定性/守城败存档后可继续/CD护栏①CausalTrace≤5/CD护栏⑥代偿与B3同schema）
+**Code Review**: inline lean — ADR-0004（确定性）/ADR-0009 R-6/CD 护栏①⑥ COMPLIANT
+**实现**: BattleOutcomeSummary（M00 消费的稳定 BattleOutcome 契约，携≤5因素 CausalTrace）+ E2E 串 S1-S4（开局→推进→战果→后果004/015/014→存档round-trip→续推）
 
 ## Context
 
