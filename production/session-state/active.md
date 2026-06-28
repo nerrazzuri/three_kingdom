@@ -882,3 +882,37 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 端到端贯通：开局→推进→战果→后果(004/015/014)→存档round-trip→续推，确定性+失败可继续。
 - 保留 GameSession 为 slice fixture；新建 CampaignSession（src/Application/Session/Campaign*）。
 - **▶ 下一步（按 full-game-loop-module-plan）**：在 M00 脊梁上叠加——M01 场景目录(epic-014)/M03 治理循环(epic-015)/M08 敌方AI战术层(epic-021)。可选先走 sprint-03 收尾门（smoke/team-qa/retro）。
+
+---
+
+## ▶▶▶ 新会话从这里读起（2026-06-28 末次）
+
+**一句话**：已完成 全游戏 review → 修全部 Concern/Advisory → 合并 codex 完整游戏模块规划（含子代理复审+修订）→ ADR-0009 Accepted → **开工装配**：epic-013（M00 CampaignSession 脊梁）6/6 完成 + epic-014（M01 场景目录）story-001 完成。**HEAD=`54eb514`，工作树干净，全套 dotnet 598/598 绿（-warnaserror 0）。**
+
+### 权威规划文档（必读）
+- `production/full-game-loop-module-plan-2026-06-28.md` — **完整游戏 M00–M16 模块路线图**（codex 骨架 + 我注入 §3.5 FIX地基/§5b MVP出关门+Kill Criteria+CD护栏§5b.5）。这是从内核到可玩游戏的总图。
+- `docs/reviews/full-game-review-2026-06-28.md` — 6 层 review（Concern/Advisory 已全闭、回填）。
+- `docs/architecture/adr-0009-campaign-session-assembly.md` — **Accepted**，CampaignSession 装配边界 + R-1~R-7 修订 + 两设计裁决。
+- `production/roadmap-playable-assembly-2026-06-28.md` — 已被上面 module-plan 取代（备查）。
+
+### 已完成（push tk/main）
+- **epic-013 CampaignSession 装配 = M00 脊梁 6/6 ✅**：S1 骨架+配置驱动开局 · S2 日界推进复用全局序 · S3 后果原子写回 ConsequenceTransaction（势力创建经015/归属经004）· S4 统一会话存档 round-trip · S5 目标循环 E2E+确定性哈希（BattleOutcomeSummary 携≤5因素 CausalTrace）· S6 新旧会话共存（YAGNI 延后实质共享抽取）。代码在 `src/Application/Session/Campaign*`。
+- **epic-014 M01 场景目录**：story-001 ✅（ScenarioCatalog 多场景按id开局+校验，`src/Application/Session/ScenarioCatalog.cs`）。
+
+### ▶ 下一步（按 module-plan 依赖序）
+1. **epic-014 story-002（待做）**：SliceScenario → 数据驱动 SliceScenarioData，**收尾 CON-5**（竖切硬编码工厂→不可变配置数据源）。文件 `src/Application/Session/SliceScenario.cs`（274 行硬编码），改为 SliceScenarioData 持字面值 + SliceScenario 读之。slice 回归须全绿。story 文件已建：`production/epics/epic-014-scenario-catalog/story-002-...md`（注：story-002 文件尚未创建，需 /create-stories 或手写）。
+2. **epic-015 = M03 回合间治理/推进循环**（最大"可玩性"缺口）：城市治理跨日+君主任务+招揽+晋升申请+campaign loop 触发历史事件(12-2)/任务→下一情境。依赖 M00✅/M01。
+3. **epic-021 = M08 敌方AI便宜80%**：gdd-016 §MVP（CON-3 缺陷已修），可与 M03 并行。
+4. 其余 M04~M16 见 module-plan §6 epic 切分表（epic-014~028）。
+
+### 关键约定/裁定（实现时遵守）
+- 保留 GameSession 为 slice fixture；CampaignSession 是新建脊梁，达内容平价前不停 slice。
+- 装配层只编排不拥规则（ADR-0009 R-5 闸门：不算 FixedPoint 公式、不直接写 city.owner/势力存续、不引用 *Service 内部、不 new SliceScenario.Default 作唯一源）。
+- 代偿取胜路线满足 MVP 出关门；完整 GDD_010 战役命令层(B3/B4)后置 M06。**CD 硬退出门**：M06 宣称"兵法沙盒MVP完成"前必接≥1机动招式(假退伏击/火攻)。
+- 君主/争霸/统一(M13/M14)**必须先补 GDD_017+/ADR** 再实现。
+- 测试统一落 `tests/unit/ThreeKingdom.Domain.Tests/{Session,Career,World,...}/`；纯 Domain，dotnet test 旁路 Unity 许可。
+- 提交：feat/docs 规范 + Co-Authored-By + Claude-Session trailer；push 到 remote `tk`（origin 无写权限403）。
+- 全程中文；零复制现有三国游戏资产红线。
+
+### 数字
+- 13 epics + epic-014(进行中)；测试 598/598 绿；ADR-0001~0009 全 Accepted；TR-session-001~005 已登记。
