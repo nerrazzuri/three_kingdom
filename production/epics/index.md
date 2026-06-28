@@ -51,7 +51,7 @@ Manifest Version: 2 (2026-06-28)
 | [CampaignSession 完整会话装配](epic-013-campaign-session-assembly/EPIC.md) | Assembly（M00） | 会话脊梁 | ADR-0009 + systems-index + TR-session-* | 6 stories | ✅ Complete |
 | [场景 / 战役配置目录](epic-014-scenario-catalog/EPIC.md) | Assembly（M01） | 场景目录/数据驱动开局 | ADR-0003/0009 + TR-session-003/city-001 | 2 stories | ✅ Complete |
 | [太守开局循环](epic-015-opening-governor-loop/EPIC.md) | Assembly（M02） | 开局守城→胜败后果→续局 | ADR-0009/0008/0005/0004 + TR-session-004/005 + TR-career-* | 4 stories | ✅ Complete |
-| [城市治理循环](epic-016-city-governance-loop/EPIC.md) | Feature（M03） | 城市治理接入会话→喂给战争/生涯 | ADR-0009/0008/0003/0004 + TR-city-001~005 | 待 /create-stories | 🔨 Ready |
+| [城市治理循环](epic-016-city-governance-loop/EPIC.md) | Feature（M03） | 城市治理接入会话→喂给战争/生涯 | ADR-0009/0008/0003/0004 + TR-city-001~005 | 4 stories | 🔨 In Progress |
 
 > epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）；epic-014 = **M01 场景目录**（CON-5 收尾）；epic-015 = **M02 太守开局循环**（开局守城→胜败两支续局+存读档）。ADR-0009 Accepted（2026-06-28，经子代理复审）。后续装配 epic（M03~M16，epic-016~028）见模块规划 §6 切分表。
 
@@ -73,7 +73,7 @@ Manifest Version: 2 (2026-06-28)
 
 ★ **M00/M01/M02 装配完成（2026-06-29）**，**M03 城市治理循环 epic 已建**（epic-016，🔨 Ready）。
 
-**当前动作**：`/create-stories epic-016-city-governance-loop` 把 M03 拆为可实现 story（城市治理态接入会话 / 治理命令入口 / 治理改变战役条件 / 治理存读档确定性），再逐 story `/dev-story`。注意 M03 含**新生产代码**（区别于 M01/M02 纯测试），关键护栏：单城 MVP + 喂给战争的筛选尺子。
+**当前动作**：M03 已拆为 4 story（S001 城市态接入会话 / S002 治理命令入口 / S003 治理改变战役条件 / S004 治理存读档确定性）。`/story-readiness epic-016 story-001` → 逐 story `/dev-story`。注意 M03 含**新生产代码**（区别于 M01/M02 纯测试），护栏：单城 MVP + 喂给战争的筛选尺子；征募已移出 MVP（待扩 GDD_004）。
 
 **后续装配序**（module-plan §6）：M03 城市治理（epic-016）→ M04 情报军议装配（epic-017）→ M05 战前准备装配（epic-018）→ M08 敌方 AI 战术层（epic-021，可与 M03 并行）。
 

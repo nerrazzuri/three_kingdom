@@ -971,8 +971,20 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **关键发现**：M03 不同于 M01/M02——`CampaignSession` 当前不持城市经济态，`Advance` 仅推世界模型（源码注释预留"M03 接入城市日结"）；会话无治理命令入口。**M03 需新生产代码**。
 - 护栏：单城 MVP + 喂给战争的筛选尺子（不变三国志全量经营）
 
+### ▶ epic-016 stories 已创建（2026-06-29）
+4 story 全部 Ready：
+| # | Story | Type | 测试文件 |
+|---|-------|------|---------|
+| S001 | 城市治理态接入会话 + Advance 日结 | Integration | `CampaignCityGovernanceTests.cs` |
+| S002 | 治理命令入口（征用/修工事/安抚）+ 非法稳定错误码 | Integration | `CampaignGovernanceCommandTests.cs` |
+| S003 | 治理选择改变战役条件（≥3 差异派生 + 可解释代价） | Logic | `City/GovernanceWarConditionTests.cs` |
+| S004 | 治理态存读档 round-trip + 日界确定性 | Integration | `CampaignCityGovernanceSaveTests.cs` |
+
+**关键**：S001~S003 含**新生产代码**（CampaignSession 持城市态 / Advance 叠城市日结 / 治理命令入口 / 治理→战役条件派生）；S004 主要测试。
+**裁断**：征募移出 MVP（GDD_004 MVP 不含，待扩）；S003 只做治理→战役条件输入派生（不接完整战斗，留 M05 epic-018 消费）。
+
 ### ▶ 下一步
-- `/create-stories epic-016-city-governance-loop` 拆 story → 逐 story `/dev-story`
+- `/story-readiness epic-016 story-001` → `/dev-story` S001（依赖序 S001→S002→S003→S004）
 - 可选并行：M08 敌方 AI 战术层（epic-021，gdd-016 + ADR-0006 已就绪）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

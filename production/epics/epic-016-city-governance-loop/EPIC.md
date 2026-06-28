@@ -4,8 +4,17 @@
 > **GDD**: `design/gdd/gdd-004-city-economy.md`（primary）+ gdd-012/005/006
 > **Architecture Module**: M03 City Governance Loop（`production/full-game-loop-module-plan-2026-06-28.md` §M03）
 > **Governing ADR**: ADR-0009（CampaignSession 装配）· ADR-0008（城池控制权契约）· ADR-0003（数据驱动配置）· ADR-0004（确定性）
-> **Status**: Ready（2026-06-29）
-> **Stories**: Not yet created — run `/create-stories epic-016-city-governance-loop`
+> **Status**: In Progress（stories 已创建，2026-06-29）
+> **Stories**: 4（story-001~004 均为 Ready，见下表）
+
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| [001](story-001-city-state-into-session.md) | 城市治理态接入会话 + Advance 日界结算 | Integration | Ready | ADR-0009/0004 |
+| [002](story-002-governance-command-entry.md) | 治理命令入口（征用/修工事/安抚）+ 非法命令稳定错误码 | Integration | Ready | ADR-0009/0003 |
+| [003](story-003-governance-changes-war-conditions.md) | 治理选择改变战役条件（≥3 条差异化派生 + 可解释代价） | Logic | Ready | ADR-0003/0004 |
+| [004](story-004-governance-save-determinism.md) | 治理态存读档 round-trip + 日界确定性 | Integration | Ready | ADR-0005/0004 |
 
 ## Overview
 
@@ -51,13 +60,14 @@
 ## Scope
 
 ### In Scope
-- `CampaignSession` 持有城市治理态（库存/民心/治安/工事/守备/征募池）。
+- `CampaignSession` 持有城市治理态（库存/民心/治安/工事/守备）。
 - `Advance` 日界顺序叠入城市日结（CityDaySettlementService / 004），按 systems-index 破环顺序。
-- `CampaignSessionService` 新增治理命令：征用军粮、修工事、安抚、征募（经命令路径，非法稳定错误码）。
+- `CampaignSessionService` 新增治理命令：征用军粮、修工事、安抚（经命令路径，非法稳定错误码）。
 - ≥3 条治理选择改变战役条件且有可解释代价（修工事↑守城强度 / 征用↑补给↓民心 / 安抚↑民心 等）。
 - 治理态存读档 round-trip + 日界确定性（纳入会话哈希）。
 
 ### Out of Scope
+- **征募（RecruitmentPool）**：GDD_004 §MVP 不含征募，现有 `CityEconomyState` 无征募池字段；需先扩 GDD_004（/quick-design 或扩 GDD）才能进入 epic。module-plan 的 RecruitmentPool 推迟。
 - 多城调度 / 全量城市经营（税收、产业链、市场、人口职业）— GDD_004 §MVP 明确不做。
 - 后勤跨城补给路线截断（M03 边界外；GDD_012 完整路线属后续）。
 - 情报网络治理（→ M04 / epic-017）；战前准备装配（→ M05 / epic-018）。
