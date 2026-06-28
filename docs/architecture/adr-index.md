@@ -7,9 +7,13 @@
 | [ADR-0003](adr-0003-data-driven-configuration.md) | 数据驱动配置 | Accepted | 2026-06-21 |
 | [ADR-0004](adr-0004-deterministic-battle-simulation.md) | 确定性战斗模拟 | Accepted | 2026-06-21 |
 | [ADR-0005](adr-0005-save-versioning-migration.md) | 存档版本与迁移 | Accepted | 2026-06-21 |
+| [ADR-0006](adr-0006-deterministic-enemy-ai.md) | 确定性效用敌方 AI | Accepted | 2026-06-24 |
+| [ADR-0007](adr-0007-conditional-history-world-model.md) | 条件历史世界模型架构 | Accepted | 2026-06-24 |
+| [ADR-0008](adr-0008-city-control-ownership-contract.md) | 城池控制权跨系统所有权契约 | Accepted | 2026-06-24 |
 
 ## 规则
 
 - ADR 一经 Accepted 不直接覆写结论；变更通过新 ADR 取代并建立链接。
 - 架构初稿中的重要未决选择必须在实现前形成 ADR。
 - `/technical-setup` 负责创建 ADR_0002 至 ADR_0005，而不是 gameplay 代码。
+- ADR_0006 至 ADR_0008 为 2026-06-24 后续生产治理裁定，分别覆盖敌方 AI、条件历史世界模型与城池归属唯一权威。

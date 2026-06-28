@@ -66,53 +66,53 @@ stories:
     name: "太守开局 + 守城事件胜败后果接入"
     file: "production/epics/epic-011-campaign-career/story-004-governor-start-siege-outcome.md"
     priority: should-have
-    status: backlog
+    status: done
     owner: ""
     estimate_days: 0.625
     blocker: ""
-    completed: ""
+    completed: "2026-06-27"
   - id: "12-3"
     name: "分叉传播（下游按 EventId 稳定序重评估）"
     file: "production/epics/epic-012-historical-world-model/story-003-divergence-propagation.md"
     priority: should-have
-    status: backlog
+    status: done
     owner: ""
     estimate_days: 0.5
     blocker: ""
-    completed: ""
+    completed: "2026-06-27"
   - id: "11-5"
     name: "生涯状态存档 round-trip"
     file: "production/epics/epic-011-campaign-career/story-005-career-save-roundtrip.md"
     priority: should-have
-    status: backlog
+    status: done
     owner: ""
     estimate_days: 0.5
     blocker: ""
-    completed: ""
+    completed: "2026-06-27"
   - id: "12-4"
     name: "城池归属只读投影（订阅 GDD_004 控制权变更）"
     file: "production/epics/epic-012-historical-world-model/story-004-city-ownership-projection.md"
     priority: nice-to-have
-    status: backlog
+    status: done
     owner: ""
     estimate_days: 0.5
-    blocker: "需确认 epic-004 CityControlChanged 接口已落地"
-    completed: ""
+    blocker: ""
+    completed: "2026-06-28"
   - id: "12-5"
     name: "抽象结算器（不在场势力混战）"
     file: "production/epics/epic-012-historical-world-model/story-005-abstract-resolver.md"
     priority: nice-to-have
-    status: backlog
+    status: done
     owner: ""
     estimate_days: 0.5
     blocker: ""
-    completed: ""
+    completed: "2026-06-28"
   - id: "12-6"
     name: "WorldState 存档 round-trip"
     file: "production/epics/epic-012-historical-world-model/story-006-worldstate-save-roundtrip.md"
     priority: nice-to-have
-    status: backlog
+    status: done
     owner: ""
     estimate_days: 0.5
     blocker: ""
-    completed: ""
+    completed: "2026-06-28"

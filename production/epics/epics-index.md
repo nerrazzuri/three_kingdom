@@ -3,7 +3,7 @@
 ## 状态规则
 
 > **本文件为早期生产分解，已被 [`index.md`](index.md) 取代（含 epic-011/012）。状态以 index.md 与各 EPIC.md 为准。**
-> 2026-06-28 校准：epic-001~012 全部 ✅ Complete（44 story、556 测试全绿）。状态列已同步实况。
+> 2026-06-28 校准：epic-001~012 全部 ✅ Complete（44 story；Sprint 02 smoke/team-qa 基线 556 测试全绿；当前本地回归 564/564 全绿）。状态列已同步实况。
 > 注：`Complete` 指 Domain 内核实现+测试通过；**不等于已装配进可玩循环**（装配状态见 `docs/reviews/full-game-review-2026-06-28.md`）。
 
 | Epic ID | 名称 | 目标 | Slice 边界 | 状态 |

@@ -1,8 +1,8 @@
 # Epics Index
 
-Last Updated: 2026-06-24
+Last Updated: 2026-06-28
 Engine: Unity 6.3 LTS + C#
-Manifest Version: 1 (2026-06-21)
+Manifest Version: 2 (2026-06-28)
 
 > 本文件由 `/create-epics` + `/create-stories` 生成，为可执行 epic/story 总账。
 > 概念级规划表见 `epics-index.md`（EPIC_001–010 范围说明）；story 草稿溯源见 `../story-backlog.md`。
@@ -40,7 +40,7 @@ Manifest Version: 1 (2026-06-21)
 | [条件历史世界模型](epic-012-historical-world-model/EPIC.md) | Feature | 世界骨架/历史推进 | gdd-015 | 6 stories | ✅ Complete |
 
 > 这两个 Meta epic 把单场战役连接成可持续人生（014）+ 提供历史世界骨架（015）。
-> **Sprint 02（2026-06-28）完成全部 11 story（Must 5 + Should 3 + Nice 3）**；测试 556/556 绿；team-qa APPROVED。
+> **Sprint 02（2026-06-28）完成全部 11 story（Must 5 + Should 3 + Nice 3）**；当时 smoke/team-qa 基线为 556/556 绿；当前本地回归验证为 564/564 绿；team-qa APPROVED。
 > 014/015 governing ADR-0007/0008 + 0002~0005 全 Accepted；无 untraced 需求。
 > 敌方 AI（gdd-016，ADR-0006）仍 Reviewed，未建 epic。
 
@@ -50,14 +50,16 @@ Manifest Version: 1 (2026-06-21)
 
 ## 统计
 
-- 10 epics（3 Foundation + 6 Core + 1 Presentation）；前 9 epics（28 stories）✅ Complete
-- epic-010 Presentation：预期 5 stories（1 Logic 可测表现逻辑 + 4 UI），待 `/create-stories epic-010-slice-ux`
-- 全部 governing ADR 为 Accepted（ADR-0001~0005）；无 Blocked story
+- 12 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta）全部 ✅ Complete。
+- 44 stories 全部 ✅ Complete；Sprint 02 已完成 11/11（Must 5 + Should 3 + Nice 3）。
+- 已实现并测试通过的范围为 Domain / Application / Presentation 逻辑内核与 Slice UX；**不等于完整可玩太守循环已装配完成**。
+- 全部 governing ADR 为 Accepted（ADR-0001~0008）；无 Blocked story。
+- GDD_016 敌方 AI 仍为 Reviewed：有 GDD + ADR-0006，尚无 epic/story/实现。
 
 ## 下一步
 
-★ **全部 9 epics（28 stories）已 ✅ Complete（2026-06-22）** — Domain 四层内核 + 存档/复现底座全部落地，
-测试累计 **329/329 全绿，`-warnaserror` 0 warning**。
-- **下一阶段候选**：Presentation 层 EPIC_010（Slice UX 与可访问性，UX 规格已 Approved）→ `/create-epics layer:presentation`；
-  或 Unity 表现层垂直切片重验核心幻想（CD-C3/TD CONCERNS：核心幻想未在 Unity 表现层实证）。
-- 挂账 guardrail（非阻断）：GitHub Actions 首次绿待确认；entity-inventory、sprint-01 旧 id 刷新。
+★ **全部 12 epics（44 stories）已 ✅ Complete（2026-06-28）** — Foundation/Core/Presentation/Meta 的 Domain 内核与可测展示逻辑已落地；当前本地回归 **564/564 全绿，`-warnaserror` 0 warning**。
+
+**下一阶段建议**：停止继续扩内核，优先创建“太守循环装配”集成 epic，把 Career / World / Battle / CityControl / Save 段接入可运行 session，并补一个目标循环端到端测试。详见 `docs/reviews/full-game-review-2026-06-28.md` 的 BLK-1。
+
+**并行裁决项**：GDD_016 敌方 AI（ADR-0006）需要决定是否进入 MVP 装配期；若进入，应先建 epic/story 并修复 GDD_016 设计缺口；若不进入，应在概念/控制清单中显式标注 MVP 不含敌方 AI。

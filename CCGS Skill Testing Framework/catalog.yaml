@@ -1,5 +1,5 @@
 version: 2
-last_updated: ""
+last_updated: "2026-06-28"
 skills:
   # Critical — gate skills that control phase transitions
   - name: gate-check
@@ -579,6 +579,17 @@ skills:
 
   - name: prototype
     spec: CCGS Skill Testing Framework/skills/utility/prototype.md
+    last_static: ""
+    last_static_result: ""
+    last_spec: ""
+    last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
+    priority: low
+    category: utility
+
+  - name: vertical-slice
+    spec: CCGS Skill Testing Framework/skills/utility/vertical-slice.md
     last_static: ""
     last_static_result: ""
     last_spec: ""

@@ -6,7 +6,7 @@ Manifest Version: 2 (2026-06-28)
 
 `PRODUCTION — Domain 内核全部实现，待装配可玩循环`
 
-Pre-Production→Production 闸门已通过（2026-06-21，CONCERNS）。**2026-06-28 校准**：epic-001~012 全部 Complete（44 story、556 测试全绿、`-warnaserror` 0；零禁则违反、零确定性泄漏）——Foundation/Core/Feature/Meta 各层 Domain 内核均已落地并通过测试。
+Pre-Production→Production 闸门已通过（2026-06-21，CONCERNS）。**2026-06-28 校准**：epic-001~012 全部 Complete（44 story；Sprint 02 smoke/team-qa 基线 556 测试全绿；当前本地回归 564/564 全绿、`-warnaserror` 0；零禁则违反、零确定性泄漏）——Foundation/Core/Feature/Meta 各层 Domain 内核均已落地并通过测试。
 
 **当前阶段焦点 = 装配（assembly）**：Domain 内核已就绪，但被装配进可运行 session 的仅竖切守城那一局；Meta 层（epic-011/012 生涯/世界模型）与多数 Domain 系统是已验证但**未接入可玩循环**的内核。下一阶段重心从"造内核"转向"装配可玩太守循环 + 敌方 AI"——详见 `docs/reviews/full-game-review-2026-06-28.md`（全游戏 review，2 项 Blocking）。
 

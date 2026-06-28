@@ -47,7 +47,7 @@
 
 ## 当前批次结论（2026-06-28 校准）
 
-GDD_001–013 已通过跨系统矛盾审查（gdd-cross-review-2026-06-21，裁定 CONCERNS 并处置全部阻断），并已建 epic-001~009 全部实现、测试通过、Complete → 状态 `Implemented`。GDD_014/015 已建 epic-011/012 实现 Complete → `Implemented`（Sprint 02，556 测试全绿）。GDD_016 敌方 AI 仍 `Reviewed`：有 GDD + ADR-0006（Accepted），**尚无 epic、尚无实现**。
+GDD_001–013 已通过跨系统矛盾审查（gdd-cross-review-2026-06-21，裁定 CONCERNS 并处置全部阻断），并已建 epic-001~009 全部实现、测试通过、Complete → 状态 `Implemented`。GDD_014/015 已建 epic-011/012 实现 Complete → `Implemented`（Sprint 02 smoke/team-qa 基线 556 测试全绿；当前本地回归 564/564 全绿）。GDD_016 敌方 AI 仍 `Reviewed`：有 GDD + ADR-0006（Accepted），**尚无 epic、尚无实现**。
 
 > **重要边界**：`Implemented` 指 Domain 内核已落地且单元/集成测试通过；**不等于已装配进可玩游戏循环**。当前被装配进可运行 session 的仅竖切守城那一局；Meta 层（014/015）与多数 Domain 系统是已验证但未接入循环的内核——装配状态以 epics 与 `docs/reviews/full-game-review-2026-06-28.md` 为准。
 
