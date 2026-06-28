@@ -5,6 +5,12 @@
 **方法**：6 层 review（设计一致性 → 架构可追溯 → 规划→实现完整性 → 集成断联 → 代码缺陷 → 测试盲点）
 **审查模式**：lean
 
+> **⚠️ 修复回填（2026-06-28，本报告后续动作）**：本报告为修复前快照。同日已修：
+> - **Concern 全闭**：CON-1（治理状态校准）/ CON-2（systems-index Meta 层结算顺序+破环）/ CON-3（gdd-016 三缺陷+registry）/ CON-4（自立权威裁定，registry `faction_existence`）/ CON-5（并入 M2）→ 提交 `4b389e4`。
+> - **Advisory 全闭**：ADV-1~8（设计护栏/文档）`4b389e4`；ADV-9（Meta 跨系统链 E2E 测试）+ ADV-10（统一存档信封）`e993847`。全套测试 556→**564 绿**。
+> - **Blocking → 已转规划**：BLK-1（装配）→ ADR-0009 Accepted + epic-013 Ready；BLK-2（敌方 AI）→ 路线图 M08/epic-021（CON-3 设计缺陷已先修）。
+> 权威后续规划见 `production/full-game-loop-module-plan-2026-06-28.md`。下文为修复前原始发现，保留备查。
+
 ---
 
 ## 执行摘要（一句话）

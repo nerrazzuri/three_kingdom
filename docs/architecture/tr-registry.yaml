@@ -351,3 +351,40 @@ requirements:
     created: 2026-06-24
     revised: ""
     status: active
+
+  # --- CampaignSession 装配 (ADR-0009，横切，2026-06-28) ---
+  - id: TR-session-001
+    system: session
+    gdd: design/gdd/systems-index.md
+    requirement: "CampaignSession 日界推进复用 systems-index 全局结算顺序（含 Meta 层 015→014→016），不私改、不回读未结算值"
+    created: 2026-06-28
+    revised: ""
+    status: active
+  - id: TR-session-002
+    system: session
+    gdd: design/gdd/systems-index.md
+    requirement: "跨系统后果经命名 ConsequenceTransaction 原子写回（change-set→校验→提交）；任一失败整批回滚、前后状态哈希一致；城池归属经 GDD_004、势力创建经 GDD_015"
+    created: 2026-06-28
+    revised: ""
+    status: active
+  - id: TR-session-003
+    system: session
+    gdd: design/gdd/gdd-013-save-load.md
+    requirement: "CampaignSessionSnapshot 单一统一信封含 配置指纹/时间/RNG流位置/情报知识分区/城市控制权/Career/World/战役checkpoint；段独立版本+段级migrator；round-trip 一致、不部分载入"
+    created: 2026-06-28
+    revised: ""
+    status: active
+  - id: TR-session-004
+    system: session
+    gdd: design/gdd/gdd-014-campaign-and-career.md
+    requirement: "守城胜败后果链：胜→生涯/权限；败→在野延续；任一结局玩家可继续（非读档），失败可继续状态合法"
+    created: 2026-06-28
+    revised: ""
+    status: active
+  - id: TR-session-005
+    system: session
+    gdd: design/gdd/systems-index.md
+    requirement: "目标循环端到端确定性：同种子+同配置+同命令流→同状态哈希；守城败→004→015→014→存档round-trip全一致"
+    created: 2026-06-28
+    revised: ""
+    status: active

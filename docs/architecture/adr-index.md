@@ -10,6 +10,7 @@
 | [ADR-0006](adr-0006-deterministic-enemy-ai.md) | 确定性效用敌方 AI | Accepted | 2026-06-24 |
 | [ADR-0007](adr-0007-conditional-history-world-model.md) | 条件历史世界模型架构 | Accepted | 2026-06-24 |
 | [ADR-0008](adr-0008-city-control-ownership-contract.md) | 城池控制权跨系统所有权契约 | Accepted | 2026-06-24 |
+| [ADR-0009](adr-0009-campaign-session-assembly.md) | CampaignSession 装配边界（完整会话脊梁） | Accepted | 2026-06-28 |
 
 ## 规则
 

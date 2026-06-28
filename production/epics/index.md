@@ -44,6 +44,14 @@ Manifest Version: 2 (2026-06-28)
 > 014/015 governing ADR-0007/0008 + 0002~0005 全 Accepted；无 untraced 需求。
 > 敌方 AI（gdd-016，ADR-0006）仍 Reviewed，未建 epic。
 
+## Assembly 层（装配 — 从内核到可玩游戏）
+
+| Epic | Layer | System | GDD/ADR | Stories | Status |
+|------|-------|--------|---------|---------|--------|
+| [CampaignSession 完整会话装配](epic-013-campaign-session-assembly/EPIC.md) | Assembly | 会话脊梁 | ADR-0009 + systems-index + TR-session-* | 待创建（首批~6） | 🟢 Ready |
+
+> epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）。ADR-0009 Accepted（2026-06-28，经子代理复审）。首批范围+估算见 EPIC.md §First Sprint Scope。后续装配 epic（M01~M16）见模块规划。
+
 ## 后续层（未展开）
 
 - **Feature（其余）**：完整 8 阶梯队、全时间线事件网络等见各 GDD §Future Scope，MVP 不含。

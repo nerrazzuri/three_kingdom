@@ -46,6 +46,17 @@
 - **下一步（用户指示）**：派子代理重新评审合并后的规划。
 - **待用户裁决（codex 5 裁决 + epic-013 5 问）**：M00 第一优先 / 君主等先补 GDD-017+ / 敌方 AI 先战术层 / 城市等须证明喂战争 / ADR-0009 转 Accepted / 是否加 TR-session-*。
 
+## Session Extract — 复审修订全落 + 进入"可开工"状态 2026-06-28
+- 用户选 (a) 落修订 + 我拍板两设计裁决，推到能开工。
+- **两设计裁决（已写入文档）**：① 代偿取胜路线满足 MVP 出关门，完整 GDD_010 战役命令层(B3/B4)后置 M06；② 自立新势力创建权威=GDD_015（确认 FIX-4），写进 ADR-0009 R-3 + 排进后果写回 story。
+- **ADR-0009 → Accepted**（含复审修订 R-1~R-7：存档段统一/迁移粒度/势力创建权威/契约三项/可执行闸门/原子写回事务/分层）。adr-index + technical-preferences ADR 日志同步。
+- **TR-session-001..005** 入 tr-registry（日界序/原子写回/统一存档/胜败可继续/确定性哈希）。
+- **epic-013 → Ready**：5 open Q 全裁定 + TR-session 映射 + **§First Sprint Scope（sprint-03，~6 story、~4.5d，S1-S6 全装配）**。index.md 新增 Assembly 层登记 epic-013。
+- **plan 修订**：R3 排序（M08 战术 AI 排 M06 前）+ §5b.1 代偿裁决 + §11.2 估算/容量第三轴。
+- **review 报告回填**：CON-2/3/4 + 全 Advisory 已闭、Blocking 转规划。
+- **★ 可开工状态达成**：ADR-0009 Accepted + epic-013 Ready + 首批 6 story 已 scoped+估算。**下一步开工 = `/create-stories epic-013-campaign-session-assembly` → /story-readiness S1 → /dev-story。**
+- 注：S1/S2/S6 无 ADR 前置可先行；S3 须 R-3、S4 须 R-1/R-2 落 method spec（裁定已在 ADR-0009）。
+
 ---
 
 ## ▶▶▶ 新会话从这里读起（2026-06-27）— Sprint 02 开工：11-1 已实现，待 review/done

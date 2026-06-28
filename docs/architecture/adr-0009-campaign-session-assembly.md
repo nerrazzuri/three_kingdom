@@ -2,9 +2,10 @@
 
 ## Status
 
-Proposed
+Accepted
 
-> 草案 2026-06-28：源自 `production/full-game-loop-module-plan-2026-06-28.md` 的 M00 裁决草案。待用户评审后才可改为 Accepted；在 Accepted 前，不得据此进入 gameplay code 实现。
+> 2026-06-28：经子代理（producer + technical-director）独立复审（Producer: APPROVE WITH CONDITIONS；TD: ACCEPT WITH REVISIONS），用户裁定转 **Accepted**。复审提出的修订已落入下方 **「## 装配级裁定（复审后补，2026-06-28）」** 节。
+> **分主题解锁**：「会话骨架 / 日界推进」story 可直接进入 Ready；「后果写回 / 存档」story 须先满足该节 R-1/R-3 的前置（存档段统一裁定 + 势力创建权威接线），见各条。
 
 ## Date
 
@@ -190,6 +191,42 @@ public interface ICampaignSessionService
 - 对外 projection 必须分离“真值”和“玩家知识”；UI 只能读玩家合法知识。
 - 所有 command 失败必须返回稳定错误码，不产生部分写入。
 - 所有跨系统后果必须先形成可验证的 change set；验证通过后按权威系统提交。
+
+## 装配级裁定（复审后补，2026-06-28）
+
+> 以下是 producer + technical-director 复审提出、用户裁定后补入本 ADR 的具体边界细化。带 **前置** 标记的项是对应 story 进入 Ready 的硬门。
+
+### R-1（前置·存档 story）存档段枚举 + 两套信封统一裁定 — 闭合评审 ADV-10
+当前存在两条不相交存档路径：竖切 `SaveMapper`/`SaveCoordinator`（时间 `WorldClock`、三条 RNG 流位置 `RngStreamState`、情报知识分区、城市态）与 `CampaignSaveCodec`（FIX-8，仅 career+world 段）。**裁定**：CampaignSession 的 `CampaignSessionSnapshot` 必须显式承载以下**段集合**，由单一统一信封组装：
+`[配置指纹] [世界时间] [RNG 流位置集] [情报知识分区] [城市控制权] [CareerState] [WorldState] [战役 checkpoint]`。
+实现路径：扩展 `CampaignSaveCodec` 增 time/rng/intel/city/battle 段（复用 `SaveMapper` 既有捕获），career/world 段沿用。**"后果写回 / 存档" story 在本统一裁定落为 method spec 前不得 Ready。**
+
+### R-2（前置·存档 story）迁移粒度
+**裁定**：**信封单调递增版本 + 各段独立 schema 版本 + 各段独立 migrator**。信封版本仅在"段集合结构变化"（增删段）时 bump；段内字段演进由该段自己的版本号 + 逆序段级 migrator 处理（ADR-0005 §逆序迁移在段级生效）。避免"全信封单版本"挡住局部迁移。
+
+### R-3（前置·后果写回 story）自立新势力创建权威 — 闭合评审 CON-4 残留
+**裁定**（类比 ADR-0008 城池归属经 004）：**势力实体创建与存续的唯一权威 = GDD_015 `WorldState/FactionRecord`**（见 FIX-4：gdd-014/015 + registry `faction_existence`）。CampaignSession 在自立后果写回时，**发起** 015 的"创建新势力"请求（携 `RebellionState.NewFaction` 与继承范围），由 015 创建 `FactionRecord`；装配层与 014 只读，不直接创建势力。城池倒戈仍经 GDD_004 `ControlChanged`。**后果写回 story 必须显式接此线**（`RebellionState.NewFaction` → 015），不得在 014 侧直写势力存续。
+
+### R-4 接口契约补全（method spec 前补入 §Key Interfaces）
+- **错误码**：新增 `CampaignErrorCode` 枚举（稳定码），所有 `Result<T>` 失败携之；无部分写入。
+- **随机流位置入 snapshot 类型**：`CampaignSessionSnapshot` 显式承载种子 + 各 RNG 流位置（ADR-0004 确定性恢复要求），不依赖散落捕获。
+- **truth/knowledge 入类型**：projection 出口为 **actor-gated query**（按 `ActorId` 过滤合法知识），把反全知约束写进契约而非注释。
+
+### R-5 可执行的 God-object 闸门（嵌入 epic-013 story-readiness）
+CampaignSession 装配代码**禁止**：① 引用任何 `*Service`/`*Resolver` 的内部规则；② 计算 `FixedPoint` 玩法公式；③ 直接写 `city.owner` / 势力存续；④ `new SliceScenario.Default()` 作为完整游戏唯一开局源。任一 story 触犯即不得 Ready。
+
+### R-6 原子写回事务边界命名 + 验收钩子
+跨系统后果写回经命名事务 **`ConsequenceTransaction`**（change-set → 全部权威系统校验 → 提交；任一失败整批回滚）。**验收钩子**：失败回滚后状态哈希与提交前**逐位一致**（可作 E2E 断言，支撑 QA 确定性回归门）。
+
+### R-7 分层（method spec 注明）
+snapshot **组装**在 Application（CampaignSessionService）；纯**编解码**可留 Domain（`CampaignSaveCodec`）；**文件 I/O 必经 Infrastructure 端口**（ADR-0005）。CampaignSession 不得把文件 I/O 拖进 Application。
+
+### 裁决（用户 2026-06-28）
+- **代偿取胜路线满足 MVP 出关门**：首个可玩循环用既有竖切战斗（断粮/守城待变 + 抽象 BattleOutcome）；完整 GDD_010 战役命令层（move/hold/engage 接 UI）后置到 M06 深化，**非 Phase 1-2 阻断**。M00 只消费 BattleOutcome。
+- **TR 追踪**：新增 `TR-session-001..005`（见 tr-registry），不建 `GDD_017_CAMPAIGN_SESSION_ASSEMBLY`。
+- **GameSession 去留**：保留为 slice fixture，**新建** CampaignSession；抽共享 Application 服务；CampaignSession 达内容平价前不停旧 slice。
+
+---
 
 ## Alternatives Considered
 

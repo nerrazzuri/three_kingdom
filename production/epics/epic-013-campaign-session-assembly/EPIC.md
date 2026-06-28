@@ -3,8 +3,8 @@
 > **Layer**: Feature（Assembly 连接层）
 > **GDD**: 横切 `gdd-001/004/009/010/011/012/013/014/015` + `systems-index.md`
 > **Architecture Module**: Application Session Assembly（CampaignSession / CampaignSessionService）
-> **Status**: Draft for Review
-> **Stories**: Not yet created — ADR-0009 Accepted 后再运行 `/create-stories epic-013-campaign-session-assembly`
+> **Status**: Ready（ADR-0009 已 Accepted 2026-06-28；可运行 `/create-stories epic-013-campaign-session-assembly`）
+> **Stories**: 待创建——首批范围见下方 §First Sprint Scope（约 6 story，全装配）
 
 ## Overview
 
@@ -64,6 +64,11 @@
 | TR-world-001 | WorldState 为权威，历史推进确定性 | ADR-0007/0009 ✅ |
 | TR-world-003 | 城池归属为只读投影，订阅 GDD_004 | ADR-0008/0009 ✅ |
 | TR-world-006 | WorldState + HistoricalEvent diverged 标志存档 round-trip | ADR-0005/0009 ✅ |
+| TR-session-001 | 日界推进复用全局结算顺序（含 Meta 层），不私改不回读未结算值 | ADR-0009 ✅ |
+| TR-session-002 | 跨系统后果经 ConsequenceTransaction 原子写回，失败整批回滚、哈希一致；归属经004、势力创建经015 | ADR-0008/0009 ✅ |
+| TR-session-003 | CampaignSessionSnapshot 单一统一信封（时间/RNG/情报/城/Career/World/战役），段独立版本，round-trip 一致不部分载入 | ADR-0005/0009 ✅ |
+| TR-session-004 | 守城胜败后果链，败局可继续（非读档），失败可继续状态合法 | ADR-0009 ✅ |
+| TR-session-005 | 目标循环确定性：同种子+同命令流→同状态哈希，全链 round-trip 一致 | ADR-0004/0009 ✅ |
 
 ## Traceability Note
 
@@ -120,13 +125,28 @@ CampaignSession 是横切装配模块，不对应单一 GDD。它的需求来源
 | E2E 测试不稳定 | High | 固定配置指纹、随机种子、命令序列和状态哈希 |
 | 与现有 slice UI 接缝断裂 | Medium | Presentation 后置；先建立 Application/Domain 会话投影 |
 
-## Open Questions for Review
+## Open Questions（已裁定 2026-06-28，复审后）
 
-1. 是否批准 ADR-0009 从 Proposed 改为 Accepted？
-2. 是否需要新增 `TR-session-*` 到 `docs/architecture/tr-registry.yaml`，还是允许 CampaignSession 作为横切装配 epic 只引用现有 TR？
-3. epic-013 第一批 stories 是否只覆盖五个主题：会话骨架、日界推进、后果写回、存档 round-trip、目标循环 E2E？
-4. 敌方 AI 是否作为 epic-013 的 mock/最小输入，还是完全留到后续独立 epic？
-5. 现有 `GameSession` 是迁移为 CampaignSession，还是保留为 slice fixture 并新建完整会话类？
+1. **ADR-0009 转 Accepted？** → ✅ 已 Accepted（含复审修订 R-1~R-7）。
+2. **加 TR-session-*？** → ✅ 已加 `TR-session-001..005`（tr-registry）。
+3. **首批 stories 五主题？** → ✅ 是：会话骨架 / 日界推进 / 后果写回 / 存档 round-trip / 目标循环 E2E+哈希；外加 0 号决策门已闭、1 号配置入口（见 §First Sprint Scope）。
+4. **敌方 AI 在 epic-013？** → ❌ 完全 mock/注入 BattleOutcome；真 AI 留 epic-021（M08）。
+5. **GameSession 去留？** → 保留为 **slice fixture**，**新建** CampaignSession；抽共享 Application 服务；CampaignSession 达内容平价前不停旧 slice。
+
+## First Sprint Scope（sprint-03，约 6 story，全装配可停可测）
+
+> 容量基线：Sprint 02 实测 11 story / ~7.5 估算日。本批估算 ~4.5d。
+
+| # | Story 主题 | 关键路径 | 估算 | 验收 | ADR 前置 |
+|---|---|---|---|---|---|
+| S1 | CampaignSession 骨架 + 配置驱动 StartCampaign 入口（取代 SliceScenario.Default 为唯一源；slice 留 fixture） | ⭐ | M/1d | 不引用 UnityEngine；配置指纹进 snapshot；R-5 闸门过 | — |
+| S2 | 日界推进复用 systems-index 全局序（TR-session-001） | ⭐ | S/0.5d | 稳定事件序列回归测试 | — |
+| S3 | 后果写回 ConsequenceTransaction 原子路由 City/Career/World（注入 BattleOutcome；归属经004、势力创建经015）（TR-session-002/004） | ⭐ | M/1d | 任一失败整批回滚+哈希一致；自立 NewFaction→015 | **R-3** |
+| S4 | 统一存档信封 round-trip（扩 CampaignSaveCodec 增 time/rng/intel/city/battle 段）（TR-session-003） | ⭐ | M/1d | RNG位置/时间/知识分区/Career/World 全一致；不部分载入 | **R-1/R-2** |
+| S5 | 目标循环 E2E + 确定性哈希（守城胜/败→004→015→014→round-trip）（TR-session-005） | ⭐ | S/0.5d | 同种子同哈希；失败可继续 | — |
+| S6 | 共享服务抽取（WorldClock 接线/RngStreamState 捕获/SaveMapper 模式）供新旧会话复用 | | S/0.5d | slice 回归仍绿 | — |
+
+> S1/S2/S6 可先行（无 ADR 前置）；S3 须 R-3 落 method spec、S4 须 R-1/R-2 落 method spec（ADR-0009 已写裁定，story 时细化）。Phase 1 余下（M02 完整开局打磨）+ M03+ 全部后置。
 
 ## Next Step
 

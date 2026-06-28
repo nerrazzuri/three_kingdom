@@ -86,6 +86,7 @@
 - [ADR-0006](../docs/architecture/adr-0006-deterministic-enemy-ai.md): 确定性效用敌方 AI（种子化 softmax + 反全知锁 + LLM 隔离）— Accepted（2026-06-24）
 - [ADR-0007](../docs/architecture/adr-0007-conditional-history-world-model.md): 条件历史世界模型（事件四元组 + reachability 触发门 + 分叉传播 + 抽象结算）— Accepted（2026-06-24）
 - [ADR-0008](../docs/architecture/adr-0008-city-control-ownership-contract.md): 城池控制权跨系统所有权契约（GDD_004 唯一权威 + 控制权变更事件；015 订阅/014 只读）— Accepted（2026-06-24）
+- [ADR-0009](../docs/architecture/adr-0009-campaign-session-assembly.md): CampaignSession 装配边界（Application 装配脊梁，只编排不拥规则；统一存档信封 + 日界全局序 + 命名原子写回；势力创建经 015）— Accepted（2026-06-28）
 
 ## Engine Specialists
 
