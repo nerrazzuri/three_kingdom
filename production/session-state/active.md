@@ -35,6 +35,17 @@
 - 任务清单已建 M1~M7（pending）。**建议先开 M1**（脊梁，解锁其余）。
 - CON-5（SliceScenario 配置化）已并入 M2，不单独做。
 
+## Session Extract — 合并 codex 规划 + 治理修正进 main 2026-06-28
+- **FF 合并 `codex/governance-sync`**（提交 1d26d2c）进 main：修了我引入的真 bug（sprint-status 6 个 story 卡 backlog→done）+ 补 adr-index(0006-0008)/index.md 统计段/测试数精度(556 基线/564 当前) + vertical-slice skill 测试规格。
+- **带进 codex 三件套**（worktree 未提交 → 复制进 main）：
+  - `production/full-game-loop-module-plan-2026-06-28.md`（**权威规划**：M00–M16 循环模块 + 双层管理 + Production Gate 五裁决 + 设计文档清单 + agent 视角）——已**合成注入**我的"设计状态分层/FIX 地基(§3.5)" + 6-23 的"MVP 出关门/Kill Criteria/明确不做/竖切战斗层未接线实况(§5b)"。
+  - `docs/architecture/adr-0009-campaign-session-assembly.md`（**Proposed**，CampaignSession 装配边界，模板完整、与 FIX-2 日界顺序一致）。
+  - `production/epics/epic-013-campaign-session-assembly/EPIC.md`（**Draft for Review**，TR 映射完整）。
+- **我的 `roadmap-playable-assembly-2026-06-28.md` 标记被取代**（内容已并入 module-plan）。
+- **三份来源最优合并结论**：codex 模块框架最强（M00-M16+双层管理+Gate）；我补"设计状态分层+FIX 挂钩"；6-23 补"硬验收/Kill Criteria/范围纪律/战斗未接线"。关键修正=不把战役当黑盒。
+- **下一步（用户指示）**：派子代理重新评审合并后的规划。
+- **待用户裁决（codex 5 裁决 + epic-013 5 问）**：M00 第一优先 / 君主等先补 GDD-017+ / 敌方 AI 先战术层 / 城市等须证明喂战争 / ADR-0009 转 Accepted / 是否加 TR-session-*。
+
 ---
 
 ## ▶▶▶ 新会话从这里读起（2026-06-27）— Sprint 02 开工：11-1 已实现，待 review/done

@@ -1,5 +1,9 @@
 # 完整游戏路线图（从内核到"整个能玩通关的游戏"）
 
+> **⚠️ 已被取代（2026-06-28）**：本路线图（Phase A-E）的内容已合并进权威版
+> **`production/full-game-loop-module-plan-2026-06-28.md`**（M00–M16 模块 + 双层管理 + Production Gate + MVP 出关门 + Kill Criteria）。
+> 本文件保留备查；规划以 full-game-loop-module-plan 为准。
+
 **日期**：2026-06-28（v2 — 扩展为完整游戏，含君主/争霸/统一终局）
 **依据**：`docs/reviews/full-game-review-2026-06-28.md` + `design/gdd/game-concept.md`
 **目标**：把已验证的 Domain 内核（epic-001~012，564 测试全绿）装配并铺开成**一个能从开局玩到统一/终局的完整游戏**。逐模块完成、可逐步测试。
