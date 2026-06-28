@@ -35,6 +35,9 @@ namespace ThreeKingdom.Domain.City
 
         /// <summary>生涯夺城（GDD_014 发起）。</summary>
         CareerConquest = 3,
+
+        /// <summary>玩家不在场的抽象结算混战易主（GDD_015 抽象结算器发起）。</summary>
+        AbstractContest = 4,
     }
 
     /// <summary>

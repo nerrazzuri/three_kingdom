@@ -1,12 +1,12 @@
 # Story 005: 抽象结算器（不在场势力混战）
 
 > **Epic**: 条件历史世界模型
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Logic
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: S / 0.5d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-28
 
 ## Context
 
@@ -87,8 +87,19 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/world/abstract_resolver_test.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/World/AbstractResolverTests.cs` — must exist and pass
+**Status**: [x] Created — 6 test functions, all passing（全套 548/548 绿，-warnaserror 0）
+**Path note**: 统一测试工程 `ThreeKingdom.Domain.Tests/World/`（沿 epic-001 约定）。
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-28
+**Criteria**: 5/5 passing（全部 COVERED）
+**Deviations / Decisions**: ADVISORY — 测试路径统一工程。MVP 薄实现：体量以领有城池数为代理 + 攻方态势加成（定点）+ 注入随机单位值定占据/守住；够得着/够不着边界由 `AbstractContestPolicy` 判定（双方均够不着才用抽象，否则走 GDD_016）；易主经 GDD_004 `ICityControlAuthority`（ADR-0008），新增 `ChangeCause.AbstractContest`。零旁路随机、零 float 权威外泄。
+**Test Evidence**: Logic — `tests/unit/ThreeKingdom.Domain.Tests/World/AbstractResolverTests.cs`（6 测；全套 548/548 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean，ADR-0007 §4 / ADR-0004（注入随机确定性）/ ADR-0008（易主经 004）COMPLIANT
+**实现文件**: `src/Domain/World/AbstractResolver.cs`（ContestContext/AbstractOutcome/IAbstractResolver/StrengthAbstractResolver/AbstractContestPolicy）· `src/Application/World/AbstractContestService.cs` · CityControl 追加 ChangeCause.AbstractContest
 
 ---
 
