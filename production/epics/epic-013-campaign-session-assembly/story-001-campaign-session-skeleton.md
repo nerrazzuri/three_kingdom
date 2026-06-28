@@ -1,12 +1,12 @@
 # Story 001: CampaignSession 骨架 + 配置驱动开局入口
 
 > **Epic**: CampaignSession 完整会话装配
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Assembly 连接层）
 > **Type**: Integration
 > **Estimate**: M / 1d
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-28
 
 ## Context
 
@@ -77,7 +77,16 @@
 
 **Story Type**: Integration
 **Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignSessionSkeletonTests.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 6 测全过（全套 570/570 绿，-warnaserror 0）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-28
+**Criteria**: 5/5 passing
+**Test Evidence**: Integration — `CampaignSessionSkeletonTests`（6 测：层级/无UnityEngine/R-5无玩法写方法/配置驱动开局/空配置稳定码/空场景id拒）
+**Code Review**: inline lean — ADR-0009 R-5（反射闸门）/ADR-0002（Application层纯C#）/ADR-0003（配置驱动+指纹，非SliceScenario.Default）COMPLIANT
+**实现文件**: `src/Application/Session/`（CampaignErrorCode/CampaignStartConfig/CampaignSession/CampaignStartResult/CampaignSessionService）。复用 epic-011 GovernorCampaignService + epic-012 WorldCityProjection + GDD_004 CityControlAuthority。
 
 ---
 

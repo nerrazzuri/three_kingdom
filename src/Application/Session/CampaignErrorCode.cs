@@ -1,0 +1,21 @@
+namespace ThreeKingdom.Application.Session
+{
+    /// <summary>
+    /// CampaignSession 装配层稳定错误码（ADR-0009 §R-4）。数值稳定（追加新码用新序数，不重排），
+    /// 用于跨层契约与回归断言；失败返回稳定码、无部分写入。
+    /// </summary>
+    public enum CampaignErrorCode
+    {
+        /// <summary>无错误（成功）。</summary>
+        None = 0,
+
+        /// <summary>空配置 / 空入参。</summary>
+        NullConfig = 1,
+
+        /// <summary>配置非法（缺字段/越界），加载期被拒。</summary>
+        InvalidConfig = 2,
+
+        /// <summary>会话不存在（按 id 查找失败）。</summary>
+        SessionNotFound = 3,
+    }
+}
