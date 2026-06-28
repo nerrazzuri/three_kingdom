@@ -1,12 +1,18 @@
 # Story 003: 后果原子写回（ConsequenceTransaction）
 
 > **Epic**: CampaignSession 完整会话装配
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Assembly 连接层）
 > **Type**: Integration
 > **Estimate**: M / 1d
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-28
+
+## Completion Notes
+**Completed**: 2026-06-28 · 全套 582/582 绿
+**Test**: ConsequenceTransactionTests（7 测：守城胜归属不变/守城败在野+失城经004/原子校验失败零应用哈希不变/R-3势力创建经015/重复势力拒/确定性）
+**Code Review**: inline lean — ADR-0009 R-6（原子写回 validate-first+回滚）/R-3（势力创建经015）/ADR-0008（归属经004）COMPLIANT
+**实现**: ConsequenceTransaction（StageCareer/StageControlChange/StageFactionCreation + Commit 原子）· CampaignCommandResult · CampaignSessionService.ResolveSiege/BeginConsequence；WorldState.WithFaction + 投影 CreateFaction/RestoreTo；CampaignSession SetCareer/CreateFaction/RestoreWorld（internal）
 
 ## Context
 

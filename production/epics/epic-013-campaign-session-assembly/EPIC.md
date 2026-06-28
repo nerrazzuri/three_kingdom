@@ -12,7 +12,7 @@
 |---|-------|------|--------|-----|
 | 001 | CampaignSession 骨架 + 配置驱动开局入口 | Integration | ✅ Complete | ADR-0009/0002/0003 |
 | 002 | 日界推进复用全局结算顺序 | Integration | ✅ Complete | ADR-0009/0004 |
-| 003 | 后果原子写回（ConsequenceTransaction） | Integration | Ready | ADR-0009/0008 |
+| 003 | 后果原子写回（ConsequenceTransaction） | Integration | ✅ Complete | ADR-0009/0008 |
 | 004 | 统一会话存档信封 round-trip | Integration | Ready | ADR-0005/0009 |
 | 005 | 目标循环端到端 + 确定性哈希 | Integration | Ready | ADR-0004/0009 |
 | 006 | 共享会话服务抽取 | Integration | Ready | ADR-0002/0009 |

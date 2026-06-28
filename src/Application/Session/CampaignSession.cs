@@ -30,8 +30,8 @@ namespace ThreeKingdom.Application.Session
         /// <summary>配置指纹（进入快照、载入校验）。</summary>
         public ConfigFingerprint Fingerprint { get; }
 
-        /// <summary>生涯快照（CareerState + RetinueState）。</summary>
-        public CareerSnapshot Career { get; }
+        /// <summary>生涯快照（CareerState + RetinueState）。变更只经 <see cref="CampaignSessionService"/> 命令路径。</summary>
+        public CareerSnapshot Career { get; private set; }
 
         /// <summary>世界态（含订阅 GDD_004 的归属投影）。</summary>
         public WorldState World => _worldProjection.Current;
@@ -56,6 +56,11 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>日界推进世界时间（仅供 <see cref="CampaignSessionService"/> 按全局结算顺序编排调用）。</summary>
         internal void AdvanceWorld(int segments) => _worldProjection.AdvanceTime(segments);
+
+        // --- 仅供 ConsequenceTransaction 原子写回 / 回滚使用（R-6）---
+        internal void SetCareer(CareerSnapshot career) => Career = career ?? throw new ArgumentNullException(nameof(career));
+        internal void CreateFaction(Domain.World.FactionRecord faction) => _worldProjection.CreateFaction(faction);
+        internal void RestoreWorld(WorldState world) => _worldProjection.RestoreTo(world);
 
         /// <summary>会话权威态的确定性哈希（生涯 ⊕ 世界）——支撑确定性回归与存档校验。</summary>
         public StateHash ComputeHash()

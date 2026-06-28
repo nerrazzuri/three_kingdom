@@ -40,6 +40,21 @@ namespace ThreeKingdom.Domain.World
             Current = _progression.Advance(Current, segments);
         }
 
+        /// <summary>
+        /// 创建新势力（GDD_015 为势力存续唯一权威，R-3）。供 CampaignSession 自立后果写回编排调用——
+        /// GDD_014 发起请求、015 创建 FactionRecord；非"写归属"（归属仍只经 004 事件）。
+        /// </summary>
+        public void CreateFaction(FactionRecord faction)
+        {
+            Current = Current.WithFaction(faction);
+        }
+
+        /// <summary>恢复到指定世界态（仅供 ConsequenceTransaction 回滚使用，R-6）。</summary>
+        public void RestoreTo(WorldState world)
+        {
+            Current = world ?? throw new ArgumentNullException(nameof(world));
+        }
+
         private readonly WorldProgressionService _progression = new WorldProgressionService();
     }
 }

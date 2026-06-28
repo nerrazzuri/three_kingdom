@@ -114,6 +114,20 @@ namespace ThreeKingdom.Domain.World
             return new WorldState(CurrentTime, _factions, cities, _triggeredEvents, _divergedEvents);
         }
 
+        /// <summary>
+        /// 产出新增一个势力记录后的新状态（仅供势力创建路径使用，story epic-013-003 / R-3）。
+        /// 自立成立时 GDD_014 经此向 GDD_015 创建 FactionRecord（势力存续唯一权威在 015，类比 ADR-0008）。
+        /// 势力 id 已存在则抛（调用方应先查重）。
+        /// </summary>
+        internal WorldState WithFaction(FactionRecord faction)
+        {
+            if (faction is null) throw new ArgumentNullException(nameof(faction));
+            if (FactionById(faction.Id) != null)
+                throw new InvalidOperationException($"势力已存在，不可重复创建：{faction.Id}。");
+            var factions = new List<FactionRecord>(_factions) { faction };
+            return new WorldState(CurrentTime, factions, _cities, _triggeredEvents, _divergedEvents);
+        }
+
         /// <summary>该事件 id 是否已触发。</summary>
         public bool IsTriggered(string eventId)
         {

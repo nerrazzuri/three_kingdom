@@ -68,5 +68,41 @@ namespace ThreeKingdom.Application.Session
             session.AdvanceWorld(segments);
             return session;
         }
+
+        /// <summary>开一个后果原子写回事务（ADR-0009 §R-6）。调用方暂存变更后 <see cref="ConsequenceTransaction.Commit"/>。</summary>
+        public ConsequenceTransaction BeginConsequence(CampaignSession session)
+            => new ConsequenceTransaction(session ?? throw new ArgumentNullException(nameof(session)));
+
+        private readonly GovernorOutcomeService _governorOutcome = new GovernorOutcomeService();
+
+        /// <summary>
+        /// 守城开局事件后果原子写回（TR-session-002/004）。胜→功绩/信任（生涯）；
+        /// 败→生涯转在野（合法可继续）+ 失城经 GDD_004 控制权变更。全程经 <see cref="ConsequenceTransaction"/> 原子提交。
+        /// </summary>
+        public CampaignCommandResult ResolveSiege(
+            CampaignSession session, SiegeOutcome outcome, GovernorStartConfig config, SiegeContext context)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (config is null) throw new ArgumentNullException(nameof(config));
+
+            ConsequenceTransaction tx = BeginConsequence(session);
+
+            if (outcome == SiegeOutcome.Defended)
+            {
+                CareerCommandResult win = _governorOutcome.ResolveDefended(session.Career, config);
+                if (!win.Applied)
+                    return CampaignCommandResult.Failure(CampaignErrorCode.InvalidConfig, "守城胜结算失败：" + win.Detail);
+                tx.StageCareer(win.Snapshot);   // 归属不变
+            }
+            else
+            {
+                CareerSnapshot wandering = _governorOutcome.ResolveFallen(session.Career);  // 罢官转在野
+                tx.StageCareer(wandering)
+                  .StageControlChange(context.City, context.EnemyFaction, context.EnemyGarrison, ChangeCause.SiegeDefenseLost);
+            }
+
+            return tx.Commit();
+        }
     }
 }
+
