@@ -1,12 +1,12 @@
 # Story 006: WorldState 存档 round-trip
 
 > **Epic**: 条件历史世界模型
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Integration
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: M / 1d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-28
 
 ## Context
 
@@ -86,8 +86,19 @@
 ## Test Evidence
 
 **Story Type**: Integration
-**Required evidence**: `tests/integration/world/worldstate_save_roundtrip_test.cs` — must exist and pass
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/World/WorldSaveRoundtripTests.cs` — must exist and pass
+**Status**: [x] Created — 8 test functions, all passing（全套 556/556 绿，-warnaserror 0）
+**Path note**: 集成测试落统一 NUnit 工程（沿 epic-001 约定），codec round-trip via string，无 I/O。
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-28
+**Criteria**: 5/5 passing（全部 COVERED）
+**Deviations / Decisions**: ADVISORY — 集成测试落统一工程。世界段独立 `WorldSaveCodec`（版本化 DTO + 规范文本，复用 Persistence 的 SaveVersion/ConfigFingerprint/SaveFormatException），与生涯段 codec（11-5）同构；物理统一信封（三段合一 + 原子写）属 epic-009 复用，本 story 只产「世界 DTO 段」（GDD_013 同边界）。
+**Test Evidence**: Integration — `tests/unit/ThreeKingdom.Domain.Tests/World/WorldSaveRoundtripTests.cs`（8 测；全套 556/556 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean，ADR-0005（版本化 DTO + 禁 Unity 序列化 + 版本/指纹校验拒不部分载入）/ADR-0002 COMPLIANT
+**实现文件**: `src/Domain/World/`（WorldSaveState/WorldSaveCodec）
 
 ---
 

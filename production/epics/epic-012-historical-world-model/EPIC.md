@@ -3,7 +3,7 @@
 > **Layer**: Feature（Meta 连接层）
 > **GDD**: design/gdd/gdd-015-historical-world-model.md
 > **Architecture Module**: World Model Domain（WorldState + 历史事件触发 + 抽象结算）
-> **Status**: Ready
+> **Status**: ✅ Complete（6/6）
 > **Stories**: 6 stories（见下表）
 
 ## Stories
@@ -15,7 +15,7 @@
 | 003 | 分叉传播（下游按 EventId 稳定序重评估） | Logic | ✅ Complete | ADR-0007/0004 |
 | 004 | 城池归属只读投影（订阅 GDD_004 控制权变更） | Integration | ✅ Complete | ADR-0008/0007 |
 | 005 | 抽象结算器（不在场势力混战） | Logic | ✅ Complete | ADR-0007/0004 |
-| 006 | WorldState 存档 round-trip | Integration | Ready | ADR-0005 |
+| 006 | WorldState 存档 round-trip | Integration | ✅ Complete | ADR-0005 |
 
 ## Overview
 
