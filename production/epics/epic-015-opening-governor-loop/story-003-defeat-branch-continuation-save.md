@@ -1,12 +1,12 @@
 # Story 003: 败支后果——在野延续存读档 + 部曲保留验证
 
 > **Epic**: Opening Governor Loop（太守开局循环 / M02）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Assembly（Integration 装配层）
 > **Type**: Integration
 > **Estimate**: S（2–3 h，纯测试，无新生产代码）
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-29
 
 ## Context
 
@@ -99,7 +99,7 @@
 **Required evidence**:
 - `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignOpeningDefeatBranchTests.cs` — 必须存在且全绿
 
-**Status**: [ ] 尚未创建
+**Status**: [x] `CampaignOpeningDefeatBranchTests.cs` — 5/5 通过（618/618 全绿）
 
 ---
 
@@ -107,3 +107,12 @@
 
 - Depends on: Story 001 DONE（确认败支 Advance 路径通是本 story 的前置基线）
 - Unlocks: Story 004（败支哈希重放基线）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-29
+**Criteria**: 4/4 passing（+1 二次 round-trip 稳定性副验证）
+**Deviations**: None
+**Test Evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignOpeningDefeatBranchTests.cs` — 5 tests, 5/5 pass（618/618 全绿）
+**Code Review**: Complete — APPROVED（内联 review 2026-06-29，Lean 模式）

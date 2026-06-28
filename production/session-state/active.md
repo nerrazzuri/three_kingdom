@@ -958,8 +958,9 @@ ADR-0003（数据驱动配置的正式锁定）。
 
 - **story-001 ✅ Complete**（2026-06-29）：/code-review APPROVED → /story-done COMPLETE；606/606 全绿
 - **story-002 ✅ Complete**（2026-06-29）：胜支配置驱动生涯初值 + 胜支存读档；7 测试；613/613 全绿；内联 review APPROVED
+- **story-003 ✅ Complete**（2026-06-29）：败支在野延续存读档 + 部曲保留；5 测试；618/618 全绿；内联 review APPROVED
 
 ### ▶ 下一步
-- story-003：败支在野延续存读档 + 部曲保留（`CampaignOpeningDefeatBranchTests.cs`）
+- story-004：两支 E2E 确定性——同种子同 hash + 两结果不同 hash（`CampaignOpeningDeterminismTests.cs`）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。
