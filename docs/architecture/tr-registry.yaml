@@ -105,6 +105,27 @@ requirements:
     created: 2026-06-21
     revised: ""
     status: active
+  - id: TR-city-003
+    system: city
+    gdd: design/gdd/gdd-004-city-economy.md
+    requirement: "玩家治理动作（征用军粮/修工事/安抚/征募）经会话命令路径提交并接入日界结算；非法命令（库存/权限/重复分配/无效目标不足）返回稳定错误码且无部分写入（M03 城市治理接入会话）"
+    created: 2026-06-29
+    revised: ""
+    status: active
+  - id: TR-city-004
+    system: city
+    gdd: design/gdd/gdd-004-city-economy.md
+    requirement: "治理选择改变战役条件：至少三条治理动作（如修工事↑守城强度、征用↑补给但↓民心、安抚↑民心）对后续战役/守城产生可解释代价的差异化影响（M03 喂给战争的筛选尺子，非全量经营）"
+    created: 2026-06-29
+    revised: ""
+    status: active
+  - id: TR-city-005
+    system: city
+    gdd: design/gdd/gdd-004-city-economy.md
+    requirement: "治理态（库存/民心/治安/工事/守备/征募池/下一结算时间）存档 round-trip 一致，且日界结算同种子→同结果（确定性，纳入会话状态哈希）"
+    created: 2026-06-29
+    revised: ""
+    status: active
 
   # --- 人物 (GDD_005) ---
   - id: TR-character-001

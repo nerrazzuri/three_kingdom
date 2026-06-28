@@ -965,8 +965,14 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 4/4 stories Complete；新增 20 测试（4+7+5+4）；**622/622 全绿**
 - M02 达成：开局守城胜/败两支均可继续+存读档+部曲保留+城权经004易主+两支确定性哈希
 
+### ▶ M03 epic-016 已建（2026-06-29）
+- 补登 TR-city-003（治理命令经会话）/004（治理改变战役条件）/005（治理存读档确定性）
+- 写 `epic-016-city-governance-loop/EPIC.md`：Feature 层，治理 ADR 0009/0008/0003/0004 全 Accepted
+- **关键发现**：M03 不同于 M01/M02——`CampaignSession` 当前不持城市经济态，`Advance` 仅推世界模型（源码注释预留"M03 接入城市日结"）；会话无治理命令入口。**M03 需新生产代码**。
+- 护栏：单城 MVP + 喂给战争的筛选尺子（不变三国志全量经营）
+
 ### ▶ 下一步
-- **M03 城市治理循环**（epic-016，待建）：`/create-epics epic-016` → `/create-stories` → 逐 story `/dev-story`
+- `/create-stories epic-016-city-governance-loop` 拆 story → 逐 story `/dev-story`
 - 可选并行：M08 敌方 AI 战术层（epic-021，gdd-016 + ADR-0006 已就绪）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。
