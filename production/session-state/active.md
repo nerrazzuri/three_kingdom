@@ -21,6 +21,13 @@
 - **建议处置序**：①廉价校准治理状态 →②编辑级补结算顺序+裁自立权威 →③**裁决方向：先装配可玩太守循环（建议）vs 继续造内核** →④裁决敌方 AI 去留。
 - **下一步等用户裁决**：是否（a）先做廉价治理校准；（b）开"装配集成 epic"；（c）建敌方 AI epic。
 
+## Session Extract — Concern/Advisory 修复批次 2026-06-28
+- 用户要求"先解决所有 Concern+Advisory，再谈可玩性(Blocking)"。已完成 8/9：
+  - 文档波 `4b389e4`：FIX-1 治理状态校准（gdd-index/epics-index/control-manifest v2）· FIX-2 systems-index Meta 层结算顺序+破环 · FIX-3 gdd-016 三缺陷+registry · FIX-4 自立权威裁定（registry 新增 faction_existence）· FIX-5 平衡护栏 · FIX-6 文档完整性。
+  - 代码波 `e993847`：FIX-9 Meta 跨系统链端到端测试（3 测）· FIX-8 战役存档统一信封 CampaignSaveCodec（5 测）。全套 **564/564 绿**。
+- **唯一待定 CON-5（FIX-7 SliceScenario 配置化）**：SliceScenario 已是集中式不可变配置（GameSession 无魔法数）；残留仅"内联字面值 vs 外部数据源"。判断=最好并入 BLK-1 装配（届时建真 SO→不可变配置管线），现在单独做有 throwaway 风险。**已挂起待用户裁决**。
+- **下一步**：讨论 BLK-1/BLK-2 可玩性装配方向。
+
 ---
 
 ## ▶▶▶ 新会话从这里读起（2026-06-27）— Sprint 02 开工：11-1 已实现，待 review/done
