@@ -28,6 +28,13 @@
 - **唯一待定 CON-5（FIX-7 SliceScenario 配置化）**：SliceScenario 已是集中式不可变配置（GameSession 无魔法数）；残留仅"内联字面值 vs 外部数据源"。判断=最好并入 BLK-1 装配（届时建真 SO→不可变配置管线），现在单独做有 throwaway 风险。**已挂起待用户裁决**。
 - **下一步**：讨论 BLK-1/BLK-2 可玩性装配方向。
 
+## Session Extract — 可玩装配路线图 2026-06-28
+- **路线图（权威）**：`production/roadmap-playable-assembly-2026-06-28.md`——把"内核→可玩太守循环"拆为 7 模块 M1~M7（= 未来 epic-013~019），逐模块完成，M7 完成=Unity 可测整段游戏。
+- 模块：M1 会话装配内核 CampaignSession（脊梁）→ M2 场景配置化+战役目录（含 CON-5 收尾）→ M3 回合间治理/推进循环 → M4 敌方AI便宜80% → M5 Meta三屏UI → M6 首个循环内容 → M7 端到端可玩验证+平衡。
+- 依赖：M1→M2→M3→M6→M7；M4 在 M1 后可并行；M5 在 M3 后可并行。
+- 任务清单已建 M1~M7（pending）。**建议先开 M1**（脊梁，解锁其余）。
+- CON-5（SliceScenario 配置化）已并入 M2，不单独做。
+
 ---
 
 ## ▶▶▶ 新会话从这里读起（2026-06-27）— Sprint 02 开工：11-1 已实现，待 review/done
