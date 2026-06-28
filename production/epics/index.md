@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-06-28
+Last Updated: 2026-06-28（epic-015 创建）
 Engine: Unity 6.3 LTS + C#
 Manifest Version: 2 (2026-06-28)
 
@@ -48,9 +48,11 @@ Manifest Version: 2 (2026-06-28)
 
 | Epic | Layer | System | GDD/ADR | Stories | Status |
 |------|-------|--------|---------|---------|--------|
-| [CampaignSession 完整会话装配](epic-013-campaign-session-assembly/EPIC.md) | Assembly | 会话脊梁 | ADR-0009 + systems-index + TR-session-* | 6 stories | ✅ Complete |
+| [CampaignSession 完整会话装配](epic-013-campaign-session-assembly/EPIC.md) | Assembly（M00） | 会话脊梁 | ADR-0009 + systems-index + TR-session-* | 6 stories | ✅ Complete |
+| [场景 / 战役配置目录](epic-014-scenario-catalog/EPIC.md) | Assembly（M01） | 场景目录/数据驱动开局 | ADR-0003/0009 + TR-session-003/city-001 | 2 stories | ✅ Complete |
+| [太守开局循环](epic-015-opening-governor-loop/EPIC.md) | Assembly（M02） | 开局守城→胜败后果→续局 | ADR-0009/0008/0005/0004 + TR-session-004/005 + TR-career-* | 4 stories | 🔨 Ready（待 /create-stories） |
 
-> epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）。ADR-0009 Accepted（2026-06-28，经子代理复审）。首批范围+估算见 EPIC.md §First Sprint Scope。后续装配 epic（M01~M16）见模块规划。
+> epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）；epic-014 = **M01 场景目录**（CON-5 收尾）；epic-015 = **M02 太守开局循环**（开局守城→胜败两支续局+存读档）。ADR-0009 Accepted（2026-06-28，经子代理复审）。后续装配 epic（M03~M16，epic-016~028）见模块规划 §6 切分表。
 
 ## 后续层（未展开）
 
@@ -58,16 +60,19 @@ Manifest Version: 2 (2026-06-28)
 
 ## 统计
 
-- 13 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 1 Assembly）全部 ✅ Complete。
-- 50 stories 全部 ✅ Complete（含 epic-013 装配 6 story）；当前本地回归 **593/593 全绿**。
-- **epic-013 CampaignSession = M00 脊梁达成**：开局→推进→战果→后果原子写回(004/015/014)→存档 round-trip→续推 端到端贯通、确定性、失败可继续。
+- 15 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly）；14 ✅ Complete + epic-015 🔨 Ready。
+- 52 stories ✅ Complete（含 epic-013 装配 6 + epic-014 场景目录 2）；当前本地回归 **602/602 全绿，`-warnaserror` 0 warning**。
+- **M00 脊梁达成**（epic-013）：开局→推进→战果→后果原子写回(004/015/014)→存档 round-trip→续推 端到端贯通、确定性、失败可继续。
+- **M01 场景目录达成**（epic-014）：多场景按 id 开局 + 数据驱动 SliceScenarioData（CON-5 收尾）。
 - 全部 governing ADR 为 Accepted（ADR-0001~0009）；无 Blocked story。
-- GDD_016 敌方 AI 仍为 Reviewed：有 GDD + ADR-0006，尚无 epic/story/实现。
+- GDD_016 敌方 AI 仍为 Reviewed：有 GDD + ADR-0006，尚无 epic/story/实现（epic-021 待建）。
 
 ## 下一步
 
-★ **全部 12 epics（44 stories）已 ✅ Complete（2026-06-28）** — Foundation/Core/Presentation/Meta 的 Domain 内核与可测展示逻辑已落地；当前本地回归 **564/564 全绿，`-warnaserror` 0 warning**。
+★ **M00/M01 装配完成（2026-06-28）**，进入 **M02 太守开局循环**（epic-015，🔨 Ready）。
 
-**下一阶段建议**：停止继续扩内核，优先创建“太守循环装配”集成 epic，把 Career / World / Battle / CityControl / Save 段接入可运行 session，并补一个目标循环端到端测试。详见 `docs/reviews/full-game-review-2026-06-28.md` 的 BLK-1。
+**当前动作**：`/create-stories epic-015-opening-governor-loop` 把 4 个拟定 story（开局围城编排 / 胜支开生涯 / 败支在野 / 两支 E2E 存档）拆为可实现 story，再逐 story `/dev-story`。
 
-**并行裁决项**：GDD_016 敌方 AI（ADR-0006）需要决定是否进入 MVP 装配期；若进入，应先建 epic/story 并修复 GDD_016 设计缺口；若不进入，应在概念/控制清单中显式标注 MVP 不含敌方 AI。
+**后续装配序**（module-plan §6）：M03 城市治理（epic-016）→ M04 情报军议装配（epic-017）→ M05 战前准备装配（epic-018）→ M08 敌方 AI 战术层（epic-021，可与 M03 并行）。
+
+**并行裁决项**：GDD_016 敌方 AI（ADR-0006）是否进入装配期；若进入应先建 epic-021 并修 GDD_016 缺口（CON-3 已修），否则在控制清单显式标注 MVP 不含敌方 AI。
