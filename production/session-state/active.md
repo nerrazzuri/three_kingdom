@@ -875,3 +875,10 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 核心判断：工程分期稳健（Domain已完成、BattleOutcome是稳定接缝、后置仅Presentation、零返工）；两代偿路线确是合规非按钮条件链。但只是兵法沙盒**底线**（2消耗路线），非**支柱**（杠杆相乘火×夜×伏）——过MVP门≠展示护城河。
 - 6条护栏已落 module-plan §5b.5 + epic-013 验收：①复盘穿透CausalTrace ②两路线非同质单变量可翻盘 ③非战斗状态作二元成立门非百分比 ④暴露真实可败 ⑤🔴M06硬退出门(宣称兵法沙盒MVP完成前必接≥1机动招式:假退伏击/火攻) ⑥BattleOutcome契约冻结。
 - **★ 全部评审与修订完成，可开工。** 等用户启动：/create-stories epic-013 → /story-readiness S1 → /dev-story。
+
+## Session Extract — epic-013 CampaignSession 装配完成 2026-06-28
+- ★ **开炮成功，epic-013 全 6/6 Complete**（M00 脊梁达成）。提交链：S1 `ac273be`→S2 `2ebff22`→S3 `d6c846d`→S4 `aff7ca2`→S5 `2bc14ef`→S6 `6ff110f`。全套 **593/593 绿**，-warnaserror 0。
+- S1 CampaignSession 骨架+配置驱动开局（R-5 闸门）· S2 日界推进复用全局序 · S3 后果原子写回 ConsequenceTransaction（R-3 势力创建经015、归属经004）· S4 统一会话存档 round-trip（复用 FIX-8）· S5 目标循环 E2E+确定性哈希（CD护栏①⑥ BattleOutcomeSummary）· S6 新旧会话共存（YAGNI 延后实质共享抽取至 M03+）。
+- 端到端贯通：开局→推进→战果→后果(004/015/014)→存档round-trip→续推，确定性+失败可继续。
+- 保留 GameSession 为 slice fixture；新建 CampaignSession（src/Application/Session/Campaign*）。
+- **▶ 下一步（按 full-game-loop-module-plan）**：在 M00 脊梁上叠加——M01 场景目录(epic-014)/M03 治理循环(epic-015)/M08 敌方AI战术层(epic-021)。可选先走 sprint-03 收尾门（smoke/team-qa/retro）。

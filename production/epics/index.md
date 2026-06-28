@@ -58,10 +58,10 @@ Manifest Version: 2 (2026-06-28)
 
 ## 统计
 
-- 12 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta）全部 ✅ Complete。
-- 44 stories 全部 ✅ Complete；Sprint 02 已完成 11/11（Must 5 + Should 3 + Nice 3）。
-- 已实现并测试通过的范围为 Domain / Application / Presentation 逻辑内核与 Slice UX；**不等于完整可玩太守循环已装配完成**。
-- 全部 governing ADR 为 Accepted（ADR-0001~0008）；无 Blocked story。
+- 13 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 1 Assembly）全部 ✅ Complete。
+- 50 stories 全部 ✅ Complete（含 epic-013 装配 6 story）；当前本地回归 **593/593 全绿**。
+- **epic-013 CampaignSession = M00 脊梁达成**：开局→推进→战果→后果原子写回(004/015/014)→存档 round-trip→续推 端到端贯通、确定性、失败可继续。
+- 全部 governing ADR 为 Accepted（ADR-0001~0009）；无 Blocked story。
 - GDD_016 敌方 AI 仍为 Reviewed：有 GDD + ADR-0006，尚无 epic/story/实现。
 
 ## 下一步
