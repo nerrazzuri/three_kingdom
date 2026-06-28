@@ -3,7 +3,7 @@
 > **Layer**: Feature（Meta 连接层）
 > **GDD**: design/gdd/gdd-014-campaign-and-career.md
 > **Architecture Module**: Career/Meta Domain（生涯状态 + 晋升/自立结算）
-> **Status**: Ready
+> **Status**: ✅ Complete（5/5，2026-06-28）
 > **Stories**: 5 stories（见下表）
 
 ## Stories

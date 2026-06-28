@@ -7,7 +7,10 @@
 > **▶ 批次完成（2026-06-27）**：用户授权「把 Must 完成后继续所有 Should」——**全部 8 story（5 Must + 3 Should）已实现+审查+收尾+push**。每 story：实现+测试→inline lean review→story-done→commit+push。**全套 dotnet 536/536 绿，-warnaserror 0。**
 > **提交链（push tk/main）**：11-1 `cf00edb` · 12-1 `6414b32` · 11-2 `51039f6` · 11-3 `dfed215` · 12-2 `1003b4e` · 11-4 `ff3b284` · 12-3 `43dd9af` · **11-5 生涯存档**（CareerSaveCodec 版本化 DTO+版本/指纹校验+LordMissionLog；536/536）。
 > **★ Sprint 02 Must+Should 全清（8/8）。epic-011 = 5/5 Complete。** 仅剩 Nice(3)：12-4 归属投影（已被 11-4 的 ICityControlAuthority 解锁）/12-5 抽象结算/12-6 世界存档——**未做（用户未要求）**。
-> **下一步候选**：① 做 Nice 三项收尾 epic-012；② `/smoke-check sprint`→`/team-qa sprint`→`/retrospective` 走 Sprint 02 收尾门；③ 判 epic-011 关闭。
+> **✅ Sprint 02 全部收尾完成（2026-06-28）**：11/11 story（Must 5 + Should 3 + Nice 3）实现+审查+收尾+push（556/556 绿）。`/smoke-check` PASS（smoke-2026-06-28.md）· `/team-qa` **APPROVED**（qa-signoff-sprint-02-2026-06-28.md，0 缺陷）· `/retrospective`（retro-sprint-02-2026-06-28.md）· **epic-011 5/5 + epic-012 6/6 判 Complete**（EPIC.md + epics/index.md 已标 ✅）。
+> **HEAD 待推**：close-out 文档批次（smoke/qa-signoff/retro/epic 状态/index/active）。提交链见下方提交序段。
+> **下一步候选**：① 敌方 AI（gdd-016/ADR-0006，仍 Reviewed）建 epic 进实现；② Presentation 把 Meta 层接 UI；③ 存档三段统一信封整合（retro 行动项 #2）；④ 统一测试路径约定（retro 行动项 #1）。
+<!-- QA RUN: 2026-06-28 | Sprint: sprint-02 | Verdict: PASS（APPROVED）| Report: production/qa/qa-signoff-sprint-02-2026-06-28.md -->
 
 ---
 

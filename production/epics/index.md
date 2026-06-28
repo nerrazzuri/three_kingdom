@@ -36,11 +36,12 @@ Manifest Version: 1 (2026-06-21)
 
 | Epic | Layer | System | GDD | Stories | Status |
 |------|-------|--------|-----|---------|--------|
-| [战役与生涯](epic-011-campaign-career/EPIC.md) | Feature | 生涯/晋升/自立 | gdd-014 | 5 stories | Ready |
-| [条件历史世界模型](epic-012-historical-world-model/EPIC.md) | Feature | 世界骨架/历史推进 | gdd-015 | 6 stories | Ready |
+| [战役与生涯](epic-011-campaign-career/EPIC.md) | Feature | 生涯/晋升/自立 | gdd-014 | 5 stories | ✅ Complete |
+| [条件历史世界模型](epic-012-historical-world-model/EPIC.md) | Feature | 世界骨架/历史推进 | gdd-015 | 6 stories | ✅ Complete |
 
 > 这两个 Meta epic 把单场战役连接成可持续人生（014）+ 提供历史世界骨架（015）。
-> 014/015 已 Locked for Slice；governing ADR-0007/0008 + 0002~0005 全 Accepted；无 untraced 需求。
+> **Sprint 02（2026-06-28）完成全部 11 story（Must 5 + Should 3 + Nice 3）**；测试 556/556 绿；team-qa APPROVED。
+> 014/015 governing ADR-0007/0008 + 0002~0005 全 Accepted；无 untraced 需求。
 > 敌方 AI（gdd-016，ADR-0006）仍 Reviewed，未建 epic。
 
 ## 后续层（未展开）
