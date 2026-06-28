@@ -1,12 +1,12 @@
 # Story 004: 城池归属只读投影（订阅 GDD_004 控制权变更）
 
 > **Epic**: 条件历史世界模型
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（Meta 连接层）
 > **Type**: Integration
-> **Estimate**: [待 sprint 规划填]
+> **Estimate**: S / 0.5d（sprint-02 / sprint-status.yaml）
 > **Manifest Version**: 1 (2026-06-21)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-06-28
 
 ## Context
 
@@ -84,8 +84,19 @@
 ## Test Evidence
 
 **Story Type**: Integration
-**Required evidence**: `tests/integration/world/city_ownership_projection_test.cs` OR 文档化 playtest
-**Status**: [ ] Not yet created
+**Required evidence**: `tests/unit/ThreeKingdom.Domain.Tests/World/WorldCityProjectionTests.cs` — must exist and pass
+**Status**: [x] Created — 6 test functions, all passing（全套 542/542 绿，-warnaserror 0）
+**Path note**: 集成测试落统一 NUnit 工程（沿 epic-001 约定）。
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-28
+**Criteria**: 4/4 passing（全部 COVERED）
+**Deviations / Decisions**: ADVISORY — 测试路径统一工程。复用 11-4 已落地的 `ICityControlAuthority`/`CityControlChanged`（ADR-0008，epic-004 契约）。`WorldCityProjection` 唯一更新路径为订阅事件（反射断言无 public 写归属方法）；并发裁定按调用序（GDD_001 日界全局序）由 004 单点结算，确定可复现。
+**Test Evidence**: Integration — `tests/unit/ThreeKingdom.Domain.Tests/World/WorldCityProjectionTests.cs`（6 测；全套 542/542 绿，-warnaserror 0）
+**Code Review**: Complete — inline lean，ADR-0008（归属唯一权威 + 事件订阅，世界模型不独立写）/ADR-0007（只读投影）COMPLIANT
+**实现文件**: `src/Domain/World/WorldCityProjection.cs` + WorldState 追加 internal `WithCityOwnership`
 
 ---
 

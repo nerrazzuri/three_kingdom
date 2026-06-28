@@ -93,6 +93,27 @@ namespace ThreeKingdom.Domain.World
         internal WorldState WithTime(WorldTime newTime)
             => new WorldState(newTime, _factions, _cities, _triggeredEvents, _divergedEvents);
 
+        /// <summary>
+        /// 产出某城归属投影更新后的新状态（仅供归属投影同步服务使用，story-004）。
+        /// 既有该城则替换其只读投影，否则新增；其余字段不变。归属<b>权威</b>在 GDD_004，此处仅同步反映（ADR-0008）。
+        /// </summary>
+        internal WorldState WithCityOwnership(CityId city, FactionId owner, int garrison)
+        {
+            var cities = new List<CityOwnership>(_cities.Length + 1);
+            bool replaced = false;
+            foreach (CityOwnership c in _cities)
+            {
+                if (c.City == city)
+                {
+                    cities.Add(new CityOwnership(city, owner, garrison));
+                    replaced = true;
+                }
+                else cities.Add(c);
+            }
+            if (!replaced) cities.Add(new CityOwnership(city, owner, garrison));
+            return new WorldState(CurrentTime, _factions, cities, _triggeredEvents, _divergedEvents);
+        }
+
         /// <summary>该事件 id 是否已触发。</summary>
         public bool IsTriggered(string eventId)
         {
