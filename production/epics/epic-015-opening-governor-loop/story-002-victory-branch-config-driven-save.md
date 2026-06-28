@@ -1,12 +1,12 @@
 # Story 002: 胜支后果——配置驱动生涯初值 + 胜支存读档
 
 > **Epic**: Opening Governor Loop（太守开局循环 / M02）
-> **Status**: Ready
 > **Layer**: Assembly（Integration 装配层）
 > **Type**: Integration
 > **Estimate**: S（2–3 h，纯测试，无新生产代码）
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —
+> **Status**: Complete
+> **Last Updated**: 2026-06-29
 
 ## Context
 
@@ -106,7 +106,7 @@
 **Required evidence**:
 - `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignOpeningVictoryBranchTests.cs` — 必须存在且全绿
 
-**Status**: [ ] 尚未创建
+**Status**: [x] `CampaignOpeningVictoryBranchTests.cs` — 7/7 通过（613/613 全绿）
 
 ---
 
@@ -114,3 +114,12 @@
 
 - Depends on: Story 001 DONE（确认 Advance 路径通，本 story 复用同一 test fixture 结构）
 - Unlocks: Story 004（两支确定性哈希重放需要本 story 确立的胜支基线）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-29
+**Criteria**: 5/5 passing（+1 哈希区分力副验证）
+**Deviations**: None
+**Test Evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignOpeningVictoryBranchTests.cs` — 7 tests, 7/7 pass（613/613 全绿）
+**Code Review**: Complete — APPROVED（内联 review 2026-06-29，Lean 模式）

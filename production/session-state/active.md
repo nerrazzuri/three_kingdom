@@ -957,8 +957,9 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 下一步：`/code-review` → `/story-done` story-001，再继续 story-002
 
 - **story-001 ✅ Complete**（2026-06-29）：/code-review APPROVED → /story-done COMPLETE；606/606 全绿
+- **story-002 ✅ Complete**（2026-06-29）：胜支配置驱动生涯初值 + 胜支存读档；7 测试；613/613 全绿；内联 review APPROVED
 
 ### ▶ 下一步
-- story-002：`/story-readiness` → `/dev-story` story-002-victory-branch-config-driven-save
+- story-003：败支在野延续存读档 + 部曲保留（`CampaignOpeningDefeatBranchTests.cs`）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。
