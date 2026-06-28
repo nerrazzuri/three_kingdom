@@ -3,8 +3,19 @@
 > **Layer**: Feature（Assembly 连接层）
 > **GDD**: 横切 `gdd-001/004/009/010/011/012/013/014/015` + `systems-index.md`
 > **Architecture Module**: Application Session Assembly（CampaignSession / CampaignSessionService）
-> **Status**: Ready（ADR-0009 已 Accepted 2026-06-28；可运行 `/create-stories epic-013-campaign-session-assembly`）
-> **Stories**: 待创建——首批范围见下方 §First Sprint Scope（约 6 story，全装配）
+> **Status**: In Progress（ADR-0009 Accepted；6 story 已创建 2026-06-28）
+> **Stories**: 6（story-001~006，全 Integration；见下表与 §First Sprint Scope）
+
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | CampaignSession 骨架 + 配置驱动开局入口 | Integration | Ready | ADR-0009/0002/0003 |
+| 002 | 日界推进复用全局结算顺序 | Integration | Ready | ADR-0009/0004 |
+| 003 | 后果原子写回（ConsequenceTransaction） | Integration | Ready | ADR-0009/0008 |
+| 004 | 统一会话存档信封 round-trip | Integration | Ready | ADR-0005/0009 |
+| 005 | 目标循环端到端 + 确定性哈希 | Integration | Ready | ADR-0004/0009 |
+| 006 | 共享会话服务抽取 | Integration | Ready | ADR-0002/0009 |
 
 ## Overview
 
