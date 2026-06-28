@@ -1,12 +1,12 @@
 # Story 001: 开局围城续局可用性——胜败两支 Advance 均可执行
 
 > **Epic**: Opening Governor Loop（太守开局循环 / M02）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Assembly（Integration 装配层）
 > **Type**: Integration
 > **Estimate**: S（1–2 h，纯测试，无新生产代码）
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-29
 
 ## Context
 
@@ -94,7 +94,7 @@
 **Required evidence**:
 - `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignOpeningContinuabilityTests.cs` — 必须存在且全绿
 
-**Status**: [ ] 尚未创建
+**Status**: [x] `CampaignOpeningContinuabilityTests.cs` — 4/4 通过（606/606 全绿）
 
 ---
 
@@ -102,3 +102,12 @@
 
 - Depends on: `production/epics/epic-013-campaign-session-assembly/` 全部 Complete（M00 脊梁，已满足）
 - Unlocks: Story 002（胜支存读档）、Story 003（败支存读档）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-29
+**Criteria**: 5/5 passing
+**Deviations**: None
+**Test Evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignOpeningContinuabilityTests.cs` — 4 tests, 4/4 pass（606/606 全绿）
+**Code Review**: Complete — APPROVED（`/code-review` 2026-06-29）

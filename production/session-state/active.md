@@ -948,7 +948,17 @@ ADR-0003（数据驱动配置的正式锁定）。
 - S003：defeat-then-advance 存读档（SaveTests 仅 advance-before-defeat）
 - S004：TR-session-005 Session 层确定性验证（含胜/败两支，两结果 hash 不同）
 
+### ▶ epic-015 story-001 实现完成（2026-06-29）
+
+- 新增 `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignOpeningContinuabilityTests.cs`（4 测试）
+- **606/606 全绿，`-warnaserror` 0**（+4 新测）
+- 覆盖全部 5 条 AC：胜/败支 Advance 不抛、时间递增、在野态不自动复职
+- 零生产代码变更（复用既有 `CampaignSessionService.Advance`）
+- 下一步：`/code-review` → `/story-done` story-001，再继续 story-002
+
+- **story-001 ✅ Complete**（2026-06-29）：/code-review APPROVED → /story-done COMPLETE；606/606 全绿
+
 ### ▶ 下一步
-1. **story-001 开始实现**：`/story-readiness production/epics/epic-015-opening-governor-loop/story-001-opening-siege-continuability.md` 确认 Ready 再 `/dev-story`。
+- story-002：`/story-readiness` → `/dev-story` story-002-victory-branch-config-driven-save
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。
