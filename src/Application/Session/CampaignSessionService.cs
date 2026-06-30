@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ThreeKingdom.Application.Career;
+using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
@@ -280,6 +281,77 @@ namespace ThreeKingdom.Application.Session
             return result;
         }
 
+        // --- 战斗命令（M06 / TR-battle-001/002/003）。开战须有 CommittedPlan；阶段经 BattleResolver 原子。---
+
+        private readonly BattleResolver _battleResolver = new BattleResolver();
+        private readonly TacticRecognizer _tacticRecognizer = new TacticRecognizer();
+
+        /// <summary>
+        /// 开战（GDD_010）：以 M05 <see cref="CommittedPlan"/> 为可执行战役初始条件，建立战斗快照
+        /// （玩家 + 确定性预设敌方单位）。无 CommittedPlan → <see cref="CampaignErrorCode.PreparationDisabled"/> 拒绝。
+        /// 敌方为确定性预设（非智能 AI；智能 AI 属 M08/epic-021）。
+        /// </summary>
+        public CampaignCommandResult StartBattle(
+            CampaignSession session, IReadOnlyList<BattleUnitState> units,
+            BattleConfig config, ulong seed, TacticChainConfig tacticChains)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (units is null) throw new ArgumentNullException(nameof(units));
+            if (config is null) throw new ArgumentNullException(nameof(config));
+            if (tacticChains is null) throw new ArgumentNullException(nameof(tacticChains));
+            if (!session.HasPreparation || session.CommittedPlan == null)
+                return CampaignCommandResult.Failure(CampaignErrorCode.PreparationDisabled,
+                    "开战需先有已提交计划（可执行战役初始条件）。");
+
+            var snapshot = new BattleSnapshot(units, new DetectionState(), session.Fingerprint.ToString());
+            session.StartBattleState(snapshot, config, seed, tacticChains);
+            return CampaignCommandResult.Success();
+        }
+
+        /// <summary>
+        /// 解析一个战斗阶段（GDD_010 / TR-battle-001/003）：经 <see cref="BattleResolver.ResolvePhase"/> 稳定管线解析；
+        /// 成功更新会话战斗快照，异常原子回滚（会话战斗态不变）。同快照+配置+种子+命令流 → 同 hash。
+        /// </summary>
+        public BattleResolution ResolveBattlePhase(CampaignSession session, IReadOnlyList<BattleOrder> orders)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (orders is null) throw new ArgumentNullException(nameof(orders));
+            if (!session.HasBattle)
+                throw new InvalidOperationException("会话未开战。");
+
+            BattleResolution resolution = _battleResolver.ResolvePhase(
+                session.Battle!, orders, session.BattleSeed, session.BattleConfig!);
+
+            if (resolution.Committed)
+                session.SetBattle(resolution.State);   // 成功才更新（回滚则战斗态不变）
+
+            return resolution;
+        }
+
+        /// <summary>
+        /// 标记一条战斗中满足的兵法条件（GDD_010）。条件由战斗命令/事件经确定性映射累积，
+        /// 供 <see cref="RecognizeTactics"/> 事后识别——兵法是条件涌现，非无条件按钮。
+        /// </summary>
+        public void MarkTacticCondition(CampaignSession session, TacticCondition condition)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasBattle) throw new InvalidOperationException("会话未开战。");
+            session.AddBattleCondition(condition);
+        }
+
+        /// <summary>
+        /// 事后识别涌现兵法（GDD_010 / TR-battle-002）：对会话累积的满足条件集经 <see cref="TacticRecognizer"/> 打复盘标签。
+        /// 仅当某链<b>全部</b>条件成立才识别（含 FeintAmbush 机动招式）；条件不全不识别（无无条件按钮）。
+        /// </summary>
+        public IReadOnlyList<RecognizedTactic> RecognizeTactics(CampaignSession session)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasBattle) throw new InvalidOperationException("会话未开战。");
+
+            var context = new RetrospectiveContext(session.BattleConditions);
+            return _tacticRecognizer.Recognize(context, session.TacticChains!);
+        }
+
         /// <summary>
         /// 按场景 id 从目录配置驱动开局（M01 / ADR-0003）。未知 id → <see cref="CampaignErrorCode.SessionNotFound"/>。
         /// 切换场景仅换 id、无代码改动。
@@ -393,6 +465,23 @@ namespace ThreeKingdom.Application.Session
                 }
             }
 
+            // 战斗段（M06 / TR-battle-001）：单位 + 侦测 + 种子 + 已满足兵法条件（配置数据驱动，载入方提供）。
+            if (session.HasBattle)
+            {
+                head += "battle\t" + session.BattleSeed + "\t" + session.Battle!.ConfigFingerprint + "\n";
+                foreach (BattleUnitState u in session.Battle!.Units.OrderBy(u => u.Id.Value, StringComparer.Ordinal))
+                    head += "battleunit\t" + u.Id.Value + "\t" + u.Faction.Value + "\t" + u.Region.Value + "\t" + u.Force
+                          + "\t" + u.Morale.Raw + "\t" + u.Fatigue.Raw + "\t" + u.Discipline.Raw
+                          + "\t" + u.TerrainMod.Raw + "\t" + u.PostureMod.Raw + "\t" + u.Support.Raw + "\n";
+                foreach (KeyValuePair<(FactionId Observer, BattleUnitId Target), Awareness> d in
+                         session.Battle!.Detection.Entries
+                            .OrderBy(e => e.Key.Observer.Value, StringComparer.Ordinal)
+                            .ThenBy(e => e.Key.Target.Value, StringComparer.Ordinal))
+                    head += "detection\t" + d.Key.Observer.Value + "\t" + d.Key.Target.Value + "\t" + (int)d.Value + "\n";
+                foreach (TacticCondition c in session.BattleConditions.OrderBy(c => (int)c))
+                    head += "battlecond\t" + (int)c + "\n";
+            }
+
             return head + BodyMarker + "\n" + body;
         }
 
@@ -406,7 +495,8 @@ namespace ThreeKingdom.Application.Session
             FixedPoint populationPressure = default,
             IntelConfig? intelConfig = null, SessionCouncilSetup? councilSetup = null,
             PreparationConfig? prepConfig = null,
-            IReadOnlyCollection<RegionId>? reachableRegions = null, IReadOnlyCollection<OrderId>? authorizedOrders = null)
+            IReadOnlyCollection<RegionId>? reachableRegions = null, IReadOnlyCollection<OrderId>? authorizedOrders = null,
+            BattleConfig? battleConfig = null, TacticChainConfig? tacticChains = null)
         {
             if (text is null) throw new SaveFormatException("会话存档文本为 null。");
             string[] lines = text.Split('\n');
@@ -489,6 +579,42 @@ namespace ThreeKingdom.Application.Session
                 }
             }
 
+            // 可选战斗段（M06 / TR-battle-001）：单位 + 侦测 + 种子 + 已满足兵法条件；配置由载入方提供。
+            BattleSnapshot? battle = null;
+            ulong battleSeed = 0;
+            var battleConditions = new List<TacticCondition>();
+            if (idx < lines.Length && lines[idx].StartsWith("battle\t", StringComparison.Ordinal))
+            {
+                string[] bh = lines[idx].Split('\t');
+                if (bh.Length != 3) throw new SaveFormatException($"战斗段头格式不符：「{lines[idx]}」。");
+                battleSeed = ulong.Parse(bh[1]);
+                string battleFingerprint = bh[2];
+                idx++;
+
+                var units = new List<BattleUnitState>();
+                while (idx < lines.Length && lines[idx].StartsWith("battleunit\t", StringComparison.Ordinal))
+                {
+                    units.Add(ParseBattleUnit(lines[idx]));
+                    idx++;
+                }
+                var detection = new DetectionState();
+                while (idx < lines.Length && lines[idx].StartsWith("detection\t", StringComparison.Ordinal))
+                {
+                    string[] dp = lines[idx].Split('\t');
+                    if (dp.Length != 4) throw new SaveFormatException($"侦测段格式不符：「{lines[idx]}」。");
+                    detection.Set(new FactionId(dp[1]), new BattleUnitId(dp[2]), (Awareness)int.Parse(dp[3]));
+                    idx++;
+                }
+                while (idx < lines.Length && lines[idx].StartsWith("battlecond\t", StringComparison.Ordinal))
+                {
+                    string[] cp = lines[idx].Split('\t');
+                    if (cp.Length != 2) throw new SaveFormatException($"兵法条件段格式不符：「{lines[idx]}」。");
+                    battleConditions.Add((TacticCondition)int.Parse(cp[1]));
+                    idx++;
+                }
+                battle = new BattleSnapshot(units, detection, battleFingerprint);
+            }
+
             if (idx >= lines.Length || lines[idx] != BodyMarker) throw new SaveFormatException("缺会话体标记。");
             string body = string.Join("\n", new ArraySegment<string>(lines, idx + 1, lines.Length - idx - 1));
 
@@ -507,6 +633,8 @@ namespace ThreeKingdom.Application.Session
                 throw new SaveFormatException("存档含情报态，但未提供情报配置（intelConfig）以恢复。");
             if (pool != null && prepConfig == null)
                 throw new SaveFormatException("存档含战役准备态，但未提供准备配置（prepConfig）以恢复。");
+            if (battle != null && (battleConfig == null || tacticChains == null))
+                throw new SaveFormatException("存档含战斗态，但未提供战斗配置（battleConfig/tacticChains）以恢复。");
 
             return new CampaignSession(
                 id, scenario, expectedFingerprint, state.Career.Snapshot, projection, authority,
@@ -514,7 +642,28 @@ namespace ThreeKingdom.Application.Session
                 logisticsHolding: cityLogistics, governanceConfig: governanceConfig,
                 truth: truth, playerIntel: playerIntel, intelConfig: intelConfig, council: councilSetup,
                 pool: pool, draft: draft, prepConfig: prepConfig,
-                reachableRegions: reachableRegions, authorizedOrders: authorizedOrders, committedPlan: committed);
+                reachableRegions: reachableRegions, authorizedOrders: authorizedOrders, committedPlan: committed,
+                battle: battle, battleConfig: battleConfig, battleSeed: battleSeed,
+                tacticChains: tacticChains, battleConditions: battleConditions);
+        }
+
+        /// <summary>解析战斗单位段：<c>battleunit\t{id}\t{faction}\t{region}\t{force}\t{morale.Raw}…{support.Raw}</c>。</summary>
+        private static BattleUnitState ParseBattleUnit(string line)
+        {
+            string[] p = line.Split('\t');
+            if (p.Length != 11 || p[0] != "battleunit")
+                throw new SaveFormatException($"战斗单位段格式不符：「{line}」。");
+            try
+            {
+                return new BattleUnitState(
+                    new BattleUnitId(p[1]), new FactionId(p[2]), new RegionId(p[3]), int.Parse(p[4]),
+                    FixedPoint.FromRaw(int.Parse(p[5])), FixedPoint.FromRaw(int.Parse(p[6])), FixedPoint.FromRaw(int.Parse(p[7])),
+                    FixedPoint.FromRaw(int.Parse(p[8])), FixedPoint.FromRaw(int.Parse(p[9])), FixedPoint.FromRaw(int.Parse(p[10])));
+            }
+            catch (FormatException ex)
+            {
+                throw new SaveFormatException("战斗单位段数值解析失败：" + ex.Message);
+            }
         }
 
         /// <summary>解析真值段：<c>truth\t{subject}\t{strength}\t{owner}</c>。</summary>

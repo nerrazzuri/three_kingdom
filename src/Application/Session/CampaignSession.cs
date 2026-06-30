@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
@@ -122,6 +123,43 @@ namespace ThreeKingdom.Application.Session
         /// <summary>已承诺计划（提交成功后存在；未提交为 null）。</summary>
         public CommittedPlan? CommittedPlan { get; private set; }
 
+        // --- 战斗态（M06 / GDD_010）。可选；开战经服务从 CommittedPlan 建立，阶段经服务解析 ---
+
+        /// <summary>当前战斗快照（开战后存在；未开战为 null）。只读出口。</summary>
+        public BattleSnapshot? Battle { get; private set; }
+
+        /// <summary>战斗配置（数据驱动）；开战后存在。</summary>
+        internal BattleConfig? BattleConfig { get; private set; }
+
+        /// <summary>战斗随机种子（确定性，ADR-0004）。</summary>
+        internal ulong BattleSeed { get; private set; }
+
+        /// <summary>兵法链配置（数据驱动）；开战后存在，供事后识别。</summary>
+        internal TacticChainConfig? TacticChains { get; private set; }
+
+        /// <summary>战斗中已累积满足的兵法条件（确定性，供事后识别 RetrospectiveContext）。</summary>
+        private readonly HashSet<TacticCondition> _battleConditions = new HashSet<TacticCondition>();
+        internal IReadOnlyCollection<TacticCondition> BattleConditions => _battleConditions;
+
+        /// <summary>是否已开战（战斗态存在）。</summary>
+        public bool HasBattle => Battle != null;
+
+        /// <summary>建立战斗态（仅供 <see cref="CampaignSessionService"/> 开战编排）。</summary>
+        internal void StartBattleState(BattleSnapshot battle, BattleConfig config, ulong seed, TacticChainConfig tacticChains)
+        {
+            Battle = battle ?? throw new ArgumentNullException(nameof(battle));
+            BattleConfig = config ?? throw new ArgumentNullException(nameof(config));
+            BattleSeed = seed;
+            TacticChains = tacticChains ?? throw new ArgumentNullException(nameof(tacticChains));
+        }
+
+        /// <summary>更新战斗快照（阶段解析后；仅供服务）。</summary>
+        internal void SetBattle(BattleSnapshot battle)
+            => Battle = battle ?? throw new ArgumentNullException(nameof(battle));
+
+        /// <summary>累积一条战斗中满足的兵法条件（仅供服务，确定性）。</summary>
+        internal void AddBattleCondition(TacticCondition condition) => _battleConditions.Add(condition);
+
         /// <summary>
         /// 当前知识快照 ID（GDD_008 §Formula 4）：由玩家已知条目（主题+估计值+观察时间）确定性派生。
         /// 侦察改变知识 → 快照变 → 已召开军议建议被标过时（<see cref="CouncilAdviceSet.IsStaleAgainst"/>）。
@@ -153,7 +191,9 @@ namespace ThreeKingdom.Application.Session
             SessionCouncilSetup? council = null,
             ResourcePool? pool = null, PlanDraft? draft = null, PreparationConfig? prepConfig = null,
             IReadOnlyCollection<RegionId>? reachableRegions = null, IReadOnlyCollection<OrderId>? authorizedOrders = null,
-            CommittedPlan? committedPlan = null)
+            CommittedPlan? committedPlan = null,
+            BattleSnapshot? battle = null, BattleConfig? battleConfig = null, ulong battleSeed = 0,
+            TacticChainConfig? tacticChains = null, IReadOnlyCollection<TacticCondition>? battleConditions = null)
         {
             if (logisticsHolding < 0) throw new ArgumentOutOfRangeException(nameof(logisticsHolding), "后勤持有量不可为负。");
             if (cityEconomy != null && settlementConfig == null)
@@ -164,6 +204,8 @@ namespace ThreeKingdom.Application.Session
                 throw new ArgumentException("启用情报（playerIntel 非空）时必须提供 truth 与 intelConfig。", nameof(playerIntel));
             if (pool != null && prepConfig == null)
                 throw new ArgumentException("启用准备（pool 非空）时必须提供 prepConfig。", nameof(prepConfig));
+            if (battle != null && (battleConfig == null || tacticChains == null))
+                throw new ArgumentException("开战（battle 非空）时必须提供 battleConfig 与 tacticChains。", nameof(battle));
 
             Id = id;
             ScenarioConfigId = scenarioConfigId;
@@ -186,6 +228,12 @@ namespace ThreeKingdom.Application.Session
             ReachableRegions = reachableRegions ?? Array.Empty<RegionId>();
             AuthorizedOrders = authorizedOrders ?? Array.Empty<OrderId>();
             CommittedPlan = committedPlan;
+            Battle = battle;
+            BattleConfig = battleConfig;
+            BattleSeed = battleSeed;
+            TacticChains = tacticChains;
+            if (battleConditions != null)
+                foreach (TacticCondition c in battleConditions) _battleConditions.Add(c);
         }
 
         /// <summary>提交成功后写回承诺计划与扣减后资源池（仅供 <see cref="CampaignSessionService"/> 编排）。</summary>
@@ -236,7 +284,53 @@ namespace ThreeKingdom.Application.Session
             {
                 AppendPreparation(hasher);
             }
+            if (Battle != null)
+            {
+                AppendBattle(hasher);
+            }
             return hasher.ToHash();
+        }
+
+        /// <summary>战斗态确定性哈希：单位 ⊕ 侦测 ⊕ 种子 ⊕ 已满足兵法条件（ADR-0004）。</summary>
+        private void AppendBattle(StateHasher hasher)
+        {
+            hasher.Append(BattleSeed);
+
+            var units = new List<BattleUnitState>(Battle!.Units);
+            units.Sort((a, b) => string.CompareOrdinal(a.Id.Value, b.Id.Value));
+            hasher.Append(units.Count);
+            foreach (BattleUnitState u in units)
+            {
+                AppendString(hasher, u.Id.Value);
+                AppendString(hasher, u.Faction.Value);
+                AppendString(hasher, u.Region.Value);
+                hasher.Append(u.Force);
+                hasher.Append(u.Morale);
+                hasher.Append(u.Fatigue);
+                hasher.Append(u.Discipline);
+                hasher.Append(u.TerrainMod);
+                hasher.Append(u.PostureMod);
+                hasher.Append(u.Support);
+            }
+
+            var detection = new List<KeyValuePair<(FactionId Observer, BattleUnitId Target), Awareness>>(Battle!.Detection.Entries);
+            detection.Sort((a, b) =>
+            {
+                int o = string.CompareOrdinal(a.Key.Observer.Value, b.Key.Observer.Value);
+                return o != 0 ? o : string.CompareOrdinal(a.Key.Target.Value, b.Key.Target.Value);
+            });
+            hasher.Append(detection.Count);
+            foreach (KeyValuePair<(FactionId Observer, BattleUnitId Target), Awareness> d in detection)
+            {
+                AppendString(hasher, d.Key.Observer.Value);
+                AppendString(hasher, d.Key.Target.Value);
+                hasher.Append((int)d.Value);
+            }
+
+            var conds = new List<TacticCondition>(_battleConditions);
+            conds.Sort((a, b) => ((int)a).CompareTo((int)b));
+            hasher.Append(conds.Count);
+            foreach (TacticCondition c in conds) hasher.Append((int)c);
         }
 
         /// <summary>准备态确定性哈希：资源池 ⊕ 草稿命令 ⊕ 已承诺计划（ADR-0004）。</summary>

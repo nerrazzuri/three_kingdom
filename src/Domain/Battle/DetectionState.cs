@@ -27,5 +27,10 @@ namespace ThreeKingdom.Domain.Battle
 
         /// <summary>深拷贝（用于解析的工作副本，异常回滚时丢弃）。</summary>
         public DetectionState Clone() => new DetectionState(_awareness);
+
+        /// <summary>
+        /// 全部侦测记录（只读枚举，供会话装配层确定性哈希与存档序列化使用）。
+        /// </summary>
+        public IReadOnlyCollection<KeyValuePair<(FactionId Observer, BattleUnitId Target), Awareness>> Entries => _awareness;
     }
 }
