@@ -1037,9 +1037,20 @@ ADR-0003（数据驱动配置的正式锁定）。
   - S004：CaptureSnapshot/Restore 加后果段（outcome/outcomeopt）
 - **裁断**：reputation/relationship/vitality 在 OutcomeWorld 计算暴露，不入会话独立态（避免写回过宽难测）
 
-### ▶ 下一步（装配主线 M00~M07 全部完成——完整游戏循环贯通）
-完整循环：开局→治理城市→侦察→军议→准备计划→兵法战斗→后果续局（胜败都有后续）。
-- **M08 敌方 AI 循环**（epic-021，待建）：⚠️ 敌方 AI Domain **尚未实装**——从零开发 Domain 内核（ADR-0006 种子化 softmax+反全知锁+LLM 隔离），**非装配**，风险/工作量高。module-plan 建议先做战术层便宜 80%。
-- 累计：20 epics 全 Complete，76 stories，743 测试全绿；装配 M00→M07（脊梁→场景→开局→城市→情报军议→战役准备→兵法战斗→后果恢复）
+### ✅ epic-021（M08 敌方 AI 循环）全部完成（2026-06-30）—— 从零 Domain 内核
+- 4/4 stories Complete；新增 20 测试（6+5+6+4）；**764/764 全绿，-warnaserror 0**
+- 补登 TR-ai-001~004（反全知/种子 softmax/可行性门/接入战区）
+- **新 Domain 内核 src/Domain/EnemyAI/**（区别于前 M03~M07 装配）：
+  - S001：AiWorldView（反全知锁，构造拒真值）+ OwnForceSnapshot/ObjectivePressure + StrategicAction/AiReasonCode
+  - S002：ActionScorer（效用 + 硬可行性门，性格调权重，全定点）+ ScoredAction/ScorerConfig
+  - S003：SoftmaxActionSelector（定点温度加权抽样，种子可复现 + 温度单调）+ DecisionRecord + EnemyAiService
+  - S004：EnemyAiBattleAdapter（StrategicAction→BattleOrder，AI 与战斗同源确定性）
+- **裁断（GDD-016 §MVP 便宜 80%）**：不做 OpponentModel 记忆 / StrategicPlan 战略 / ILlmNarrator 装饰（ADR-0006 已留接口，后续 epic）
+- softmax 用定点温度加权抽样（避免定点 exp，保留温度单调 + 可复现）
+
+### ▶ 下一步（M00~M08 完成——完整循环 + 敌方 AI 对手贯通）
+- **M09+ 后续装配**：晋升/自立（epic-022）、君主任务/招揽外交（epic-024）、敌方 AI 后续（OpponentModel 记忆+StrategicPlan 战略+LLM 装饰）
+- **整合验证**：可运行 `/team-qa` 全量回归 / 端到端竖切重验
+- 累计：21 epics 全 Complete，80 stories，764 测试全绿
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

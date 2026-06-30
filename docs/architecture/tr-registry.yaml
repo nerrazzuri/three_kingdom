@@ -425,3 +425,33 @@ requirements:
     created: 2026-06-28
     revised: ""
     status: active
+
+  # --- 敌方 AI (GDD_016 / ADR-0006 / M08) ---
+  - id: TR-ai-001
+    system: ai
+    gdd: design/gdd/gdd-016-enemy-ai.md
+    requirement: "反全知锁（结构级）：AiWorldView 构造只接受阵营知识投影 + 评估 + 己方/环境/目标，绝不接受 MapTruth/WorldTruth 真值类型（编译期杜绝偷看）；误判由按错误情报行动天然涌现"
+    created: 2026-06-30
+    revised: ""
+    status: active
+  - id: TR-ai-002
+    system: ai
+    gdd: design/gdd/gdd-016-enemy-ai.md
+    requirement: "种子化 softmax 决策确定性：同(种子+情报+性格+配置)→逐位相同 DecisionRecord 与状态哈希；同种子→同选择；温度上升→分布趋平（单调性）；随机源复用 ADR-0004 注入流不旁路"
+    created: 2026-06-30
+    revised: ""
+    status: active
+  - id: TR-ai-003
+    system: ai
+    gdd: design/gdd/gdd-016-enemy-ai.md
+    requirement: "效用评分含硬可行性门：AI 绝不选出被可行性门淘汰的动作；抖动只发生在效用接近的动作间；DecisionRecord 含缘由码使 AI 错误信念对玩家复盘可读"
+    created: 2026-06-30
+    revised: ""
+    status: active
+  - id: TR-ai-004
+    system: ai
+    gdd: design/gdd/gdd-016-enemy-ai.md
+    requirement: "敌方 AI 决策接入战区命令：AI 随机消费与战斗模拟同源，纳入同一状态哈希与重放契约；同种子+同态势→同战区命令流"
+    created: 2026-06-30
+    revised: ""
+    status: active
