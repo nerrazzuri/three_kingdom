@@ -1,4 +1,5 @@
 using System;
+using ThreeKingdom.Domain.Numerics;
 
 namespace ThreeKingdom.Domain.City
 {
@@ -65,6 +66,28 @@ namespace ThreeKingdom.Domain.City
 
         /// <summary>可自由分配量（派生：stock − reserved，恒 ≥0）。</summary>
         public long Available => Stock - Reserved;
+
+        /// <summary>
+        /// 将权威字段按确定顺序写入哈希器（ADR-0004，纳入会话状态哈希）。
+        /// 全字段为整数/字符串，无 float（权威路径禁 float）。
+        /// </summary>
+        public void AppendTo(StateHasher hasher)
+        {
+            if (hasher is null) throw new ArgumentNullException(nameof(hasher));
+            AppendString(hasher, Id.Value);
+            hasher.Append(Stock);
+            hasher.Append(Reserved);
+            hasher.Append(CivMorale);
+            hasher.Append(Security);
+            hasher.Append(FortificationCurrent);
+            hasher.Append(FortificationMax);
+        }
+
+        private static void AppendString(StateHasher hasher, string value)
+        {
+            hasher.Append(value.Length);
+            foreach (char ch in value) hasher.Append((int)ch);
+        }
 
         /// <summary>返回替换指定字段后的新实例（不可变更新；其余字段不变）。</summary>
         public CityEconomyState With(

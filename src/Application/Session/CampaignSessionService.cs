@@ -4,6 +4,7 @@ using ThreeKingdom.Application.Career;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
+using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.World;
 
@@ -48,7 +49,12 @@ namespace ThreeKingdom.Application.Session
                 fingerprint: config.Fingerprint,
                 career: career,
                 worldProjection: worldProjection,
-                control: authority);
+                control: authority,
+                cityEconomy: config.CityEconomy,       // M03：城市治理态（可选；null 则不启用治理循环）
+                settlementConfig: config.SettlementConfig,
+                populationPressure: config.PopulationPressure,
+                logisticsHolding: config.InitialLogisticsHolding,
+                governanceConfig: config.GovernanceConfig);
 
             return CampaignStartResult.Success(session);
         }
@@ -67,10 +73,93 @@ namespace ThreeKingdom.Application.Session
             if (session is null) throw new ArgumentNullException(nameof(session));
             if (segments < 0) throw new ArgumentOutOfRangeException(nameof(segments), "推进时段数不可为负。");
 
+            int dayBefore = session.CurrentTime.Day;
+
             // 时间 → 历史世界模型（015）：确定性推进，世界读已结算态（ADR-0004）。
             session.AdvanceWorld(segments);
+
+            // 城市/控制权（004 / M03）：每跨一个日界结算一次城市日结（GDD_004「日界结算」）。
+            // 装配层只编排——复用既有 CityDaySettlementService（Domain 纯函数），不在此重写公式。
+            if (session.HasCityGovernance)
+            {
+                int dayAfter = session.CurrentTime.Day;
+                for (int d = dayBefore; d < dayAfter; d++)
+                {
+                    CitySettlementResult result = _citySettlement.Settle(
+                        session.CityEconomy!, session.LogisticsHolding, session.SettlementConfig!, session.PopulationPressure);
+                    session.ApplyCitySettlement(result.EndState, result.EndLogisticsHolding);
+                }
+            }
+
             return session;
         }
+
+        private readonly CityDaySettlementService _citySettlement = new CityDaySettlementService();
+
+        // --- 城市治理命令（M03 / TR-city-003）。经命令路径改城市态；前置校验失败 → 稳定错误码、零部分写入。---
+
+        /// <summary>
+        /// 征用军粮（GDD_004 §Formula 5）：设置已承诺保留量（日界移交后勤）+ 即时扣城市民心。
+        /// 校验 <c>available ≥ amount</c>，否则 <see cref="CampaignErrorCode.InsufficientStock"/> 拒绝、零写入。
+        /// </summary>
+        public CampaignCommandResult RequisitionFood(CampaignSession session, long amount)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasCityGovernance)
+                return CampaignCommandResult.Failure(CampaignErrorCode.CityGovernanceDisabled, "会话未启用城市治理。");
+            if (amount < 0)
+                return CampaignCommandResult.Failure(CampaignErrorCode.InvalidAmount, $"征用量不可为负：{amount}。");
+
+            CityEconomyState city = session.CityEconomy!;
+            if (amount > city.Available)
+                return CampaignCommandResult.Failure(CampaignErrorCode.InsufficientStock,
+                    $"可分配量不足：available={city.Available}，请求={amount}。");
+
+            CityGovernanceConfig gov = session.GovernanceConfig!;
+            int moralePenalty = (gov.RequisitionMoralePenalty * FixedPoint.FromInt(checked((int)amount))).RoundToInt();
+            int newMorale = ClampInt(checked(city.CivMorale - moralePenalty), 0, session.SettlementConfig!.CivMoraleMax);
+
+            session.SetCityEconomy(city.With(reserved: city.Reserved + amount, civMorale: newMorale));
+            return CampaignCommandResult.Success();
+        }
+
+        /// <summary>
+        /// 修工事（GDD_004 §Formula 6）：即时投入修复 <c>min(上限余量, FortRepairPerOrder)</c>。
+        /// 工事已满 → <see cref="CampaignErrorCode.FortificationFull"/> 拒绝（多余投入不转其他资源，GDD §Edge Cases）。
+        /// </summary>
+        public CampaignCommandResult RepairFortification(CampaignSession session)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasCityGovernance)
+                return CampaignCommandResult.Failure(CampaignErrorCode.CityGovernanceDisabled, "会话未启用城市治理。");
+
+            CityEconomyState city = session.CityEconomy!;
+            int room = city.FortificationMax - city.FortificationCurrent;
+            if (room <= 0)
+                return CampaignCommandResult.Failure(CampaignErrorCode.FortificationFull, "工事已满，无可修复余量。");
+
+            int repair = Math.Min(room, session.GovernanceConfig!.FortRepairPerOrder);
+            session.SetCityEconomy(city.With(fortificationCurrent: city.FortificationCurrent + repair));
+            return CampaignCommandResult.Success();
+        }
+
+        /// <summary>
+        /// 安抚（GDD_004 §Formula 4 民心有源有汇）：即时提升城市民心 <c>AppeaseMoraleGain</c>，夹至 CivMoraleMax。
+        /// </summary>
+        public CampaignCommandResult Appease(CampaignSession session)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasCityGovernance)
+                return CampaignCommandResult.Failure(CampaignErrorCode.CityGovernanceDisabled, "会话未启用城市治理。");
+
+            CityEconomyState city = session.CityEconomy!;
+            int newMorale = ClampInt(checked(city.CivMorale + session.GovernanceConfig!.AppeaseMoraleGain), 0, session.SettlementConfig!.CivMoraleMax);
+            session.SetCityEconomy(city.With(civMorale: newMorale));
+            return CampaignCommandResult.Success();
+        }
+
+        private static int ClampInt(int value, int min, int max)
+            => value < min ? min : (value > max ? max : value);
 
         /// <summary>
         /// 按场景 id 从目录配置驱动开局（M01 / ADR-0003）。未知 id → <see cref="CampaignErrorCode.SessionNotFound"/>。
@@ -141,22 +230,46 @@ namespace ThreeKingdom.Application.Session
             var campaign = new CampaignSaveState(CampaignSaveVersion, session.Fingerprint, career, world);
 
             string body = _saveCodec.Serialize(campaign);
-            return SnapshotMagic + "\nid\t" + session.Id + "\nscenario\t" + session.ScenarioConfigId + "\n" + BodyMarker + "\n" + body;
+            string head = SnapshotMagic + "\nid\t" + session.Id + "\nscenario\t" + session.ScenarioConfigId + "\n";
+
+            // 城市治理段（M03 / TR-city-005）：仅序列化城市**态**（配置数据驱动，按指纹由载入方提供，不入存档体）。
+            if (session.HasCityGovernance)
+            {
+                CityEconomyState c = session.CityEconomy!;
+                head += "city\t" + c.Id.Value + "\t" + c.Stock + "\t" + c.Reserved + "\t" + c.CivMorale
+                      + "\t" + c.Security + "\t" + c.FortificationCurrent + "\t" + c.FortificationMax
+                      + "\t" + session.LogisticsHolding + "\n";
+            }
+
+            return head + BodyMarker + "\n" + body;
         }
 
         /// <summary>
         /// 从快照恢复会话（ADR-0009 §R-1 / TR-session-003）。版本不兼容/指纹不符 → 整体抛 <see cref="SaveFormatException"/>，
         /// <b>不部分载入</b>。重建 GDD_004 权威（登记开局归属）+ GDD_015 投影订阅。
         /// </summary>
-        public CampaignSession Restore(string text, ConfigFingerprint expectedFingerprint)
+        public CampaignSession Restore(
+            string text, ConfigFingerprint expectedFingerprint,
+            CitySettlementConfig? settlementConfig = null, CityGovernanceConfig? governanceConfig = null,
+            FixedPoint populationPressure = default)
         {
             if (text is null) throw new SaveFormatException("会话存档文本为 null。");
             string[] lines = text.Split('\n');
             if (lines.Length < 4 || lines[0] != SnapshotMagic) throw new SaveFormatException("会话存档魔数不符。");
             string id = Field("id", lines[1]);
             string scenario = Field("scenario", lines[2]);
-            if (lines[3] != BodyMarker) throw new SaveFormatException("缺会话体标记。");
-            string body = string.Join("\n", new ArraySegment<string>(lines, 4, lines.Length - 4));
+
+            // 可选城市治理段（M03）：解析城市态 + 后勤持有；配置由载入方提供（数据驱动）。
+            int idx = 3;
+            CityEconomyState? city = null;
+            long cityLogistics = 0;
+            if (lines[idx].StartsWith("city\t", StringComparison.Ordinal))
+            {
+                (city, cityLogistics) = ParseCity(lines[idx]);
+                idx++;
+            }
+            if (idx >= lines.Length || lines[idx] != BodyMarker) throw new SaveFormatException("缺会话体标记。");
+            string body = string.Join("\n", new ArraySegment<string>(lines, idx + 1, lines.Length - idx - 1));
 
             // 委派 CampaignSaveCodec：版本/指纹不符整体拒绝。
             CampaignSaveState state = _saveCodec.Deserialize(body, CampaignSaveVersion, expectedFingerprint);
@@ -167,7 +280,35 @@ namespace ThreeKingdom.Application.Session
                 if (c.Owner.HasValue) authority.RegisterInitial(c.City, c.Owner.Value, new Garrison(c.Garrison));
             var projection = new WorldCityProjection(world, authority);
 
-            return new CampaignSession(id, scenario, expectedFingerprint, state.Career.Snapshot, projection, authority);
+            if (city != null && (settlementConfig == null || governanceConfig == null))
+                throw new SaveFormatException("存档含城市治理态，但未提供城市配置（settlementConfig/governanceConfig）以恢复。");
+
+            return new CampaignSession(
+                id, scenario, expectedFingerprint, state.Career.Snapshot, projection, authority,
+                cityEconomy: city, settlementConfig: settlementConfig, populationPressure: populationPressure,
+                logisticsHolding: cityLogistics, governanceConfig: governanceConfig);
+        }
+
+        /// <summary>解析城市治理段：<c>city\t{id}\t{stock}\t{reserved}\t{morale}\t{security}\t{fortCur}\t{fortMax}\t{logistics}</c>。</summary>
+        private static (CityEconomyState, long) ParseCity(string line)
+        {
+            string[] p = line.Split('\t');
+            if (p.Length != 9 || p[0] != "city")
+                throw new SaveFormatException($"城市治理段格式不符：「{line}」。");
+            try
+            {
+                var city = new CityEconomyState(
+                    new CityId(p[1]),
+                    long.Parse(p[2]), long.Parse(p[3]),
+                    int.Parse(p[4]), int.Parse(p[5]),
+                    int.Parse(p[6]), int.Parse(p[7]));
+                long logistics = long.Parse(p[8]);
+                return (city, logistics);
+            }
+            catch (FormatException ex)
+            {
+                throw new SaveFormatException("城市治理段数值解析失败：" + ex.Message);
+            }
         }
 
         private static string Field(string key, string line)

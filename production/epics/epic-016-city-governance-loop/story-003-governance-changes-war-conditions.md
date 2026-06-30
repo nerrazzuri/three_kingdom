@@ -1,12 +1,12 @@
 # Story 003: 治理选择改变战役条件（≥3 条差异化派生 + 可解释代价）
 
 > **Epic**: City Governance Loop（城市治理循环 / M03）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M（4–6 h，含新生产代码）
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-30
 
 ## Context
 
@@ -105,7 +105,7 @@
 **Required evidence**:
 - `tests/unit/ThreeKingdom.Domain.Tests/City/GovernanceWarConditionTests.cs` — 必须存在且全绿
 
-**Status**: [ ] 尚未创建
+**Status**: [x] `City/GovernanceWarConditionTests.cs` — 7/7 通过（657/657 全绿）
 
 ---
 
@@ -113,3 +113,13 @@
 
 - Depends on: Story 002 DONE（治理命令产生差异态是派生的输入来源）
 - Unlocks: Story 004；M05（epic-018 战前准备装配将消费本派生）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-30
+**Criteria**: 6/6 passing（三条战役条件 + 确定性 + 可区分 + 可解释账本）
+**Deviations**: 按计划只派生战役条件输入（守城强度/补给/民心风险），不接完整战斗胜负（留 M05 epic-018 消费）。纯 Domain 函数，不碰会话。
+**Test Evidence**: `tests/unit/ThreeKingdom.Domain.Tests/City/GovernanceWarConditionTests.cs` — 7 tests, 7/7 pass
+**新生产代码**: WarCondition.cs（WarConditionKind/WarConditionLedgerEntry/WarConditionInputs/WarConditionConfig）；WarConditionProjection.cs（纯函数派生 + 可解释账本）
+**Code Review**: 内联 — APPROVED（Lean 模式）

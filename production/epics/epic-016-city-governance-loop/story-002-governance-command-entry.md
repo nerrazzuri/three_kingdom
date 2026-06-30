@@ -1,12 +1,12 @@
 # Story 002: 治理命令入口（征用军粮/修工事/安抚）+ 非法命令稳定错误码
 
 > **Epic**: City Governance Loop（城市治理循环 / M03）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（含 Assembly 装配）
 > **Type**: Integration
 > **Estimate**: M（4–6 h，含新生产代码）
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-30
 
 ## Context
 
@@ -104,7 +104,7 @@
 **Required evidence**:
 - `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignGovernanceCommandTests.cs` — 必须存在且全绿
 
-**Status**: [ ] 尚未创建
+**Status**: [x] `CampaignGovernanceCommandTests.cs` — 11/11 通过（657/657 全绿）
 
 ---
 
@@ -112,3 +112,13 @@
 
 - Depends on: Story 001 DONE（城市态 + Advance 日结接入是命令的执行基底）
 - Unlocks: Story 003（治理改变战役条件需命令产生差异态）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-30
+**Criteria**: 5/5 passing
+**Deviations**: 修工事/安抚命令为**即时**改态（与日结自动修复并存）；征用走既有 reserved 机制（命令设 reserved + 即时扣民心，日结移交后勤）。征募移出本 epic（见 EPIC.md）。
+**Test Evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignGovernanceCommandTests.cs` — 11 tests, 11/11 pass
+**新生产代码**: CityGovernanceConfig（治理命令代价配置，数据驱动）；CampaignErrorCode 加 4 码（CityGovernanceDisabled/InvalidAmount/InsufficientStock/FortificationFull）；CampaignSessionService 加 RequisitionFood/RepairFortification/Appease 命令
+**Code Review**: 内联 — APPROVED（Lean 模式）

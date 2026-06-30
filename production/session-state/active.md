@@ -983,8 +983,17 @@ ADR-0003（数据驱动配置的正式锁定）。
 **关键**：S001~S003 含**新生产代码**（CampaignSession 持城市态 / Advance 叠城市日结 / 治理命令入口 / 治理→战役条件派生）；S004 主要测试。
 **裁断**：征募移出 MVP（GDD_004 MVP 不含，待扩）；S003 只做治理→战役条件输入派生（不接完整战斗，留 M05 epic-018 消费）。
 
+### ✅ epic-016（M03 城市治理循环）全部完成（2026-06-30）
+- 4/4 stories Complete；新增 35 测试（10+11+7+7）；**657/657 全绿，-warnaserror 0**
+- **新生产代码**（区别于 M01/M02 纯测试）：
+  - S001：CityEconomyState.AppendTo；CampaignSession 持城市态 + Advance 按日界叠 CityDaySettlementService；CampaignStartConfig 加城市参数
+  - S002：CityGovernanceConfig；CampaignErrorCode +4 码；征用/修工事/安抚命令
+  - S003：WarCondition.cs + WarConditionProjection（治理→战役条件派生纯函数 + 可解释账本）
+  - S004：CaptureSnapshot/Restore 加城市段（配置数据驱动不入存档体，载入方按指纹提供）
+- 设计：城市态**可选**（向后兼容现有测试）；征募移出 MVP；S003 只派生战役条件输入不接完整战斗（留 M05）
+
 ### ▶ 下一步
-- `/story-readiness epic-016 story-001` → `/dev-story` S001（依赖序 S001→S002→S003→S004）
+- **M04 情报与军议循环**（epic-017，待建）：`/create-epics epic-017` → `/create-stories` → 逐 story `/dev-story`
 - 可选并行：M08 敌方 AI 战术层（epic-021，gdd-016 + ADR-0006 已就绪）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

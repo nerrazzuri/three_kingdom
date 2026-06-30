@@ -17,5 +17,17 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>会话不存在（按 id 查找失败）。</summary>
         SessionNotFound = 3,
+
+        /// <summary>会话未启用城市治理（无城市态），治理命令不适用。</summary>
+        CityGovernanceDisabled = 4,
+
+        /// <summary>命令数量非法（负数等）。</summary>
+        InvalidAmount = 5,
+
+        /// <summary>库存/可分配量不足，征用被拒（无部分写入）。</summary>
+        InsufficientStock = 6,
+
+        /// <summary>工事已满，修复目标无效（无部分写入）。</summary>
+        FortificationFull = 7,
     }
 }

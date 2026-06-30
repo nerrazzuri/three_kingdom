@@ -1,12 +1,12 @@
 # Story 001: 城市治理态接入会话 + Advance 日界结算
 
 > **Epic**: City Governance Loop（城市治理循环 / M03）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（含 Assembly 装配）
 > **Type**: Integration
 > **Estimate**: M（4–6 h，含新生产代码）
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-30
 
 ## Context
 
@@ -105,7 +105,7 @@
 **Required evidence**:
 - `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignCityGovernanceTests.cs` — 必须存在且全绿
 
-**Status**: [ ] 尚未创建
+**Status**: [x] `CampaignCityGovernanceTests.cs` — 10/10 通过（657/657 全绿）
 
 ---
 
@@ -113,3 +113,13 @@
 
 - Depends on: epic-013（M00 脊梁）+ epic-015（M02）全部 Complete（已满足）；epic-004 城市 Domain 内核（已 Complete）
 - Unlocks: Story 002（治理命令入口）、Story 004（治理态存读档）
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-30
+**Criteria**: 6/6 passing
+**Deviations**: 城市态设为**可选**（nullable）以向后兼容现有 622 测试——场景未启用城市治理时为 null；存档信封映射推迟到 S004（S001 AC 不含存档）。
+**Test Evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignCityGovernanceTests.cs` — 10 tests, 10/10 pass
+**新生产代码**: CityEconomyState.AppendTo（哈希）；CampaignSession 持城市态 + ApplyCitySettlement + ComputeHash 含城市；CampaignStartConfig 加城市参数；CampaignSessionService.Advance 按日界叠 CityDaySettlementService.Settle
+**Code Review**: 内联 — APPROVED（Lean 模式）

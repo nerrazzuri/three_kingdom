@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using ThreeKingdom.Domain.Career;
+using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
+using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 
@@ -32,22 +34,53 @@ namespace ThreeKingdom.Application.Session
         /// <summary>开局城池归属投影（只读，权威在 GDD_004）。</summary>
         public IReadOnlyList<CityOwnership> InitialCities { get; }
 
+        /// <summary>开局城市治理态（GDD_004 / M03）。<b>可选</b>：null 表示该场景不启用城市治理循环。</summary>
+        public CityEconomyState? CityEconomy { get; }
+
+        /// <summary>城市日结配置（数据驱动，ADR-0003）；启用城市治理时必填。</summary>
+        public CitySettlementConfig? SettlementConfig { get; }
+
+        /// <summary>人口压力系数（GDD_004 §Formula 3）。</summary>
+        public FixedPoint PopulationPressure { get; }
+
+        /// <summary>开局后勤持有军粮（≥0）。</summary>
+        public long InitialLogisticsHolding { get; }
+
+        /// <summary>治理命令代价/增益配置（ADR-0003）；启用城市治理时必填。</summary>
+        public CityGovernanceConfig? GovernanceConfig { get; }
+
         public CampaignStartConfig(
             string scenarioConfigId,
             ConfigFingerprint fingerprint,
             CitySeed governorSeed,
             WorldTime startTime,
             IReadOnlyList<FactionRecord> initialFactions,
-            IReadOnlyList<CityOwnership> initialCities)
+            IReadOnlyList<CityOwnership> initialCities,
+            CityEconomyState? cityEconomy = null,
+            CitySettlementConfig? settlementConfig = null,
+            FixedPoint populationPressure = default,
+            long initialLogisticsHolding = 0,
+            CityGovernanceConfig? governanceConfig = null)
         {
             if (string.IsNullOrWhiteSpace(scenarioConfigId))
                 throw new ArgumentException("场景配置 id 不可为空或空白。", nameof(scenarioConfigId));
+            if (initialLogisticsHolding < 0)
+                throw new ArgumentOutOfRangeException(nameof(initialLogisticsHolding), "开局后勤持有不可为负。");
+            if (cityEconomy != null && settlementConfig == null)
+                throw new ArgumentException("启用城市治理（cityEconomy 非空）时必须提供 settlementConfig。", nameof(settlementConfig));
+            if (cityEconomy != null && governanceConfig == null)
+                throw new ArgumentException("启用城市治理（cityEconomy 非空）时必须提供 governanceConfig。", nameof(governanceConfig));
             ScenarioConfigId = scenarioConfigId;
             Fingerprint = fingerprint;
             GovernorSeed = governorSeed ?? throw new ArgumentNullException(nameof(governorSeed));
             StartTime = startTime;
             InitialFactions = initialFactions ?? throw new ArgumentNullException(nameof(initialFactions));
             InitialCities = initialCities ?? throw new ArgumentNullException(nameof(initialCities));
+            CityEconomy = cityEconomy;
+            SettlementConfig = settlementConfig;
+            PopulationPressure = populationPressure;
+            InitialLogisticsHolding = initialLogisticsHolding;
+            GovernanceConfig = governanceConfig;
         }
     }
 }

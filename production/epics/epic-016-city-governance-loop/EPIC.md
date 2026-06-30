@@ -4,17 +4,17 @@
 > **GDD**: `design/gdd/gdd-004-city-economy.md`（primary）+ gdd-012/005/006
 > **Architecture Module**: M03 City Governance Loop（`production/full-game-loop-module-plan-2026-06-28.md` §M03）
 > **Governing ADR**: ADR-0009（CampaignSession 装配）· ADR-0008（城池控制权契约）· ADR-0003（数据驱动配置）· ADR-0004（确定性）
-> **Status**: In Progress（stories 已创建，2026-06-29）
-> **Stories**: 4（story-001~004 均为 Ready，见下表）
+> **Status**: ✅ Complete（4/4 stories，2026-06-30）
+> **Stories**: 4（story-001~004 均 ✅ Complete，见下表）
 
 ## Stories
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| [001](story-001-city-state-into-session.md) | 城市治理态接入会话 + Advance 日界结算 | Integration | Ready | ADR-0009/0004 |
-| [002](story-002-governance-command-entry.md) | 治理命令入口（征用/修工事/安抚）+ 非法命令稳定错误码 | Integration | Ready | ADR-0009/0003 |
-| [003](story-003-governance-changes-war-conditions.md) | 治理选择改变战役条件（≥3 条差异化派生 + 可解释代价） | Logic | Ready | ADR-0003/0004 |
-| [004](story-004-governance-save-determinism.md) | 治理态存读档 round-trip + 日界确定性 | Integration | Ready | ADR-0005/0004 |
+| [001](story-001-city-state-into-session.md) | 城市治理态接入会话 + Advance 日界结算 | Integration | ✅ Complete | ADR-0009/0004 |
+| [002](story-002-governance-command-entry.md) | 治理命令入口（征用/修工事/安抚）+ 非法命令稳定错误码 | Integration | ✅ Complete | ADR-0009/0003 |
+| [003](story-003-governance-changes-war-conditions.md) | 治理选择改变战役条件（≥3 条差异化派生 + 可解释代价） | Logic | ✅ Complete | ADR-0003/0004 |
+| [004](story-004-governance-save-determinism.md) | 治理态存读档 round-trip + 日界确定性 | Integration | ✅ Complete | ADR-0005/0004 |
 
 ## Overview
 

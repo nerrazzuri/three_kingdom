@@ -1,12 +1,12 @@
 # Story 004: 治理态存读档 round-trip + 日界确定性
 
 > **Epic**: City Governance Loop（城市治理循环 / M03）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature（含 Assembly 装配）
 > **Type**: Integration
 > **Estimate**: S（2–3 h，纯测试）
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —
+> **Last Updated**: 2026-06-30
 
 ## Context
 
@@ -104,7 +104,7 @@
 **Required evidence**:
 - `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignCityGovernanceSaveTests.cs` — 必须存在且全绿
 
-**Status**: [ ] 尚未创建
+**Status**: [x] `CampaignCityGovernanceSaveTests.cs` — 7/7 通过（657/657 全绿）
 
 ---
 
@@ -112,3 +112,13 @@
 
 - Depends on: Story 001 DONE（城市态接入存档信封）；Story 002 DONE（治理命令产生非平凡态）
 - Unlocks: epic-016 完成 → M04（epic-017 情报军议装配）可开始
+
+---
+
+## Completion Notes
+**Completed**: 2026-06-30
+**Criteria**: 5/5 passing（+边界拒绝 +向后兼容副验证）
+**Deviations**: 城市**配置**（settlementConfig/governanceConfig/populationPressure）数据驱动，按指纹由 Restore 调用方提供，不入存档体；存档体只存城市**态**。含城市态存档未提供配置 → 整体拒绝（SaveFormatException）。
+**Test Evidence**: `tests/unit/ThreeKingdom.Domain.Tests/Session/CampaignCityGovernanceSaveTests.cs` — 7 tests, 7/7 pass
+**新生产代码**: CaptureSnapshot 加城市段；Restore 加可选城市段解析 + 城市配置参数 + ParseCity
+**Code Review**: 内联 — APPROVED（Lean 模式）
