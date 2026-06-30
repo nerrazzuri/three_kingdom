@@ -1048,9 +1048,14 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **裁断（GDD-016 §MVP 便宜 80%）**：不做 OpponentModel 记忆 / StrategicPlan 战略 / ILlmNarrator 装饰（ADR-0006 已留接口，后续 epic）
 - softmax 用定点温度加权抽样（避免定点 exp，保留温度单调 + 可复现）
 
-### ▶ 下一步（M00~M08 完成——完整循环 + 敌方 AI 对手贯通）
-- **M09+ 后续装配**：晋升/自立（epic-022）、君主任务/招揽外交（epic-024）、敌方 AI 后续（OpponentModel 记忆+StrategicPlan 战略+LLM 装饰）
-- **整合验证**：可运行 `/team-qa` 全量回归 / 端到端竖切重验
-- 累计：21 epics 全 Complete，80 stories，764 测试全绿
+### ✅ epic-022（M09 生涯与权限循环）全部完成（2026-06-30）
+- 4/4 stories Complete；新增 18 测试（4+4+5+5）；**782/782 全绿，-warnaserror 0**
+- 复用 TR-career-001~005（无新 TR）；**轻量装配**——命令接受配置参数，career 态已在存档段无新存档代码
+- 新生产代码：CampaignSessionService.ApplyCareerGain/RequestPromotion/CheckRebellionEligibility/LaunchRebellion（复用 epic-011 CareerProgressionService/RebellionService）
+- 护栏：非战斗功绩源竞争力（TR-career-002）；门槛/资格不足稳定错误码无写入；失败不切死局
+
+### ▶ 下一步（17 模块进度：M00~M09 完成，共 10/17）
+- **M10 历史世界与势力循环**（epic-023，待建）：world Domain 已实装 epic-012（HistoryAdvancer/DivergencePropagation），可装配接入会话。**用户已授权 M09+M10 连做——继续 M10**。
+- 之后 M11/M12 需补设计（GDD/ADR），M13/M14 硬红线（缺 GDD_017/018），M15/M16 表现/内容。
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

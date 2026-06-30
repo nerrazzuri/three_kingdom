@@ -406,6 +406,58 @@ namespace ThreeKingdom.Application.Session
 
         private readonly GovernorOutcomeService _governorOutcome = new GovernorOutcomeService();
 
+        // --- 生涯与权限命令（M09 / TR-career-001/002/005）。复用 epic-011 Domain；成功才写回会话生涯态。---
+
+        private readonly CareerProgressionService _careerProgression = new CareerProgressionService();
+        private readonly RebellionService _rebellion = new RebellionService();
+
+        /// <summary>
+        /// 功绩累积（GDD_014 / TR-career-002）：按功绩来源（含<b>非战斗源</b>）增长生涯 merit/renown/standing。
+        /// 战斗不是唯一成长来源；成功写回会话生涯态。
+        /// </summary>
+        public CareerCommandResult ApplyCareerGain(CampaignSession session, PromotionLadderConfig ladder, CareerGainSource source, int count = 1)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (ladder is null) throw new ArgumentNullException(nameof(ladder));
+            CareerCommandResult r = _careerProgression.ApplyGain(ladder, session.Career, source, count);
+            if (r.Applied) session.SetCareer(r.Snapshot);
+            return r;
+        }
+
+        /// <summary>
+        /// 申请晋升（GDD_014 / TR-career-001/005）：门槛达成则晋一阶并写回；未达
+        /// <see cref="CareerErrorCode.PromotionThresholdNotMet"/> 稳定错误码、无写入。
+        /// </summary>
+        public CareerCommandResult RequestPromotion(CampaignSession session, PromotionLadderConfig ladder)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (ladder is null) throw new ArgumentNullException(nameof(ladder));
+            CareerCommandResult r = _careerProgression.RequestPromotion(ladder, session.Career);
+            if (r.Applied) session.SetCareer(r.Snapshot);
+            return r;
+        }
+
+        /// <summary>自立资格判定（GDD_014 / TR-career-002）：三分支（军事/政治/压迫）确定性判定，只读不写。</summary>
+        public RebellionEligibility CheckRebellionEligibility(CampaignSession session, RebellionConfig config, RebellionContext context)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (config is null) throw new ArgumentNullException(nameof(config));
+            return _rebellion.CheckEligibility(config, session.Career.Career, session.Career.Retinue, context);
+        }
+
+        /// <summary>
+        /// 发起自立（GDD_014 / TR-career-001/005）：资格达成则转新势力/在野并写回；不达稳定错误码、无写入。
+        /// 失败不切死局（在野亦为合法续局）。
+        /// </summary>
+        public RebellionResult LaunchRebellion(CampaignSession session, RebellionConfig config, RebellionContext context)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (config is null) throw new ArgumentNullException(nameof(config));
+            RebellionResult r = _rebellion.Launch(config, session.Career, context);
+            if (r.Launched) session.SetCareer(r.Snapshot);
+            return r;
+        }
+
         /// <summary>
         /// 守城开局事件后果原子写回（TR-session-002/004）。胜→功绩/信任（生涯）；
         /// 败→生涯转在野（合法可继续）+ 失城经 GDD_004 控制权变更。全程经 <see cref="ConsequenceTransaction"/> 原子提交。

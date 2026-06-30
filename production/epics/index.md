@@ -57,6 +57,7 @@ Manifest Version: 2 (2026-06-28)
 | [兵法沙盒战役循环](epic-019-tactical-battle-loop/EPIC.md) | Feature（M06） | 战斗/兵法接入会话→可打可复现战役 | ADR-0004/0009/0005 + TR-battle-001/002/003 | 4 stories | ✅ Complete |
 | [后果与恢复循环](epic-020-consequence-recovery-loop/EPIC.md) | Feature（M07） | 战果写回完整世界→胜败都有后续 | ADR-0004/0009/0008/0005 + TR-outcome-001/002 | 4 stories | ✅ Complete |
 | [敌方 AI 循环](epic-021-enemy-ai-loop/EPIC.md) | Core+Feature（M08） | 敌方 AI Domain 内核（战术 80%）→可读可骗可复现对手 | ADR-0006/0004/0009 + TR-ai-001~004 | 4 stories | ✅ Complete |
+| [生涯与权限循环](epic-022-career-authority-loop/EPIC.md) | Feature（M09） | 生涯/权限接入会话→功绩/晋升/自立 | ADR-0004/0009/0008/0005 + TR-career-001~005 | 4 stories | ✅ Complete |
 
 > epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）；epic-014 = **M01 场景目录**（CON-5 收尾）；epic-015 = **M02 太守开局循环**（开局守城→胜败两支续局+存读档）。ADR-0009 Accepted（2026-06-28，经子代理复审）。后续装配 epic（M03~M16，epic-016~028）见模块规划 §6 切分表。
 
@@ -66,8 +67,9 @@ Manifest Version: 2 (2026-06-28)
 
 ## 统计
 
-- 21 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 5 Feature M03~M07 + 1 Core+Feature M08）；21 ✅ Complete。
-- 80 stories ✅ Complete（含 epic-021 敌方 AI 4）；本地回归 **764/764 全绿，`-warnaserror` 0 warning**。
+- 22 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 6 Feature M03~M09 + 1 Core+Feature M08）；22 ✅ Complete。
+- 84 stories ✅ Complete（含 epic-022 生涯权限 4）；本地回归 **782/782 全绿，`-warnaserror` 0 warning**。
+- **M09 生涯权限达成**（epic-022）：功绩累积（非战斗源竞争力）+ 晋升申请（门槛/稳定错误码）+ 自立三分支反叛（转新势力/在野）+ 生涯态存读档确定性。
 - **M08 敌方 AI 达成**（epic-021，从零 Domain 内核）：AiWorldView 反全知锁（结构级）+ 效用评分硬可行性门 + 种子 softmax（可复现 + 温度单调）+ DecisionRecord 错误信念可读 + 接入战区命令同源确定性。
 - **M07 后果恢复达成**（epic-020）：战果四分支后果原子写回会话城市态 + 胜败撤退失城都有续局（败局必非空，失败不切死局）+ 原子回滚 + 后果续局态存读档确定性。
 - **M06 兵法沙盒达成**（epic-019）：战斗态接入会话 + 从 CommittedPlan 开战 + 阶段解析（稳定管线+原子回滚）+ 兵法事后识别（FeintAmbush 机动招式，CD 硬退出门）+ 战斗态存读档确定性。
