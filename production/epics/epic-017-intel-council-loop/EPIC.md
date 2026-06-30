@@ -4,8 +4,17 @@
 > **GDD**: `design/gdd/gdd-007-intelligence-recon.md` + `design/gdd/gdd-008-war-council.md`
 > **Architecture Module**: M04 Intelligence / War Council Loop（`production/full-game-loop-module-plan-2026-06-28.md` §M04）
 > **Governing ADR**: ADR-0009（CampaignSession 装配）· ADR-0004（确定性）· ADR-0005（存档）
-> **Status**: Ready（2026-06-30）
-> **Stories**: Not yet created — run `/create-stories epic-017-intel-council-loop`
+> **Status**: ✅ Complete（4/4 stories，2026-06-30）
+> **Stories**: 4（story-001~004 均 ✅ Complete，见下表）
+
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| [001](story-001-intel-state-into-session.md) | 情报态接入会话（真值 + 阵营知识，反全知只读投影） | Integration | ✅ Complete | ADR-0009/0004 |
+| [002](story-002-scout-command.md) | 侦察命令经会话路径（有成本/时效/暴露，"侦察全部"非法） | Integration | ✅ Complete | ADR-0009/0004 |
+| [003](story-003-council-snapshot-staleness.md) | 军议经会话知识快照（同快照确定 + 知识变化建议过时 + 只条件化） | Integration | ✅ Complete | ADR-0009/0004 |
+| [004](story-004-intel-save-determinism.md) | 情报态存读档（真值/知识分别序列化不交叉污染 + 确定性） | Integration | ✅ Complete | ADR-0005/0004 |
 
 ## Overview
 

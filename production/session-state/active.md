@@ -999,8 +999,17 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **M04 含新生产代码**（同 M03）：会话持 WorldTruth+FactionKnowledge、侦察命令、军议快照、情报存读档
 - 护栏：军师只条件化建议（无成功率/唯一推荐/自动命令）+ 情报不泄真值（UI 只读阵营知识）
 
+### ✅ epic-017（M04 情报与军议循环）全部完成（2026-06-30）
+- 4/4 stories Complete；新增 23 测试（6+6+5+6）；**680/680 全绿，-warnaserror 0**
+- **新生产代码**：
+  - S001：WorldTruthLedger.Records；CampaignSession 持真值+知识、PlayerKnowledge 只读出口（反全知）、ComputeHash 含情报；CampaignStartConfig 加情报参数
+  - S002：CampaignErrorCode +2；Scout 命令（Observe→ToReport→ApplyReport）
+  - S003：SessionCouncilSetup；CurrentKnowledgeSnapshotId；ConveneCouncil（同快照确定 + IsStaleAgainst 过时）
+  - S004：CaptureSnapshot/Restore 加情报段（真值/知识分别序列化不交叉污染）
+- 护栏达成：军师只条件化建议（AdviceStatement 无成功率字段）+ 情报真值仅 internal（反全知）
+
 ### ▶ 下一步
-- `/create-stories epic-017-intel-council-loop` 拆 story → 逐 story `/dev-story`
-- 可选并行：M08 敌方 AI 战术层（epic-021，gdd-016 + ADR-0006 已就绪）
+- **M05 战役准备循环**（epic-018，待建）：消费 M03 城市派生战役条件 + M04 情报 → 组装可执行战役初始条件（PlanDraft/CommittedPlan/冲突 DAG）。`/create-epics epic-018`
+- 可选并行：M08 敌方 AI 战术层（epic-021）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

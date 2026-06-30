@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
+using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
@@ -49,6 +50,18 @@ namespace ThreeKingdom.Application.Session
         /// <summary>治理命令代价/增益配置（ADR-0003）；启用城市治理时必填。</summary>
         public CityGovernanceConfig? GovernanceConfig { get; }
 
+        /// <summary>开局世界真值（GDD_007 第 1 层）。<b>可选</b>：null 表示该场景不启用情报循环。</summary>
+        public WorldTruthLedger? WorldTruth { get; }
+
+        /// <summary>开局玩家阵营知识（GDD_007 第 4 层）。启用情报时必填（可空知识）。</summary>
+        public FactionIntel? PlayerIntel { get; }
+
+        /// <summary>情报配置（数据驱动，ADR-0003）；启用情报时必填。</summary>
+        public IntelConfig? IntelConfig { get; }
+
+        /// <summary>军议装配配置（M04 / GDD_008）。<b>可选</b>：启用军议时提供（须先启用情报）。</summary>
+        public SessionCouncilSetup? CouncilSetup { get; }
+
         public CampaignStartConfig(
             string scenarioConfigId,
             ConfigFingerprint fingerprint,
@@ -60,7 +73,11 @@ namespace ThreeKingdom.Application.Session
             CitySettlementConfig? settlementConfig = null,
             FixedPoint populationPressure = default,
             long initialLogisticsHolding = 0,
-            CityGovernanceConfig? governanceConfig = null)
+            CityGovernanceConfig? governanceConfig = null,
+            WorldTruthLedger? worldTruth = null,
+            FactionIntel? playerIntel = null,
+            IntelConfig? intelConfig = null,
+            SessionCouncilSetup? councilSetup = null)
         {
             if (string.IsNullOrWhiteSpace(scenarioConfigId))
                 throw new ArgumentException("场景配置 id 不可为空或空白。", nameof(scenarioConfigId));
@@ -70,6 +87,10 @@ namespace ThreeKingdom.Application.Session
                 throw new ArgumentException("启用城市治理（cityEconomy 非空）时必须提供 settlementConfig。", nameof(settlementConfig));
             if (cityEconomy != null && governanceConfig == null)
                 throw new ArgumentException("启用城市治理（cityEconomy 非空）时必须提供 governanceConfig。", nameof(governanceConfig));
+            if (playerIntel != null && (worldTruth == null || intelConfig == null))
+                throw new ArgumentException("启用情报（playerIntel 非空）时必须提供 worldTruth 与 intelConfig。", nameof(playerIntel));
+            if (councilSetup != null && playerIntel == null)
+                throw new ArgumentException("启用军议（councilSetup 非空）时必须先启用情报（playerIntel）。", nameof(councilSetup));
             ScenarioConfigId = scenarioConfigId;
             Fingerprint = fingerprint;
             GovernorSeed = governorSeed ?? throw new ArgumentNullException(nameof(governorSeed));
@@ -81,6 +102,10 @@ namespace ThreeKingdom.Application.Session
             PopulationPressure = populationPressure;
             InitialLogisticsHolding = initialLogisticsHolding;
             GovernanceConfig = governanceConfig;
+            WorldTruth = worldTruth;
+            PlayerIntel = playerIntel;
+            IntelConfig = intelConfig;
+            CouncilSetup = councilSetup;
         }
     }
 }

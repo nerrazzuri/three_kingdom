@@ -55,6 +55,12 @@ namespace ThreeKingdom.Domain.Intel
         /// <summary>是否存在主题真值。</summary>
         public bool Has(IntelSubjectId subject) => _records.ContainsKey(subject);
 
+        /// <summary>
+        /// 全部真值记录（只读枚举，供会话装配层确定性哈希与存档序列化使用）。
+        /// <b>仍属世界真值层</b>——调用方不得将其转入显示层投影（反全知，control-manifest 禁则）。
+        /// </summary>
+        public IReadOnlyCollection<TruthRecord> Records => _records.Values;
+
         /// <summary>更新真实兵力（权威路径整数）。</summary>
         public void SetStrength(IntelSubjectId subject, int strength)
         {

@@ -29,5 +29,11 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>工事已满，修复目标无效（无部分写入）。</summary>
         FortificationFull = 7,
+
+        /// <summary>会话未启用情报/军议，情报命令不适用。</summary>
+        IntelDisabled = 8,
+
+        /// <summary>侦察对象非法（未在世界真值登记 / 缺必填字段；"侦察全部"非法）。</summary>
+        UnknownIntelSubject = 9,
     }
 }

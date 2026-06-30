@@ -1,7 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
+using ThreeKingdom.Domain.Council;
+using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
@@ -63,18 +68,67 @@ namespace ThreeKingdom.Application.Session
         /// <summary>治理命令代价/增益配置（数据驱动，ADR-0003）；启用城市治理时必填。</summary>
         internal CityGovernanceConfig? GovernanceConfig { get; }
 
+        // --- 情报态（M04 / GDD_007）。可选；四层分离——真值 internal、只读出口仅阵营知识投影（反全知）---
+        private readonly FactionIntel? _playerIntel;
+
+        /// <summary>世界真值（GDD_007 第 1 层）。<b>仅 internal</b>——侦察/存档经此读，<b>绝不</b>进 public 只读出口（反全知）。</summary>
+        internal WorldTruthLedger? Truth { get; }
+
+        /// <summary>玩家阵营知识层（internal，供侦察写入/军议读取/存档）。</summary>
+        internal FactionIntel? PlayerIntel => _playerIntel;
+
+        /// <summary>情报配置（数据驱动）；启用情报时必填。</summary>
+        internal IntelConfig? IntelConfig { get; }
+
+        /// <summary>是否启用情报/军议循环（情报态存在）。</summary>
+        public bool HasIntel => _playerIntel != null;
+
+        /// <summary>
+        /// 玩家阵营知识只读投影（GDD_007 第 4 层 / TR-intel-001）——<b>显示层唯一可读情报入口</b>，
+        /// 结构上不含真值字段，无从泄露 <see cref="Truth"/>（反全知）。未启用情报时为 null。
+        /// </summary>
+        public IntelProjection? PlayerKnowledge => _playerIntel?.Project();
+
+        /// <summary>会话军议装配配置（M04 / GDD_008）；启用军议时存在。</summary>
+        internal SessionCouncilSetup? Council { get; }
+
+        /// <summary>
+        /// 当前知识快照 ID（GDD_008 §Formula 4）：由玩家已知条目（主题+估计值+观察时间）确定性派生。
+        /// 侦察改变知识 → 快照变 → 已召开军议建议被标过时（<see cref="CouncilAdviceSet.IsStaleAgainst"/>）。
+        /// 未启用情报时为 null。
+        /// </summary>
+        public KnowledgeSnapshotId? CurrentKnowledgeSnapshotId
+        {
+            get
+            {
+                if (_playerIntel == null) return null;
+                var entries = new List<IntelKnowledgeEntry>(_playerIntel.Project().Entries);
+                entries.Sort((a, b) => string.CompareOrdinal(a.Subject.Value, b.Subject.Value));
+                var sb = new StringBuilder("k");
+                foreach (IntelKnowledgeEntry e in entries)
+                    sb.Append('|').Append(e.Subject.Value).Append(':')
+                      .Append(e.KnownStrength.ToString(CultureInfo.InvariantCulture)).Append('@')
+                      .Append(e.ObservedAt.AbsoluteIndex.ToString(CultureInfo.InvariantCulture));
+                return new KnowledgeSnapshotId(sb.ToString());
+            }
+        }
+
         internal CampaignSession(
             string id, string scenarioConfigId, ConfigFingerprint fingerprint,
             CareerSnapshot career, WorldCityProjection worldProjection, ICityControlAuthority control,
             CityEconomyState? cityEconomy = null, CitySettlementConfig? settlementConfig = null,
             FixedPoint populationPressure = default, long logisticsHolding = 0,
-            CityGovernanceConfig? governanceConfig = null)
+            CityGovernanceConfig? governanceConfig = null,
+            WorldTruthLedger? truth = null, FactionIntel? playerIntel = null, IntelConfig? intelConfig = null,
+            SessionCouncilSetup? council = null)
         {
             if (logisticsHolding < 0) throw new ArgumentOutOfRangeException(nameof(logisticsHolding), "后勤持有量不可为负。");
             if (cityEconomy != null && settlementConfig == null)
                 throw new ArgumentException("启用城市治理（cityEconomy 非空）时必须提供 settlementConfig。", nameof(settlementConfig));
             if (cityEconomy != null && governanceConfig == null)
                 throw new ArgumentException("启用城市治理（cityEconomy 非空）时必须提供 governanceConfig。", nameof(governanceConfig));
+            if (playerIntel != null && (truth == null || intelConfig == null))
+                throw new ArgumentException("启用情报（playerIntel 非空）时必须提供 truth 与 intelConfig。", nameof(playerIntel));
 
             Id = id;
             ScenarioConfigId = scenarioConfigId;
@@ -87,6 +141,10 @@ namespace ThreeKingdom.Application.Session
             PopulationPressure = populationPressure;
             LogisticsHolding = logisticsHolding;
             GovernanceConfig = governanceConfig;
+            Truth = truth;
+            _playerIntel = playerIntel;
+            IntelConfig = intelConfig;
+            Council = council;
         }
 
         /// <summary>日界推进世界时间（仅供 <see cref="CampaignSessionService"/> 按全局结算顺序编排调用）。</summary>
@@ -122,7 +180,42 @@ namespace ThreeKingdom.Application.Session
                 CityEconomy.AppendTo(hasher);
                 hasher.Append(LogisticsHolding);
             }
+            if (_playerIntel != null && Truth != null)
+            {
+                AppendIntel(hasher);
+            }
             return hasher.ToHash();
+        }
+
+        /// <summary>情报态确定性哈希：世界真值 ⊕ 玩家知识，各按 subject 排序（ADR-0004）。</summary>
+        private void AppendIntel(StateHasher hasher)
+        {
+            var truth = new List<TruthRecord>(Truth!.Records);
+            truth.Sort((a, b) => string.CompareOrdinal(a.Subject.Value, b.Subject.Value));
+            hasher.Append(truth.Count);
+            foreach (TruthRecord r in truth)
+            {
+                AppendString(hasher, r.Subject.Value);
+                hasher.Append(r.ActualStrength);
+                AppendString(hasher, r.Owner.Value);
+            }
+
+            var entries = new List<IntelKnowledgeEntry>(_playerIntel!.Project().Entries);
+            entries.Sort((a, b) => string.CompareOrdinal(a.Subject.Value, b.Subject.Value));
+            hasher.Append(entries.Count);
+            foreach (IntelKnowledgeEntry e in entries)
+            {
+                AppendString(hasher, e.Subject.Value);
+                hasher.Append(e.KnownStrength);
+                hasher.Append((int)e.Source);
+                hasher.Append(e.ObservedAt.AbsoluteIndex);
+            }
+        }
+
+        private static void AppendString(StateHasher hasher, string value)
+        {
+            hasher.Append(value.Length);
+            foreach (char ch in value) hasher.Append((int)ch);
         }
     }
 }

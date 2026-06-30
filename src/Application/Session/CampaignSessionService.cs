@@ -4,8 +4,12 @@ using ThreeKingdom.Application.Career;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
+using ThreeKingdom.Domain.Council;
+using ThreeKingdom.Domain.Intel;
+using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Persistence;
+using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 
 namespace ThreeKingdom.Application.Session
@@ -54,7 +58,11 @@ namespace ThreeKingdom.Application.Session
                 settlementConfig: config.SettlementConfig,
                 populationPressure: config.PopulationPressure,
                 logisticsHolding: config.InitialLogisticsHolding,
-                governanceConfig: config.GovernanceConfig);
+                governanceConfig: config.GovernanceConfig,
+                truth: config.WorldTruth,             // M04：情报态（可选；null 则不启用情报循环）
+                playerIntel: config.PlayerIntel,
+                intelConfig: config.IntelConfig,
+                council: config.CouncilSetup);
 
             return CampaignStartResult.Success(session);
         }
@@ -161,6 +169,54 @@ namespace ThreeKingdom.Application.Session
         private static int ClampInt(int value, int min, int max)
             => value < min ? min : (value > max ? max : value);
 
+        // --- 情报命令（M04 / TR-intel-002）。侦察经会话路径产生报告并入玩家知识；前置校验失败稳定错误码、零写入。---
+
+        private readonly IntelService _intel = new IntelService();
+
+        /// <summary>
+        /// 侦察（GDD_007）：对指定对象以指定方法侦察 → 经 <see cref="IntelService"/> 解析观察/报告 → 并入玩家阵营知识。
+        /// "侦察全部"非法——须指定登记于世界真值的具体对象，否则 <see cref="CampaignErrorCode.UnknownIntelSubject"/> 拒绝、零写入。
+        /// </summary>
+        public CampaignCommandResult Scout(CampaignSession session, IntelSubjectId subject, IntelSource method)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasIntel)
+                return CampaignCommandResult.Failure(CampaignErrorCode.IntelDisabled, "会话未启用情报。");
+            if (!session.Truth!.Has(subject))
+                return CampaignCommandResult.Failure(CampaignErrorCode.UnknownIntelSubject,
+                    $"侦察对象未登记或非法：{subject}。");
+
+            FactionId observer = session.PlayerIntel!.Faction;
+            Observation observation = _intel.Observe(session.Truth!, subject, observer, session.CurrentTime);
+            IntelReport report = _intel.ToReport(observation, observer, method);
+            session.PlayerIntel!.ApplyReport(report);
+            return CampaignCommandResult.Success();
+        }
+
+        private readonly WarCouncilService _council = new WarCouncilService();
+
+        /// <summary>
+        /// 召开军议（GDD_008 / TR-council-001/002）：读会话当前知识快照 → 军师输出条件化建议集（并列、无最优解）。
+        /// 建议绑定召开时 <see cref="CampaignSession.CurrentKnowledgeSnapshotId"/>；之后侦察改变知识 →
+        /// 该建议 <see cref="CouncilAdviceSet.IsStaleAgainst"/> 为真（不静默更新）。军师只条件化建议（不给成功率/唯一推荐/自动命令）。
+        /// </summary>
+        public CouncilAdviceSet ConveneCouncil(CampaignSession session)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasIntel || session.Council == null)
+                throw new InvalidOperationException("会话未启用军议（须同时启用情报与军议配置）。");
+
+            SessionCouncilSetup setup = session.Council;
+            IntelProjection knowledge = session.PlayerKnowledge!;   // 只读阵营知识，绝不触真值（反全知）
+            var confidences = new Dictionary<IntelSubjectId, FixedPoint>();
+            foreach (IntelKnowledgeEntry e in knowledge.Entries)
+                confidences[e.Subject] = setup.KnownClaimConfidence;
+
+            return _council.Convene(
+                session.CurrentKnowledgeSnapshotId!.Value, knowledge, confidences,
+                setup.Advisor, setup.Templates, setup.Config);
+        }
+
         /// <summary>
         /// 按场景 id 从目录配置驱动开局（M01 / ADR-0003）。未知 id → <see cref="CampaignErrorCode.SessionNotFound"/>。
         /// 切换场景仅换 id、无代码改动。
@@ -241,6 +297,23 @@ namespace ThreeKingdom.Application.Session
                       + "\t" + session.LogisticsHolding + "\n";
             }
 
+            // 情报段（M04 / TR-intel-003）：世界真值与玩家知识**分别序列化**（独立段，加载不交叉污染）。
+            if (session.HasIntel)
+            {
+                head += "intel\t" + session.PlayerIntel!.Faction.Value + "\n";
+
+                var truthRecords = new List<TruthRecord>(session.Truth!.Records);
+                truthRecords.Sort((a, b) => string.CompareOrdinal(a.Subject.Value, b.Subject.Value));
+                foreach (TruthRecord r in truthRecords)
+                    head += "truth\t" + r.Subject.Value + "\t" + r.ActualStrength + "\t" + r.Owner.Value + "\n";
+
+                var entries = new List<IntelKnowledgeEntry>(session.PlayerIntel!.Project().Entries);
+                entries.Sort((a, b) => string.CompareOrdinal(a.Subject.Value, b.Subject.Value));
+                foreach (IntelKnowledgeEntry e in entries)
+                    head += "knowledge\t" + e.Subject.Value + "\t" + e.KnownStrength + "\t" + (int)e.Source
+                          + "\t" + e.ObservedAt.Day + "\t" + (int)e.ObservedAt.Segment + "\n";
+            }
+
             return head + BodyMarker + "\n" + body;
         }
 
@@ -251,7 +324,8 @@ namespace ThreeKingdom.Application.Session
         public CampaignSession Restore(
             string text, ConfigFingerprint expectedFingerprint,
             CitySettlementConfig? settlementConfig = null, CityGovernanceConfig? governanceConfig = null,
-            FixedPoint populationPressure = default)
+            FixedPoint populationPressure = default,
+            IntelConfig? intelConfig = null, SessionCouncilSetup? councilSetup = null)
         {
             if (text is null) throw new SaveFormatException("会话存档文本为 null。");
             string[] lines = text.Split('\n');
@@ -263,11 +337,38 @@ namespace ThreeKingdom.Application.Session
             int idx = 3;
             CityEconomyState? city = null;
             long cityLogistics = 0;
-            if (lines[idx].StartsWith("city\t", StringComparison.Ordinal))
+            if (idx < lines.Length && lines[idx].StartsWith("city\t", StringComparison.Ordinal))
             {
                 (city, cityLogistics) = ParseCity(lines[idx]);
                 idx++;
             }
+
+            // 可选情报段（M04 / TR-intel-003）：世界真值与玩家知识**分别**重建，互不污染。
+            WorldTruthLedger? truth = null;
+            FactionIntel? playerIntel = null;
+            if (idx < lines.Length && lines[idx].StartsWith("intel\t", StringComparison.Ordinal))
+            {
+                string[] ip = lines[idx].Split('\t');
+                if (ip.Length != 2) throw new SaveFormatException($"情报段头格式不符：「{lines[idx]}」。");
+                var playerFaction = new FactionId(ip[1]);
+                truth = new WorldTruthLedger();
+                playerIntel = new FactionIntel(playerFaction);
+                idx++;
+
+                // 真值段：只建真值，绝不填入玩家知识。
+                while (idx < lines.Length && lines[idx].StartsWith("truth\t", StringComparison.Ordinal))
+                {
+                    truth.Set(ParseTruth(lines[idx]));
+                    idx++;
+                }
+                // 知识段：只建玩家知识（经报告路径），绝不读真值。
+                while (idx < lines.Length && lines[idx].StartsWith("knowledge\t", StringComparison.Ordinal))
+                {
+                    playerIntel.ApplyReport(ParseKnowledge(lines[idx], playerFaction));
+                    idx++;
+                }
+            }
+
             if (idx >= lines.Length || lines[idx] != BodyMarker) throw new SaveFormatException("缺会话体标记。");
             string body = string.Join("\n", new ArraySegment<string>(lines, idx + 1, lines.Length - idx - 1));
 
@@ -282,11 +383,50 @@ namespace ThreeKingdom.Application.Session
 
             if (city != null && (settlementConfig == null || governanceConfig == null))
                 throw new SaveFormatException("存档含城市治理态，但未提供城市配置（settlementConfig/governanceConfig）以恢复。");
+            if (truth != null && intelConfig == null)
+                throw new SaveFormatException("存档含情报态，但未提供情报配置（intelConfig）以恢复。");
 
             return new CampaignSession(
                 id, scenario, expectedFingerprint, state.Career.Snapshot, projection, authority,
                 cityEconomy: city, settlementConfig: settlementConfig, populationPressure: populationPressure,
-                logisticsHolding: cityLogistics, governanceConfig: governanceConfig);
+                logisticsHolding: cityLogistics, governanceConfig: governanceConfig,
+                truth: truth, playerIntel: playerIntel, intelConfig: intelConfig, council: councilSetup);
+        }
+
+        /// <summary>解析真值段：<c>truth\t{subject}\t{strength}\t{owner}</c>。</summary>
+        private static TruthRecord ParseTruth(string line)
+        {
+            string[] p = line.Split('\t');
+            if (p.Length != 4 || p[0] != "truth")
+                throw new SaveFormatException($"真值段格式不符：「{line}」。");
+            try
+            {
+                return new TruthRecord(new IntelSubjectId(p[1]), int.Parse(p[2]), new FactionId(p[3]));
+            }
+            catch (FormatException ex)
+            {
+                throw new SaveFormatException("真值段数值解析失败：" + ex.Message);
+            }
+        }
+
+        /// <summary>解析知识段：<c>knowledge\t{subject}\t{strength}\t{source}\t{day}\t{segment}</c>，重建为报告并入知识。</summary>
+        private static IntelReport ParseKnowledge(string line, FactionId faction)
+        {
+            string[] p = line.Split('\t');
+            if (p.Length != 6 || p[0] != "knowledge")
+                throw new SaveFormatException($"知识段格式不符：「{line}」。");
+            try
+            {
+                var subject = new IntelSubjectId(p[1]);
+                int strength = int.Parse(p[2]);
+                var source = (IntelSource)int.Parse(p[3]);
+                var observedAt = new WorldTime(int.Parse(p[4]), (DaySegment)int.Parse(p[5]));
+                return new IntelReport(subject, faction, strength, source, observedAt);
+            }
+            catch (FormatException ex)
+            {
+                throw new SaveFormatException("知识段数值解析失败：" + ex.Message);
+            }
         }
 
         /// <summary>解析城市治理段：<c>city\t{id}\t{stock}\t{reserved}\t{morale}\t{security}\t{fortCur}\t{fortMax}\t{logistics}</c>。</summary>
