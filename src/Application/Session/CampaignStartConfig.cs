@@ -76,6 +76,15 @@ namespace ThreeKingdom.Application.Session
         /// <summary>已授权命令（GDD_005/006，供提交校验）。</summary>
         public IReadOnlyCollection<OrderId> AuthorizedOrders { get; }
 
+        /// <summary>历史事件目录（M10 / GDD_015）。<b>可选</b>：null 表示该场景不启用历史世界循环。</summary>
+        public HistoricalEventCatalog? HistoryCatalog { get; }
+
+        /// <summary>玩家触及范围（reachability）。</summary>
+        public PlayerReach? PlayerReach { get; }
+
+        /// <summary>分叉传播配置（脱稿深度）。</summary>
+        public DivergencePropagationConfig? DivergenceConfig { get; }
+
         public CampaignStartConfig(
             string scenarioConfigId,
             ConfigFingerprint fingerprint,
@@ -95,7 +104,10 @@ namespace ThreeKingdom.Application.Session
             ResourcePool? resourcePool = null,
             PreparationConfig? preparationConfig = null,
             IReadOnlyCollection<RegionId>? reachableRegions = null,
-            IReadOnlyCollection<OrderId>? authorizedOrders = null)
+            IReadOnlyCollection<OrderId>? authorizedOrders = null,
+            HistoricalEventCatalog? historyCatalog = null,
+            PlayerReach? playerReach = null,
+            DivergencePropagationConfig? divergenceConfig = null)
         {
             if (string.IsNullOrWhiteSpace(scenarioConfigId))
                 throw new ArgumentException("场景配置 id 不可为空或空白。", nameof(scenarioConfigId));
@@ -130,6 +142,9 @@ namespace ThreeKingdom.Application.Session
             PreparationConfig = preparationConfig;
             ReachableRegions = reachableRegions ?? Array.Empty<RegionId>();
             AuthorizedOrders = authorizedOrders ?? Array.Empty<OrderId>();
+            HistoryCatalog = historyCatalog;
+            PlayerReach = playerReach;
+            DivergenceConfig = divergenceConfig;
         }
     }
 }

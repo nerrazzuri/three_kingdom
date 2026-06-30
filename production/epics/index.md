@@ -58,6 +58,7 @@ Manifest Version: 2 (2026-06-28)
 | [后果与恢复循环](epic-020-consequence-recovery-loop/EPIC.md) | Feature（M07） | 战果写回完整世界→胜败都有后续 | ADR-0004/0009/0008/0005 + TR-outcome-001/002 | 4 stories | ✅ Complete |
 | [敌方 AI 循环](epic-021-enemy-ai-loop/EPIC.md) | Core+Feature（M08） | 敌方 AI Domain 内核（战术 80%）→可读可骗可复现对手 | ADR-0006/0004/0009 + TR-ai-001~004 | 4 stories | ✅ Complete |
 | [生涯与权限循环](epic-022-career-authority-loop/EPIC.md) | Feature（M09） | 生涯/权限接入会话→功绩/晋升/自立 | ADR-0004/0009/0008/0005 + TR-career-001~005 | 4 stories | ✅ Complete |
+| [历史世界与势力循环](epic-023-historical-world-faction-loop/EPIC.md) | Feature（M10） | 历史世界接入会话→够不着继续/够得着分叉 | ADR-0007/0008/0004/0005 + TR-world-001~006 | 4 stories | ✅ Complete |
 
 > epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）；epic-014 = **M01 场景目录**（CON-5 收尾）；epic-015 = **M02 太守开局循环**（开局守城→胜败两支续局+存读档）。ADR-0009 Accepted（2026-06-28，经子代理复审）。后续装配 epic（M03~M16，epic-016~028）见模块规划 §6 切分表。
 
@@ -67,8 +68,10 @@ Manifest Version: 2 (2026-06-28)
 
 ## 统计
 
-- 22 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 6 Feature M03~M09 + 1 Core+Feature M08）；22 ✅ Complete。
-- 84 stories ✅ Complete（含 epic-022 生涯权限 4）；本地回归 **782/782 全绿，`-warnaserror` 0 warning**。
+- 23 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 7 Feature M03~M10 + 1 Core+Feature M08）；23 ✅ Complete。
+- 88 stories ✅ Complete（含 epic-023 历史世界 4）；本地回归 **797/797 全绿，`-warnaserror` 0 warning**。
+- **M10 历史世界达成**（epic-023）：历史事件按时间窗触发（够不着前置短路恒成立）+ 玩家触及分叉 + 下游传播 + 历史态存读档同序列同走向。
+- **17 模块进度：M00~M10 完成（11/17）**。
 - **M09 生涯权限达成**（epic-022）：功绩累积（非战斗源竞争力）+ 晋升申请（门槛/稳定错误码）+ 自立三分支反叛（转新势力/在野）+ 生涯态存读档确定性。
 - **M08 敌方 AI 达成**（epic-021，从零 Domain 内核）：AiWorldView 反全知锁（结构级）+ 效用评分硬可行性门 + 种子 softmax（可复现 + 温度单调）+ DecisionRecord 错误信念可读 + 接入战区命令同源确定性。
 - **M07 后果恢复达成**（epic-020）：战果四分支后果原子写回会话城市态 + 胜败撤退失城都有续局（败局必非空，失败不切死局）+ 原子回滚 + 后果续局态存读档确定性。
@@ -84,15 +87,17 @@ Manifest Version: 2 (2026-06-28)
 
 ## 下一步
 
-★ **M00~M08 完成（2026-06-30）**——完整游戏循环 + 可读可骗可复现的敌方 AI 对手贯通。
+★ **M00~M10 完成（2026-06-30，11/17 模块）**——完整循环 + 敌方 AI + 生涯权限 + 历史世界贯通。
 
-**下一步选项**（module-plan §6 切分表）：
-- **M09+ 后续装配模块**：晋升梯队/自立反叛（M10/epic-022）、君主任务/招揽外交（M10/epic-024）、历史事件网络深化等。
-- **敌方 AI 后续**：OpponentModel 跨战役记忆（EWMA）+ 多日 StrategicPlan 战略层 + ILlmNarrator 装饰（ADR-0006 已留接口）——M08 仅做战术层 80%。
-- **整合验证**：`/team-qa` 全量回归 / 端到端竖切重验。
+**剩余 6 模块（M11~M16）进入"需补设计/受阻"区**：
+- 🟡 **M11 外交战略约束**（epic-024）：需补设计（新外交 GDD 或 GDD_012 扩展）——协作设计 GDD/ADR（user-driven）。
+- 🟡 **M12 多城战区**（epic-025）：需补设计。
+- 🔴 **M13 君主争霸**（epic-026）：硬阻塞，GDD_017 不存在，须先建 GDD+ADR（CLAUDE.md 红线）。
+- 🔴 **M14 统一终局**（epic-027）：硬阻塞，GDD_018 不存在。
+- 🟣 **M15 表现/UX**（epic-028）/ **M16 内容平衡发布**：Unity 表现层 + 内容。
 
-**说明**：M08 战术 AI 已接入战区命令（替代 M06 确定性预设敌方）；反全知锁结构级，错误信念复盘可读。
+**整合验证可选**：`/team-qa` 全量回归 / 端到端竖切重验。
 
-**后续装配序**（module-plan §6）：M03 城市治理（epic-016）→ M04 情报军议装配（epic-017）→ M05 战前准备装配（epic-018）→ M08 敌方 AI 战术层（epic-021，可与 M03 并行）。
+**敌方 AI 后续**：OpponentModel 记忆 + StrategicPlan 战略 + LLM 装饰（ADR-0006 已留接口；M08 仅战术 80%）。
 
 **并行裁决项**：GDD_016 敌方 AI（ADR-0006）是否进入装配期；若进入应先建 epic-021 并修 GDD_016 缺口（CON-3 已修），否则在控制清单显式标注 MVP 不含敌方 AI。

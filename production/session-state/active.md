@@ -1054,8 +1054,18 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 新生产代码：CampaignSessionService.ApplyCareerGain/RequestPromotion/CheckRebellionEligibility/LaunchRebellion（复用 epic-011 CareerProgressionService/RebellionService）
 - 护栏：非战斗功绩源竞争力（TR-career-002）；门槛/资格不足稳定错误码无写入；失败不切死局
 
-### ▶ 下一步（17 模块进度：M00~M09 完成，共 10/17）
-- **M10 历史世界与势力循环**（epic-023，待建）：world Domain 已实装 epic-012（HistoryAdvancer/DivergencePropagation），可装配接入会话。**用户已授权 M09+M10 连做——继续 M10**。
-- 之后 M11/M12 需补设计（GDD/ADR），M13/M14 硬红线（缺 GDD_017/018），M15/M16 表现/内容。
+### ✅ epic-023（M10 历史世界与势力循环）全部完成（2026-06-30）
+- 4/4 stories Complete；新增 15 测试（3+4+4+4）；**797/797 全绿，-warnaserror 0**
+- 复用 TR-world-001~006（无新 TR）；新生产代码：CampaignSession 持 catalog/reach/config + AdvanceHistory 命令（HistoryAdvancer + DivergencePropagation）
+- 历史态(triggered/diverged)在 world 段（epic-012），无新存档代码；catalog/reach/config 数据驱动开局注入
+- 验证：够不着前置短路恒成立(reachability)；够得着+前置破坏→分叉+下游传播；同序列同走向；存读档一致
+
+### ▶ 下一步（17 模块进度：M00~M10 完成，共 11/17）
+**用户授权的 M09+M10 已连做完成。** 剩余 M11~M16 进入"需补设计/受阻"区：
+- 🟡 M11 外交（epic-024）/ M12 多城（epic-025）：需补设计 GDD/ADR（协作 user-driven，不能闷头做）
+- 🔴 M13 君主（epic-026，缺 GDD_017）/ M14 终局（epic-027，缺 GDD_018）：硬红线，须先建 GDD+ADR
+- 🟣 M15 表现/UX（epic-028）/ M16 内容平衡发布：Unity 表现层 + 内容
+- 整合验证可选：/team-qa 全量回归
+- 累计：23 epics 全 Complete，88 stories，797 测试全绿
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

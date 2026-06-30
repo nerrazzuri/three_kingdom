@@ -71,7 +71,10 @@ namespace ThreeKingdom.Application.Session
                 pool: config.ResourcePool,            // M05：准备态（可选；null 则不启用准备循环）
                 prepConfig: config.PreparationConfig,
                 reachableRegions: config.ReachableRegions,
-                authorizedOrders: config.AuthorizedOrders);
+                authorizedOrders: config.AuthorizedOrders,
+                historyCatalog: config.HistoryCatalog,   // M10：历史世界态（可选；null 则不启用历史循环）
+                historyReach: config.PlayerReach,
+                divergenceConfig: config.DivergenceConfig);
 
             return CampaignStartResult.Success(session);
         }
@@ -456,6 +459,47 @@ namespace ThreeKingdom.Application.Session
             RebellionResult r = _rebellion.Launch(config, session.Career, context);
             if (r.Launched) session.SetCareer(r.Snapshot);
             return r;
+        }
+
+        // --- 历史世界命令（M10 / TR-world-001~006）。历史事件按时间窗触发；够不着前置短路；触及分叉传播。---
+
+        private readonly HistoryAdvancer _historyAdvancer = new HistoryAdvancer();
+        private readonly DivergencePropagationService _divergence = new DivergencePropagationService();
+
+        /// <summary>
+        /// 推进历史世界（GDD_015 / ADR-0007 / TR-world-002）：对目录中时间窗已到、未触发的历史事件按稳定序触发——
+        /// 够不着（reachability 外）→ 正常结局且前置短路恒成立（早期历史便宜）；够得着且前置成立 → 正常；
+        /// 够得着但前置被玩家破坏 → 分叉，并向下游传播重评估（脱稿深度由配置定）。历史态写入 WorldState（存档 world 段）。
+        /// </summary>
+        public IReadOnlyList<HistoryAdvanceResult> AdvanceHistory(CampaignSession session)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasHistory) return Array.Empty<HistoryAdvanceResult>();
+
+            HistoricalEventCatalog catalog = session.HistoryCatalog!;
+            WorldTime now = session.CurrentTime;
+            var results = new List<HistoryAdvanceResult>();
+
+            // 到期（Window.Start ≤ 当前）且未触发的事件，按 EventId 稳定序触发（确定性）。
+            var due = new List<HistoricalEvent>();
+            foreach (HistoricalEvent e in catalog.Events)
+                if (!session.World.IsTriggered(e.Id.Value) && e.Window.Start <= now)
+                    due.Add(e);
+            due.Sort((a, b) => string.CompareOrdinal(a.Id.Value, b.Id.Value));
+
+            foreach (HistoricalEvent e in due)
+            {
+                HistoryAdvanceResult r = _historyAdvancer.OnTimeWindowEnter(catalog, e.Id, session.World, session.HistoryReach);
+                session.RestoreWorld(r.World);
+                if (r.Diverged)
+                {
+                    DivergencePropagationResult prop = _divergence.Propagate(catalog, e, session.World, session.HistoryReach, session.DivergenceConfig);
+                    session.RestoreWorld(prop.World);
+                }
+                results.Add(r);
+            }
+
+            return results;
         }
 
         /// <summary>

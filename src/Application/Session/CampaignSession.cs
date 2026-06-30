@@ -181,6 +181,20 @@ namespace ThreeKingdom.Application.Session
             if (options != null) _lastOptions.AddRange(options);
         }
 
+        // --- 历史世界态（M10 / GDD_015 / ADR-0007）。可选；历史事件触发/分叉经服务编排，历史态在 world 段 ---
+
+        /// <summary>历史事件目录（数据驱动，可分区域包）；启用历史循环时存在。</summary>
+        internal HistoricalEventCatalog? HistoryCatalog { get; }
+
+        /// <summary>玩家触及范围（reachability：够得着的历史可分叉，够不着的继续）。</summary>
+        internal PlayerReach HistoryReach { get; }
+
+        /// <summary>分叉传播配置（脱稿深度，数据驱动）。</summary>
+        internal DivergencePropagationConfig DivergenceConfig { get; }
+
+        /// <summary>是否启用历史世界循环（历史事件目录存在）。</summary>
+        public bool HasHistory => HistoryCatalog != null;
+
         /// <summary>
         /// 当前知识快照 ID（GDD_008 §Formula 4）：由玩家已知条目（主题+估计值+观察时间）确定性派生。
         /// 侦察改变知识 → 快照变 → 已召开军议建议被标过时（<see cref="CouncilAdviceSet.IsStaleAgainst"/>）。
@@ -215,7 +229,9 @@ namespace ThreeKingdom.Application.Session
             CommittedPlan? committedPlan = null,
             BattleSnapshot? battle = null, BattleConfig? battleConfig = null, ulong battleSeed = 0,
             TacticChainConfig? tacticChains = null, IReadOnlyCollection<TacticCondition>? battleConditions = null,
-            OutcomeBranch? lastOutcomeBranch = null, IReadOnlyList<ContinuationOption>? lastOptions = null)
+            OutcomeBranch? lastOutcomeBranch = null, IReadOnlyList<ContinuationOption>? lastOptions = null,
+            HistoricalEventCatalog? historyCatalog = null, PlayerReach? historyReach = null,
+            DivergencePropagationConfig? divergenceConfig = null)
         {
             if (logisticsHolding < 0) throw new ArgumentOutOfRangeException(nameof(logisticsHolding), "后勤持有量不可为负。");
             if (cityEconomy != null && settlementConfig == null)
@@ -258,6 +274,9 @@ namespace ThreeKingdom.Application.Session
                 foreach (TacticCondition c in battleConditions) _battleConditions.Add(c);
             LastOutcomeBranch = lastOutcomeBranch;
             if (lastOptions != null) _lastOptions.AddRange(lastOptions);
+            HistoryCatalog = historyCatalog;
+            HistoryReach = historyReach ?? PlayerReach.None;
+            DivergenceConfig = divergenceConfig ?? DivergencePropagationConfig.Default;
         }
 
         /// <summary>提交成功后写回承诺计划与扣减后资源池（仅供 <see cref="CampaignSessionService"/> 编排）。</summary>
