@@ -42,7 +42,7 @@ Manifest Version: 2 (2026-06-28)
 > 这两个 Meta epic 把单场战役连接成可持续人生（014）+ 提供历史世界骨架（015）。
 > **Sprint 02（2026-06-28）完成全部 11 story（Must 5 + Should 3 + Nice 3）**；当时 smoke/team-qa 基线为 556/556 绿；当前本地回归验证为 564/564 绿；team-qa APPROVED。
 > 014/015 governing ADR-0007/0008 + 0002~0005 全 Accepted；无 untraced 需求。
-> 敌方 AI（gdd-016，ADR-0006）仍 Reviewed，未建 epic。
+> 敌方 AI（gdd-016，ADR-0006）已建 epic-021（M08）并完成——见下方 M08 行。
 
 ## Assembly 层（装配 — 从内核到可玩游戏）
 
@@ -83,7 +83,7 @@ Manifest Version: 2 (2026-06-28)
 - **M01 场景目录达成**（epic-014）：多场景按 id 开局 + 数据驱动 SliceScenarioData（CON-5 收尾）。
 - **M02 太守开局循环达成**（epic-015）：开局守城胜/败两支均可继续(Advance)+存读档+部曲保留+城权经004易主+两支确定性哈希。
 - 全部 governing ADR 为 Accepted（ADR-0001~0009）；无 Blocked story。
-- GDD_016 敌方 AI 仍为 Reviewed：有 GDD + ADR-0006，尚无 epic/story/实现（epic-021 待建）。
+- GDD_016 敌方 AI（ADR-0006）已落地：epic-021（M08）4/4 stories Complete，战术层 80%（OpponentModel/StrategicPlan/LLM 留后续）。
 
 ## 下一步
 
@@ -100,4 +100,4 @@ Manifest Version: 2 (2026-06-28)
 
 **敌方 AI 后续**：OpponentModel 记忆 + StrategicPlan 战略 + LLM 装饰（ADR-0006 已留接口；M08 仅战术 80%）。
 
-**并行裁决项**：GDD_016 敌方 AI（ADR-0006）是否进入装配期；若进入应先建 epic-021 并修 GDD_016 缺口（CON-3 已修），否则在控制清单显式标注 MVP 不含敌方 AI。
+**特性裁定输入**：`docs/reviews/rotk-feature-gap-verdict-2026-06-30.md`（三国志功能缺口裁定，待团队评审）——M11/M12 design-first；M13/M14 须走正式 roadmap 修订；M09 增量为设计债不重开。
