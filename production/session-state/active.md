@@ -1008,8 +1008,19 @@ ADR-0003（数据驱动配置的正式锁定）。
   - S004：CaptureSnapshot/Restore 加情报段（真值/知识分别序列化不交叉污染）
 - 护栏达成：军师只条件化建议（AdviceStatement 无成功率字段）+ 情报真值仅 internal（反全知）
 
-### ▶ 下一步
-- **M05 战役准备循环**（epic-018，待建）：消费 M03 城市派生战役条件 + M04 情报 → 组装可执行战役初始条件（PlanDraft/CommittedPlan/冲突 DAG）。`/create-epics epic-018`
+### ✅ epic-018（M05 战役准备循环）全部完成（2026-06-30）
+- 4/4 stories Complete；新增 23 测试（8+5+5+5）；**703/703 全绿，-warnaserror 0**
+- **新生产代码**：
+  - S001：CampaignSession 持 Pool/Draft/PrepConfig/可达/授权/CommittedPlan + AppendPreparation 哈希；AddPlanOrder/RemovePlanOrder 命令；CampaignErrorCode +PreparationDisabled
+  - S002：SubmitPlan（经 PlanCommitService.Submit 原子提交；成功才写回承诺+扣减池）
+  - S003：冲突拒绝测试（ResourceShortage/Unreachable/NoAuthority/CyclicDependency + 原子性 + 可继续）
+  - S004：CaptureSnapshot/Restore 加准备段（pool/draftorder/committed；配置数据驱动不入存档体）
+- 护栏达成：不自动布阵（系统只校验+原子提交，玩家手动构造计划）；失败无部分写入（资源池不变）
+
+### ▶ 下一步（装配主线 M00~M05 全部完成）
+- **M06 兵法沙盒战斗装配**（epic-019，待建）：消费 M05 CommittedPlan 作战役初始条件 + M03 城市派生战役条件。`/create-epics epic-019`
+- **CD 硬退出门**：M06 宣称"兵法沙盒MVP完成"前必接 ≥1 机动招式（假退伏击/火攻）——非纯薄皮战斗
 - 可选并行：M08 敌方 AI 战术层（epic-021）
+- 累计：18 epics 全 Complete，68 stories，703 测试全绿；装配 M00→M05（脊梁→场景→开局→城市→情报军议→战役准备）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

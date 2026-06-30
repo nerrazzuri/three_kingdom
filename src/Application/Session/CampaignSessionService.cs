@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ThreeKingdom.Application.Career;
 using ThreeKingdom.Domain.Career;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
 using ThreeKingdom.Domain.Council;
@@ -9,6 +11,7 @@ using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Persistence;
+using ThreeKingdom.Domain.Preparation;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 
@@ -62,7 +65,11 @@ namespace ThreeKingdom.Application.Session
                 truth: config.WorldTruth,             // M04：情报态（可选；null 则不启用情报循环）
                 playerIntel: config.PlayerIntel,
                 intelConfig: config.IntelConfig,
-                council: config.CouncilSetup);
+                council: config.CouncilSetup,
+                pool: config.ResourcePool,            // M05：准备态（可选；null 则不启用准备循环）
+                prepConfig: config.PreparationConfig,
+                reachableRegions: config.ReachableRegions,
+                authorizedOrders: config.AuthorizedOrders);
 
             return CampaignStartResult.Success(session);
         }
@@ -217,6 +224,62 @@ namespace ThreeKingdom.Application.Session
                 setup.Advisor, setup.Templates, setup.Config);
         }
 
+        // --- 战役准备命令（M05 / TR-prep-001/002）。草稿编辑不改权威态；提交经 PlanCommitService 原子。---
+
+        private readonly PlanCommitService _planCommit = new PlanCommitService();
+
+        /// <summary>
+        /// 加入一条计划草稿命令（GDD_009）。<b>只改草稿，不改权威 state</b>（资源池/承诺计划不变，TR-prep-001）。
+        /// 同 id 已存在 → <see cref="CampaignErrorCode.InvalidAmount"/>（复用为"非法命令"语义）拒绝。
+        /// </summary>
+        public CampaignCommandResult AddPlanOrder(CampaignSession session, PreparedOrder order)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (order is null) throw new ArgumentNullException(nameof(order));
+            if (!session.HasPreparation)
+                return CampaignCommandResult.Failure(CampaignErrorCode.PreparationDisabled, "会话未启用战役准备。");
+
+            foreach (PreparedOrder existing in session.Draft!.Orders)
+                if (existing.Id == order.Id)
+                    return CampaignCommandResult.Failure(CampaignErrorCode.InvalidAmount, $"命令 id 已存在：{order.Id}。");
+
+            session.Draft!.AddOrder(order);
+            return CampaignCommandResult.Success();
+        }
+
+        /// <summary>移除一条计划草稿命令（只改草稿）。不存在 → 返回失败码但不抛（可继续）。</summary>
+        public CampaignCommandResult RemovePlanOrder(CampaignSession session, OrderId orderId)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasPreparation)
+                return CampaignCommandResult.Failure(CampaignErrorCode.PreparationDisabled, "会话未启用战役准备。");
+
+            bool removed = session.Draft!.RemoveOrder(orderId);
+            return removed
+                ? CampaignCommandResult.Success()
+                : CampaignCommandResult.Failure(CampaignErrorCode.UnknownIntelSubject, $"草稿无此命令：{orderId}。");
+        }
+
+        /// <summary>
+        /// 提交计划（GDD_009 / TR-prep-001/002）：经 <see cref="PlanCommitService.Submit"/> 校验——
+        /// 全部通过才<b>原子</b>生成 <see cref="CommittedPlan"/> + 一次性扣减资源池（全有或全无）；
+        /// 任一硬冲突（占用/资源/可达/权限/循环依赖 DAG）则全单拒绝、资源池不变、无部分写入。
+        /// </summary>
+        public SubmitPlanResult SubmitPlan(CampaignSession session)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasPreparation)
+                throw new InvalidOperationException("会话未启用战役准备。");
+
+            SubmitPlanResult result = _planCommit.Submit(
+                session.Draft!, session.Pool!, session.ReachableRegions, session.AuthorizedOrders, session.PrepConfig!);
+
+            if (result.Committed)
+                session.ApplyCommittedPlan(result.Plan!, result.ResultingPool);   // 成功才写回（失败资源池不变）
+
+            return result;
+        }
+
         /// <summary>
         /// 按场景 id 从目录配置驱动开局（M01 / ADR-0003）。未知 id → <see cref="CampaignErrorCode.SessionNotFound"/>。
         /// 切换场景仅换 id、无代码改动。
@@ -314,6 +377,22 @@ namespace ThreeKingdom.Application.Session
                           + "\t" + e.ObservedAt.Day + "\t" + (int)e.ObservedAt.Segment + "\n";
             }
 
+            // 战役准备段（M05 / TR-prep-001）：资源池 + 草稿 + 承诺（配置数据驱动，由载入方提供，不入存档体）。
+            if (session.HasPreparation)
+            {
+                head += "prep\n";
+                foreach (KeyValuePair<ResourceKey, long> kv in session.Pool!.AsAvailable().OrderBy(k => k.Key.Value, StringComparer.Ordinal))
+                    head += "pool\t" + kv.Key.Value + "\t" + kv.Value + "\n";
+                foreach (PreparedOrder o in session.Draft!.Orders.OrderBy(o => o.Id.Value, StringComparer.Ordinal))
+                    head += "draftorder\t" + EncodeOrder(o) + "\n";
+                if (session.CommittedPlan != null)
+                {
+                    head += "committed\t" + EncodeResources(session.CommittedPlan.CommittedResources) + "\n";
+                    foreach (PreparedOrder o in session.CommittedPlan.Orders.OrderBy(o => o.Id.Value, StringComparer.Ordinal))
+                        head += "committedorder\t" + EncodeOrder(o) + "\n";
+                }
+            }
+
             return head + BodyMarker + "\n" + body;
         }
 
@@ -325,7 +404,9 @@ namespace ThreeKingdom.Application.Session
             string text, ConfigFingerprint expectedFingerprint,
             CitySettlementConfig? settlementConfig = null, CityGovernanceConfig? governanceConfig = null,
             FixedPoint populationPressure = default,
-            IntelConfig? intelConfig = null, SessionCouncilSetup? councilSetup = null)
+            IntelConfig? intelConfig = null, SessionCouncilSetup? councilSetup = null,
+            PreparationConfig? prepConfig = null,
+            IReadOnlyCollection<RegionId>? reachableRegions = null, IReadOnlyCollection<OrderId>? authorizedOrders = null)
         {
             if (text is null) throw new SaveFormatException("会话存档文本为 null。");
             string[] lines = text.Split('\n');
@@ -369,6 +450,45 @@ namespace ThreeKingdom.Application.Session
                 }
             }
 
+            // 可选战役准备段（M05 / TR-prep-001）：资源池 + 草稿 + 承诺；配置由载入方提供（数据驱动）。
+            ResourcePool? pool = null;
+            PlanDraft? draft = null;
+            CommittedPlan? committed = null;
+            if (idx < lines.Length && lines[idx] == "prep")
+            {
+                idx++;
+                var poolDict = new Dictionary<ResourceKey, long>();
+                while (idx < lines.Length && lines[idx].StartsWith("pool\t", StringComparison.Ordinal))
+                {
+                    string[] pp = lines[idx].Split('\t');
+                    if (pp.Length != 3) throw new SaveFormatException($"资源池段格式不符：「{lines[idx]}」。");
+                    poolDict[new ResourceKey(pp[1])] = long.Parse(pp[2]);
+                    idx++;
+                }
+                pool = new ResourcePool(poolDict);
+
+                draft = new PlanDraft();
+                while (idx < lines.Length && lines[idx].StartsWith("draftorder\t", StringComparison.Ordinal))
+                {
+                    draft.AddOrder(ParseOrder(lines[idx], "draftorder"));
+                    idx++;
+                }
+
+                if (idx < lines.Length && lines[idx].StartsWith("committed\t", StringComparison.Ordinal))
+                {
+                    string[] cp = lines[idx].Split('\t');
+                    IReadOnlyDictionary<ResourceKey, long> cres = cp.Length == 2 ? DecodeResources(cp[1]) : DecodeResources("");
+                    idx++;
+                    var corders = new List<PreparedOrder>();
+                    while (idx < lines.Length && lines[idx].StartsWith("committedorder\t", StringComparison.Ordinal))
+                    {
+                        corders.Add(ParseOrder(lines[idx], "committedorder"));
+                        idx++;
+                    }
+                    committed = new CommittedPlan(corders, cres);
+                }
+            }
+
             if (idx >= lines.Length || lines[idx] != BodyMarker) throw new SaveFormatException("缺会话体标记。");
             string body = string.Join("\n", new ArraySegment<string>(lines, idx + 1, lines.Length - idx - 1));
 
@@ -385,12 +505,16 @@ namespace ThreeKingdom.Application.Session
                 throw new SaveFormatException("存档含城市治理态，但未提供城市配置（settlementConfig/governanceConfig）以恢复。");
             if (truth != null && intelConfig == null)
                 throw new SaveFormatException("存档含情报态，但未提供情报配置（intelConfig）以恢复。");
+            if (pool != null && prepConfig == null)
+                throw new SaveFormatException("存档含战役准备态，但未提供准备配置（prepConfig）以恢复。");
 
             return new CampaignSession(
                 id, scenario, expectedFingerprint, state.Career.Snapshot, projection, authority,
                 cityEconomy: city, settlementConfig: settlementConfig, populationPressure: populationPressure,
                 logisticsHolding: cityLogistics, governanceConfig: governanceConfig,
-                truth: truth, playerIntel: playerIntel, intelConfig: intelConfig, council: councilSetup);
+                truth: truth, playerIntel: playerIntel, intelConfig: intelConfig, council: councilSetup,
+                pool: pool, draft: draft, prepConfig: prepConfig,
+                reachableRegions: reachableRegions, authorizedOrders: authorizedOrders, committedPlan: committed);
         }
 
         /// <summary>解析真值段：<c>truth\t{subject}\t{strength}\t{owner}</c>。</summary>
@@ -426,6 +550,54 @@ namespace ThreeKingdom.Application.Session
             catch (FormatException ex)
             {
                 throw new SaveFormatException("知识段数值解析失败：" + ex.Message);
+            }
+        }
+
+        // --- 准备段编解码（M05）。受控字符串（res/order/region id 无 \t;,= 特殊字符），MVP 不做转义。---
+
+        private static string EncodeResources(IReadOnlyDictionary<ResourceKey, long> res)
+            => string.Join(";", res.OrderBy(k => k.Key.Value, StringComparer.Ordinal).Select(kv => kv.Key.Value + "=" + kv.Value));
+
+        private static string EncodeOrder(PreparedOrder o)
+        {
+            string needs = EncodeResources(o.ResourceNeeds);
+            string deps = string.Join(",", o.Dependencies.OrderBy(d => d.Value, StringComparer.Ordinal).Select(d => d.Value));
+            return o.Id.Value + "\t" + o.Executor.Value + "\t" + o.Target.Value
+                 + "\t" + o.Window.Start + "\t" + o.Window.End + "\t" + needs + "\t" + deps;
+        }
+
+        private static IReadOnlyDictionary<ResourceKey, long> DecodeResources(string encoded)
+        {
+            var dict = new Dictionary<ResourceKey, long>();
+            if (string.IsNullOrEmpty(encoded)) return dict;
+            foreach (string pair in encoded.Split(';'))
+            {
+                string[] kv = pair.Split('=');
+                if (kv.Length != 2) throw new SaveFormatException($"资源编码格式不符：「{pair}」。");
+                dict[new ResourceKey(kv[0])] = long.Parse(kv[1]);
+            }
+            return dict;
+        }
+
+        /// <summary>解析准备命令行（draftorder/committedorder 后的 7 字段）。</summary>
+        private static PreparedOrder ParseOrder(string line, string tag)
+        {
+            string[] p = line.Split('\t');
+            if (p.Length != 8 || p[0] != tag)
+                throw new SaveFormatException($"准备命令段格式不符：「{line}」。");
+            try
+            {
+                var deps = string.IsNullOrEmpty(p[7])
+                    ? (IReadOnlyList<OrderId>)Array.Empty<OrderId>()
+                    : p[7].Split(',').Select(v => new OrderId(v)).ToList();
+                return new PreparedOrder(
+                    new OrderId(p[1]), new CharacterId(p[2]), new RegionId(p[3]),
+                    new ThreeKingdom.Domain.Preparation.TimeWindow(int.Parse(p[4]), int.Parse(p[5])),
+                    DecodeResources(p[6]), deps);
+            }
+            catch (FormatException ex)
+            {
+                throw new SaveFormatException("准备命令段数值解析失败：" + ex.Message);
             }
         }
 

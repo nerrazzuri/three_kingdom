@@ -35,5 +35,8 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>侦察对象非法（未在世界真值登记 / 缺必填字段；"侦察全部"非法）。</summary>
         UnknownIntelSubject = 9,
+
+        /// <summary>会话未启用战役准备，准备命令不适用。</summary>
+        PreparationDisabled = 10,
     }
 }

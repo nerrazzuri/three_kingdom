@@ -53,6 +53,7 @@ Manifest Version: 2 (2026-06-28)
 | [太守开局循环](epic-015-opening-governor-loop/EPIC.md) | Assembly（M02） | 开局守城→胜败后果→续局 | ADR-0009/0008/0005/0004 + TR-session-004/005 + TR-career-* | 4 stories | ✅ Complete |
 | [城市治理循环](epic-016-city-governance-loop/EPIC.md) | Feature（M03） | 城市治理接入会话→喂给战争/生涯 | ADR-0009/0008/0003/0004 + TR-city-001~005 | 4 stories | ✅ Complete |
 | [情报与军议循环](epic-017-intel-council-loop/EPIC.md) | Feature（M04） | 情报/军议接入会话→不完全信息判断 | ADR-0009/0004/0005 + TR-intel-001~003/council-001~002 | 4 stories | ✅ Complete |
+| [战役准备循环](epic-018-war-preparation-loop/EPIC.md) | Feature（M05） | 战前准备接入会话→可执行战役初始条件 | ADR-0009/0004/0005/0003 + TR-prep-001/002 | 4 stories | ✅ Complete |
 
 > epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）；epic-014 = **M01 场景目录**（CON-5 收尾）；epic-015 = **M02 太守开局循环**（开局守城→胜败两支续局+存读档）。ADR-0009 Accepted（2026-06-28，经子代理复审）。后续装配 epic（M03~M16，epic-016~028）见模块规划 §6 切分表。
 
@@ -62,8 +63,9 @@ Manifest Version: 2 (2026-06-28)
 
 ## 统计
 
-- 17 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 1 Feature M03 + 1 Feature M04）；17 ✅ Complete。
-- 64 stories ✅ Complete（含 epic-017 情报军议 4）；本地回归 **680/680 全绿，`-warnaserror` 0 warning**。
+- 18 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 1 Feature M03 + 1 Feature M04 + 1 Feature M05）；18 ✅ Complete。
+- 68 stories ✅ Complete（含 epic-018 战役准备 4）；本地回归 **703/703 全绿，`-warnaserror` 0 warning**。
+- **M05 战役准备达成**（epic-018）：准备态接入会话 + 草稿编辑 + 合法计划原子提交（资源锁定）+ 冲突 DAG 拒绝（无部分写入）+ 准备态存读档确定性。
 - **M04 情报军议达成**（epic-017）：情报态接入会话（真值/知识四层分离反全知）+ 侦察命令 + 军议快照确定+知识变化建议过时 + 情报态存读档不交叉污染。
 - **M03 城市治理达成**（epic-016）：城市治理态接入会话 + Advance 日界结算 + 治理命令（征用/修工事/安抚）+ 治理→战役条件派生 + 存读档确定性。
 - **M00 脊梁达成**（epic-013）：开局→推进→战果→后果原子写回(004/015/014)→存档 round-trip→续推 端到端贯通、确定性、失败可继续。
@@ -74,9 +76,9 @@ Manifest Version: 2 (2026-06-28)
 
 ## 下一步
 
-★ **M00/M01/M02/M03/M04 装配完成（2026-06-30）**，进入 **M05 战役准备循环**（epic-018，待建）。
+★ **M00~M05 装配完成（2026-06-30）**，进入 **M06 兵法沙盒战斗装配**（epic-019，待建）。
 
-**当前动作**：`/create-epics epic-018`（M05 战役准备装配，依赖 M03/M04）→ `/create-stories` → 逐 story `/dev-story`。M05 将消费 M03 城市派生战役条件 + M04 情报，组装可执行战役初始条件（PlanDraft/CommittedPlan/冲突 DAG）。
+**当前动作**：`/create-epics epic-019`（M06 兵法沙盒战斗装配，消费 M05 CommittedPlan 作战役初始条件 + M03 城市派生战役条件）→ `/create-stories` → 逐 story `/dev-story`。注意 CD 硬退出门：M06 宣称"兵法沙盒MVP完成"前必接 ≥1 机动招式（假退伏击/火攻）。
 
 **后续装配序**（module-plan §6）：M03 城市治理（epic-016）→ M04 情报军议装配（epic-017）→ M05 战前准备装配（epic-018）→ M08 敌方 AI 战术层（epic-021，可与 M03 并行）。
 

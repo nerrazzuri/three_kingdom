@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using ThreeKingdom.Domain.Career;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
 using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
+using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
+using ThreeKingdom.Domain.Preparation;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 
@@ -92,6 +95,33 @@ namespace ThreeKingdom.Application.Session
         /// <summary>会话军议装配配置（M04 / GDD_008）；启用军议时存在。</summary>
         internal SessionCouncilSetup? Council { get; }
 
+        // --- 战役准备态（M05 / GDD_009）。可选；草稿可变，提交经服务原子生成承诺 ---
+        private readonly PlanDraft? _draft;
+
+        /// <summary>当前资源池（只读；提交后为扣减锁定后的池。启用准备时存在）。</summary>
+        public ResourcePool? Pool { get; private set; }
+
+        /// <summary>计划草稿（internal，供编辑命令/提交/存档）。</summary>
+        internal PlanDraft? Draft => _draft;
+
+        /// <summary>准备校验配置（数据驱动）；启用准备时必填。</summary>
+        internal PreparationConfig? PrepConfig { get; }
+
+        /// <summary>可达区域（GDD_003，供提交校验）。</summary>
+        internal IReadOnlyCollection<RegionId> ReachableRegions { get; }
+
+        /// <summary>已授权命令（GDD_005/006，供提交校验）。</summary>
+        internal IReadOnlyCollection<OrderId> AuthorizedOrders { get; }
+
+        /// <summary>是否启用战役准备循环（资源池存在）。</summary>
+        public bool HasPreparation => Pool != null;
+
+        /// <summary>当前计划草稿命令只读视图（未启用准备时为 null）。</summary>
+        public IReadOnlyList<PreparedOrder>? PlanOrders => _draft?.Orders;
+
+        /// <summary>已承诺计划（提交成功后存在；未提交为 null）。</summary>
+        public CommittedPlan? CommittedPlan { get; private set; }
+
         /// <summary>
         /// 当前知识快照 ID（GDD_008 §Formula 4）：由玩家已知条目（主题+估计值+观察时间）确定性派生。
         /// 侦察改变知识 → 快照变 → 已召开军议建议被标过时（<see cref="CouncilAdviceSet.IsStaleAgainst"/>）。
@@ -120,7 +150,10 @@ namespace ThreeKingdom.Application.Session
             FixedPoint populationPressure = default, long logisticsHolding = 0,
             CityGovernanceConfig? governanceConfig = null,
             WorldTruthLedger? truth = null, FactionIntel? playerIntel = null, IntelConfig? intelConfig = null,
-            SessionCouncilSetup? council = null)
+            SessionCouncilSetup? council = null,
+            ResourcePool? pool = null, PlanDraft? draft = null, PreparationConfig? prepConfig = null,
+            IReadOnlyCollection<RegionId>? reachableRegions = null, IReadOnlyCollection<OrderId>? authorizedOrders = null,
+            CommittedPlan? committedPlan = null)
         {
             if (logisticsHolding < 0) throw new ArgumentOutOfRangeException(nameof(logisticsHolding), "后勤持有量不可为负。");
             if (cityEconomy != null && settlementConfig == null)
@@ -129,6 +162,8 @@ namespace ThreeKingdom.Application.Session
                 throw new ArgumentException("启用城市治理（cityEconomy 非空）时必须提供 governanceConfig。", nameof(governanceConfig));
             if (playerIntel != null && (truth == null || intelConfig == null))
                 throw new ArgumentException("启用情报（playerIntel 非空）时必须提供 truth 与 intelConfig。", nameof(playerIntel));
+            if (pool != null && prepConfig == null)
+                throw new ArgumentException("启用准备（pool 非空）时必须提供 prepConfig。", nameof(prepConfig));
 
             Id = id;
             ScenarioConfigId = scenarioConfigId;
@@ -145,6 +180,19 @@ namespace ThreeKingdom.Application.Session
             _playerIntel = playerIntel;
             IntelConfig = intelConfig;
             Council = council;
+            Pool = pool;
+            _draft = draft ?? (pool != null ? new PlanDraft() : null);
+            PrepConfig = prepConfig;
+            ReachableRegions = reachableRegions ?? Array.Empty<RegionId>();
+            AuthorizedOrders = authorizedOrders ?? Array.Empty<OrderId>();
+            CommittedPlan = committedPlan;
+        }
+
+        /// <summary>提交成功后写回承诺计划与扣减后资源池（仅供 <see cref="CampaignSessionService"/> 编排）。</summary>
+        internal void ApplyCommittedPlan(CommittedPlan plan, ResourcePool resultingPool)
+        {
+            CommittedPlan = plan ?? throw new ArgumentNullException(nameof(plan));
+            Pool = resultingPool ?? throw new ArgumentNullException(nameof(resultingPool));
         }
 
         /// <summary>日界推进世界时间（仅供 <see cref="CampaignSessionService"/> 按全局结算顺序编排调用）。</summary>
@@ -184,7 +232,64 @@ namespace ThreeKingdom.Application.Session
             {
                 AppendIntel(hasher);
             }
+            if (Pool != null)
+            {
+                AppendPreparation(hasher);
+            }
             return hasher.ToHash();
+        }
+
+        /// <summary>准备态确定性哈希：资源池 ⊕ 草稿命令 ⊕ 已承诺计划（ADR-0004）。</summary>
+        private void AppendPreparation(StateHasher hasher)
+        {
+            AppendResources(hasher, Pool!.AsAvailable());
+
+            IReadOnlyList<PreparedOrder> draftOrders = _draft!.Orders;
+            hasher.Append(draftOrders.Count);
+            foreach (PreparedOrder o in OrderById(draftOrders)) AppendOrder(hasher, o);
+
+            if (CommittedPlan != null)
+            {
+                hasher.Append(1);
+                IReadOnlyList<PreparedOrder> committed = CommittedPlan.Orders;
+                hasher.Append(committed.Count);
+                foreach (PreparedOrder o in OrderById(committed)) AppendOrder(hasher, o);
+                AppendResources(hasher, CommittedPlan.CommittedResources);
+            }
+            else hasher.Append(0);
+        }
+
+        private static IEnumerable<PreparedOrder> OrderById(IReadOnlyList<PreparedOrder> orders)
+        {
+            var sorted = new List<PreparedOrder>(orders);
+            sorted.Sort((a, b) => string.CompareOrdinal(a.Id.Value, b.Id.Value));
+            return sorted;
+        }
+
+        private static void AppendOrder(StateHasher hasher, PreparedOrder o)
+        {
+            AppendString(hasher, o.Id.Value);
+            AppendString(hasher, o.Executor.Value);
+            AppendString(hasher, o.Target.Value);
+            hasher.Append(o.Window.Start);
+            hasher.Append(o.Window.End);
+            AppendResources(hasher, o.ResourceNeeds);
+            var deps = new List<OrderId>(o.Dependencies);
+            deps.Sort((a, b) => string.CompareOrdinal(a.Value, b.Value));
+            hasher.Append(deps.Count);
+            foreach (OrderId d in deps) AppendString(hasher, d.Value);
+        }
+
+        private static void AppendResources(StateHasher hasher, IReadOnlyDictionary<ResourceKey, long> res)
+        {
+            var keys = new List<ResourceKey>(res.Keys);
+            keys.Sort((a, b) => string.CompareOrdinal(a.Value, b.Value));
+            hasher.Append(keys.Count);
+            foreach (ResourceKey k in keys)
+            {
+                AppendString(hasher, k.Value);
+                hasher.Append(res[k]);
+            }
         }
 
         /// <summary>情报态确定性哈希：世界真值 ⊕ 玩家知识，各按 subject 排序（ADR-0004）。</summary>

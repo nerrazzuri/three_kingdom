@@ -4,7 +4,9 @@ using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
 using ThreeKingdom.Domain.Intel;
+using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
+using ThreeKingdom.Domain.Preparation;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 
@@ -62,6 +64,18 @@ namespace ThreeKingdom.Application.Session
         /// <summary>军议装配配置（M04 / GDD_008）。<b>可选</b>：启用军议时提供（须先启用情报）。</summary>
         public SessionCouncilSetup? CouncilSetup { get; }
 
+        /// <summary>开局资源池（M05 / GDD_009）。<b>可选</b>：null 表示该场景不启用战役准备。</summary>
+        public ResourcePool? ResourcePool { get; }
+
+        /// <summary>准备校验配置（数据驱动）；启用准备时必填。</summary>
+        public PreparationConfig? PreparationConfig { get; }
+
+        /// <summary>可达区域（GDD_003，供提交校验）。</summary>
+        public IReadOnlyCollection<RegionId> ReachableRegions { get; }
+
+        /// <summary>已授权命令（GDD_005/006，供提交校验）。</summary>
+        public IReadOnlyCollection<OrderId> AuthorizedOrders { get; }
+
         public CampaignStartConfig(
             string scenarioConfigId,
             ConfigFingerprint fingerprint,
@@ -77,7 +91,11 @@ namespace ThreeKingdom.Application.Session
             WorldTruthLedger? worldTruth = null,
             FactionIntel? playerIntel = null,
             IntelConfig? intelConfig = null,
-            SessionCouncilSetup? councilSetup = null)
+            SessionCouncilSetup? councilSetup = null,
+            ResourcePool? resourcePool = null,
+            PreparationConfig? preparationConfig = null,
+            IReadOnlyCollection<RegionId>? reachableRegions = null,
+            IReadOnlyCollection<OrderId>? authorizedOrders = null)
         {
             if (string.IsNullOrWhiteSpace(scenarioConfigId))
                 throw new ArgumentException("场景配置 id 不可为空或空白。", nameof(scenarioConfigId));
@@ -91,6 +109,8 @@ namespace ThreeKingdom.Application.Session
                 throw new ArgumentException("启用情报（playerIntel 非空）时必须提供 worldTruth 与 intelConfig。", nameof(playerIntel));
             if (councilSetup != null && playerIntel == null)
                 throw new ArgumentException("启用军议（councilSetup 非空）时必须先启用情报（playerIntel）。", nameof(councilSetup));
+            if (resourcePool != null && preparationConfig == null)
+                throw new ArgumentException("启用准备（resourcePool 非空）时必须提供 preparationConfig。", nameof(preparationConfig));
             ScenarioConfigId = scenarioConfigId;
             Fingerprint = fingerprint;
             GovernorSeed = governorSeed ?? throw new ArgumentNullException(nameof(governorSeed));
@@ -106,6 +126,10 @@ namespace ThreeKingdom.Application.Session
             PlayerIntel = playerIntel;
             IntelConfig = intelConfig;
             CouncilSetup = councilSetup;
+            ResourcePool = resourcePool;
+            PreparationConfig = preparationConfig;
+            ReachableRegions = reachableRegions ?? Array.Empty<RegionId>();
+            AuthorizedOrders = authorizedOrders ?? Array.Empty<OrderId>();
         }
     }
 }
