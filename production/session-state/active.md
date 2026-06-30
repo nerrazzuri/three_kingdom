@@ -992,8 +992,15 @@ ADR-0003（数据驱动配置的正式锁定）。
   - S004：CaptureSnapshot/Restore 加城市段（配置数据驱动不入存档体，载入方按指纹提供）
 - 设计：城市态**可选**（向后兼容现有测试）；征募移出 MVP；S003 只派生战役条件输入不接完整战斗（留 M05）
 
+### ▶ M04 epic-017 已建（2026-06-30）
+- 写 `epic-017-intel-council-loop/EPIC.md`：Feature 层，治理 ADR-0009/0004/0005 全 Accepted
+- 复用现有 TR-intel-001~003/council-001~002（无 untraced，像 epic-015 复用既有 TR）
+- ADR-0006 不挂（治敌方 AI/epic-021）；反全知由 GDD-007 四层分离保证（已实装）
+- **M04 含新生产代码**（同 M03）：会话持 WorldTruth+FactionKnowledge、侦察命令、军议快照、情报存读档
+- 护栏：军师只条件化建议（无成功率/唯一推荐/自动命令）+ 情报不泄真值（UI 只读阵营知识）
+
 ### ▶ 下一步
-- **M04 情报与军议循环**（epic-017，待建）：`/create-epics epic-017` → `/create-stories` → 逐 story `/dev-story`
+- `/create-stories epic-017-intel-council-loop` 拆 story → 逐 story `/dev-story`
 - 可选并行：M08 敌方 AI 战术层（epic-021，gdd-016 + ADR-0006 已就绪）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

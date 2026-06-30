@@ -52,6 +52,7 @@ Manifest Version: 2 (2026-06-28)
 | [场景 / 战役配置目录](epic-014-scenario-catalog/EPIC.md) | Assembly（M01） | 场景目录/数据驱动开局 | ADR-0003/0009 + TR-session-003/city-001 | 2 stories | ✅ Complete |
 | [太守开局循环](epic-015-opening-governor-loop/EPIC.md) | Assembly（M02） | 开局守城→胜败后果→续局 | ADR-0009/0008/0005/0004 + TR-session-004/005 + TR-career-* | 4 stories | ✅ Complete |
 | [城市治理循环](epic-016-city-governance-loop/EPIC.md) | Feature（M03） | 城市治理接入会话→喂给战争/生涯 | ADR-0009/0008/0003/0004 + TR-city-001~005 | 4 stories | ✅ Complete |
+| [情报与军议循环](epic-017-intel-council-loop/EPIC.md) | Feature（M04） | 情报/军议接入会话→不完全信息判断 | ADR-0009/0004/0005 + TR-intel-001~003/council-001~002 | 待 /create-stories | 🔨 Ready |
 
 > epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）；epic-014 = **M01 场景目录**（CON-5 收尾）；epic-015 = **M02 太守开局循环**（开局守城→胜败两支续局+存读档）。ADR-0009 Accepted（2026-06-28，经子代理复审）。后续装配 epic（M03~M16，epic-016~028）见模块规划 §6 切分表。
 
@@ -61,7 +62,7 @@ Manifest Version: 2 (2026-06-28)
 
 ## 统计
 
-- 16 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 1 Feature M03）；16 ✅ Complete。
+- 17 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 1 Feature M03 + 1 Feature M04）；16 ✅ Complete + epic-017 🔨 Ready。
 - 60 stories ✅ Complete（含 epic-016 城市治理 4）；本地回归 **657/657 全绿，`-warnaserror` 0 warning**。
 - **M03 城市治理达成**（epic-016）：城市治理态接入会话 + Advance 日界结算 + 治理命令（征用/修工事/安抚）+ 治理→战役条件派生 + 存读档确定性。
 - **M00 脊梁达成**（epic-013）：开局→推进→战果→后果原子写回(004/015/014)→存档 round-trip→续推 端到端贯通、确定性、失败可继续。
@@ -72,9 +73,9 @@ Manifest Version: 2 (2026-06-28)
 
 ## 下一步
 
-★ **M00/M01/M02/M03 装配完成（2026-06-30）**，进入 **M04 情报与军议循环**（epic-017，待建）。
+★ **M00/M01/M02/M03 装配完成（2026-06-30）**，**M04 情报与军议循环 epic 已建**（epic-017，🔨 Ready）。
 
-**当前动作**：`/create-epics epic-017`（M04 情报军议装配，依赖 M00/M03）→ `/create-stories` → 逐 story `/dev-story`。
+**当前动作**：`/create-stories epic-017-intel-council-loop` 拆 story（情报态接入会话 / 侦察命令 / 军议快照确定 / 知识变化建议过时 / 情报存读档）→ 逐 story `/dev-story`。M04 含**新生产代码**（同 M03），护栏：军师只条件化建议 + 情报不泄真值（反全知）。
 
 **后续装配序**（module-plan §6）：M03 城市治理（epic-016）→ M04 情报军议装配（epic-017）→ M05 战前准备装配（epic-018）→ M08 敌方 AI 战术层（epic-021，可与 M03 并行）。
 
