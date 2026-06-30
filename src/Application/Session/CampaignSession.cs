@@ -11,6 +11,7 @@ using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
+using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Preparation;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
@@ -160,6 +161,26 @@ namespace ThreeKingdom.Application.Session
         /// <summary>累积一条战斗中满足的兵法条件（仅供服务，确定性）。</summary>
         internal void AddBattleCondition(TacticCondition condition) => _battleConditions.Add(condition);
 
+        // --- 后果续局态（M07 / GDD_010 §后果）。可选；后果命令写回后存最近续局 ---
+        private readonly List<ContinuationOption> _lastOptions = new List<ContinuationOption>();
+
+        /// <summary>最近战果分支（后果写回后存在；未写回为 null）。</summary>
+        public OutcomeBranch? LastOutcomeBranch { get; private set; }
+
+        /// <summary>最近续局选项（胜败撤退失城各自的合法可继续命令；供 UI「继续」契约）。</summary>
+        public IReadOnlyList<ContinuationOption> LastContinuationOptions => _lastOptions;
+
+        /// <summary>是否已有后果续局态。</summary>
+        public bool HasOutcome => LastOutcomeBranch != null;
+
+        /// <summary>写回最近战果续局（仅供 <see cref="CampaignSessionService"/> 后果编排）。</summary>
+        internal void SetLastOutcome(OutcomeBranch branch, IReadOnlyList<ContinuationOption> options)
+        {
+            LastOutcomeBranch = branch;
+            _lastOptions.Clear();
+            if (options != null) _lastOptions.AddRange(options);
+        }
+
         /// <summary>
         /// 当前知识快照 ID（GDD_008 §Formula 4）：由玩家已知条目（主题+估计值+观察时间）确定性派生。
         /// 侦察改变知识 → 快照变 → 已召开军议建议被标过时（<see cref="CouncilAdviceSet.IsStaleAgainst"/>）。
@@ -193,7 +214,8 @@ namespace ThreeKingdom.Application.Session
             IReadOnlyCollection<RegionId>? reachableRegions = null, IReadOnlyCollection<OrderId>? authorizedOrders = null,
             CommittedPlan? committedPlan = null,
             BattleSnapshot? battle = null, BattleConfig? battleConfig = null, ulong battleSeed = 0,
-            TacticChainConfig? tacticChains = null, IReadOnlyCollection<TacticCondition>? battleConditions = null)
+            TacticChainConfig? tacticChains = null, IReadOnlyCollection<TacticCondition>? battleConditions = null,
+            OutcomeBranch? lastOutcomeBranch = null, IReadOnlyList<ContinuationOption>? lastOptions = null)
         {
             if (logisticsHolding < 0) throw new ArgumentOutOfRangeException(nameof(logisticsHolding), "后勤持有量不可为负。");
             if (cityEconomy != null && settlementConfig == null)
@@ -234,6 +256,8 @@ namespace ThreeKingdom.Application.Session
             TacticChains = tacticChains;
             if (battleConditions != null)
                 foreach (TacticCondition c in battleConditions) _battleConditions.Add(c);
+            LastOutcomeBranch = lastOutcomeBranch;
+            if (lastOptions != null) _lastOptions.AddRange(lastOptions);
         }
 
         /// <summary>提交成功后写回承诺计划与扣减后资源池（仅供 <see cref="CampaignSessionService"/> 编排）。</summary>
@@ -287,6 +311,16 @@ namespace ThreeKingdom.Application.Session
             if (Battle != null)
             {
                 AppendBattle(hasher);
+            }
+            if (LastOutcomeBranch != null)
+            {
+                hasher.Append((int)LastOutcomeBranch.Value);
+                hasher.Append(_lastOptions.Count);
+                foreach (ContinuationOption o in _lastOptions)
+                {
+                    hasher.Append((int)o.Kind);
+                    AppendString(hasher, o.Reason);
+                }
             }
             return hasher.ToHash();
         }

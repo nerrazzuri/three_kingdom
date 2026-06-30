@@ -1027,9 +1027,19 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **CD 硬退出门 ✅ 满足**：接入 FeintAmbush（假退伏击）机动招式，非薄皮战斗沙盒
 - **关键裁断**：敌方智能 AI（EnemyAiDecision）留 M08/epic-021（敌方 AI Domain 尚未实装）；M06 用确定性预设敌方命令。M06 测试证据（同种子同 hash + 兵法事后标签）不要求智能 AI，裁断不阻塞。
 
-### ▶ 下一步（装配主线 M00~M06 全部完成）
-- **M07 后果与恢复循环**（epic-020，待建）：战果原子写回完整世界 + 胜败都打开后续选择。`/create-epics epic-020`
-- **M08 敌方 AI 战术层**（epic-021，待建）：敌方 AI Domain **尚未实装**（仅 gdd-016 + ADR-0006 设计）——这是从零开发 Domain 内核（非纯装配），需注意。M06 当前用确定性预设敌方。
-- 累计：19 epics 全 Complete，72 stories，723 测试全绿；装配 M00→M06（脊梁→场景→开局→城市→情报军议→战役准备→兵法沙盒战斗）
+### ✅ epic-020（M07 后果与恢复循环）全部完成（2026-06-30）
+- 4/4 stories Complete；新增 20 测试（5+6+4+5）；**743/743 全绿，-warnaserror 0**
+- 补登 TR-outcome-001（原子整批回滚）/002（四分支都有续局，败局必非空）
+- **新生产代码**：
+  - S001：CampaignSession outcome 字段 + 哈希；ResolveBattleOutcome（经 FailureContinuationService，OutcomeWorld.WithCity 写回城市态）
+  - S002：SetLastOutcome + LastOutcomeBranch/LastContinuationOptions（续局供 UI「继续」）
+  - S003：原子契约（成功全应用 + 夹取不越界 + Domain 回滚机制确认）
+  - S004：CaptureSnapshot/Restore 加后果段（outcome/outcomeopt）
+- **裁断**：reputation/relationship/vitality 在 OutcomeWorld 计算暴露，不入会话独立态（避免写回过宽难测）
+
+### ▶ 下一步（装配主线 M00~M07 全部完成——完整游戏循环贯通）
+完整循环：开局→治理城市→侦察→军议→准备计划→兵法战斗→后果续局（胜败都有后续）。
+- **M08 敌方 AI 循环**（epic-021，待建）：⚠️ 敌方 AI Domain **尚未实装**——从零开发 Domain 内核（ADR-0006 种子化 softmax+反全知锁+LLM 隔离），**非装配**，风险/工作量高。module-plan 建议先做战术层便宜 80%。
+- 累计：20 epics 全 Complete，76 stories，743 测试全绿；装配 M00→M07（脊梁→场景→开局→城市→情报军议→战役准备→兵法战斗→后果恢复）
 2. 依序 S002 → S003 → S004（每个 story 有 `Depends on` 前置）。
 3. epic-015 全部 Complete 后进入 M03（epic-016 城市治理循环）。

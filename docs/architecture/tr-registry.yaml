@@ -237,6 +237,22 @@ requirements:
     revised: ""
     status: active
 
+  # --- 后果与恢复 (GDD_010 §后果 / M07) ---
+  - id: TR-outcome-001
+    system: outcome
+    gdd: design/gdd/gdd-010-battle-tactics-sandbox.md
+    requirement: "战果后果先生成变更集再校验后原子写回会话（全有或全无）；任一目标校验失败整批回滚、无部分写入（M07 后果写回接入会话）"
+    created: 2026-06-30
+    revised: ""
+    status: active
+  - id: TR-outcome-002
+    system: outcome
+    gdd: design/gdd/gdd-010-battle-tactics-sandbox.md
+    requirement: "胜/败/撤退/失城四分支均生成后续：任一败局至少给出一条合法可继续命令（失败不切死局，强制设计锁「失败必须产生可继续状态」）"
+    created: 2026-06-30
+    revised: ""
+    status: active
+
   # --- 士气疲劳 (GDD_011) ---
   - id: TR-cohesion-001
     system: cohesion

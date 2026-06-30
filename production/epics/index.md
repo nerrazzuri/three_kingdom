@@ -55,6 +55,7 @@ Manifest Version: 2 (2026-06-28)
 | [情报与军议循环](epic-017-intel-council-loop/EPIC.md) | Feature（M04） | 情报/军议接入会话→不完全信息判断 | ADR-0009/0004/0005 + TR-intel-001~003/council-001~002 | 4 stories | ✅ Complete |
 | [战役准备循环](epic-018-war-preparation-loop/EPIC.md) | Feature（M05） | 战前准备接入会话→可执行战役初始条件 | ADR-0009/0004/0005/0003 + TR-prep-001/002 | 4 stories | ✅ Complete |
 | [兵法沙盒战役循环](epic-019-tactical-battle-loop/EPIC.md) | Feature（M06） | 战斗/兵法接入会话→可打可复现战役 | ADR-0004/0009/0005 + TR-battle-001/002/003 | 4 stories | ✅ Complete |
+| [后果与恢复循环](epic-020-consequence-recovery-loop/EPIC.md) | Feature（M07） | 战果写回完整世界→胜败都有后续 | ADR-0004/0009/0008/0005 + TR-outcome-001/002 | 4 stories | ✅ Complete |
 
 > epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）；epic-014 = **M01 场景目录**（CON-5 收尾）；epic-015 = **M02 太守开局循环**（开局守城→胜败两支续局+存读档）。ADR-0009 Accepted（2026-06-28，经子代理复审）。后续装配 epic（M03~M16，epic-016~028）见模块规划 §6 切分表。
 
@@ -64,8 +65,9 @@ Manifest Version: 2 (2026-06-28)
 
 ## 统计
 
-- 19 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 4 Feature M03~M06）；19 ✅ Complete。
-- 72 stories ✅ Complete（含 epic-019 兵法沙盒 4）；本地回归 **723/723 全绿，`-warnaserror` 0 warning**。
+- 20 epics（3 Foundation + 6 Core + 1 Presentation + 2 Feature Meta + 3 Assembly + 5 Feature M03~M07）；20 ✅ Complete。
+- 76 stories ✅ Complete（含 epic-020 后果恢复 4）；本地回归 **743/743 全绿，`-warnaserror` 0 warning**。
+- **M07 后果恢复达成**（epic-020）：战果四分支后果原子写回会话城市态 + 胜败撤退失城都有续局（败局必非空，失败不切死局）+ 原子回滚 + 后果续局态存读档确定性。
 - **M06 兵法沙盒达成**（epic-019）：战斗态接入会话 + 从 CommittedPlan 开战 + 阶段解析（稳定管线+原子回滚）+ 兵法事后识别（FeintAmbush 机动招式，CD 硬退出门）+ 战斗态存读档确定性。
 - **M05 战役准备达成**（epic-018）：准备态接入会话 + 草稿编辑 + 合法计划原子提交（资源锁定）+ 冲突 DAG 拒绝（无部分写入）+ 准备态存读档确定性。
 - **M04 情报军议达成**（epic-017）：情报态接入会话（真值/知识四层分离反全知）+ 侦察命令 + 军议快照确定+知识变化建议过时 + 情报态存读档不交叉污染。
@@ -78,11 +80,13 @@ Manifest Version: 2 (2026-06-28)
 
 ## 下一步
 
-★ **M00~M06 装配完成（2026-06-30）**，进入 **M07 后果与恢复循环**（epic-020，待建）。
+★ **M00~M07 装配完成（2026-06-30）**——完整游戏循环贯通：开局→治理→侦察→军议→准备→战斗→后果续局。
 
-**当前动作**：`/create-epics epic-020`（M07 后果与恢复装配，把战果原子写回完整世界 + 保证胜败都打开后续选择）→ `/create-stories` → 逐 story `/dev-story`。
+**下一步选项**：
+- **M08 敌方 AI 循环**（epic-021）：⚠️ 敌方 AI Domain **尚未实装**——这是**从零开发 Domain 内核**（ADR-0006 种子化 softmax + 反全知锁 + LLM 隔离），非装配。module-plan 建议"先做战术层便宜 80%"。风险/工作量高于前述装配 epic。
+- M09+ 其余装配模块（见 module-plan §6 切分表）。
 
-**说明**：M06 CD 硬退出门已满足（接入 FeintAmbush 假退伏击机动招式，非薄皮）。敌方智能 AI 仍留 M08（epic-021，敌方 AI Domain 尚未实装；M06 用确定性预设敌方命令）——M07 后续或并行处理 M08。
+**说明**：M06 CD 硬退出门已满足（FeintAmbush 假退伏击）；M06 用确定性预设敌方命令，智能 AI 待 M08。
 
 **后续装配序**（module-plan §6）：M03 城市治理（epic-016）→ M04 情报军议装配（epic-017）→ M05 战前准备装配（epic-018）→ M08 敌方 AI 战术层（epic-021，可与 M03 并行）。
 

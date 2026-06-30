@@ -11,6 +11,7 @@ using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
+using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.Preparation;
 using ThreeKingdom.Domain.Time;
@@ -352,6 +353,40 @@ namespace ThreeKingdom.Application.Session
             return _tacticRecognizer.Recognize(context, session.TacticChains!);
         }
 
+        // --- 后果与恢复命令（M07 / TR-outcome-001/002）。四分支变更集原子写回会话 + 续局选项。---
+
+        private readonly FailureContinuationService _failureContinuation = new FailureContinuationService();
+
+        /// <summary>
+        /// 结算战果分支后果（GDD_010 §后果 / TR-outcome-001/002）：从会话城市态构造 <see cref="OutcomeWorld"/>，
+        /// 经 <see cref="FailureContinuationService"/> 生成变更集 → 原子写回 → 给出四分支续局选项。
+        /// 仅 <see cref="OutcomeWritebackResult.Committed"/> 时更新会话态（全有或全无）；败局必含 ≥1 合法可继续命令。
+        /// reputation/relationship/vitality 在 OutcomeWorld 内计算暴露，<b>不</b>写回会话独立态（裁断，见 epic-020）。
+        /// </summary>
+        public OutcomeContinuation ResolveBattleOutcome(
+            CampaignSession session, OutcomeBranch branch, OutcomeContext context, OutcomeConsequenceConfig config)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (context is null) throw new ArgumentNullException(nameof(context));
+            if (config is null) throw new ArgumentNullException(nameof(config));
+            if (!session.HasCityGovernance)
+                throw new InvalidOperationException("后果写回需会话已启用城市治理（城市态为写回目标）。");
+
+            OutcomeWorld world = OutcomeWorld.Empty.WithCity(session.CityEconomy!);
+            OutcomeContinuation continuation = _failureContinuation.Resolve(world, branch, context, config);
+
+            // 原子：仅写回成功才更新会话态（失败则会话城市态不变）。
+            if (continuation.Writeback.Committed)
+            {
+                CityId cityId = session.CityEconomy!.Id;
+                if (continuation.Writeback.ResultingWorld.HasCity(cityId))
+                    session.SetCityEconomy(continuation.Writeback.ResultingWorld.GetCity(cityId));
+                session.SetLastOutcome(branch, continuation.Options);
+            }
+
+            return continuation;
+        }
+
         /// <summary>
         /// 按场景 id 从目录配置驱动开局（M01 / ADR-0003）。未知 id → <see cref="CampaignErrorCode.SessionNotFound"/>。
         /// 切换场景仅换 id、无代码改动。
@@ -480,6 +515,14 @@ namespace ThreeKingdom.Application.Session
                     head += "detection\t" + d.Key.Observer.Value + "\t" + d.Key.Target.Value + "\t" + (int)d.Value + "\n";
                 foreach (TacticCondition c in session.BattleConditions.OrderBy(c => (int)c))
                     head += "battlecond\t" + (int)c + "\n";
+            }
+
+            // 后果续局段（M07 / TR-outcome-002）：最近战果分支 + 续局选项。
+            if (session.HasOutcome)
+            {
+                head += "outcome\t" + (int)session.LastOutcomeBranch!.Value + "\n";
+                foreach (ContinuationOption o in session.LastContinuationOptions)
+                    head += "outcomeopt\t" + (int)o.Kind + "\t" + o.Reason + "\n";
             }
 
             return head + BodyMarker + "\n" + body;
@@ -615,6 +658,24 @@ namespace ThreeKingdom.Application.Session
                 battle = new BattleSnapshot(units, detection, battleFingerprint);
             }
 
+            // 可选后果续局段（M07）：分支 + 续局选项（无独立配置，纯状态恢复）。
+            OutcomeBranch? lastOutcomeBranch = null;
+            var lastOptions = new List<ContinuationOption>();
+            if (idx < lines.Length && lines[idx].StartsWith("outcome\t", StringComparison.Ordinal))
+            {
+                string[] oh = lines[idx].Split('\t');
+                if (oh.Length != 2) throw new SaveFormatException($"后果段头格式不符：「{lines[idx]}」。");
+                lastOutcomeBranch = (OutcomeBranch)int.Parse(oh[1]);
+                idx++;
+                while (idx < lines.Length && lines[idx].StartsWith("outcomeopt\t", StringComparison.Ordinal))
+                {
+                    string[] op = lines[idx].Split('\t');
+                    if (op.Length != 3) throw new SaveFormatException($"续局选项段格式不符：「{lines[idx]}」。");
+                    lastOptions.Add(new ContinuationOption((ContinuationCommandKind)int.Parse(op[1]), op[2]));
+                    idx++;
+                }
+            }
+
             if (idx >= lines.Length || lines[idx] != BodyMarker) throw new SaveFormatException("缺会话体标记。");
             string body = string.Join("\n", new ArraySegment<string>(lines, idx + 1, lines.Length - idx - 1));
 
@@ -644,7 +705,8 @@ namespace ThreeKingdom.Application.Session
                 pool: pool, draft: draft, prepConfig: prepConfig,
                 reachableRegions: reachableRegions, authorizedOrders: authorizedOrders, committedPlan: committed,
                 battle: battle, battleConfig: battleConfig, battleSeed: battleSeed,
-                tacticChains: tacticChains, battleConditions: battleConditions);
+                tacticChains: tacticChains, battleConditions: battleConditions,
+                lastOutcomeBranch: lastOutcomeBranch, lastOptions: lastOptions);
         }
 
         /// <summary>解析战斗单位段：<c>battleunit\t{id}\t{faction}\t{region}\t{force}\t{morale.Raw}…{support.Raw}</c>。</summary>
