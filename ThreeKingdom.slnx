@@ -9,6 +9,9 @@
   <Folder Name="/src/Presentation/">
     <Project Path="src/Presentation/ThreeKingdom.Presentation.csproj" />
   </Folder>
+  <Folder Name="/src/Console/">
+    <Project Path="src/Console/ThreeKingdom.Console.csproj" />
+  </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/unit/">
     <Project Path="tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj" />

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    M15 交互控制台 harness（表现层最小可玩入口）。把 M00~M10 建成的完整 CampaignSession
+    脊梁接到一个人类可操作的文本表面上——让 11 个循环（治理/情报/军议/准备/战斗/后果/生涯/历史）
+    端到端可玩，产出真实游玩反馈，再据此投 Unity UI（M15 交付物②）。
+
+    架构边界（ADR-0002 / ADR-0009）：
+    - 只经 Application 用例（CampaignSessionService 命令 + 只读投影）操作，不碰可变 Domain 对象。
+    - 渲染（CampaignTextView）与输入分派（CampaignDriver）为纯函数，I/O 隔离在 Program.cs，便于单测。
+    - 确定性：固定种子开局，同输入同结果（ADR-0004）；无隐式随机源。
+    依赖方向：Console → Application → Domain（单向）。本工程为可执行壳，不入 Unity 构建。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>ThreeKingdom.Console</AssemblyName>
+    <RootNamespace>ThreeKingdom.Console</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\ThreeKingdom.Application.csproj" />
+    <ProjectReference Include="..\Domain\ThreeKingdom.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

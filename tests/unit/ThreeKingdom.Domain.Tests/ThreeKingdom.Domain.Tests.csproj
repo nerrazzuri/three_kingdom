@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\..\src\Domain\ThreeKingdom.Domain.csproj" />
     <ProjectReference Include="..\..\..\src\Application\ThreeKingdom.Application.csproj" />
     <ProjectReference Include="..\..\..\src\Presentation\ThreeKingdom.Presentation.csproj" />
+    <ProjectReference Include="..\..\..\src\Console\ThreeKingdom.Console.csproj" />
   </ItemGroup>
 
 </Project>

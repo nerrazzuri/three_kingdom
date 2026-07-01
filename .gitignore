@@ -18,6 +18,9 @@ production/session-logs/
 
 expansions/
 
+# 三国志功能缺口对照参考（内部对照用，不公开；裁定/决策正式文档另入库）
+docs/reviews/rotk-feature-gap-reference.md
+
 # === Marrow (eval tooling — never commit) ===
 marrow/
 
@@ -66,6 +69,7 @@ export_presets.cfg
 !src/Domain/ThreeKingdom.Domain.csproj
 !src/Application/ThreeKingdom.Application.csproj
 !src/Presentation/ThreeKingdom.Presentation.csproj
+!src/Console/ThreeKingdom.Console.csproj
 !tests/unit/ThreeKingdom.Domain.Tests/ThreeKingdom.Domain.Tests.csproj
 *.suo
 *.tmp
@@ -156,3 +160,7 @@ $RECYCLE.BIN/
 
 # 一次性 Unity batchmode 探针（可删，勿入库）
 tools/_unity_probe/
+
+# M15 控制台 harness 运行期存档（玩家本地存档，勿入库）
+campaign.save
+*.save
