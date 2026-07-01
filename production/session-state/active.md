@@ -1105,3 +1105,41 @@ ADR-0003（数据驱动配置的正式锁定）。
 - **装配模式**（M03~M10 已验证）：既有 Domain 内核接入 CampaignSession + 可选态向后兼容 + 配置数据驱动不入存档体 + 确定性哈希 + round-trip + 复用既有 TR。
 - **无用户指令不 commit**；commit 尾注 Co-Authored-By + Claude-Session；push 到 `tk`。
 - M11+ 进入"需补设计区"——设计须 **user-driven**（协作），不闷头做。
+
+---
+
+## ✅ M15 交付物① 完成（2026-07-01）—— CampaignSession 交互控制台 harness
+
+**一句话**：M00~M10 建的 11 循环此前活在 `CampaignSessionService`（797 测试证明可跑）但**无人类入口**——Unity 壳只驱动旧竖切 `GameSession`。本会话建了一个纯 C# 文本控制台，把完整脊梁接到可操作表面，**11 循环现已端到端可玩**。
+
+**用户决策**：M15 第一步走「先做 CampaignSession 交互控制台」（A 路径，非直接 Unity UI，非先写设计文档）。理由=最快让人玩到、产出真实反馈再投 Unity。
+
+**新增（未 commit）**：`src/Console/`（新可执行工程，首个 Exe）
+- `ThreeKingdom.Console.csproj`（net10.0，引用 Application+Domain；登记进 slnx + gitignore csproj 例外）
+- `PlayableCampaign.cs`——**全 11 循环启用**的确定性默认场景「汜水关太守」（数值取自各循环已验证测试夹具，合并为一个连贯场景）+ 卫星配置（晋升梯队/叛乱/战斗/兵法链/后果）
+- `CampaignTextView.cs`——纯函数状态渲染（只读 public 投影，反全知：情报只读玩家知识）
+- `CampaignDriver.cs`——输入符→命令分派（只经 `CampaignSessionService`，不碰可变 Domain）；含 `--script` 回放
+- `Program.cs`——I/O 薄壳
+
+**测试**：`tests/.../Console/CampaignConsoleTests.cs`（8 测）。**全套 805/805 绿**（797+8），`-warnaserror` 0。
+
+**已验证可玩路径**（`dotnet run --project src/Console`，或 `-- --script "5 6 7 8 m m m 9 t o c r h 1 s l q"`）：
+侦察→军议→治理→备战设伏→开战→标记伏击条件（条件涌现非按钮）→解析战斗→复盘识别「假退伏击」→结算战果（胜/败均可续局）→记功晋升→自立检定（门槛）→推进历史（赤壁正常结局触发）→推进时段→存读档 round-trip。
+设计锁在反馈中显形：军师不报胜率/不替定计、兵法条件组合、失败不删档、反全知、确定性。
+
+**架构边界守住**：控制台只读 public 投影 + 经用例命令（`BattleConditions`/`HistoryCatalog` 等 internal 成员跨程序集不可见，正确挡住）。
+
+## ✅ M15 设计层完成（2026-07-01，承上）—— UX 设计文档 + epic-028
+
+**用户不在电脑前、让我在「2 写设计文档 / 3 接 Unity」中选优先级并继续。我选 2（理由：3 我无法验证——Unity 只能 batchmode、盲改 UI 风险高、违背验证驱动；且 2 是 3 的前置，epic-028 本不存在；趁建 harness 记忆最清晰）。**
+
+**新增（未 commit，Draft）**：
+- `design/ux/m15-campaign-loop-ux.md`——M15 UX 设计文档（**Draft**）。不重复既有 hud.md 单屏规范，而定义**整条战役循环的理解与反馈层**：全循环信息架构（察→谋→备→战→果→长）、**四个跨循环反馈契约**（因果链 / 风险无胜率 / 情报置信时效 / 失败可继续续局）、新手循环序、表现层硬约束、7 条 AC、5 个待实玩 Open Questions。harness 已是每个契约的首个参考实现。
+- `production/epics/epic-028-presentation-ux-feedback/EPIC.md`——**Draft for Review**。Presentation 层；治理 ADR-0002/0009/0004；拟登记 TR-ux-001~005（/create-stories 时补登）；交付物① harness 已完成、交付物② Unity 接线为后续 story。
+- `production/epics/index.md`——登记 epic-028 行（🟡 Draft）+ 统计改 24 epics（23✅+1 Draft）。
+
+**▶ 下一步候选**：
+1. 你**亲自 `dotnet run --project src/Console`** 实玩，回填 `m15-campaign-loop-ux.md` §7 Open Questions（置信显示小数 vs 定性档、onboarding 卡点、因果链默认展开等）。
+2. `/ux-review design/ux/m15-campaign-loop-ux.md` → 转 Approved → `/create-stories epic-028`（补登 TR-ux-*）。
+3. **M15 交付物②（Unity 接线）**：重写 `Assets/UI/SessionRuntime.cs` 指向 `CampaignSessionService`（现指旧竖切 `SessionService`/`GameSession`），4 场景 ViewModel/投影重定向。建议首屏=战果复盘（最吃因果契约 UI）。**注：我无法验证 Unity 运行，此项宜你在场时做或接受 batchmode-only 验证。**
+4. 本批（harness + 设计文档 + epic-028）全部**未 commit**（无用户指令不 commit）。gap reference 已入 gitignore（按用户指示，不提交）。
