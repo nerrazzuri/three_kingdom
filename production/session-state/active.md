@@ -1143,3 +1143,25 @@ ADR-0003（数据驱动配置的正式锁定）。
 2. `/ux-review design/ux/m15-campaign-loop-ux.md` → 转 Approved → `/create-stories epic-028`（补登 TR-ux-*）。
 3. **M15 交付物②（Unity 接线）**：重写 `Assets/UI/SessionRuntime.cs` 指向 `CampaignSessionService`（现指旧竖切 `SessionService`/`GameSession`），4 场景 ViewModel/投影重定向。建议首屏=战果复盘（最吃因果契约 UI）。**注：我无法验证 Unity 运行，此项宜你在场时做或接受 batchmode-only 验证。**
 4. 本批（harness + 设计文档 + epic-028）全部**未 commit**（无用户指令不 commit）。gap reference 已入 gitignore（按用户指示，不提交）。
+
+---
+
+# ⭐ 会话 HANDOFF — 2026-07-01（M15 交付物①+设计层已 push；新会话从这里恢复）
+
+## 已完成并 push tk/main（本会话）
+- **`459cfae` feat(console)**：M15 CampaignSession 交互控制台 harness（`src/Console/` 5 文件）——11 循环端到端可玩；8 新测；**全套 805/805 绿，-warnaserror 0**。
+- **`f277aa6` docs(m15)**：M15 UX 设计文档（`design/ux/m15-campaign-loop-ux.md`，Draft）+ epic-028（`production/epics/epic-028-presentation-ux-feedback/`，Draft for Review）+ epics/index 登记（24 epics：23✅+1 Draft）。
+- **`/ux-review` 已跑**：裁定 **NEEDS REVISION（0 BLOCKING / 3 ADVISORY）**。3 条 advisory（本地化/文本膨胀约束、"本文是跨循环契约、单屏细节随 story 交付"声明、pattern 库引用）**已补进文档**并 commit（`4e...` 见下）。文档在其高度上达 APPROVED 水准；Status 仍留 Draft，因 5 个 Open Questions 需**用户实玩**才能闭。
+
+## ▶ 新会话下一步（用户决策点，勿擅自推进）
+`/create-stories epic-028` **有意暂停等用户**。两个未决方向决定 story 内容：
+- **方向 A（console 可读性打磨）**：Claude 能做能验证。
+- **方向 B（交付物② Unity 接线）**：重写 `Assets/UI/SessionRuntime.cs`（现指旧竖切 `SessionService`/`GameSession`）→ 指向 `CampaignSessionService`，4 场景 ViewModel/投影重定向。**Claude 无法验证 Unity 运行（仅 batchmode），宜用户在场。建议首屏=战果复盘。**
+
+**建议序**：用户先 `dotnet run --project src/Console` 实玩一局 → 回填 `m15-campaign-loop-ux.md` §7 Open Questions（尤其军师"置信"用小数 vs 高/中/低档——小数易误读为胜率）→ 再 `/create-stories epic-028`（届时补登 TR-ux-001~005）。信息最全、不返工。
+
+## 关键事实（新会话须知）
+- 分支 main，push 到 `tk`（origin 403 无写权限）。ADR-0001~0009 全 Accepted。
+- 全循环脚本自检：`dotnet run --project src/Console -- --script "5 6 7 8 m m m 9 t o c r h 1 s l q"`。
+- harness 架构边界：只读 public 投影 + 只提交 Command（ADR-0002/0009）；internal 成员跨程序集编译期挡住。
+- M11~M14/M16 仍在"需补设计/受阻"区（见上「剩余 M11~M16」段）；本会话只推进了 M15。
