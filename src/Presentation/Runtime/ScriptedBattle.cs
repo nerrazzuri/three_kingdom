@@ -11,13 +11,15 @@ using ThreeKingdom.Presentation.Screens;
 namespace ThreeKingdom.Presentation.Runtime
 {
     /// <summary>
-    /// 复盘屏<b>临时</b>演示战局（epic-028 story-002 evidence 用；story-004 HUD 接真实「备战→开战」流程后移除）。
-    /// 在当前会话上按 console harness 已验证的确定性序列走一局：补齐计划→开战→解析→（胜局标满伏击条件）→
-    /// 识别兵法→结算战果，返回复盘展示模型。
+    /// 确定性脚本战斗工具（M15）：在一个会话上按 console harness 已验证的序列走一局并结算为指定分支，
+    /// 返回战果复盘展示模型。补齐计划→开战→解析→（胜局标满假退伏击条件）→识别兵法→结算战果。
+    /// <para>
     /// <b>全程只经 <see cref="CampaignSessionService"/> 命令</b>（ADR-0002/0009——本类零规则，只编排既有用例）；
-    /// 固定种子/夹具 → 同分支同结果（ADR-0004）。
+    /// 固定种子/夹具 → 同分支同结果（ADR-0004）。<b>分支可参数化</b>——供四分支续局契约的自动测试。
+    /// HUD 交互开战走 <see cref="CampaignRuntime"/> 的两步（开战→战中→结算）路径，非本一步式工具。
+    /// </para>
     /// </summary>
-    public static class BattleReviewDemo
+    public static class ScriptedBattle
     {
         /// <summary>假退伏击三条件（与 console harness 同源顺序；兵法=条件组合，非按钮）。</summary>
         private static readonly TacticCondition[] FeintAmbushConditions =
@@ -28,8 +30,8 @@ namespace ThreeKingdom.Presentation.Runtime
         };
 
         /// <summary>
-        /// 在 <paramref name="session"/> 上演示一局并结算为 <paramref name="branch"/> 分支，返回复盘模型。
-        /// 幂等防重：已有计划/战斗则跳过对应步骤（重复点击不重复添加命令）。
+        /// 在 <paramref name="session"/> 上跑一局并结算为 <paramref name="branch"/> 分支，返回复盘模型。
+        /// 幂等防重：已有计划/战斗则跳过对应步骤（重复调用不重复添加命令）。
         /// </summary>
         public static BattleReviewView Run(
             CampaignSession session, PlayableCampaign scenario, OutcomeBranch branch, BattleReviewTuning tuning)
@@ -45,7 +47,7 @@ namespace ThreeKingdom.Presentation.Runtime
                 service.AddPlanOrder(session, scenario.AmbushPlan());
                 SubmitPlanResult submitted = service.SubmitPlan(session);
                 if (!submitted.Committed)
-                    throw new InvalidOperationException("演示战局：计划提交被拒（应为已验证夹具，属编程错误）。");
+                    throw new InvalidOperationException("脚本战斗：计划提交被拒（应为已验证夹具，属编程错误）。");
             }
 
             // 开战（幂等）+ 解析一个阶段（确定性种子）。
@@ -54,7 +56,7 @@ namespace ThreeKingdom.Presentation.Runtime
                 CampaignCommandResult started = service.StartBattle(
                     session, scenario.Units(), scenario.BattleConfig, scenario.BattleSeed, scenario.TacticChains);
                 if (!started.Applied)
-                    throw new InvalidOperationException($"演示战局：开战失败（{started.Error}）。");
+                    throw new InvalidOperationException($"脚本战斗：开战失败（{started.Error}）。");
             }
             var orders = new[]
             {
@@ -63,8 +65,7 @@ namespace ThreeKingdom.Presentation.Runtime
             };
             service.ResolveBattlePhase(session, orders);
 
-            // 胜局：标满假退伏击条件。防重经 public 复盘出口判断（会话内部条件集为 internal——
-            // 表现层类型边界正确挡住直读；已识别出该兵法 = 三条件已全，跳过再标）。
+            // 胜局：标满假退伏击条件（幂等经 public 复盘出口判断，已识别则跳过再标）。
             if (branch == OutcomeBranch.Victory && !HasTactic(service.RecognizeTactics(session), TacticTag.FeintAmbush))
             {
                 foreach (TacticCondition cond in FeintAmbushConditions)

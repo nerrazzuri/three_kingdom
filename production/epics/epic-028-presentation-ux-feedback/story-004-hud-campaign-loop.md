@@ -1,12 +1,12 @@
 # Story 004: HUD 战役主循环——治理/备战/战斗条件/下一步可做
 
 > **Epic**: 表现与理解循环（M15 / epic-028）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M / ~4h
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —（/dev-story 开始时填写）
+> **Last Updated**: 2026-07-04
 
 ## Context
 
@@ -31,13 +31,13 @@
 
 *From `m15-campaign-loop-ux.md` §1/§6（AC-1 治理分量 / AC-5 / AC-6）+ hud.md §4，scoped to this story:*
 
-- [ ] HUD 世界状态/城市账本/推进时段全部重定向到 CampaignSession 投影（不再读 `GameSession`）
-- [ ] 治理三动作（征用军粮/修工事/安抚）经 `RequisitionFood`/`RepairFortification`/`Appease` 提交；每个动作旁显示其**对后续战役条件的因果说明**（修工事↑守城强度 / 征用↑补给↓民心）——TR-ux-001 治理分量
-- [ ] 备战面板：`AddPlanOrder`/`RemovePlanOrder` 草稿态与 `SubmitPlan` 已提交态视觉区分（朱批朱红，hud.md §4）；提交后不可反悔的承诺感明确
-- [ ] 战斗态显示兵法条件进度（「还差 N 条」——已满足/未满足分列），**不呈现为可点击的技能按钮**
-- [ ] AC-5：任一循环态（治理/备战/战中/战后）HUD 显示当前合法可做动作集；非法命令提交后按稳定错误码显示原因（不做 UI 侧预判吞掉）
-- [ ] 多维状态分列：民心/治安/工事/守备/士气/疲劳各自成维显示，无合并总分——TR-ux-005
-- [ ] ViewModel 纯函数渲染恒等
+- [x] HUD 世界状态/城市账本/推进时段全部重定向到 CampaignSession 投影（不再读 `GameSession`）
+- [x] 治理三动作（征用军粮/修工事/安抚）经 `RequisitionFood`/`RepairFortification`/`Appease` 提交；每个动作旁显示其**对后续战役条件的因果说明**（修工事↑守城强度 / 征用↑补给↓民心）——TR-ux-001 治理分量
+- [x] 备战面板：`AddPlanOrder`/`RemovePlanOrder` 草稿态与 `SubmitPlan` 已提交态视觉区分（朱批朱红，hud.md §4）；提交后不可反悔的承诺感明确
+- [x] 战斗态显示兵法条件进度（「还差 N 条」——已满足/未满足分列），**不呈现为可点击的技能按钮**
+- [x] AC-5：任一循环态（治理/备战/战中/战后）HUD 显示当前合法可做动作集；非法命令提交后按稳定错误码显示原因（不做 UI 侧预判吞掉）
+- [x] 多维状态分列：民心/治安/工事/守备/士气/疲劳各自成维显示，无合并总分——TR-ux-005
+- [x] ViewModel 纯函数渲染恒等
 
 ---
 
@@ -101,7 +101,7 @@
 - `production/qa/evidence/story-004-hud-loop-evidence.md`（人工走查记录 + 截图 + 用户签核）
 - ViewModel 自动测试于统一测试工程（`Presentation/HudCampaignViewModelTests.cs`）
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created + passing（7/7；全套 836/836）；人工走查证据待用户签核
 
 ---
 
@@ -109,3 +109,16 @@
 
 - Depends on: Story 001（会话接缝）
 - Unlocks: Story 005（新手序在主循环 HUD 上加引导层）
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-04
+**Criteria**: 7/7 passing（全部由自动 ViewModel 测试覆盖；UI 接线经 Unity batchmode 0-error 编译 + 人工走查清单）
+**Deviations**（ADVISORY）:
+- `BattleReviewDemo`（story-002 临时演示）迁为永久工具 `src/Presentation/Runtime/ScriptedBattle.cs`（分支参数化脚本战斗），story-002 测试 4 处引用同步改名——移除临时 UI 演示（`demo-victory`/`demo-defeat` 按钮 + `RunDemoBattle`）的同时保住 story-002 自动测试。
+- 「开战」复用既有确定性脚本战斗（用户裁决），拆两步（开战→战中显条件→结算战果）以映射四相位；玩家逐回合可控战斗指令属后续 epic。
+- 征用军粮用固定投放量常量（`RequisitionAmount=20`）——UXML 无数值输入框；非平衡硬编码（平衡值在 Domain 配置），数值输入投入量属后续。
+- 触及 story 清单外文件：`CampaignSession.cs`（`BattleConditions` internal→public，供条件进度视图，一行只读暴露）+ story-002 测试改名——均为本 story 必要且正当。
+**Test Evidence**: UI story — 自动测试 `tests/unit/ThreeKingdom.Domain.Tests/Presentation/HudCampaignViewModelTests.cs`（7 测）+ 人工走查证据 `production/qa/evidence/story-004-hud-loop-evidence.md`（自动段已填，用户签核位待补）。
+**Code Review**: Complete（本会话 `/code-review` lean inline → APPROVED；ADR-0002/0009/0004 COMPLIANT，命令路径/多维分列/条件非按钮/确定性均合规）。

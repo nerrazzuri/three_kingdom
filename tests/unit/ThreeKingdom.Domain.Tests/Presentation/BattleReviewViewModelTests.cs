@@ -115,7 +115,7 @@ namespace ThreeKingdom.Domain.Tests.Presentation
                      { OutcomeBranch.Victory, OutcomeBranch.Retreat, OutcomeBranch.CityLost, OutcomeBranch.Defeat })
             {
                 CampaignSession session = NewSession();
-                BattleReviewView view = BattleReviewDemo.Run(
+                BattleReviewView view = ScriptedBattle.Run(
                     session, PlayableCampaign.Default(), branch, BattleReviewTuning.Default);
 
                 // Assert：每分支 ≥1 续局选项（TR-ux-004）；全文无禁用措辞（AC-2/AC-4 反例清单）。
@@ -136,7 +136,7 @@ namespace ThreeKingdom.Domain.Tests.Presentation
         {
             // Arrange / Act：胜局演示（记功预览来自梯队配置 CombatVictory=+40/+10）。
             CampaignSession session = NewSession();
-            BattleReviewView view = BattleReviewDemo.Run(
+            BattleReviewView view = ScriptedBattle.Run(
                 session, PlayableCampaign.Default(), OutcomeBranch.Victory, BattleReviewTuning.Default);
 
             // Assert：长线提示含增量与当前值（果→长线引导，Q2 卡点裁决）。
@@ -168,9 +168,9 @@ namespace ThreeKingdom.Domain.Tests.Presentation
         public void test_demo_battle_same_branch_is_deterministic_across_sessions()
         {
             // Arrange / Act：两个独立新会话跑同分支演示。
-            BattleReviewView first = BattleReviewDemo.Run(
+            BattleReviewView first = ScriptedBattle.Run(
                 NewSession(), PlayableCampaign.Default(), OutcomeBranch.Victory, BattleReviewTuning.Default);
-            BattleReviewView second = BattleReviewDemo.Run(
+            BattleReviewView second = ScriptedBattle.Run(
                 NewSession(), PlayableCampaign.Default(), OutcomeBranch.Victory, BattleReviewTuning.Default);
 
             // Assert：同配置+同分支 → 逐字段相同复盘（ADR-0004）。

@@ -140,7 +140,9 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>战斗中已累积满足的兵法条件（确定性，供事后识别 RetrospectiveContext）。</summary>
         private readonly HashSet<TacticCondition> _battleConditions = new HashSet<TacticCondition>();
-        internal IReadOnlyCollection<TacticCondition> BattleConditions => _battleConditions;
+
+        /// <summary>战斗中已累积满足的兵法条件（只读；写经 <see cref="AddBattleCondition"/>）。供表现层条件进度视图（story-004）。</summary>
+        public IReadOnlyCollection<TacticCondition> BattleConditions => _battleConditions;
 
         /// <summary>是否已开战（战斗态存在）。</summary>
         public bool HasBattle => Battle != null;

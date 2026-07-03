@@ -8,6 +8,13 @@
         <ui:VisualElement name="hud-header" class="hud-header">
             <ui:Label name="hud-objective" class="hud-objective" />
             <ui:Label name="hud-banner" class="hud-banner" />
+            <!-- story-004：相位 + 该相位可做动作集（AC-5：任一相位都看得到下一步能做什么）。 -->
+            <ui:Label name="hud-phase" class="hud-note" />
+            <!-- story-005 新手引导：沿自然循环序一次一条 in-world 提示（不模态、不替选）+ 可关闭。 -->
+            <ui:VisualElement name="onboarding" class="hud-top">
+                <ui:Label name="onboarding-hint" class="hud-note" />
+                <ui:Button name="onboarding-close" text="关闭引导" />
+            </ui:VisualElement>
             <ui:VisualElement name="time-bar" class="hud-top">
                 <ui:Label name="time-bar-label" text="时辰" class="time-label" />
                 <ui:Button name="advance-time" text="推进时段" />
@@ -30,6 +37,14 @@
                         <ui:Label name="ledger-security" text="治安 —" />
                         <ui:Label name="ledger-fort" text="工事 —" />
                         <ui:Label name="ledger-warning" class="ledger-warning" />
+                        <!-- story-004 治理三动作（GDD_004）：每个动作旁标注对后续战役条件的因果方向（TR-ux-001）。 -->
+                        <ui:Button name="requisition" text="征用军粮" />
+                        <ui:Label name="requisition-hint" class="hud-note" />
+                        <ui:Button name="repair-fort" text="修工事" />
+                        <ui:Label name="repair-hint" class="hud-note" />
+                        <ui:Button name="appease" text="安抚" />
+                        <ui:Label name="appease-hint" class="hud-note" />
+                        <ui:Label name="govern-status" class="ledger-warning" />
                         <!-- B6 外交求粮（受控一局一次，延迟交付/可背约）。 -->
                         <ui:Button name="request-aid" text="求援（求粮）" />
                         <ui:Label name="diplo-status" class="hud-note" />
@@ -44,6 +59,16 @@
                         <ui:Button name="convene" text="召开军议" />
                         <ui:Label name="council-stale" class="ledger-warning" />
                         <ui:VisualElement name="council-advice" />
+                    </ui:VisualElement>
+                    <!-- story-004 备战面板（GDD_009）：草稿（可移除） vs 已提交（朱批·不可反悔）。 -->
+                    <ui:VisualElement name="prep-panel" class="card">
+                        <ui:Label text="备战" class="card-title" />
+                        <ui:Button name="add-ambush" text="设伏（加入草稿）" />
+                        <ui:Button name="submit-plan" text="提交计划（不可反悔）" />
+                        <ui:Label name="prep-status" class="hud-note" />
+                        <ui:VisualElement name="prep-draft" />
+                        <ui:VisualElement name="prep-committed" />
+                        <ui:Button name="start-battle" text="开战" />
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:ScrollView>
@@ -75,7 +100,11 @@
                 <ui:Label text="命令" class="card-title" />
             </ui:VisualElement>
             <ui:VisualElement name="outcome-chain" class="tray">
-                <ui:Label text="战果复盘" class="card-title" />
+                <ui:Label text="战况 / 战果复盘" class="card-title" />
+                <!-- story-004 战中：兵法条件进度（已满足✓/未满足✗ + 还差 N 条；兵法是条件组合，非按钮）。 -->
+                <ui:Label name="battle-status" class="hud-note" />
+                <ui:VisualElement name="battle-conditions" />
+                <ui:Button name="resolve-outcome" text="结算战果" />
                 <!-- M15 story-002：默认折叠一句话结论（2026-07-03 裁决），一键展开 ≤5 主因素 + 兵法 + 续局 + 长线。 -->
                 <ui:Label name="review-conclusion" class="hud-note" />
                 <ui:Button name="review-toggle" text="展开因果" />
@@ -87,9 +116,6 @@
                 <ui:VisualElement name="review-continuations" />
                 <ui:Label name="review-career-hint" class="hud-note" />
                 <ui:Label name="review-selection" class="hud-note" />
-                <!-- 临时演示入口（story-004 接真实备战→开战流程后移除）。 -->
-                <ui:Button name="demo-victory" text="演示一局·胜（临时）" />
-                <ui:Button name="demo-defeat" text="演示一局·败（临时）" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

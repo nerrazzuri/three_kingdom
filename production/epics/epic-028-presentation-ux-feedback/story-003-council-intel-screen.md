@@ -1,12 +1,12 @@
 # Story 003: 军议与敌情屏——定性置信 + 时效 + 无胜率
 
 > **Epic**: 表现与理解循环（M15 / epic-028）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M / ~3h
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: —（/dev-story 开始时填写）
+> **Last Updated**: 2026-07-04
 
 ## Context
 
@@ -31,12 +31,12 @@
 
 *From `m15-campaign-loop-ux.md` §6（AC-2/AC-3）+ §7 Q1 裁决，scoped to this story:*
 
-- [ ] 军议面板重定向到 `CampaignSessionService.ConveneCouncil`：显示缘由 + 所需条件 + 风险 + 待证情报，**全屏无成功率数字、无「推荐方案」**——TR-ux-002
-- [ ] 军师「完整度/置信」以**定性档（高/中/低）**呈现，**不显示小数**——§7 Q1 裁决；档位映射阈值来自配置
-- [ ] 敌情面板重定向到会话知识投影：每条敌情 = 估计值 + 来源 + 「N 段前」时效；超过时效告警阈值（IntelConfig.ttlSegments）高亮为过时——TR-ux-003
-- [ ] 军议绑定召开时知识快照：召开后再侦察（知识变化），旧建议显式标记「过时」，不静默更新（`IsStaleAgainst` 语义）
-- [ ] 类型层反全知：本屏代码取不到敌方真值（只经玩家知识投影出口；编译期可证）
-- [ ] ViewModel 纯函数渲染恒等
+- [x] 军议面板重定向到 `CampaignSessionService.ConveneCouncil`：显示缘由 + 所需条件 + 风险 + 待证情报，**全屏无成功率数字、无「推荐方案」**——TR-ux-002
+- [x] 军师「完整度/置信」以**定性档（高/中/低）**呈现，**不显示小数**——§7 Q1 裁决；档位映射阈值来自配置
+- [x] 敌情面板重定向到会话知识投影：每条敌情 = 估计值 + 来源 + 「N 段前」时效；超过时效告警阈值（IntelConfig.ttlSegments）高亮为过时——TR-ux-003
+- [x] 军议绑定召开时知识快照：召开后再侦察（知识变化），旧建议显式标记「过时」，不静默更新（`IsStaleAgainst` 语义）
+- [x] 类型层反全知：本屏代码取不到敌方真值（只经玩家知识投影出口；编译期可证）
+- [x] ViewModel 纯函数渲染恒等
 
 ---
 
@@ -96,7 +96,7 @@
 - `production/qa/evidence/story-003-council-intel-evidence.md`（人工走查记录 + 截图 + 用户签核）
 - ViewModel 自动测试于统一测试工程（`Presentation/CouncilIntelViewModelTests.cs`）
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created + passing（8/8；全套 829/829）；人工走查证据待用户签核
 
 ---
 
@@ -104,3 +104,15 @@
 
 - Depends on: Story 001（会话接缝）
 - Unlocks: Story 005（军议自动显示新手序基于本屏）
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-04
+**Criteria**: 6/6 passing（全部由自动 ViewModel 测试覆盖；UI 接线经 Unity batchmode 0-error 编译 + 人工走查清单）
+**Deviations**（ADVISORY）:
+- 新建战役面向 ViewModel `CouncilIntelView.cs`（Screens），未按 Implementation Notes「复用 `Projections/CouncilView`/`EnemyIntelView`」——理由：直接改旧视图会破 `PresentationLockTests`/`PresentationViewTests`/`CouncilConveneTests`（断言「依据薄弱/中等/扎实」）且污染 console 内部工具（§7 Q4 保持不动）；新 VM 边界更干净。旧竖切视图仍供 console/slice。
+- 「派出侦察」为即时侦察（`CampaignRuntime.ScoutEnemy` 直连 `_service.Scout`）——延迟「派出→在途→返报」派出循环 + 主循环命令托盘整合归 story-004（本 story Out of Scope 明列，仅重定向按钮数据源）。
+- 触及 `CampaignRuntime`/`SessionRuntime`/`HudController`——UI 接线所需，属预期范围。
+**Test Evidence**: UI story — 自动测试 `tests/unit/ThreeKingdom.Domain.Tests/Presentation/CouncilIntelViewModelTests.cs`（8 测）+ 人工走查证据 `production/qa/evidence/story-003-council-intel-evidence.md`（自动段已填，用户签核位待补）。
+**Code Review**: Complete（本会话 `/code-review` lean inline → APPROVED；ADR-0002/0009 COMPLIANT，反全知/数据驱动/确定性均合规）。

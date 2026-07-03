@@ -1224,3 +1224,63 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 无用户指令不 commit；commit 尾注 Co-Authored-By；push 到 tk。
 - **DLL 同步纪律**：改 src/ 纯 C# 层后须 `dotnet build -c Release` 并 cp 三个 DLL 到 `Assets/Plugins/`，否则 Unity 用旧码。
 - M11~M14/M16 仍在「需补设计/受阻」区，设计须 user-driven。
+
+## Session Extract — /dev-story 2026-07-04（epic-028 story-003 军议敌情屏）
+- Story: production/epics/epic-028-presentation-ux-feedback/story-003-council-intel-screen.md — 军议与敌情屏（定性置信+时效+无胜率）
+- 新建 ViewModel `src/Presentation/Screens/CouncilIntelView.cs`（CouncilIntelTuning 档阈值配置驱动 0.4/0.7→低/中/高 · CampaignCouncilView 并列建议+快照过时 · CampaignEnemyIntelPanelView 估计值+来源+「N段前」+ttl 过时，结构无真值）
+- 改 `src/Presentation/Runtime/CampaignRuntime.cs`（ConveneCouncil/CurrentCouncilView/EnemyIntel/ScoutEnemy；ttl 取 scenario IntelConfig 单一源）· `Assets/UI/SessionRuntime.cs`（暴露四法）· `Assets/UI/HudController.cs`（军议/敌情/侦察接线，移出占位集，过时【过时】文本冗余编码）
+- Test: tests/unit/ThreeKingdom.Domain.Tests/Presentation/CouncilIntelViewModelTests.cs（8 测，AC-1/2/3/4/5/6）
+- 验证: dotnet 829/829 绿（-warnaserror 0）· Unity batchmode 6000.3.18f1 编译 0 error CS · 3 DLL Release 同步 Assets/Plugins/
+- Evidence: production/qa/evidence/story-003-council-intel-evidence.md（自动证据已填 + 人工走查清单待用户签核）
+- 范围: 侦察为即时（story-004 换延迟派出循环 + 移除 story-002 演示按钮）
+- Next: /code-review then /story-done
+
+## Session Extract — /story-done 2026-07-04
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/epic-028-presentation-ux-feedback/story-003-council-intel-screen.md — 军议与敌情屏（定性置信+时效+无胜率）
+- AC: 6/6 全覆盖（自动 8 测）；全套 829/829 绿；Unity batchmode 0 error CS；3 DLL 已同步
+- Deviations(ADVISORY): ①新建 VM 非改旧 Projections（避免破锁测试/污染 console）②侦察即时（story-004 换延迟循环）
+- Tech debt logged: None（deviation 记入 story Completion Notes）
+- EPIC 表 003 → ✅ Complete；sprint-status.yaml 无 epic-028 条目（跳过）
+- Next recommended: story-004（HUD 战役主循环——治理/备战/条件/可做动作 + 移除 story-002 演示按钮）
+
+## Session Extract — /dev-story 2026-07-04（epic-028 story-004 HUD 战役主循环）
+- Story: production/epics/epic-028-presentation-ux-feedback/story-004-hud-campaign-loop.md — HUD 战役主循环（治理/备战/战斗条件/可做动作）
+- 新建 ViewModel `src/Presentation/Screens/HudCampaignView.cs`（HudPhaseView 四相位+可做动作 · GovernanceActionView 多维账本+三动作因果 · PrepPanelView 草稿vs承诺 · BattleConditionProgressView 还差N条·非按钮 · CampaignErrorText 错误码→文案）
+- 新建 `src/Presentation/Runtime/ScriptedBattle.cs`（BattleReviewDemo 迁为永久分支参数化脚本战斗工具）；删 BattleReviewDemo.cs
+- 改 `CampaignRuntime.cs`（治理/备战/相位/开战两步 StartBattle→ResolveOutcome）· `SessionRuntime.cs`（暴露循环命令，删 RunDemoBattle）· `HudController.cs`（治理/备战/战斗/相位接线，删演示按钮，账本移出占位）· `Hud.uxml`（相位横幅+治理三键+备战面板+战况条件区+结算按钮，删 demo 按钮）
+- Application 一行：`CampaignSession.BattleConditions` internal→public（供条件进度视图）
+- Test: tests/unit/.../Presentation/HudCampaignViewModelTests.cs（7 测 AC-2~7）；story-002 测试 4 处 BattleReviewDemo.Run→ScriptedBattle.Run
+- 验证: dotnet 836/836 绿（-warnaserror 0）· Unity batchmode 6000.3.18f1 编译 0 error CS · 3 DLL Release 同步
+- Evidence: production/qa/evidence/story-004-hud-loop-evidence.md（自动证据已填 + 人工走查清单待用户签核）
+- Next: /code-review then /story-done
+
+## Session Extract — /story-done 2026-07-04
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/epic-028-presentation-ux-feedback/story-004-hud-campaign-loop.md — HUD 战役主循环
+- AC: 7/7 全覆盖（自动 7 测）；全套 836/836 绿；Unity batchmode 0 error CS；3 DLL 已同步
+- Deviations(ADVISORY): ①BattleReviewDemo→ScriptedBattle 永久化（保 story-002 测试）②开战复用脚本战斗拆两步③征用固定量④BattleConditions internal→public
+- 移除 story-002 临时演示按钮 + RunDemoBattle（story-004 明列任务）
+- Tech debt logged: None（deviation 记入 story Completion Notes）
+- EPIC 表 004 → ✅ Complete；sprint-status.yaml 无 epic-028 条目（跳过）
+- Next recommended: story-005（新手循环序 + 无障碍关键项，依赖 002+003+004——现均 Complete，可开工）
+
+## Session Extract — /dev-story 2026-07-04（epic-028 story-005 新手引导 + 无障碍）
+- Story: production/epics/epic-028-presentation-ux-feedback/story-005-onboarding-accessibility.md — 新手循环序 + 无障碍关键项对齐
+- 新建 ViewModel `src/Presentation/Screens/OnboardingHints.cs`（OnboardingConfig 前N回合配置驱动 · OnboardingCue 察谋备战+果·长线+可继续 · OnboardingHints 纯函数：自动展开判定/未见筛选/中文文案）
+- 新建 `Assets/UI/OnboardingRuntime.cs`（PlayerPrefs 已见集+关闭偏好，不进权威存档）
+- 改 `CampaignRuntime.cs`（Round）· `SessionRuntime.cs`（Round）· `Hud.uxml`（onboarding-hint + 关闭引导按钮）· `HudController.cs`（前N回合自动展开军议 + RenderOnboarding 情境提示 + 关闭）
+- Test: tests/unit/.../Presentation/OnboardingViewModelTests.cs（7 测 AC-1/3/6 + 配置校验 + 引导不改会话哈希）
+- 验证: dotnet 843/843 绿（-warnaserror 0）· Unity batchmode 6000.3.18f1 编译 0 error CS · 3 DLL Release 同步
+- 无障碍：AC-7 走查/字符预算落 evidence 检查表（03/04 屏已有冗余文本/符号编码）
+- Evidence: production/qa/evidence/story-005-onboarding-a11y-evidence.md（自动+无障碍表+字符预算已填 + 人工走查待用户签核）
+- Next: /code-review then /story-done（epic-028 收尾）
+
+## Session Extract — /story-done 2026-07-04
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/epic-028-presentation-ux-feedback/story-005-onboarding-accessibility.md — 新手循环序 + 无障碍
+- AC: 6/6（AC-1/3/6+配置校验自动测试；AC-2 in-world 提示编译+走查；AC-4 无障碍结构+检查表；AC-5 字符预算 evidence）；全套 843/843 绿；Unity batchmode 0 error CS；3 DLL 同步
+- Deviations(ADVISORY): ①引导用专用 Label 非 NotificationFeed 队列 ②DefeatCanContinue 备而胜局常态不触发 ③新增 Round 接口
+- Tech debt logged: None（deviation 记入 story Completion Notes）
+- ★ epic-028 全 5/5 Complete（EPIC.md Status→✅ Complete）；M15 表现与理解循环收尾
+- Next recommended: 用户 Unity 走查 003/004/005 三份 evidence 并签核 + 提交本轮；之后 /smoke-check + /team-qa 收尾 M15，或转 M11~M14/M16 需补设计区

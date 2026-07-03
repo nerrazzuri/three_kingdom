@@ -4,7 +4,8 @@
 > **UX Design**: `design/ux/m15-campaign-loop-ux.md`（primary）+ `hud.md` · `main-menu.md` · `pause-menu.md` · `interaction-patterns.md`
 > **Architecture Module**: M15 Presentation / UX / Feedback Loop（`production/full-game-loop-module-plan-2026-06-28.md` §M15）
 > **Governing ADR**: ADR-0002（四层架构：Presentation 只读投影 + 只提交 Command）· ADR-0009（CampaignSession 装配接缝执行端）· ADR-0004（确定性渲染）
-> **Status**: Ready（2026-07-03：UX 文档 §7 五个 Open Questions 全部由用户实玩后裁定，文档转 Approved；范围收敛为**方向 B Unity 接线**，首 story = 战果复盘屏；可 /create-stories）
+> **Status**: ✅ Complete（2026-07-04：5/5 story 实现+审查+收尾+DLL 同步；全套 843/843 绿，Unity batchmode 0 error CS。各 story 人工走查 evidence 待用户签核）
+> **原状态**: Ready（2026-07-03：UX 文档 §7 五个 Open Questions 全部由用户实玩后裁定，文档转 Approved；范围收敛为**方向 B Unity 接线**，首 story = 战果复盘屏；可 /create-stories）
 > **Stories**: 5（2026-07-03 拆分；见下表）
 
 ## Stories
@@ -13,9 +14,9 @@
 |---|-------|------|--------|-----|-----|
 | 001 | [会话接缝——SessionRuntime 重指 CampaignSession + 统一存档 round-trip](story-001-campaign-runtime-seam.md) | Integration | ✅ Complete（2026-07-03，用户走查待签核） | ADR-0009（primary）/0002/0004 | TR-ux-005 |
 | 002 | [战果复盘屏——因果链默认折叠 + 续局选项 + 长线意义](story-002-battle-review-screen.md) | UI | ✅ Complete（2026-07-03，用户走查待签核） | ADR-0002（primary）/0009 | TR-ux-001/004 |
-| 003 | [军议与敌情屏——定性置信 + 时效 + 无胜率](story-003-council-intel-screen.md) | UI | Ready | ADR-0002（primary）/0009 | TR-ux-002/003 |
-| 004 | [HUD 战役主循环——治理/备战/战斗条件/下一步可做](story-004-hud-campaign-loop.md) | UI | Ready | ADR-0002（primary）/0009/0004 | TR-ux-001/005 |
-| 005 | [新手循环序 + 无障碍关键项对齐](story-005-onboarding-accessibility.md) | UI | Ready | ADR-0002（primary）/0003 | TR-ux-002 + AC-7 |
+| 003 | [军议与敌情屏——定性置信 + 时效 + 无胜率](story-003-council-intel-screen.md) | UI | ✅ Complete（2026-07-04，用户走查待签核） | ADR-0002（primary）/0009 | TR-ux-002/003 |
+| 004 | [HUD 战役主循环——治理/备战/战斗条件/下一步可做](story-004-hud-campaign-loop.md) | UI | ✅ Complete（2026-07-04，用户走查待签核） | ADR-0002（primary）/0009/0004 | TR-ux-001/005 |
+| 005 | [新手循环序 + 无障碍关键项对齐](story-005-onboarding-accessibility.md) | UI | ✅ Complete（2026-07-04，用户走查待签核） | ADR-0002（primary）/0003 | TR-ux-002 + AC-7 |
 
 依赖链：001 → 002 →（003 ∥ 004）→ 005。TR-ux-001~005 已登记 tr-registry v4（2026-07-03）。
 
