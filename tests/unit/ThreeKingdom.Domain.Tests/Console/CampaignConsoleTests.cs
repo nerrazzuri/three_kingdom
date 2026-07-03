@@ -1,5 +1,6 @@
 using System.IO;
 using NUnit.Framework;
+using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Session;
 using ThreeKingdom.Console;
 

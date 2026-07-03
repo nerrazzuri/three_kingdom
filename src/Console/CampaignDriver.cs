@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Session;
 using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;

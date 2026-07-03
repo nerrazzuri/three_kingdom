@@ -1,124 +1,44 @@
-using ThreeKingdom.Application.Session;
-using ThreeKingdom.Domain.Persistence;
-using ThreeKingdom.Presentation.Projections;
+using ThreeKingdom.Presentation.Runtime;
 using ThreeKingdom.Presentation.Screens;
 
 namespace ThreeKingdom.Unity.UI
 {
     /// <summary>
-    /// slice 运行期当前游戏会话的进程内单一来源（跨场景存活的静态状态）。把 Unity 壳接到真实
-    /// Application 用例：MainMenu「新游戏」开局、HUD 读真实世界状态投影并推进时段。
-    /// <b>不持有可变 Domain 对象</b>——只持有 Application 的 <see cref="GameSession"/> 句柄，
-    /// 一切推进经 <see cref="SessionService"/>（ADR-0002 接缝的执行端）；UI 只拿只读 <see cref="WorldStatusView"/>。
-    /// 无 MonoBehaviour 依赖（纯静态），便于被三屏 Controller 共读。
+    /// 运行期当前<b>战役会话</b>的进程内单一来源（跨场景存活的静态状态，epic-028 story-001）。
+    /// 把 Unity 壳接到完整 <c>CampaignSession</c> 脊梁（M00~M10 全 11 循环，ADR-0009）——不再指旧竖切
+    /// <c>SessionService</c>/<c>GameSession</c>。生命周期逻辑在纯 C# <see cref="CampaignRuntime"/>
+    /// （dotnet 已单测）；本类只是 Unity 侧薄静态壳 + <see cref="PlayerPrefsSaveMedium"/> 介质注入。
+    /// <b>不持有可变 Domain 对象</b>；UI 只拿只读 <see cref="WorldStatusView"/>（ADR-0002）。
+    /// 其余面板投影（账本/敌情/军议/花名册等）随 story-003/004 逐屏接入。
     /// </summary>
     public static class SessionRuntime
     {
-        private static readonly SessionService _service = new SessionService();
-        private static readonly SaveCoordinator _saves = new SaveCoordinator(new PlayerPrefsSaveMedium());
-        private const string DefaultSlot = "campaign";
-        private static GameSession _session;
+        private static readonly CampaignRuntime _runtime =
+            new CampaignRuntime(new PlayerPrefsSaveMedium());
 
-        /// <summary>当前会话（首访自动开局，保证 HUD 单独打开也可玩）。</summary>
-        public static GameSession Current => _session ??= _service.NewGame();
-
-        /// <summary>开新局（MainMenu「新游戏」）：重置会话至第 0 日黎明，返回初始世界状态视图。</summary>
-        public static WorldStatusView NewGame()
-        {
-            _session = _service.NewGame();
-            return new WorldStatusView(_service.Project(_session));
-        }
+        /// <summary>开新局（MainMenu「新游戏」）：以共享场景配置（汜水关太守）开局，返回初始世界状态视图。</summary>
+        public static WorldStatusView NewGame() => _runtime.NewGame();
 
         /// <summary>推进一个时段（HUD「推进时段」），返回推进后的世界状态视图（含跨日提示）。</summary>
-        public static WorldStatusView Advance()
-            => new WorldStatusView(_service.Advance(Current, 1));
+        public static WorldStatusView Advance() => _runtime.Advance(1);
 
-        /// <summary>取当前世界状态视图（不推进）。</summary>
-        public static WorldStatusView Status()
-            => new WorldStatusView(_service.Project(Current));
-
-        /// <summary>取一局目标/胜负视图（守城待变）。</summary>
-        public static ObjectiveView Objective()
-            => new ObjectiveView(_service.ProjectObjective(Current));
-
-        /// <summary>取人物花名册视图（GDD_005）。</summary>
-        public static RosterView Roster()
-            => new RosterView(_service.ProjectRoster(Current));
-
-        /// <summary>取己方城市账本视图（GDD_004）。</summary>
-        public static CityLedgerView Ledger()
-            => new CityLedgerView(_service.ProjectCity(Current));
-
-        /// <summary>取敌情探报视图（GDD_007；时效以当前世界时间计）。</summary>
-        public static EnemyReportView Enemy()
-            => new EnemyReportView(_service.ProjectIntel(Current), Current.CurrentTime);
-
-        /// <summary>取侦察派出视图（在途/可派出状态）。</summary>
-        public static ScoutView ScoutStatus()
-            => new ScoutView(_service.ProjectScout(Current));
-
-        /// <summary>派出侦察（非即时，返报经推进）并返回更新后的侦察派出视图。</summary>
-        public static ScoutView DispatchScout()
-            => new ScoutView(_service.DispatchScout(Current));
-
-        /// <summary>取最近军议建议视图（GDD_008；未召开返回 null）。</summary>
-        public static CouncilView Council()
-        {
-            var (set, snapshot) = _service.ProjectCouncil(Current);
-            return set == null ? null : CouncilView.FromSet(set, snapshot);
-        }
-
-        /// <summary>召开军议并返回建议视图（GDD_008）。</summary>
-        public static CouncilView Convene()
-        {
-            var (set, snapshot) = _service.Convene(Current);
-            return set == null ? null : CouncilView.FromSet(set, snapshot);
-        }
-
-        /// <summary>取袭扰视图（断粮疲敌；在途/可派出/上次结果；不含敌真值）。</summary>
-        public static RaidView RaidStatus()
-            => new RaidView(_service.ProjectRaid(Current));
-
-        /// <summary>派出袭扰（断粮疲敌；非即时，见效经推进）并返回更新后的袭扰视图。</summary>
-        public static RaidView DispatchRaid()
-            => new RaidView(_service.DispatchRaid(Current));
-
-        /// <summary>取假退伏击视图（第三取胜路线；不含敌真值）。</summary>
-        public static AmbushView AmbushStatus()
-            => new AmbushView(_service.ProjectAmbush(Current));
-
-        /// <summary>设伏诱敌（假退伏击，一局一次；非即时，发动经推进）并返回更新后的伏击视图。</summary>
-        public static AmbushView DispatchAmbush()
-            => new AmbushView(_service.DispatchAmbush(Current));
-
-        /// <summary>取外交求粮视图（GDD_012 §8）。</summary>
-        public static DiplomacyView Diplomacy()
-            => new DiplomacyView(_service.ProjectDiplomacy(Current));
-
-        /// <summary>求粮（受控一局一次）并返回更新后的外交视图。</summary>
-        public static DiplomacyView RequestAid()
-            => new DiplomacyView(_service.RequestAid(Current));
-
-        // ---- 存档 / 读档（ADR-0005，经真实持久栈）----
+        /// <summary>取当前世界状态视图（不推进；纯函数渲染恒等）。</summary>
+        public static WorldStatusView Status() => _runtime.Status();
 
         /// <summary>默认槽是否有存档（主菜单「继续」可用性）。</summary>
-        public static bool HasSave() => new PlayerPrefsSaveMedium().Exists(DefaultSlot);
+        public static bool HasSave() => _runtime.HasSave();
 
-        /// <summary>原子存档当前会话到默认槽；返回是否成功。</summary>
-        public static bool Save() => _saves.Save(DefaultSlot, Current).Succeeded;
+        /// <summary>原子存档当前会话（统一信封；失败保留上一份有效存档）；返回是否成功。</summary>
+        public static bool Save() => _runtime.Save();
 
-        /// <summary>读取默认槽恢复会话；成功则切换当前会话并返回 true，失败返回 false 且不动当前会话。</summary>
-        public static bool Load(out string reason)
-        {
-            SessionLoadResult result = _saves.Load(DefaultSlot);
-            if (result.Succeeded)
-            {
-                _session = result.Session;
-                reason = string.Empty;
-                return true;
-            }
-            reason = result.Reason;
-            return false;
-        }
+        /// <summary>读取默认槽恢复会话；成功切换当前会话返回 true，失败返回 false 与原因且不动当前会话。</summary>
+        public static bool Load(out string reason) => _runtime.Load(out reason);
+
+        /// <summary>
+        /// 【临时·story-002 evidence】在当前会话演示一局并返回战果复盘模型（确定性序列，只经用例命令）。
+        /// story-004 HUD 接真实「备战→开战」流程后移除。
+        /// </summary>
+        public static BattleReviewView RunDemoBattle(ThreeKingdom.Domain.Outcome.OutcomeBranch branch)
+            => BattleReviewDemo.Run(_runtime.Session, _runtime.Scenario, branch, BattleReviewTuning.Default);
     }
 }

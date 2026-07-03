@@ -17,10 +17,11 @@ using ThreeKingdom.Domain.World;
 using WTimeWindow = ThreeKingdom.Domain.World.TimeWindow;
 using PrepTimeWindow = ThreeKingdom.Domain.Preparation.TimeWindow;
 
-namespace ThreeKingdom.Console
+namespace ThreeKingdom.Application.Scenarios
 {
     /// <summary>
-    /// 「汜水关太守」默认可玩场景（M15 harness 单一数据源，ADR-0003 数据驱动 / ADR-0009 配置驱动开局）。
+    /// 「汜水关太守」默认可玩场景（M15 单一数据源，ADR-0003 数据驱动 / ADR-0009 配置驱动开局）。
+    /// console harness 与 Unity 表现层<b>共用同一来源</b>（epic-028 story-001：单一场景源，勿复制两份数值）。
     /// 组装一套<b>全 11 循环启用</b>的 <see cref="CampaignStartConfig"/>——城市治理 / 情报 / 军议 / 战役准备 /
     /// 历史世界——并暴露驱动循环运行期所需的卫星配置（晋升梯队 / 叛乱 / 战斗 / 兵法链）与稳定 id。
     /// 全部数值取自各循环已验证的单元测试夹具，合并为一个连贯场景；固定指纹/种子 → 确定性（ADR-0004）。
