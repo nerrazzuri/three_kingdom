@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
-using ThreeKingdom.Application.Session;
-using ThreeKingdom.Presentation.Projections;
+using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Presentation.Screens;
 
 namespace ThreeKingdom.Unity.UI
@@ -12,12 +11,20 @@ namespace ThreeKingdom.Unity.UI
     /// HUD 视觉壳控制器（Presentation 薄壳 / ADR-0002）。
     /// 把 <see cref="HudContextView"/> 的「情境→可见元素集」绑定到 UXML：每个情境只显示规定元素，
     /// 全屏模态隐去全部 HUD。逻辑（元素集/模态/通知/因果链）已由 dotnet 测试覆盖（BLOCKING）。
+    /// <para>
+    /// M15 story-001：HUD 已切换到 <b>CampaignSession 战役脊梁</b>（经 <see cref="SessionRuntime"/>，ADR-0009）。
+    /// 本 story 只贯通最小生命周期（时间/推进/存档）；其余面板（账本/敌情/军议/花名册/侦察/袭扰/伏击/目标）
+    /// 随 story-003/004 逐屏重定向到战役投影，暂以「接入中」占位、按钮禁用。
+    /// </para>
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class HudController : MonoBehaviour
     {
         [SerializeField] private HudContext _context = HudContext.JudgmentLayout;
         [SerializeField] private bool _modalActive;
+
+        /// <summary>未接线面板的占位文案（story-003/004 接入后移除）。</summary>
+        private const string PendingLabel = "接入战役会话中……";
 
         // HudElement → UXML 元素名。
         private static readonly Dictionary<HudElement, string> ElementNames = new Dictionary<HudElement, string>
@@ -38,61 +45,16 @@ namespace ThreeKingdom.Unity.UI
             // 复合于情境可见性之上——只额外隐藏用户关闭的元素，不强制显示。
             AccessibilityApplier.Apply(root, AccessibilityRuntime.Current);
 
-            // 竖切：真实 Application 会话驱动 HUD。开局渲染三面板（时间/己方账本/敌情），
-            // 推进时段经 SessionService 推进世界时钟 + 跨日结算城市；侦察刷新敌情（含时效）。
+            // 战役会话驱动 HUD：开局渲染时间条；推进时段经 CampaignSessionService 走全局日界结算顺序
+            //（时间→……→城市→历史→生涯，TR-session-001）。
             RenderTime(root, SessionRuntime.Status());
-            RenderLedger(root, SessionRuntime.Ledger());
-            RenderEnemy(root, SessionRuntime.Enemy());
-            RenderDiplomacy(root, SessionRuntime.Diplomacy());
-            RenderCouncil(root, SessionRuntime.Council());
-            RenderRoster(root, SessionRuntime.Roster());
-            RenderScout(root, SessionRuntime.ScoutStatus());
-            RenderRaid(root, SessionRuntime.RaidStatus());
-            RenderAmbush(root, SessionRuntime.AmbushStatus());
-            RenderObjective(root);
-
-            var convene = root.Q<Button>("convene");
-            if (convene != null) convene.clicked += () => RenderCouncil(root, SessionRuntime.Convene());
+            RenderPendingPanels(root);
 
             var advance = root.Q<Button>("advance-time");
             if (advance != null)
-                advance.clicked += () =>
-                {
-                    RenderTime(root, SessionRuntime.Advance()); // 推进 + 跨日提示
-                    RenderLedger(root, SessionRuntime.Ledger()); // 跨日结算 + 袭扰见效/援粮抵达可能改账本
-                    RenderEnemy(root, SessionRuntime.Enemy());   // 侦察返报/情报过时
-                    RenderDiplomacy(root, SessionRuntime.Diplomacy()); // 援粮可能抵达
-                    RenderCouncil(root, SessionRuntime.Council());      // 知识/时间变化，建议可能过时
-                    RenderScout(root, SessionRuntime.ScoutStatus());    // 侦察队可能已返报
-                    RenderRaid(root, SessionRuntime.RaidStatus());      // 袭扰队可能已见效
-                    RenderAmbush(root, SessionRuntime.AmbushStatus());  // 伏击可能已发动
-                    RenderObjective(root);                       // 推进可能触发胜负
-                };
+                advance.clicked += () => RenderTime(root, SessionRuntime.Advance()); // 推进 + 跨日提示
 
-            var requestAid = root.Q<Button>("request-aid");
-            if (requestAid != null) requestAid.clicked += () => RenderDiplomacy(root, SessionRuntime.RequestAid());
-
-            // 侦察/袭扰均为「派出」——非即时，结果在推进时段抵达时显现。
-            var scout = root.Q<Button>("scout");
-            if (scout != null) scout.clicked += () => RenderScout(root, SessionRuntime.DispatchScout());
-
-            var raid = root.Q<Button>("raid");
-            if (raid != null)
-                raid.clicked += () =>
-                {
-                    RenderRaid(root, SessionRuntime.DispatchRaid()); // 派出（即兑付粮草代价）
-                    RenderLedger(root, SessionRuntime.Ledger());     // 反映粮草扣减
-                };
-
-            var ambush = root.Q<Button>("ambush");
-            if (ambush != null)
-                ambush.clicked += () =>
-                {
-                    RenderAmbush(root, SessionRuntime.DispatchAmbush()); // 设伏（即降工事示弱）
-                    RenderLedger(root, SessionRuntime.Ledger());         // 反映工事下降
-                };
-
-            // 竖切：存档（原子写，真实持久栈）+ 返回主菜单。
+            // 存档（原子写，统一信封）+ 返回主菜单。
             var save = root.Q<Button>("save-game");
             if (save != null)
                 save.clicked += () =>
@@ -103,6 +65,85 @@ namespace ThreeKingdom.Unity.UI
 
             var toMenu = root.Q<Button>("to-menu");
             if (toMenu != null) toMenu.clicked += () => SceneManager.LoadScene("MainMenu");
+
+            // 战果复盘（story-002 / TR-ux-001/004）：默认无战果时隐藏内容区，仅演示按钮可用（临时）。
+            RenderBattleReview(root);
+            var demoWin = root.Q<Button>("demo-victory");
+            if (demoWin != null)
+                demoWin.clicked += () => { _review = SessionRuntime.RunDemoBattle(OutcomeBranch.Victory); RenderBattleReview(root); };
+            var demoLose = root.Q<Button>("demo-defeat");
+            if (demoLose != null)
+                demoLose.clicked += () => { _review = SessionRuntime.RunDemoBattle(OutcomeBranch.Defeat); RenderBattleReview(root); };
+            var toggle = root.Q<Button>("review-toggle");
+            if (toggle != null)
+                toggle.clicked += () =>
+                {
+                    if (_review == null) return;
+                    _review = _review.IsExpanded ? _review.Collapse() : _review.Expand();
+                    RenderBattleReview(root);
+                };
+        }
+
+        /// <summary>当前复盘展示模型（表现态，不入 Domain/存档；null=尚无战果）。</summary>
+        private BattleReviewView _review;
+
+        /// <summary>
+        /// 渲染战果复盘（不可变 ViewModel → UXML；同模型渲染恒等）。折叠=只见一句话结论；
+        /// 展开=≤5 主因素 + 兵法复盘。续局选项为按钮：点击记录选择（真实续局命令分派随 story-004
+        /// 可做动作集接入——会话已可继续，推进时段等合法命令持续可用）。
+        /// </summary>
+        private void RenderBattleReview(VisualElement root)
+        {
+            bool has = _review != null;
+            SetLabel(root, "review-conclusion", has ? _review.ConclusionLabel : "尚无战果——打完一局后此处复盘因果。");
+            SetLabel(root, "review-notice", has ? _review.ContinuationNotice : string.Empty);
+            SetLabel(root, "review-career-hint", has ? _review.CareerHintLabel : string.Empty);
+
+            var toggle = root.Q<Button>("review-toggle");
+            if (toggle != null)
+            {
+                toggle.SetEnabled(has);
+                toggle.text = has ? _review.ToggleLabel : "展开因果";
+            }
+
+            var factors = root.Q<VisualElement>("review-factors");
+            if (factors != null)
+            {
+                factors.Clear();
+                if (has)
+                    foreach (var line in _review.VisibleFactorLines)
+                        factors.Add(new Label("　" + line));
+            }
+
+            var tactics = root.Q<VisualElement>("review-tactics");
+            if (tactics != null)
+            {
+                tactics.Clear();
+                if (has && _review.IsExpanded)
+                    foreach (var line in _review.TacticLines)
+                        tactics.Add(new Label("　" + line));
+            }
+
+            var continuations = root.Q<VisualElement>("review-continuations");
+            if (continuations != null)
+            {
+                continuations.Clear();
+                if (has)
+                {
+                    foreach (var option in _review.Options)
+                    {
+                        var captured = option;
+                        var button = new Button(() => SetLabel(root, "review-selection",
+                            $"已选定续局：{captured.KindLabel}——{captured.Reason}（战役继续，可推进时段）"))
+                        {
+                            text = captured.KindLabel,
+                        };
+                        continuations.Add(button);
+                    }
+                }
+            }
+
+            if (!has) SetLabel(root, "review-selection", string.Empty);
         }
 
         /// <summary>把真实世界状态投影渲染到时间条（合成时辰标签 + 跨日提示）。</summary>
@@ -115,120 +156,38 @@ namespace ThreeKingdom.Unity.UI
             if (note != null) note.text = status.CrossDayNotice;
         }
 
-        /// <summary>渲染一局目标/胜负（守城待变）；局终禁用推进/侦察/存档并显示横幅。</summary>
-        private void RenderObjective(VisualElement root)
+        /// <summary>
+        /// 未接线面板统一占位（story-003 军议/敌情、story-004 账本/备战等接入后逐一移除）：
+        /// 状态标签显示「接入中」、对应命令按钮禁用——不显示旧竖切数据，避免与战役会话状态混淆。
+        /// </summary>
+        private static void RenderPendingPanels(VisualElement root)
         {
-            var view = SessionRuntime.Objective();
-            SetLabel(root, "hud-objective", view.ObjectiveLabel);
-            SetLabel(root, "hud-banner", view.BannerLabel);
+            SetLabel(root, "ledger-stock", PendingLabel);
+            SetLabel(root, "ledger-morale", string.Empty);
+            SetLabel(root, "ledger-security", string.Empty);
+            SetLabel(root, "ledger-fort", string.Empty);
+            SetLabel(root, "ledger-warning", string.Empty);
 
-            if (view.IsOver)
-            {
-                // 一局已结束：冻结推进/侦察/求援/存档（返回主菜单仍可用，可继续/读档）。
-                SetEnabled(root, "advance-time", false);
-                SetEnabled(root, "scout", false);
-                SetEnabled(root, "request-aid", false);
-                SetEnabled(root, "convene", false);
-                SetEnabled(root, "raid", false);
-                SetEnabled(root, "ambush", false);
-                SetEnabled(root, "save-game", false);
-            }
-        }
+            SetLabel(root, "enemy-report-empty", PendingLabel);
+            SetLabel(root, "diplo-status", PendingLabel);
+            SetLabel(root, "council-stale", string.Empty);
+            SetLabel(root, "scout-status", PendingLabel);
+            SetLabel(root, "raid-status", PendingLabel);
+            SetLabel(root, "ambush-status", PendingLabel);
+            SetLabel(root, "hud-objective", PendingLabel);
+            SetLabel(root, "hud-banner", string.Empty);
 
-        /// <summary>渲染侦察派出（派出→在途→返报；非即时）。</summary>
-        private void RenderScout(VisualElement root, ScoutView view)
-        {
-            SetEnabled(root, "scout", view.CanDispatch);
-            SetLabel(root, "scout-status", view.StatusLabel);
-        }
-
-        /// <summary>渲染袭扰（断粮疲敌；派出→在途→见效）：按钮可用性 + 中文状态（不泄露敌真值）。</summary>
-        private void RenderRaid(VisualElement root, RaidView view)
-        {
-            SetEnabled(root, "raid", view.CanDispatch);
-            SetLabel(root, "raid-status", view.StatusLabel);
-        }
-
-        /// <summary>渲染假退伏击（设伏→在途→发动；一局一次）：按钮可用性 + 中文状态（不泄露敌真值）。</summary>
-        private void RenderAmbush(VisualElement root, AmbushView view)
-        {
-            SetEnabled(root, "ambush", view.CanDispatch);
-            SetLabel(root, "ambush-status", view.StatusLabel);
-        }
-
-        /// <summary>渲染外交求粮状态（中文）+ 求援按钮可用性（受控一局一次）。</summary>
-        private void RenderDiplomacy(VisualElement root, DiplomacyView view)
-        {
-            SetLabel(root, "diplo-status", view.StatusLabel);
-            SetEnabled(root, "request-aid", view.CanRequest);
-        }
-
-        /// <summary>渲染人物花名册（GDD_005：身份/职责/健康 + 能力五域）。</summary>
-        private void RenderRoster(VisualElement root, RosterView view)
-        {
-            var list = root.Q<VisualElement>("roster-list");
-            if (list == null) return;
-            list.Clear();
-            foreach (var c in view.Characters)
-            {
-                list.Add(new Label(c.Title));
-                list.Add(new Label("　" + c.Capabilities));
-            }
-        }
-
-        /// <summary>渲染军议建议（GDD_008：并列条件化建议；过时提示；无最优解高亮，P11）。view 为 null = 未召开。</summary>
-        private void RenderCouncil(VisualElement root, CouncilView view)
-        {
-            SetLabel(root, "council-stale", view != null && view.IsStale ? "（情报已变，建议过时——请重开军议）" : string.Empty);
-
-            var list = root.Q<VisualElement>("council-advice");
-            if (list == null) return;
-            list.Clear();
-            if (view == null) return;
-
-            foreach (var a in view.Advice)
-            {
-                // 每条建议：路线名 + 依据可靠性（定性）+ 所需条件 + 风险 + 缺失情报。并列，无优劣排序。
-                list.Add(new Label("【" + a.CandidateLabel + "】" + a.EvidenceConfidenceLabel));
-                foreach (var cond in a.RequiredConditions) list.Add(new Label("　需：" + cond));
-                foreach (var risk in a.Risks) list.Add(new Label("　险：" + risk));
-                foreach (var miss in a.MissingIntel) list.Add(new Label("　缺情报：" + miss));
-            }
+            SetEnabled(root, "convene", false);
+            SetEnabled(root, "request-aid", false);
+            SetEnabled(root, "scout", false);
+            SetEnabled(root, "raid", false);
+            SetEnabled(root, "ambush", false);
         }
 
         private static void SetEnabled(VisualElement root, string name, bool enabled)
         {
             var button = root.Q<Button>(name);
             if (button != null) button.SetEnabled(enabled);
-        }
-
-        /// <summary>把己方城市账本渲染到 own-ledger 卡（多维分列，P6 不合并；短缺/骚乱警示）。</summary>
-        private void RenderLedger(VisualElement root, CityLedgerView ledger)
-        {
-            SetLabel(root, "ledger-stock", ledger.StockLabel);
-            SetLabel(root, "ledger-morale", ledger.MoraleLabel);
-            SetLabel(root, "ledger-security", ledger.SecurityLabel);
-            SetLabel(root, "ledger-fort", ledger.FortificationLabel);
-            SetLabel(root, "ledger-warning", ledger.WarningLabel);
-        }
-
-        /// <summary>把敌情探报渲染到 enemy-report 卡（只呈现估计值/时效，无真值；无情报给提示）。</summary>
-        private void RenderEnemy(VisualElement root, EnemyReportView report)
-        {
-            var empty = root.Q<Label>("enemy-report-empty");
-            if (empty != null)
-            {
-                empty.text = report.EmptyLabel;
-                empty.style.display = report.HasIntel ? DisplayStyle.None : DisplayStyle.Flex;
-            }
-
-            var lines = root.Q<VisualElement>("enemy-report-lines");
-            if (lines != null)
-            {
-                lines.Clear();
-                foreach (var line in report.Lines)
-                    lines.Add(new Label(line));
-            }
         }
 
         private static void SetLabel(VisualElement root, string name, string text)

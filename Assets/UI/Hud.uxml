@@ -75,7 +75,21 @@
                 <ui:Label text="命令" class="card-title" />
             </ui:VisualElement>
             <ui:VisualElement name="outcome-chain" class="tray">
-                <ui:Label text="战果因果链" class="card-title" />
+                <ui:Label text="战果复盘" class="card-title" />
+                <!-- M15 story-002：默认折叠一句话结论（2026-07-03 裁决），一键展开 ≤5 主因素 + 兵法 + 续局 + 长线。 -->
+                <ui:Label name="review-conclusion" class="hud-note" />
+                <ui:Button name="review-toggle" text="展开因果" />
+                <ui:VisualElement name="review-detail">
+                    <ui:VisualElement name="review-factors" />
+                    <ui:VisualElement name="review-tactics" />
+                </ui:VisualElement>
+                <ui:Label name="review-notice" class="hud-note" />
+                <ui:VisualElement name="review-continuations" />
+                <ui:Label name="review-career-hint" class="hud-note" />
+                <ui:Label name="review-selection" class="hud-note" />
+                <!-- 临时演示入口（story-004 接真实备战→开战流程后移除）。 -->
+                <ui:Button name="demo-victory" text="演示一局·胜（临时）" />
+                <ui:Button name="demo-defeat" text="演示一局·败（临时）" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

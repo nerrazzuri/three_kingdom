@@ -1165,3 +1165,62 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 全循环脚本自检：`dotnet run --project src/Console -- --script "5 6 7 8 m m m 9 t o c r h 1 s l q"`。
 - harness 架构边界：只读 public 投影 + 只提交 Command（ADR-0002/0009）；internal 成员跨程序集编译期挡住。
 - M11~M14/M16 仍在"需补设计/受阻"区（见上「剩余 M11~M16」段）；本会话只推进了 M15。
+
+---
+
+# ⭐ 会话 2026-07-03 — §7 五问裁定 + epic-028 拆 story + story-001 实现
+
+## ✅ 用户已裁定 §7 全部 5 个 Open Questions（2026-07-03）
+1. 置信显示 = **定性档（高/中/低）**（小数易误读为胜率）；2. onboarding 卡点 = **果·长线**（战果后不知下一步/晋升历史意义不明）；3. 因果链 = **默认折叠一键展开**；4. console harness = **仅内部验证工具**（方向 A 关闭，冻结为回归载体）；5. Unity 切入屏 = **战果复盘**。
+- 已回填 `design/ux/m15-campaign-loop-ux.md`（§2.2/§3/§5/§7）并转 **Approved**；epic-028 转 **Ready**（范围收敛=方向 B Unity 接线）；index.md 同步。
+
+## ✅ /create-stories epic-028 完成（5 story，lean inline QA）
+- TR-ux-001~005 补登 tr-registry **v4**（2026-07-03）。
+- 依赖链：**001 会话接缝 → 002 战果复盘屏 →（003 军议敌情 ∥ 004 HUD 主循环）→ 005 新手序+无障碍**。
+
+## ▶ story-001（会话接缝）实现完成，待 /code-review + /story-done
+- **/story-readiness = READY（17/17）** → /dev-story inline 实现（lean 惯例）。
+- **改动**：
+  - `git mv src/Console/PlayableCampaign.cs → src/Application/Scenarios/`（namespace `ThreeKingdom.Application.Scenarios`，console/Unity 单一场景源）；CampaignDriver + CampaignConsoleTests 补 using。
+  - 新 `src/Presentation/Runtime/CampaignRuntime.cs`（纯 C# 生命周期接缝：NewGame/Advance/Status/HasSave/Save/Load；ISaveMedium 端口注入；临时槽+原子改名；槽名 `campaign-session` 与旧竖切区分；Restore 卫星配置从场景源取——数据驱动）。
+  - 重写 `Assets/UI/SessionRuntime.cs`（薄静态壳→CampaignRuntime；只剩 6 方法；**零 GameSession/SessionService 类型引用**）。
+  - 改写 `Assets/UI/HudController.cs`（时间/推进/存档走战役会话；**未接线面板显式「接入战役会话中……」占位+按钮禁用**——story-003/004 逐屏恢复；⚠️ 已知临时退化：旧竖切 HUD 面板不再显示旧数据）。
+  - 新测 `tests/.../PresentationRuntime/CampaignRuntimeTests.cs`（8 测：生命周期/自动开局/round-trip 哈希/恢复后推进确定性/损坏信封不部分载入/渲染纯函数/HasSave/写失败保留上一份）。
+- **验证**：dotnet 全套 **813/813 绿**（805+8），`-warnaserror` 0；console 脚本自检通过；**Plugins DLL 已重建同步**（旧 DLL 停在 6-24 无 CampaignSession——本次 Release 重建，Application 39K→100K）；Unity batchmode 编译验证进行中。
+- **发现的既有缺口（非本 story 引入）**：`CampaignSessionService.Restore` 不接收 historyCatalog/playerReach/divergenceConfig → 恢复后的会话 `HasHistory=false`（历史**状态**在 world 段完整恢复，但读档后 AdvanceHistory 变 no-op）。console harness 同样受影响。**建议后续补 Application 小修**（Restore 增 3 个可选配置参数），归 epic-028 之外的技术债或 M16 前清理。
+- **✅ 已收尾（2026-07-03）**：Unity batchmode **0 error 通过** · inline lean review 通过（advisory：Load 只捕 SaveFormatException，魔数合法但数值损坏的信封可能漏 FormatException——低风险，随存档演进收紧）· story-001 判 **Complete**（EPIC 表已更）· 走查证据骨架 `production/qa/evidence/story-001-campaign-runtime-seam-evidence.md` 待用户签核。
+
+## ▶ story-002（战果复盘屏）实现完成（2026-07-03，承上）
+- **/story-readiness READY**（修正 engine note：本项目 UI 是 UI Toolkit 非 UGUI）→ inline 实现。
+- **改动**：`src/Presentation/Screens/BattleReviewView.cs`（不可变 VM：默认折叠一句话/展开 ≤5 因素/兵法/续局中文映射/长线记功；`BattleReviewTuning` 承载 Q3 裁决）· `src/Presentation/Runtime/BattleReviewDemo.cs`（临时演示战局）· `Hud.uxml` outcome-chain 扩展 + `HudController` 渲染 + `SessionRuntime.RunDemoBattle` · 新测 `Presentation/BattleReviewViewModelTests.cs`（8 测）。
+- **验证**：**821/821 绿**（813+8），`-warnaserror` 0；batchmode 0 error ×2（最终产物复验）；DLL 已同步。
+- **关键 deviation**（详见 story Completion Notes）：①弃用 CausalChainView（跨维度求和违反 P6）②续局按钮=记录选择（真实命令分派归 story-004）③「演示一局」临时按钮（story-004 接真实流程后移除）。
+
+---
+
+# ⭐ 会话 HANDOFF — 2026-07-03（epic-028 story-001/002 已完成并 push；新会话从这里恢复）
+
+## 全局状态
+- **17 模块：M00~M10 完成 + M15 进行中（epic-028 = 2/5 story Complete）**。24 epics（23✅+1 进行中）。
+- **测试基线：821/821 全绿**（805 + story-001 的 8 + story-002 的 8），`-warnaserror` 0。Unity batchmode 编译 0 error。
+- 分支 main，push 到 **tk**（origin 403 无写权限）。ADR-0001~0009 全 Accepted。tr-registry **v4**（TR-ux-001~005）。
+
+## 本会话完成（2026-07-03，三个 commit）
+1. **§7 五问全裁定**（用户实玩后逐条回答）：置信=定性档 / 卡点=果·长线 / 因果链=默认折叠一键展开 / console=仅内部工具（方向 A 关闭）/ Unity 首屏=战果复盘。UX 契约 `design/ux/m15-campaign-loop-ux.md` 转 **Approved**；epic-028 转 Ready→拆 **5 story**（001 接缝→002 复盘→003∥004→005）。
+2. **story-001 会话接缝 Complete**：`CampaignRuntime`（纯 C# 生命周期：新局/推进/统一信封存读档，原子写回）+ `SessionRuntime` 重写（零旧竖切类型引用）+ `PlayableCampaign` 迁 `src/Application/Scenarios/`（console/Unity 单一场景源）+ **Plugins DLL 重建同步**（旧 DLL 停在 6-24 不含 CampaignSession）。⚠️ HUD 未接线面板暂「接入中」占位（story-003/004 逐屏恢复）。
+3. **story-002 战果复盘屏 Complete**：`BattleReviewView`（默认折叠一句话/展开 ≤5 因素/兵法复盘/续局中文映射/长线记功；`BattleReviewTuning` 承载裁决）+ Hud outcome-chain 区 + **临时**「演示一局·胜/败」按钮（evidence 入口）。
+
+## ▶ 新会话下一步（按优先）
+1. **story-003（军议敌情屏：定性置信/时效/无胜率）∥ story-004（HUD 主循环：治理/备战/条件/可做动作）**——互相独立可任选；004 完成后移除 story-002 的临时演示按钮与 `BattleReviewDemo`/`RunDemoBattle`。
+2. **用户 Unity 走查**两份 evidence（`production/qa/evidence/story-001-*-evidence.md` / `story-002-*-evidence.md`，各有核对清单+签核位）。
+3. story-005（新手序+无障碍）依赖 002+003+004。
+
+## 技术债（本会话新记）
+- `CampaignSessionService.Restore` 不接收 historyCatalog/playerReach/divergenceConfig → 读档后 `HasHistory=false`（历史**状态**恢复完整但 AdvanceHistory 变 no-op；console 同样受影响，非新引入）。建议 Application 小修：Restore 增 3 个可选配置参数。
+- `CampaignRuntime.Load` 只捕 `SaveFormatException`——魔数合法但数值损坏的信封可能漏 FormatException（低风险）。
+
+## 关键约束（不变）
+- 全程中文；代码标识符英文；零复制三国题材资产红线；全部强制设计锁（无胜率/反全知/失败可继续/确定性/数据驱动/兵法条件涌现）。
+- 无用户指令不 commit；commit 尾注 Co-Authored-By；push 到 tk。
+- **DLL 同步纪律**：改 src/ 纯 C# 层后须 `dotnet build -c Release` 并 cp 三个 DLL 到 `Assets/Plugins/`，否则 Unity 用旧码。
+- M11~M14/M16 仍在「需补设计/受阻」区，设计须 user-driven。
