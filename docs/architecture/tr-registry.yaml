@@ -24,8 +24,8 @@
 #
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
-version: 3
-last_updated: "2026-06-24"   # 追加 Meta 层 GDD_014/015 的 TR（architecture-review-2026-06-24）
+version: 4
+last_updated: "2026-07-03"   # 追加 M15 表现与理解层 TR-ux-001~005（/create-stories epic-028，参照 M03 补登惯例）
 
 requirements:
   # --- 时间 (GDD_001) ---
@@ -453,5 +453,42 @@ requirements:
     gdd: design/gdd/gdd-016-enemy-ai.md
     requirement: "敌方 AI 决策接入战区命令：AI 随机消费与战斗模拟同源，纳入同一状态哈希与重放契约；同种子+同态势→同战区命令流"
     created: 2026-06-30
+    revised: ""
+    status: active
+
+  # --- 表现与理解层 (M15 UX / epic-028；契约文档 design/ux/m15-campaign-loop-ux.md，Approved 2026-07-03) ---
+  - id: TR-ux-001
+    system: ux
+    gdd: design/ux/m15-campaign-loop-ux.md
+    requirement: "因果契约：每个循环结果可展示 ≤5 主因素因果链，默认折叠为一句话结论（胜/败+首要原因）、一键展开全链；战斗复盘列出满足的兵法条件与识别出的成型兵法"
+    created: 2026-07-03
+    revised: ""
+    status: active
+  - id: TR-ux-002
+    system: ux
+    gdd: design/ux/m15-campaign-loop-ux.md
+    requirement: "风险契约：全游戏任何界面不出现成功率数字或唯一最优推荐；军议只给缘由/条件/风险/缺失情报/定性置信（高/中/低档，不用小数——小数易误读为胜率）"
+    created: 2026-07-03
+    revised: ""
+    status: active
+  - id: TR-ux-003
+    system: ux
+    gdd: design/ux/m15-campaign-loop-ux.md
+    requirement: "置信/时效契约：敌情仅以估计值+来源+观测时效（N 段前）呈现；军议绑定召开时知识快照，知识变化后旧建议标记过时不静默更新；敌方真值类型层不可达"
+    created: 2026-07-03
+    revised: ""
+    status: active
+  - id: TR-ux-004
+    system: ux
+    gdd: design/ux/m15-campaign-loop-ux.md
+    requirement: "续局契约：四类战果分支（胜/撤/失城/败北）每类呈现 ≥1 合法续局选项；无任何「游戏结束/删档」终点；首次失败须明示「可继续」"
+    created: 2026-07-03
+    revised: ""
+    status: active
+  - id: TR-ux-005
+    system: ux
+    gdd: design/ux/m15-campaign-loop-ux.md
+    requirement: "确定性渲染与只读边界：同会话态渲染恒等（纯函数）；表现层不引用 Domain 可变内部态、只读投影+只经 Application 命令路径（编译期程序集边界+单测可证）；多维状态分列显示不压扁为单一数字"
+    created: 2026-07-03
     revised: ""
     status: active

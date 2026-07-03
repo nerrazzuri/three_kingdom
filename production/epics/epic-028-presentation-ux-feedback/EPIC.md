@@ -4,15 +4,27 @@
 > **UX Design**: `design/ux/m15-campaign-loop-ux.md`（primary）+ `hud.md` · `main-menu.md` · `pause-menu.md` · `interaction-patterns.md`
 > **Architecture Module**: M15 Presentation / UX / Feedback Loop（`production/full-game-loop-module-plan-2026-06-28.md` §M15）
 > **Governing ADR**: ADR-0002（四层架构：Presentation 只读投影 + 只提交 Command）· ADR-0009（CampaignSession 装配接缝执行端）· ADR-0004（确定性渲染）
-> **Status**: Draft for Review（design-first；交付物① 控制台 harness 已完成并作首个参考实现；待用户实玩反馈再 /create-stories）
-> **Stories**: 待拆（见 §Next Step）
+> **Status**: Ready（2026-07-03：UX 文档 §7 五个 Open Questions 全部由用户实玩后裁定，文档转 Approved；范围收敛为**方向 B Unity 接线**，首 story = 战果复盘屏；可 /create-stories）
+> **Stories**: 5（2026-07-03 拆分；见下表）
+
+## Stories
+
+| # | Story | Type | Status | ADR | TR |
+|---|-------|------|--------|-----|-----|
+| 001 | [会话接缝——SessionRuntime 重指 CampaignSession + 统一存档 round-trip](story-001-campaign-runtime-seam.md) | Integration | ✅ Complete（2026-07-03，用户走查待签核） | ADR-0009（primary）/0002/0004 | TR-ux-005 |
+| 002 | [战果复盘屏——因果链默认折叠 + 续局选项 + 长线意义](story-002-battle-review-screen.md) | UI | ✅ Complete（2026-07-03，用户走查待签核） | ADR-0002（primary）/0009 | TR-ux-001/004 |
+| 003 | [军议与敌情屏——定性置信 + 时效 + 无胜率](story-003-council-intel-screen.md) | UI | Ready | ADR-0002（primary）/0009 | TR-ux-002/003 |
+| 004 | [HUD 战役主循环——治理/备战/战斗条件/下一步可做](story-004-hud-campaign-loop.md) | UI | Ready | ADR-0002（primary）/0009/0004 | TR-ux-001/005 |
+| 005 | [新手循环序 + 无障碍关键项对齐](story-005-onboarding-accessibility.md) | UI | Ready | ADR-0002（primary）/0003 | TR-ux-002 + AC-7 |
+
+依赖链：001 → 002 →（003 ∥ 004）→ 005。TR-ux-001~005 已登记 tr-registry v4（2026-07-03）。
 
 ## Overview
 
 让 M00~M10 建成的 11 循环**不只能操作，而是能被理解**。module-plan 给 M15 一句话职责：**让玩家知道自己为什么能赢、为什么会败、下一步还能做什么**。本 epic 不新增玩法规则，而交付贯穿整条战役循环的**理解与反馈层**——四个跨循环反馈契约（因果链 / 无胜率风险 / 情报置信时效 / 失败可继续续局）、全循环信息架构、新手循环序，以及表现层硬约束（只读投影 + 只提交 Command + 反全知类型兜底 + 确定性渲染）。
 
-**交付物①（已完成，2026-07-01）**：CampaignSession 交互控制台 harness（`src/Console/`）——纯 C# 文本表面，11 循环端到端可玩，805/805 测试绿。它是本 epic 四反馈契约的首个最小参考实现。
-**交付物②（后续 story）**：把同一 `CampaignSessionService` 接进 Unity 表现层（重写 `SessionRuntime` 指向 CampaignSession——现指向旧竖切 GameSession），按同一组验收在引擎面重新满足。
+**交付物①（已完成，2026-07-01）**：CampaignSession 交互控制台 harness（`src/Console/`）——纯 C# 文本表面，11 循环端到端可玩，805/805 测试绿。它是本 epic 四反馈契约的首个最小参考实现。**2026-07-03 裁定：定位=仅内部验证/盘点工具**，冻结为回归测试载体，不再投入可读性打磨（原「方向 A」关闭）。
+**交付物②（本 epic 全部后续 story）**：把同一 `CampaignSessionService` 接进 Unity 表现层（重写 `SessionRuntime` 指向 CampaignSession——现指向旧竖切 GameSession），按同一组验收在引擎面重新满足。**首 story = 战果复盘屏**（2026-07-03 裁定：因果契约最吃 UI；实玩卡点「果·长线」恰在此屏解决；因果链默认折叠一键展开在此落地）。
 
 ## Boundary（与既有 UX / 竖切的边界）
 
@@ -62,6 +74,7 @@
 - 表现层确定性 + 只读投影 + 只提交 Command 的测试证据。
 
 ### Out of Scope
+- **console harness 可读性打磨**（2026-07-03 Q4 裁定：仅内部验证工具，冻结为回归载体；不作为发布形态维护）。
 - 新玩法规则 / 新平衡公式（M16 内容平衡）。
 - 完整难度矩阵 / 教程关卡设计（M16）。
 - 美术资产生产（art-bible 指导下的正式美术属后续；harness 为占位文本）。
@@ -80,6 +93,6 @@ This epic is complete when:
 
 ## Next Step
 
-1. **用户实玩 console harness**（`dotnet run --project src/Console`），攒可读性/反馈/onboarding 卡点反馈，回填 `m15-campaign-loop-ux.md` §7 Open Questions。
-2. `/ux-review design/ux/m15-campaign-loop-ux.md` 验证后转 Approved。
-3. `/create-stories epic-028-presentation-ux-feedback` 拆 story（补登 TR-ux-001~005）；建议首 story = 「战果复盘因果链」（最吃 UI、最能验证核心幻想），交付物② Unity 接线随后。
+1. ~~用户实玩 console harness，回填 §7 Open Questions~~ ✅ 2026-07-03 五问全裁定（置信=定性档 / 卡点=果·长线 / 因果链=默认折叠 / harness=内部工具 / 首屏=战果复盘）。
+2. ~~`/ux-review` 验证后转 Approved~~ ✅ 2026-07-01 已跑（0 BLOCKING / 3 ADVISORY 已消化）；2026-07-03 文档转 Approved。
+3. **`/create-stories epic-028-presentation-ux-feedback`** 拆 story（补登 TR-ux-001~005）。首 story = 战果复盘屏（Unity 接线，含 SessionRuntime → CampaignSession 最小接缝）；注意 Unity 运行验证需 batchmode + 用户人工走查证据。

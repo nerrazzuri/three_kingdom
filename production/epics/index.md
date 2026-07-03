@@ -59,7 +59,7 @@ Manifest Version: 2 (2026-06-28)
 | [敌方 AI 循环](epic-021-enemy-ai-loop/EPIC.md) | Core+Feature（M08） | 敌方 AI Domain 内核（战术 80%）→可读可骗可复现对手 | ADR-0006/0004/0009 + TR-ai-001~004 | 4 stories | ✅ Complete |
 | [生涯与权限循环](epic-022-career-authority-loop/EPIC.md) | Feature（M09） | 生涯/权限接入会话→功绩/晋升/自立 | ADR-0004/0009/0008/0005 + TR-career-001~005 | 4 stories | ✅ Complete |
 | [历史世界与势力循环](epic-023-historical-world-faction-loop/EPIC.md) | Feature（M10） | 历史世界接入会话→够不着继续/够得着分叉 | ADR-0007/0008/0004/0005 + TR-world-001~006 | 4 stories | ✅ Complete |
-| [表现与理解循环](epic-028-presentation-ux-feedback/EPIC.md) | Presentation（M15） | 让 11 循环可理解：因果/风险无胜率/情报置信/失败可继续 | ADR-0002/0009/0004 + TR-ux-001~005（待登记） | 待拆（交付物① harness 已完成） | 🟡 Draft for Review |
+| [表现与理解循环](epic-028-presentation-ux-feedback/EPIC.md) | Presentation（M15） | 让 11 循环可理解：因果/风险无胜率/情报置信/失败可继续 | ADR-0002/0009/0004 + TR-ux-001~005（registry v4） | 5 stories（001 接缝 → 002 战果复盘 → 003∥004 → 005） | 🟢 Ready |
 
 > epic-013 = 完整游戏循环模块规划的 **M00 脊梁**（`production/full-game-loop-module-plan-2026-06-28.md`）；epic-014 = **M01 场景目录**（CON-5 收尾）；epic-015 = **M02 太守开局循环**（开局守城→胜败两支续局+存读档）。ADR-0009 Accepted（2026-06-28，经子代理复审）。后续装配 epic（M03~M16，epic-016~028）见模块规划 §6 切分表。
 
@@ -69,7 +69,7 @@ Manifest Version: 2 (2026-06-28)
 
 ## 统计
 
-- 24 epics（3 Foundation + 6 Core + 1 Presentation 竖切 + 2 Feature Meta + 3 Assembly + 7 Feature M03~M10 + 1 Core+Feature M08 + 1 Presentation M15）；**23 ✅ Complete + 1 🟡 Draft for Review（epic-028 表现与理解循环 / M15）**。
+- 24 epics（3 Foundation + 6 Core + 1 Presentation 竖切 + 2 Feature Meta + 3 Assembly + 7 Feature M03~M10 + 1 Core+Feature M08 + 1 Presentation M15）；**23 ✅ Complete + 1 🟢 Ready（epic-028 表现与理解循环 / M15，2026-07-03 §7 五问全裁定转 Ready）**。
 - 88 stories ✅ Complete（含 epic-023 历史世界 4）；本地回归 **797/797 全绿，`-warnaserror` 0 warning**。
 - **M10 历史世界达成**（epic-023）：历史事件按时间窗触发（够不着前置短路恒成立）+ 玩家触及分叉 + 下游传播 + 历史态存读档同序列同走向。
 - **17 模块进度：M00~M10 完成（11/17）**。
