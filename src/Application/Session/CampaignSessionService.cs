@@ -128,7 +128,52 @@ namespace ThreeKingdom.Application.Session
             // 情报（GDD_007 派出→在途→返报）：推进后解析已到返报时刻的在途侦察 → 报告并入玩家知识。
             ResolveArrivedScouts(session);
 
+            // 忠诚经营（GDD_014）：每跨一日 → 僚属忠诚衰减 + 对手对最不忠者种子化挖角（忠者不可挖）。
+            TickRetinueLoyalty(session, dayBefore, session.CurrentTime.Day);
+
             return session;
+        }
+
+        /// <summary>每跨一个日界推进忠诚衰减 + 挖角（GDD_014 忠诚经营 A2）。无僚属则无操作。确定性种子。</summary>
+        private void TickRetinueLoyalty(CampaignSession session, int dayBefore, int dayAfter)
+        {
+            if (dayAfter <= dayBefore) return;
+            RetinueState retinue = session.Career.Retinue;
+            if (retinue.Members.Count == 0) return;
+
+            RetinueLoyaltyConfig cfg = RetinueLoyaltyConfig.Default;
+            FixedPoint poacherPull = FixedPoint.FromFraction(3, 10);   // 对手拉拢力（适度；C11 平衡打磨）
+            for (int day = dayBefore; day < dayAfter; day++)
+            {
+                retinue = _retinueLoyalty.Decay(retinue, cfg);
+                CharacterId? weakest = LeastLoyalMember(retinue);
+                if (weakest != null)
+                {
+                    ulong seed = LoyaltySeed(session.Id, day, weakest.Value.Value);
+                    PoachResult pr = _retinueLoyalty.AttemptPoach(retinue, weakest.Value, poacherPull, seed, cfg);
+                    retinue = pr.State;
+                }
+            }
+            session.SetCareer(new CareerSnapshot(session.Career.Career, retinue));
+        }
+
+        /// <summary>最不忠僚属（好感最低者；空则 null）。规范序：同好感取 id 序数最小，确定性。</summary>
+        private static CharacterId? LeastLoyalMember(RetinueState retinue)
+        {
+            CharacterId? weakest = null;
+            FixedPoint min = FixedPoint.One;
+            foreach (RetinueMember m in retinue.Members)   // 已按 id 序数升序
+                if (weakest == null || m.Affinity < min) { weakest = m.Character; min = m.Affinity; }
+            return weakest;
+        }
+
+        private static ulong LoyaltySeed(string sessionId, int day, string member)
+        {
+            ulong h = 1469598103934665603UL;
+            void Mix(string s) { if (s != null) foreach (char c in s) { h ^= c; h *= 1099511628211UL; } }
+            Mix(sessionId); Mix("|"); Mix(member);
+            h ^= (ulong)(day + 1) * 2654435761UL;
+            return h;
         }
 
         /// <summary>
@@ -682,6 +727,7 @@ namespace ThreeKingdom.Application.Session
         private readonly OffensiveSetupService _offensiveSetup = new OffensiveSetupService();
         private readonly SiegeResolutionService _siege = new SiegeResolutionService();
         private readonly SubversionService _subversion = new SubversionService();
+        private readonly RetinueLoyaltyService _retinueLoyalty = new RetinueLoyaltyService();
 
         /// <summary>
         /// 战前人心杠杆施计（GDD_024 全循环）：反全知门（守将画像自 Intel/Relationships 投影，未侦察折扣）→
