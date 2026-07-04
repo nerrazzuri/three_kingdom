@@ -45,6 +45,8 @@ namespace ThreeKingdom.Application.Scenarios
 
         /// <summary>所辖城池（汜水关）。</summary>
         public static readonly CityId Fanshui = new CityId("city-fanshui");
+        /// <summary>可出征攻打的敌方目标城（虎牢关，曹魏控制；GDD_019 出征目标）。</summary>
+        public static readonly CityId EnemyCity = new CityId("city-hulao");
         /// <summary>战役可达区域（隘口，伏击发生地）。</summary>
         public static readonly RegionId Pass = new RegionId("region-pass");
         /// <summary>军粮资源键。</summary>
@@ -144,10 +146,10 @@ namespace ThreeKingdom.Application.Scenarios
                 initialFactions: new[]
                 {
                     new FactionRecord(Player, Lord, SurvivalStatus.Active, RelationToPlayer.Self, new[] { Fanshui }),
-                    new FactionRecord(Enemy, new CharacterId("char-yuan"), SurvivalStatus.Active, RelationToPlayer.Hostile, Array.Empty<CityId>()),
+                    new FactionRecord(Enemy, new CharacterId("char-yuan"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { EnemyCity }),
                     new FactionRecord(Sun, new CharacterId("char-sunquan"), SurvivalStatus.Active, RelationToPlayer.Neutral, Array.Empty<CityId>()),
                 },
-                initialCities: new[] { new CityOwnership(Fanshui, Player, 800) },
+                initialCities: new[] { new CityOwnership(Fanshui, Player, 800), new CityOwnership(EnemyCity, Enemy, 600) },
                 // 城市治理（M03）：库存100 / 民心60 / 城防20。
                 cityEconomy: new CityEconomyState(Fanshui, stock: 100, reserved: 0, civMorale: 60, security: 50, fortificationCurrent: 20, fortificationMax: 100),
                 settlementConfig: new CitySettlementConfig(

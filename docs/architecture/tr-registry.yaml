@@ -24,8 +24,8 @@
 #
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
-version: 4
-last_updated: "2026-07-03"   # 追加 M15 表现与理解层 TR-ux-001~005（/create-stories epic-028，参照 M03 补登惯例）
+version: 5
+last_updated: "2026-07-04"   # 追加出征攻城 TR-offensive-001~005（/create-stories epic-029；GDD_019 未过 /architecture-review，参照 epic-028 TR-ux 补登惯例）
 
 requirements:
   # --- 时间 (GDD_001) ---
@@ -453,6 +453,43 @@ requirements:
     gdd: design/gdd/gdd-016-enemy-ai.md
     requirement: "敌方 AI 决策接入战区命令：AI 随机消费与战斗模拟同源，纳入同一状态哈希与重放契约；同种子+同态势→同战区命令流"
     created: 2026-06-30
+    revised: ""
+    status: active
+
+  # --- 出征攻城 (GDD_019 / ADR-0010 / epic-029；2026-07-04 补登，GDD_019 Reviewed) ---
+  - id: TR-offensive-001
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "出征须君主授权（GDD_014 忠臣线君主任务子类型）：授权目标/战区/额度随官阶放宽；目标须为世界模型登记的敌控城（GDD_004 控制权/GDD_015 投影）；未授权/越权/非法目标（己方/盟友/不可达城）拒绝并返回稳定错误码、无部分写入；出征前对敌城了解只经玩家情报知识投影（GDD_007），类型层取不到敌方真值（反全知）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-offensive-002
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "出征战斗进攻侧编排：复用备战→战斗→后果（GDD_009/010 + M05/M06/M07）反向攻敌城，攻方=玩家投入、守方=敌确定性预设；Application 只编排不拥规则（ADR-0009）；相同准备态+同种子+同命令流→相同事件序列与状态哈希（ADR-0004）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-offensive-003
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "闭合因果：玩家准备态派生开战初始条件——备战计划(CommittedPlan)→兵法涌现前提、城市/后勤态→可投入兵力与续航、情报态→军师可识别招式与敌预设可信度；结算优势来自 GDD_010 §7 条件涌现（非计策按钮），取代脚本固定胜局；不同准备态→确定性不同胜负，全程无胜率数字"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-offensive-004
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "占城归属方案C（纯 Domain 确定性判定）：占城经 GDD_004 控制权变更事件转移（ADR-0008，出征层只发起/订阅不自写归属）；前 N=2 座恒 GrantToPlayer，第三座起种子化确定性伯努利 seed=Hash(worldTick,playerFactionId,cityId,conquestIndex)（ADR-0006 注入流）在 {君主直辖/玩家直辖} 取舍，权重=名望/君主好感/城价值（定点 [0,1]）；判定只读玩家合法态、不读敌方真值；LordKeeps 时累积 rebellion_lean 喂 GDD_014 自立触发"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-offensive-005
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "出征回报联动 + 失败可继续 + 存档：胜→功绩/名望增→晋升门槛推进（GDD_014，功绩速率受反支柱护栏约束）；败→折损退兵且必生成 ≥1 合法可继续命令（失败不切死局）；出征会话态（授权/目标/conquestIndex/各城 OwnershipVerdict/rebellion_lean）经命名原子事务写回、纳入统一存档信封（ADR-0009/0005）round-trip 一致且确定性哈希"
+    created: 2026-07-04
     revised: ""
     status: active
 

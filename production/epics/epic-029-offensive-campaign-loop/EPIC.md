@@ -4,7 +4,7 @@
 > **Architecture Module**: 计划外新增循环（`full-game-loop-module-plan` 原缺"主动出征"，2026-07-04 用户实玩裁定补入）
 > **Governing ADR**: ADR-0009（会话装配）· ADR-0004（确定性）· ADR-0008（城池控制权唯一权威 + 变更事件）· ADR-0006（种子化随机）· **ADR-0010（占城归属契约，Proposed）**
 > **GDD**: **GDD_019 出征攻城（Draft，2026-07-04 起草）**
-> **Status**: Draft（设计锚点已起草：GDD_019 + ADR-0010；待 /review-all-gdds + /architecture-decision 转 Accepted 后即可 /create-stories → 可开工）
+> **Status**: Ready for Stories（2026-07-04：GDD_019 → Reviewed、ADR-0010 → Accepted，焦点跨系统审查 gdd-cross-review-2026-07-04.md 5 Warning 全闭；下一步 /create-stories epic-029）
 > **设计来源**: 2026-07-04 用户设计对话裁定（见下"设计裁定"）
 
 ## 背景与问题
@@ -28,21 +28,25 @@
 
 - 出征喂给战斗？✅ 整场攻城战。喂给生涯抉择？✅ 打赢=升官/得地/自立张力。**过尺子,是核心不是抄。**
 
-## Stories（Draft 拆分，实现前需补设计锚点）
+## Stories（已细化，2026-07-04 /create-stories epic-029）
 
-| # | Story | Type | 关键验收（源自设计裁定） | 依赖 |
-|---|---|---|---|---|
-| 001 | 君主授权出征入口 | Integration | 选登记于世界的目标敌城 + 授权判定（够格才可出征）；未授权/越权拒绝，稳定错误码 | epic-013/023, GDD_004 |
-| 002 | 攻城战接入（进攻视角） | Integration | 复用 M05→M06→M07 反向打敌城；攻方为玩家、守方为敌确定性预设；同准备+种子→同哈希 | epic-018/019/020 |
-| 003 | 闭合因果：准备→战果 | Logic | 治理/备战/情报态映射为开战初始条件（工事/补给/断粮/设伏→战力/兵法条件）；准备不同→胜负不同（确定性）；取代脚本固定胜局 | epic-016/017/018/019 |
-| 004 | 占城归属结算（方案 C） | Logic | 前 2 座默认归玩家；之后君主种子化随机取舍（可复现）；经 GDD_004 控制权变更事件写入；被抢累积自立动机量 | ADR-0008, epic-020/022 |
-| 005 | 出征后果→功绩→升官联动 | Integration | 胜→功绩/名望→晋升门槛（epic-022）；败→折损 + 必留可继续；存读档确定性 | epic-022 |
+| # | Story | Type | Status | ADR（primary） | TR-ID | 依赖 |
+|---|-------|------|--------|------|-------|------|
+| 001 | [君主授权出征入口](story-001-lord-authorized-campaign-entry.md) | Integration | Ready | ADR-0009 | TR-offensive-001 | None（epic 内首） |
+| 002 | [攻城战接入（进攻视角）](story-002-offensive-battle-integration.md) | Integration | Ready | ADR-0009 | TR-offensive-002 | 001 |
+| 003 | [闭合因果：准备→战果](story-003-preparation-to-outcome-causality.md) | Logic | Ready | ADR-0004 | TR-offensive-003 | 002 |
+| 004 | [占城归属结算（方案 C）](story-004-conquest-occupation-ownership.md) | Logic | Ready | ADR-0010 | TR-offensive-004 | 003 |
+| 005 | [出征后果→功绩→升官联动](story-005-campaign-outcome-promotion-linkage.md) | Integration | Ready | ADR-0009 | TR-offensive-005 | 004 |
+
+依赖链（线性）：001 → 002 → 003 → 004 → 005。5 story = 2 Logic + 3 Integration，0 Blocked（governing ADR 全 Accepted）。
+覆盖 GDD_019 全 8 AC：AC-1/2/7→001 · AC-3/7→002 · AC-3→003 · AC-4→004 · AC-5/6/8→005。
 
 ## 实现前置（Draft → Ready）
 
-- ✅ **GDD 已起草**：`design/gdd/gdd-019-offensive-campaign.md`（Draft，12 段含公式/边界/验收）。
-- ✅ **ADR 已起草**：`docs/architecture/adr-0010-conquest-occupation-ownership.md`（Proposed，占城归属 C 契约）。
-- ⏳ **待**：`/review-all-gdds`（GDD_019 跨系统审查，尤其与 GDD_004/010/014/015 边界）→ `/architecture-decision`（ADR-0010 转 Accepted）→ `/create-stories epic-029`（细化各 story 的 AC/TR-ID/QA 用例）→ 可开工。
+- ✅ **GDD 已审**：`design/gdd/gdd-019-offensive-campaign.md`（**Reviewed**，12 段含公式/边界/验收）。
+- ✅ **ADR 已定**：`docs/architecture/adr-0010-conquest-occupation-ownership.md`（**Accepted**，占城归属 C 契约）。
+- ✅ **跨系统审查**：`design/gdd/gdd-cross-review-2026-07-04.md`（CONCERNS → 5 Warning 全闭：W1 rebellion_lean 接 GDD_014 自立触发 · W2 GDD_019 F2 厘清条件涌现/TacticRecognizer · W3 GDD_014 出征授权子类型 · W4 5 份反向依赖 · W5 GDD_019 §8 功绩速率护栏）。
+- ⏳ **待**：`/create-stories epic-029`（细化各 story 的 AC/TR-ID/QA 用例）→ ADR 落定后 `/consistency-check` 登记 conquestIndex/rebellion_lean/OwnershipVerdict/CampaignAuthorization → 可开工。
 
 ## 强制设计锁（继承）
 

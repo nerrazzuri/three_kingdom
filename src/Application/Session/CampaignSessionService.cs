@@ -4,6 +4,7 @@ using System.Linq;
 using ThreeKingdom.Application.Career;
 using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;
+using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
@@ -51,6 +52,11 @@ namespace ThreeKingdom.Application.Session
                 config.StartTime, config.InitialFactions, config.InitialCities,
                 triggeredEvents: Array.Empty<string>(), divergedEvents: Array.Empty<string>());
             var worldProjection = new WorldCityProjection(world, authority);
+
+            // 登记非开局城的初始归属到控制权权威（敌/中立城，供出征占城 GDD_019；开局城已由 governor 登记，跳过避重复）。
+            foreach (CityOwnership c in config.InitialCities)
+                if (c.Owner.HasValue && c.City != config.GovernorSeed.City)
+                    authority.RegisterInitial(c.City, c.Owner.Value, new Garrison(c.Garrison));
 
             // 每局独立情报层：从配置初始情报<b>播种一份全新</b> FactionIntel——配置里的 PlayerIntel 是可变实例，
             // 直接复用会让多局（重开「新游戏」）共用同一知识态而互相串扰。真值只读，可共享。
@@ -668,6 +674,61 @@ namespace ThreeKingdom.Application.Session
             return tx.Commit();
         }
 
+        // --- 出征攻城（M12+ / GDD_019 / ADR-0010）。授权→占城归属 C→控制权变更→功绩/自立倾向。---
+
+        private readonly OccupationOwnershipService _occupation = new OccupationOwnershipService();
+        private readonly OffensiveAuthorizationService _offensiveAuth = new OffensiveAuthorizationService();
+
+        /// <summary>君主授权出征（GDD_019 R1）：设置可攻目标城集合（由君主政令按官阶组装）。</summary>
+        public void AuthorizeOffensive(CampaignSession session, IReadOnlyCollection<CityId> targets)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            session.SetOffensiveAuthorization(new OffensiveAuthorization(targets));
+        }
+
+        /// <summary>出征授权门（GDD_019 R1/R2）：目标须授权 + 敌控城（非己方）。目标归属只读控制权投影（反全知）。</summary>
+        public OffensiveGateResult CheckOffensiveTarget(CampaignSession session, CityId city, FactionId playerFaction)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            FactionId? owner = session.Control.OwnerOf(city);
+            return _offensiveAuth.Check(city, session.OffensiveAuthorization, owner, playerFaction);
+        }
+
+        /// <summary>
+        /// 结算占城（GDD_019 §占城 C / ADR-0010）：攻城<b>胜后</b>调用——判定占领归属（前 N 座归玩家、之后君主种子化取舍），
+        /// 经 GDD_004 控制权变更事件写入（新控制方 = 玩家/君主），LordKeeps 则累积自立倾向，记占城计数，
+        /// 并（若给梯队）应用出征战功。城池须已在控制权权威登记（否则抛，须先 RegisterInitial）。返回判定结果。
+        /// </summary>
+        public ConquestResult ResolveConquest(
+            CampaignSession session, CityId city, Garrison newGarrison,
+            FactionId playerFaction, FactionId lordFaction,
+            FixedPoint renownNorm, FixedPoint standingNorm, FixedPoint cityValueNorm,
+            ulong seed, OccupationConfig config,
+            PromotionLadderConfig? ladder = null, CareerGainSource gainSource = CareerGainSource.CombatVictory)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (config is null) throw new ArgumentNullException(nameof(config));
+
+            OwnershipVerdict verdict = _occupation.Resolve(session.ConquestCount, renownNorm, standingNorm, cityValueNorm, seed, config);
+            FactionId newOwner = verdict == OwnershipVerdict.GrantToPlayer ? playerFaction : lordFaction;
+
+            // 经 GDD_004 唯一权威发起控制权变更（ADR-0008）；装配层不直接写归属。
+            session.Control.RequestControlChange(city, newOwner, newGarrison, ChangeCause.SiegeConquest);
+
+            if (verdict == OwnershipVerdict.LordKeeps)
+                session.AddRebellionLean(config.LeanPerSeizure);   // 战果被夺 → 自立倾向累积（喂 GDD_014）
+            session.RecordConquest();
+
+            bool careerApplied = false;
+            if (ladder != null)
+            {
+                CareerCommandResult r = _careerProgression.ApplyGain(ladder, session.Career, gainSource);
+                if (r.Applied) { session.SetCareer(r.Snapshot); careerApplied = true; }
+            }
+
+            return new ConquestResult(verdict, session.ConquestCount, session.RebellionLean, careerApplied);
+        }
+
         // --- 统一会话存档（ADR-0009 §R-1/R-7 / TR-session-003，复用 FIX-8 CampaignSaveCodec）---
 
         /// <summary>当前会话存档 schema 版本。</summary>
@@ -779,6 +840,13 @@ namespace ThreeKingdom.Application.Session
                 foreach (ContinuationOption o in session.LastContinuationOptions)
                     head += "outcomeopt\t" + (int)o.Kind + "\t" + o.Reason + "\n";
             }
+
+            // 出征攻城段（GDD_019 / ADR-0010 D4）：占城计数 + 自立倾向 + 授权目标（稳定序）。会话级 meta，恒序列化。
+            head += "conquest\t" + session.ConquestCount + "\t" + session.RebellionLean + "\n";
+            var authTargets = new List<CityId>(session.OffensiveAuthorization.AuthorizedTargets);
+            authTargets.Sort((a, b) => string.CompareOrdinal(a.Value, b.Value));
+            foreach (CityId t in authTargets)
+                head += "authtarget\t" + t.Value + "\n";
 
             return head + BodyMarker + "\n" + body;
         }
@@ -945,6 +1013,25 @@ namespace ThreeKingdom.Application.Session
                 }
             }
 
+            // 出征攻城段（GDD_019 / ADR-0010）：占城计数 + 自立倾向 + 授权目标。
+            int conquestCount = 0, rebellionLean = 0;
+            var authTargets = new List<CityId>();
+            if (idx < lines.Length && lines[idx].StartsWith("conquest\t", StringComparison.Ordinal))
+            {
+                string[] cq = lines[idx].Split('\t');
+                if (cq.Length != 3) throw new SaveFormatException($"出征段格式不符：「{lines[idx]}」。");
+                try { conquestCount = int.Parse(cq[1]); rebellionLean = int.Parse(cq[2]); }
+                catch (FormatException ex) { throw new SaveFormatException("出征段数值解析失败：" + ex.Message); }
+                idx++;
+                while (idx < lines.Length && lines[idx].StartsWith("authtarget\t", StringComparison.Ordinal))
+                {
+                    string[] at = lines[idx].Split('\t');
+                    if (at.Length != 2) throw new SaveFormatException($"授权目标段格式不符：「{lines[idx]}」。");
+                    authTargets.Add(new CityId(at[1]));
+                    idx++;
+                }
+            }
+
             if (idx >= lines.Length || lines[idx] != BodyMarker) throw new SaveFormatException("缺会话体标记。");
             string body = string.Join("\n", new ArraySegment<string>(lines, idx + 1, lines.Length - idx - 1));
 
@@ -972,6 +1059,8 @@ namespace ThreeKingdom.Application.Session
                 logisticsHolding: cityLogistics, governanceConfig: governanceConfig,
                 truth: truth, playerIntel: playerIntel, intelConfig: intelConfig, council: councilSetup,
                 pendingScouts: pendingScouts, pendingGovernance: pendingGovernance,
+                offensiveAuthorization: new OffensiveAuthorization(authTargets),
+                conquestCount: conquestCount, rebellionLean: rebellionLean,
                 pool: pool, draft: draft, prepConfig: prepConfig,
                 reachableRegions: reachableRegions, authorizedOrders: authorizedOrders, committedPlan: committed,
                 battle: battle, battleConfig: battleConfig, battleSeed: battleSeed,

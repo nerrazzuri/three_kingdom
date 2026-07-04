@@ -5,6 +5,7 @@ using System.Text;
 using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.Characters;
+using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
 using ThreeKingdom.Domain.Council;
@@ -117,6 +118,27 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>移除一件已完成治理事务（仅供服务应用编排）。</summary>
         internal void RemovePendingGovernance(PendingGovernanceTask task) => _pendingGovernance.Remove(task);
+
+        // --- 出征攻城态（GDD_019 / ADR-0010）。授权目标 + 已占城计数 + 自立倾向 ---
+
+        /// <summary>君主授权可攻的目标城集合（GDD_019 R1）。默认无授权。</summary>
+        public OffensiveAuthorization OffensiveAuthorization { get; private set; } = OffensiveAuthorization.None;
+
+        /// <summary>已成功占领城数（占城 C 判定的 conquestIndex 源；前 N 座默认归玩家）。</summary>
+        public int ConquestCount { get; private set; }
+
+        /// <summary>自立倾向累积量（战果被君主收走时累积，喂 GDD_014 自立线）。</summary>
+        public int RebellionLean { get; private set; }
+
+        /// <summary>设置君主授权（仅供 <see cref="CampaignSessionService"/> 政令编排）。</summary>
+        internal void SetOffensiveAuthorization(OffensiveAuthorization authorization)
+            => OffensiveAuthorization = authorization ?? OffensiveAuthorization.None;
+
+        /// <summary>记一次成功占城（递增计数，仅供服务占城编排）。</summary>
+        internal void RecordConquest() => ConquestCount++;
+
+        /// <summary>累积自立倾向（战果被夺，仅供服务编排）。</summary>
+        internal void AddRebellionLean(int amount) => RebellionLean = checked(RebellionLean + amount);
 
         /// <summary>会话军议装配配置（M04 / GDD_008）；启用军议时存在。</summary>
         internal SessionCouncilSetup? Council { get; }
@@ -251,6 +273,7 @@ namespace ThreeKingdom.Application.Session
             WorldTruthLedger? truth = null, FactionIntel? playerIntel = null, IntelConfig? intelConfig = null,
             SessionCouncilSetup? council = null, IReadOnlyList<PendingScout>? pendingScouts = null,
             IReadOnlyList<PendingGovernanceTask>? pendingGovernance = null,
+            OffensiveAuthorization? offensiveAuthorization = null, int conquestCount = 0, int rebellionLean = 0,
             ResourcePool? pool = null, PlanDraft? draft = null, PreparationConfig? prepConfig = null,
             IReadOnlyCollection<RegionId>? reachableRegions = null, IReadOnlyCollection<OrderId>? authorizedOrders = null,
             CommittedPlan? committedPlan = null,
@@ -289,6 +312,9 @@ namespace ThreeKingdom.Application.Session
             Council = council;
             if (pendingScouts != null) _pendingScouts.AddRange(pendingScouts);
             if (pendingGovernance != null) _pendingGovernance.AddRange(pendingGovernance);
+            OffensiveAuthorization = offensiveAuthorization ?? OffensiveAuthorization.None;
+            ConquestCount = conquestCount;
+            RebellionLean = rebellionLean;
             Pool = pool;
             _draft = draft ?? (pool != null ? new PlanDraft() : null);
             PrepConfig = prepConfig;

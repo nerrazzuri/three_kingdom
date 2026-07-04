@@ -1,5 +1,20 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## Session Extract — /create-stories epic-029 2026-07-04
+- **5 story 已写**（Ready，0 Blocked，governing ADR 全 Accepted）：001 君主授权出征入口(Int/ADR-0009) · 002 攻城战接入进攻视角(Int/ADR-0009) · 003 闭合因果准备→战果(Logic/ADR-0004) · 004 占城归属方案C(Logic/**ADR-0010**) · 005 出征后果→功绩→升官(Int/ADR-0009)。依赖链线性 001→005。覆盖 GDD_019 全 8 AC。
+- **TR-offensive-001..005 已补登** tr-registry（v5，沿 epic-028 TR-ux 补登惯例——GDD_019 未过 /architecture-review）。
+- EPIC.md Stories 表填充 + epics/index.md epic-029 → 🟢 Ready for Stories。lean 模式：QL-STORY-READY 跳过、inline QA 用例（未派 qa-lead）。
+- **▶ 下一步（用户止于 dev-story 前）**：`/story-readiness story-001` → `/dev-story`。Advisory：ADR 落定后 `/consistency-check` 登记 conquestIndex/rebellion_lean/OwnershipVerdict/CampaignAuthorization；前向 epic-020/022/025 须先于引用 story 存在。**本批全部未提交。**
+
+## Session Extract — /review-all-gdds（焦点 GDD_019）2026-07-04
+- Verdict: **CONCERNS**（焦点审查，非全量；001–016 已 2026-06-24 审过）。报告：`design/gdd/gdd-cross-review-2026-07-04.md`。
+- Flagged: gdd-019 / gdd-014 / gdd-004 / gdd-009 / gdd-010 / gdd-015。Blocking: **None**。
+- **5 Warning 全就地闭合**：W1 GDD_014 自立触发条件③接 `rebellion_lean`（+Tuning `rebel_lean_min`）· W2 GDD_019 F2 改引 GDD_010 §7 条件涌现结算、与事后 TacticRecognizer 分述 · W3 GDD_014 加"出征授权"君主任务子类型（额度随 Rank）· W4 gdd-004/009/010/014/015 各加反向依赖引用 GDD_019 · W5 GDD_019 §8 加出征功绩速率反支柱护栏。
+- **设计门推进**：GDD_019 → **Reviewed**；ADR-0010 → **Accepted**（文件头 + technical-preferences 日志一致）；gdd-index 已 Reviewed；epic-029 EPIC → **Ready for Stories**。
+- Advisory 待办：ADR 落定后 `/consistency-check` 登记 conquestIndex/rebellion_lean/OwnershipVerdict/CampaignAuthorization；前向 epic 020/022/025 须先于引用 story 存在。
+- **▶ 下一步**：`/create-stories epic-029`（细化 5 story AC/TR-ID/QA）。用户选"先补设计门再 create-stories"，停在 dev-story 前。未提交。
+
+
 > **最后更新**：2026-06-27
 > **语言**：全程中文（见用户偏好 memory）
 > **审查模式**：lean

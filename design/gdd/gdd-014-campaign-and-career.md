@@ -121,7 +121,7 @@ troop_cap = base_cap × rank_cap_multiplier[rank] × city_support_factor(cities_
 
 ## Dependencies
 
-依赖 GDD_004（城市资源/控制权）、GDD_005（人物身份）、GDD_006（关系/好感/授权）、GDD_010（战役胜负产功绩名望）、GDD_015（开局禀赋与世界态势写回）、GDD_013（生涯状态存档）。被 GDD_016（敌方 AI 读势力态势）消费。
+依赖 GDD_004（城市资源/控制权）、GDD_005（人物身份）、GDD_006（关系/好感/授权）、GDD_010（战役胜负产功绩名望）、GDD_015（开局禀赋与世界态势写回）、GDD_013（生涯状态存档）。被 GDD_016（敌方 AI 读势力态势）消费。与 GDD_019 出征攻城**双向**：本层向其提供出征授权（君主任务子类型）与回报写回口（功绩/名望/晋升），并读其占城归属结算产出的 `rebellion_lean`（喂自立触发 W1）。
 
 ## Edge Cases
 
