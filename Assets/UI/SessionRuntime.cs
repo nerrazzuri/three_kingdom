@@ -139,6 +139,8 @@ namespace ThreeKingdom.Unity.UI
         public static ZoneBattleView StartDefenseBattle() => _runtime.StartDefenseBattle();
         /// <summary>守城战进行中。</summary>
         public static bool HasDefenseBattle => _runtime.HasDefenseBattle;
+        /// <summary>守城战已分胜负。</summary>
+        public static bool DefenseBattleOver => _runtime.DefenseBattleOver;
         /// <summary>守城战当前投影。</summary>
         public static ZoneBattleView DefenseBattleView() => _runtime.DefenseBattleView();
         /// <summary>守城战中调动己方守军到相邻区。</summary>

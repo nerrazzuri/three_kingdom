@@ -112,6 +112,7 @@
                         <ui:VisualElement name="offensive-forming" />
                         <ui:VisualElement name="offensive-missing" />
                         <ui:Button name="offensive-launch" text="发起出征" />
+                        <ui:Button name="offensive-defend" text="守城迎敌（区域防御战）" />
                         <ui:Label name="offensive-result" class="ledger-warning" />
                         <ui:VisualElement name="offensive-result-notes" />
                     </ui:VisualElement>
@@ -141,6 +142,22 @@
                 <ui:VisualElement name="review-continuations" />
                 <ui:Label name="review-career-hint" class="hud-note" />
                 <ui:Label name="review-selection" class="hud-note" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- 战斗浮层（GDD_021 区域战斗）：出征/守城发起后在此逐回合排兵布阵；结算后隐去。默认隐藏（Controller 控制显隐）。 -->
+        <ui:VisualElement name="campaign-battle" class="hud-main">
+            <ui:VisualElement class="card">
+                <ui:Label name="cb-title" text="战场区域" class="card-title" />
+                <ui:Label name="cb-round" class="hud-note" />
+                <ui:Label name="cb-outcome" class="hud-banner" />
+                <ui:VisualElement name="cb-zones" />
+                <ui:Label text="排兵布阵（调动·仅相邻，在途 1 回合）" class="card-title" />
+                <ui:VisualElement name="cb-moves" />
+                <ui:Label text="涌现兵法" class="card-title" />
+                <ui:VisualElement name="cb-emergences" />
+                <ui:Button name="cb-resolve" text="推进回合（敌军亦动）" />
+                <ui:Button name="cb-conclude" text="结算战果" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
