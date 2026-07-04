@@ -15,6 +15,7 @@
 | [ADR-0011](adr-0011-offensive-preparation-model.md) | 多维确定性出征准备模型（六维闭合因果 + 路线复用兵法链 + 兵种杠杆非克制 + 布势非坐标 + 反全知侦察门） | Accepted | 2026-07-04 |
 | [ADR-0012](adr-0012-deterministic-zone-battle-engine.md) | 确定性区域战斗引擎（命名区域图非坐标 + 回合状态机 + 部署/战中调整命令 + 条件按区涌现 + 攻守统一 + 战中存档续战） | Accepted | 2026-07-04 |
 | [ADR-0013](adr-0013-enemy-zone-ai.md) | 敌方区域AI效用模型（特化 ADR-0006 于区域动作 + 反全知 AiWorldView + 种子softmax + 渐进记忆 + LLM隔离；落地 GDD_016） | Accepted | 2026-07-04 |
+| [ADR-0014](adr-0014-mind-lever-subversion.md) | 人心杠杆·施计改变战斗条件契约（施计产 SubversionEffect 在战斗接缝削弱守方 + 反全知门 + 种子化 + 可反噬 + 撬动非替代 W5 + 对称威胁；复用 0004/0006/0008/0010；落地 GDD_024） | Accepted | 2026-07-04 |
 
 ## 规则
 

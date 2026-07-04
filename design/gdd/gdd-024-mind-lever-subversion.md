@@ -1,8 +1,8 @@
 # GDD_024：人心杠杆（离间 · 策反 · 攻心）
 
 > **Layer**: Feature（护城河核心——把战斗接入关系与情报）
-> **Status**: Draft（2026-07-04）
-> **Governing ADR**: 拟 ADR-0014（人心杠杆·施计改变战斗条件契约）· 复用 ADR-0004（确定性）· ADR-0006（种子化随机·反全知）· ADR-0008（控制权）· ADR-0011/0012（出征/区域战斗接缝）
+> **Status**: Reviewed（2026-07-04；实现+测试完成 epic-032，ADR-0014 Accepted，运行期接入 A1，端到端 W5 锁定）
+> **Governing ADR**: [ADR-0014](../../docs/architecture/adr-0014-mind-lever-subversion.md)（人心杠杆·施计改变战斗条件契约，Accepted）· 复用 ADR-0004（确定性）· ADR-0006（种子化随机·反全知）· ADR-0008（控制权）· ADR-0010（占城归属）· ADR-0011/0012（出征/区域战斗接缝）
 > **消费**: GDD_006 关系 · GDD_007 情报 · GDD_011 凝聚力（士气/军纪）· GDD_019 出征 · GDD_021 区域战斗
 
 ## 1. System Purpose（系统目的）

@@ -36,10 +36,14 @@ namespace ThreeKingdom.Domain.Career
             PoachVulnerabilityWeight = poachVulnerabilityWeight;
         }
 
-        /// <summary>默认（待打磨）：赏赐 +0.2、衰减 -0.03（下限 0.1）、忠诚 &lt;0.4 可挖角。</summary>
+        /// <summary>
+        /// 默认（2026-07-04 打磨）：赏赐 +0.2、衰减 -0.02/日（下限 0.1）、忠诚 &lt;0.4 可挖角。
+        /// 衰减率取 0.02 而非 0.03——一次赏赐（+0.2）约抵 10 日疏忽，久疏（约 10 日）方跌破可挖角阈，
+        /// 减轻"每日必掉忠诚"的惩罚感，仍保留"长期不经营则失人"的张力（W5：忠诚须经营非白给）。
+        /// </summary>
         public static RetinueLoyaltyConfig Default { get; } = new RetinueLoyaltyConfig(
             rewardPerIntensity: FixedPoint.FromFraction(2, 10),
-            decayPerTick: FixedPoint.FromFraction(3, 100),
+            decayPerTick: FixedPoint.FromFraction(2, 100),
             loyaltyFloor: FixedPoint.FromFraction(1, 10),
             poachThreshold: FixedPoint.FromFraction(4, 10),
             poachBase: FixedPoint.FromFraction(1, 10),
