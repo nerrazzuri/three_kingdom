@@ -1,6 +1,6 @@
 # ADR-0010 — 占城归属契约（Conquest Occupation Ownership）
 
-> **Status**: Proposed（2026-07-04，用户设计对话裁定；待 /architecture-decision 或 /architecture-review 转 Accepted 后 story 方可引用）
+> **Status**: Accepted（2026-07-04；lean 内联裁定——复用 ADR-0008/0006，无新违反禁则，story 可引用）
 > **相关**: GDD_019 出征攻城 · epic-029 · ADR-0008（城池控制权唯一权威）· ADR-0006（种子化确定性随机）· ADR-0004（确定性）· ADR-0009（会话装配）
 
 ## Context（背景）
