@@ -1284,3 +1284,11 @@ ADR-0003（数据驱动配置的正式锁定）。
 - Tech debt logged: None（deviation 记入 story Completion Notes）
 - ★ epic-028 全 5/5 Complete（EPIC.md Status→✅ Complete）；M15 表现与理解循环收尾
 - Next recommended: 用户 Unity 走查 003/004/005 三份 evidence 并签核 + 提交本轮；之后 /smoke-check + /team-qa 收尾 M15，或转 M11~M14/M16 需补设计区
+
+## Session Extract — 用户实玩修复 2026-07-04（A 可见性 + B 延迟侦察 + 情报隔离）
+- 用户发现 Unity Hub 开的是 C:\Users\Liang Kai Feng\three_kingdom（旧副本 @baa77d3），非 D 盘工作仓库 → 已改开 D 盘项目（同一 git 历史，C 盘落后且无独有改动）。
+- 修 A（可见性 bug，HudController）：竖切「情境显隐」默认隐藏 outcome-chain，导致开战后战况/条件/结算/复盘看不见 → 战中/战后强制显示 outcome-chain。
+- 补 B（延迟侦察，GDD_007 派出→在途→返报）：新增 PendingScout + CampaignSession 在途态 + CampaignSessionService.DispatchScout + Advance 解析返报 + 存档 round-trip；ViewModel InTransit「约第X日返报」；CampaignRuntime.ScoutEnemy 改 DispatchScout（lead=ScoutLeadSegments，默认 1 日=4 时段）；HUD 敌情显示 ⏳在途 + 推进返报刷新。5 测。
+- 修技术债（情报隔离）：StartCampaign 复用配置可变 FactionIntel → 多局串知识；改为 CloneInitialIntel 每局播种全新情报层。1 回归测。
+- 验证：dotnet 849/849 绿（-warnaserror 0）；3 DLL Release 已同步 Assets/Plugins/。Unity batchmode 未跑（用户开着 D 盘 Editor）——用户 Ctrl+R 重编译验证。
+- 用户已实玩确认 A、B 通。待提交这批修复。

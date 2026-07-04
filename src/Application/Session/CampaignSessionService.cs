@@ -52,6 +52,10 @@ namespace ThreeKingdom.Application.Session
                 triggeredEvents: Array.Empty<string>(), divergedEvents: Array.Empty<string>());
             var worldProjection = new WorldCityProjection(world, authority);
 
+            // 每局独立情报层：从配置初始情报<b>播种一份全新</b> FactionIntel——配置里的 PlayerIntel 是可变实例，
+            // 直接复用会让多局（重开「新游戏」）共用同一知识态而互相串扰。真值只读，可共享。
+            FactionIntel? playerIntel = CloneInitialIntel(config.PlayerIntel);
+
             var session = new CampaignSession(
                 id: config.ScenarioConfigId,           // S1：以场景 id 作会话 id（多会话/槽位属后续）
                 scenarioConfigId: config.ScenarioConfigId,
@@ -65,7 +69,7 @@ namespace ThreeKingdom.Application.Session
                 logisticsHolding: config.InitialLogisticsHolding,
                 governanceConfig: config.GovernanceConfig,
                 truth: config.WorldTruth,             // M04：情报态（可选；null 则不启用情报循环）
-                playerIntel: config.PlayerIntel,
+                playerIntel: playerIntel,             // 每局独立（见上 CloneInitialIntel）
                 intelConfig: config.IntelConfig,
                 council: config.CouncilSetup,
                 pool: config.ResourcePool,            // M05：准备态（可选；null 则不启用准备循环）
@@ -111,7 +115,38 @@ namespace ThreeKingdom.Application.Session
                 }
             }
 
+            // 情报（GDD_007 派出→在途→返报）：推进后解析已到返报时刻的在途侦察 → 报告并入玩家知识。
+            ResolveArrivedScouts(session);
+
             return session;
+        }
+
+        /// <summary>
+        /// 解析已到返报时刻（ArrivalTime ≤ 当前）的在途侦察：按 (返报时刻, 主题) 稳定序观察真值 → 报告 → 并入玩家知识 →
+        /// 移出在途列表（确定性；观察取返报时刻真值快照）。反全知：只经 <see cref="IntelService"/>，UI 仍读投影。
+        /// </summary>
+        private void ResolveArrivedScouts(CampaignSession session)
+        {
+            if (!session.HasIntel || session.PendingScouts.Count == 0) return;
+            WorldTime now = session.CurrentTime;
+
+            var arrived = new List<PendingScout>();
+            foreach (PendingScout s in session.PendingScouts)
+                if (s.ArrivalTime <= now) arrived.Add(s);
+            arrived.Sort((a, b) =>
+            {
+                int c = a.ArrivalTime.AbsoluteIndex.CompareTo(b.ArrivalTime.AbsoluteIndex);
+                return c != 0 ? c : string.CompareOrdinal(a.Subject.Value, b.Subject.Value);
+            });
+
+            FactionId observer = session.PlayerIntel!.Faction;
+            foreach (PendingScout s in arrived)
+            {
+                Observation observation = _intel.Observe(session.Truth!, s.Subject, observer, s.ArrivalTime);
+                IntelReport report = _intel.ToReport(observation, observer, s.Method);
+                session.PlayerIntel!.ApplyReport(report);
+                session.RemovePendingScout(s);
+            }
         }
 
         private readonly CityDaySettlementService _citySettlement = new CityDaySettlementService();
@@ -202,6 +237,26 @@ namespace ThreeKingdom.Application.Session
             Observation observation = _intel.Observe(session.Truth!, subject, observer, session.CurrentTime);
             IntelReport report = _intel.ToReport(observation, observer, method);
             session.PlayerIntel!.ApplyReport(report);
+            return CampaignCommandResult.Success();
+        }
+
+        /// <summary>
+        /// 派出侦察（GDD_007 派出→在途→返报，<b>非即时</b>）：记一支在途侦察兵，预计 <paramref name="leadSegments"/> 时段后返报；
+        /// 报告在 <see cref="Advance"/> 推进到返报时刻时才并入知识。对象须登记于世界真值，否则稳定错误码、零写入。
+        /// </summary>
+        public CampaignCommandResult DispatchScout(CampaignSession session, IntelSubjectId subject, IntelSource method, int leadSegments)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasIntel)
+                return CampaignCommandResult.Failure(CampaignErrorCode.IntelDisabled, "会话未启用情报。");
+            if (leadSegments < 0)
+                return CampaignCommandResult.Failure(CampaignErrorCode.InvalidAmount, $"侦察行程时段不可为负：{leadSegments}。");
+            if (!session.Truth!.Has(subject))
+                return CampaignCommandResult.Failure(CampaignErrorCode.UnknownIntelSubject,
+                    $"侦察对象未登记或非法：{subject}。");
+
+            WorldTime arrival = session.CurrentTime.Advance(leadSegments);
+            session.AddPendingScout(new PendingScout(subject, method, arrival));
             return CampaignCommandResult.Success();
         }
 
@@ -578,6 +633,17 @@ namespace ThreeKingdom.Application.Session
                 foreach (IntelKnowledgeEntry e in entries)
                     head += "knowledge\t" + e.Subject.Value + "\t" + e.KnownStrength + "\t" + (int)e.Source
                           + "\t" + e.ObservedAt.Day + "\t" + (int)e.ObservedAt.Segment + "\n";
+
+                // 在途侦察段（GDD_007 派出→在途→返报）：按 (返报时刻, 主题) 稳定序，确定性。
+                var pending = new List<PendingScout>(session.PendingScouts);
+                pending.Sort((a, b) =>
+                {
+                    int c = a.ArrivalTime.AbsoluteIndex.CompareTo(b.ArrivalTime.AbsoluteIndex);
+                    return c != 0 ? c : string.CompareOrdinal(a.Subject.Value, b.Subject.Value);
+                });
+                foreach (PendingScout p in pending)
+                    head += "pendingscout\t" + p.Subject.Value + "\t" + (int)p.Method
+                          + "\t" + p.ArrivalTime.Day + "\t" + (int)p.ArrivalTime.Segment + "\n";
             }
 
             // 战役准备段（M05 / TR-prep-001）：资源池 + 草稿 + 承诺（配置数据驱动，由载入方提供，不入存档体）。
@@ -656,6 +722,7 @@ namespace ThreeKingdom.Application.Session
             // 可选情报段（M04 / TR-intel-003）：世界真值与玩家知识**分别**重建，互不污染。
             WorldTruthLedger? truth = null;
             FactionIntel? playerIntel = null;
+            var pendingScouts = new List<PendingScout>();
             if (idx < lines.Length && lines[idx].StartsWith("intel\t", StringComparison.Ordinal))
             {
                 string[] ip = lines[idx].Split('\t');
@@ -675,6 +742,12 @@ namespace ThreeKingdom.Application.Session
                 while (idx < lines.Length && lines[idx].StartsWith("knowledge\t", StringComparison.Ordinal))
                 {
                     playerIntel.ApplyReport(ParseKnowledge(lines[idx], playerFaction));
+                    idx++;
+                }
+                // 在途侦察段（GDD_007）：恢复未返报的侦察兵（推进到返报时刻由 Advance 解析）。
+                while (idx < lines.Length && lines[idx].StartsWith("pendingscout\t", StringComparison.Ordinal))
+                {
+                    pendingScouts.Add(ParsePendingScout(lines[idx]));
                     idx++;
                 }
             }
@@ -798,6 +871,7 @@ namespace ThreeKingdom.Application.Session
                 cityEconomy: city, settlementConfig: settlementConfig, populationPressure: populationPressure,
                 logisticsHolding: cityLogistics, governanceConfig: governanceConfig,
                 truth: truth, playerIntel: playerIntel, intelConfig: intelConfig, council: councilSetup,
+                pendingScouts: pendingScouts,
                 pool: pool, draft: draft, prepConfig: prepConfig,
                 reachableRegions: reachableRegions, authorizedOrders: authorizedOrders, committedPlan: committed,
                 battle: battle, battleConfig: battleConfig, battleSeed: battleSeed,
@@ -821,6 +895,37 @@ namespace ThreeKingdom.Application.Session
             catch (FormatException ex)
             {
                 throw new SaveFormatException("战斗单位段数值解析失败：" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 从配置初始情报播种一份<b>全新</b>玩家知识层（每局独立，防多局共用可变实例串知识）。
+        /// 逐条重放初始报告以保留场景可能预置的情报；真值不在此（读只共享）。
+        /// </summary>
+        private static FactionIntel? CloneInitialIntel(FactionIntel? source)
+        {
+            if (source == null) return null;
+            var fresh = new FactionIntel(source.Faction);
+            foreach (IntelKnowledgeEntry e in source.Project().Entries)
+                fresh.ApplyReport(new IntelReport(e.Subject, source.Faction, e.KnownStrength, e.Source, e.ObservedAt));
+            return fresh;
+        }
+
+        /// <summary>解析在途侦察段：<c>pendingscout\t{subject}\t{method}\t{arrivalDay}\t{arrivalSegment}</c>。</summary>
+        private static PendingScout ParsePendingScout(string line)
+        {
+            string[] p = line.Split('\t');
+            if (p.Length != 5 || p[0] != "pendingscout")
+                throw new SaveFormatException($"在途侦察段格式不符：「{line}」。");
+            try
+            {
+                return new PendingScout(
+                    new IntelSubjectId(p[1]), (IntelSource)int.Parse(p[2]),
+                    new WorldTime(int.Parse(p[3]), (DaySegment)int.Parse(p[4])));
+            }
+            catch (FormatException ex)
+            {
+                throw new SaveFormatException("在途侦察段数值解析失败：" + ex.Message);
             }
         }
 

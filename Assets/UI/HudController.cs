@@ -51,7 +51,14 @@ namespace ThreeKingdom.Unity.UI
 
             var advance = root.Q<Button>("advance-time");
             if (advance != null)
-                advance.clicked += () => { RenderTime(root, SessionRuntime.Advance()); RenderLoop(root); }; // 推进 + 跨日提示 + 刷新循环
+                advance.clicked += () =>
+                {
+                    RenderTime(root, SessionRuntime.Advance());  // 推进 + 跨日提示
+                    RenderEnemyIntel(root);                      // 在途侦察可能返报 → 敌情更新
+                    _council = SessionRuntime.CurrentCouncil();  // 知识若变 → 旧军议标过时
+                    RenderCouncil(root);
+                    RenderLoop(root);                            // 相位/治理/备战/战斗刷新
+                };
 
             // 存档（原子写，统一信封）+ 返回主菜单。
             var save = root.Q<Button>("save-game");
@@ -78,10 +85,10 @@ namespace ThreeKingdom.Unity.UI
                 scout.clicked += () =>
                 {
                     bool ok = SessionRuntime.Scout();
-                    SetLabel(root, "scout-status", ok ? "已侦察：敌情已更新" : "侦察失败");
-                    _council = SessionRuntime.CurrentCouncil();   // 知识变化 → 旧军议随之标过时（不静默重算）
-                    RenderEnemyIntel(root);
-                    RenderCouncil(root);
+                    SetLabel(root, "scout-status", ok
+                        ? "已派出侦察——侦察兵在途，返报需时（推进时段等待返报）"
+                        : "派出失败");
+                    RenderEnemyIntel(root);   // 显示「在途·约第 X 日返报」（此刻无数值）
                 };
 
             // 战果复盘（story-002 / TR-ux-001/004）：无战果时占位；战果由「结算战果」真实产生（story-004）。
@@ -230,6 +237,9 @@ namespace ThreeKingdom.Unity.UI
                     lines.Add(new Label(
                         $"{stalePrefix}{e.SubjectLabel}：约 {e.EstimatedStrength}（{e.SourceLabel}·{e.ObservedAgoLabel}）"));
                 }
+                // 在途侦察（GDD_007 派出→在途→返报）：只显示「约第 X 日返报」，无数值（须推进时段等返报）。
+                foreach (var transit in panel.InTransit)
+                    lines.Add(new Label("⏳ " + transit));
             }
 
             SetEnabled(root, "scout", SessionRuntime.HasIntel());
@@ -402,6 +412,12 @@ namespace ThreeKingdom.Unity.UI
             CampaignPhase phase = SessionRuntime.Phase().Phase;
             bool inBattle = phase == CampaignPhase.Battle;
             bool aftermath = phase == CampaignPhase.Aftermath;
+
+            // 修复 story-004 集成疏漏：「战况/战果复盘」区（outcome-chain）在竖切「情境显隐」规则下默认隐藏，
+            // 导致开战后看不到条件/结算/复盘。战中/战后强制显示该区，其余相位隐藏（无内容可展示）。
+            var outcomeChain = root.Q<VisualElement>("outcome-chain");
+            if (outcomeChain != null)
+                outcomeChain.style.display = (inBattle || aftermath) ? DisplayStyle.Flex : DisplayStyle.None;
 
             SetLabel(root, "battle-status",
                 inBattle ? "战斗进行中——满足兵法条件后「结算战果」。"

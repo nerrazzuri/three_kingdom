@@ -85,6 +85,9 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>开战固定种子（确定性）。</summary>
         public ulong BattleSeed => 42UL;
 
+        /// <summary>侦察行程时段（GDD_007 派出→在途→返报；默认约 1 日返报，可调）。</summary>
+        public int ScoutLeadSegments => WorldTime.SegmentsPerDay;
+
         private PlayableCampaign()
         {
             StartConfig = BuildStartConfig();

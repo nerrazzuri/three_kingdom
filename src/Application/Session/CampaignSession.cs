@@ -94,6 +94,18 @@ namespace ThreeKingdom.Application.Session
         /// </summary>
         public IntelProjection? PlayerKnowledge => _playerIntel?.Project();
 
+        // --- 在途侦察（GDD_007 派出→在途→返报）。派出记为待返报，推进到返报时刻由服务解析并入知识。---
+        private readonly List<PendingScout> _pendingScouts = new List<PendingScout>();
+
+        /// <summary>在途（未返报）侦察兵只读列表（供敌情面板显示「在途」+ 存档）。</summary>
+        public IReadOnlyList<PendingScout> PendingScouts => _pendingScouts;
+
+        /// <summary>登记一支在途侦察兵（仅供 <see cref="CampaignSessionService"/> 派出编排）。</summary>
+        internal void AddPendingScout(PendingScout scout) => _pendingScouts.Add(scout);
+
+        /// <summary>移除一支已返报的在途侦察兵（仅供服务解析编排）。</summary>
+        internal void RemovePendingScout(PendingScout scout) => _pendingScouts.Remove(scout);
+
         /// <summary>会话军议装配配置（M04 / GDD_008）；启用军议时存在。</summary>
         internal SessionCouncilSetup? Council { get; }
 
@@ -225,7 +237,7 @@ namespace ThreeKingdom.Application.Session
             FixedPoint populationPressure = default, long logisticsHolding = 0,
             CityGovernanceConfig? governanceConfig = null,
             WorldTruthLedger? truth = null, FactionIntel? playerIntel = null, IntelConfig? intelConfig = null,
-            SessionCouncilSetup? council = null,
+            SessionCouncilSetup? council = null, IReadOnlyList<PendingScout>? pendingScouts = null,
             ResourcePool? pool = null, PlanDraft? draft = null, PreparationConfig? prepConfig = null,
             IReadOnlyCollection<RegionId>? reachableRegions = null, IReadOnlyCollection<OrderId>? authorizedOrders = null,
             CommittedPlan? committedPlan = null,
@@ -262,6 +274,7 @@ namespace ThreeKingdom.Application.Session
             _playerIntel = playerIntel;
             IntelConfig = intelConfig;
             Council = council;
+            if (pendingScouts != null) _pendingScouts.AddRange(pendingScouts);
             Pool = pool;
             _draft = draft ?? (pool != null ? new PlanDraft() : null);
             PrepConfig = prepConfig;

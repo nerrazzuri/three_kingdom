@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ThreeKingdom.Application.Session;
 using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Numerics;
@@ -231,20 +232,28 @@ namespace ThreeKingdom.Presentation.Screens
         /// <summary>探报条目（只读，确定性排序）。</summary>
         public IReadOnlyList<CampaignEnemyIntelView> Entries { get; }
 
-        /// <summary>是否尚无任何敌情（须派出侦察）。</summary>
-        public bool IsEmpty => Entries.Count == 0;
+        /// <summary>在途侦察提示（GDD_007 派出→在途→返报；一条一句「约第 X 日返报」，确定性排序，无任何数值）。</summary>
+        public IReadOnlyList<string> InTransit { get; }
+
+        /// <summary>是否尚无任何敌情<b>且无在途侦察</b>（须派出侦察）。</summary>
+        public bool IsEmpty => Entries.Count == 0 && InTransit.Count == 0;
 
         /// <summary>空敌情面板（会话未启用情报时的安全降级，避免 UI 因 null 崩溃）。</summary>
         public static CampaignEnemyIntelPanelView Empty { get; } =
-            new CampaignEnemyIntelPanelView(Array.Empty<CampaignEnemyIntelView>());
+            new CampaignEnemyIntelPanelView(Array.Empty<CampaignEnemyIntelView>(), Array.Empty<string>());
 
-        private CampaignEnemyIntelPanelView(IReadOnlyList<CampaignEnemyIntelView> entries) => Entries = entries;
+        private CampaignEnemyIntelPanelView(IReadOnlyList<CampaignEnemyIntelView> entries, IReadOnlyList<string> inTransit)
+        {
+            Entries = entries;
+            InTransit = inTransit;
+        }
 
         /// <summary>
-        /// 从阵营情报投影构造敌情面板（仅探报，无真值）。<paramref name="ttlSegments"/> 须与 IntelConfig 同源（≥1）。
+        /// 从阵营情报投影构造敌情面板（仅探报，无真值）。<paramref name="ttlSegments"/> 须与 IntelConfig 同源（≥1）；
+        /// <paramref name="pending"/> 为在途侦察（尚未返报），只呈现「在途·约第 X 日返报」，<b>不</b>含任何数值。
         /// </summary>
         public static CampaignEnemyIntelPanelView FromProjection(
-            IntelProjection projection, WorldTime now, int ttlSegments)
+            IntelProjection projection, WorldTime now, int ttlSegments, IReadOnlyList<PendingScout>? pending = null)
         {
             if (projection == null) throw new ArgumentNullException(nameof(projection));
             if (ttlSegments < 1)
@@ -253,7 +262,20 @@ namespace ThreeKingdom.Presentation.Screens
             foreach (IntelKnowledgeEntry entry in projection.Entries)
                 list.Add(CampaignEnemyIntelView.FromEntry(entry, now, ttlSegments));
             list.Sort((a, b) => string.CompareOrdinal(a.SubjectLabel, b.SubjectLabel));
-            return new CampaignEnemyIntelPanelView(list);
+
+            var transit = new List<string>();
+            if (pending != null)
+            {
+                var ordered = new List<PendingScout>(pending);
+                ordered.Sort((a, b) =>
+                {
+                    int c = a.ArrivalTime.AbsoluteIndex.CompareTo(b.ArrivalTime.AbsoluteIndex);
+                    return c != 0 ? c : string.CompareOrdinal(a.Subject.Value, b.Subject.Value);
+                });
+                foreach (PendingScout p in ordered)
+                    transit.Add($"{p.Subject.Value}：侦察兵在途，约第 {p.ArrivalTime.Day} 日返报");
+            }
+            return new CampaignEnemyIntelPanelView(list, transit);
         }
     }
 }

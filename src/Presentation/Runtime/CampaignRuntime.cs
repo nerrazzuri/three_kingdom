@@ -115,15 +115,16 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             if (!Session.HasIntel) return CampaignEnemyIntelPanelView.Empty;
             return CampaignEnemyIntelPanelView.FromProjection(
-                Session.PlayerKnowledge!, Session.CurrentTime, _scenario.StartConfig.IntelConfig!.TtlSegments);
+                Session.PlayerKnowledge!, Session.CurrentTime,
+                _scenario.StartConfig.IntelConfig!.TtlSegments, Session.PendingScouts);
         }
 
         /// <summary>
-        /// 【story-003 最小重定向·story-004 换延迟派出循环】即时侦察场景登记的敌军主力，并入玩家知识 →
-        /// 敌情面板更新、当前知识快照改变（已召开军议随之被标过时）。返回命令结果（校验失败稳定错误码、零写入）。
+        /// 派出侦察（GDD_007 派出→在途→返报，<b>非即时</b>）：记一支在途侦察兵，约 <see cref="PlayableCampaign.ScoutLeadSegments"/>
+        /// 时段后返报——须「推进时段」到返报时刻，敌情数字才出现。返回命令结果（校验失败稳定错误码、零写入）。
         /// </summary>
         public CampaignCommandResult ScoutEnemy()
-            => _service.Scout(Session, PlayableCampaign.EnemyArmy, IntelSource.Scouting);
+            => _service.DispatchScout(Session, PlayableCampaign.EnemyArmy, IntelSource.Scouting, _scenario.ScoutLeadSegments);
 
         // --- 战役主循环（epic-028 story-004 / TR-ux-001/005 / ADR-0002/0009）。所有操作经服务命令，UI 只读投影。---
 
