@@ -14,6 +14,7 @@ using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Preparation;
+using ThreeKingdom.Domain.Subversion;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 
@@ -139,6 +140,41 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>累积自立倾向（战果被夺，仅供服务编排）。</summary>
         internal void AddRebellionLean(int amount) => RebellionLean = checked(RebellionLean + amount);
+
+        // --- 人心杠杆待生效态（GDD_024）：每城累积的施计效果 + 施计次数（递减源）。与出征攻城 checkpoint 同批入存档（现为会话态）。---
+
+        private readonly Dictionary<CityId, SubversionEffect> _pendingSubversion = new Dictionary<CityId, SubversionEffect>();
+        private readonly Dictionary<CityId, int> _subversionAttempts = new Dictionary<CityId, int>();
+
+        /// <summary>某城当前累积的待生效施计效果（无则 <see cref="SubversionEffect.None"/>）。</summary>
+        public SubversionEffect PendingSubversionFor(CityId city)
+            => _pendingSubversion.TryGetValue(city, out SubversionEffect e) ? e : SubversionEffect.None;
+
+        /// <summary>对某城守将的累计施计次数（成功度递减源，防无脑刷，GDD_024 W5）。</summary>
+        public int SubversionAttemptsOn(CityId city)
+            => _subversionAttempts.TryGetValue(city, out int n) ? n : 0;
+
+        /// <summary>累积一次施计效果到某城（仅供服务编排）。</summary>
+        internal void AccumulateSubversion(CityId city, SubversionEffect effect)
+            => _pendingSubversion[city] = PendingSubversionFor(city).Combine(effect);
+
+        /// <summary>记一次施计尝试（无论成败均计，供递减；仅供服务编排）。</summary>
+        internal void RecordSubversionAttempt(CityId city)
+            => _subversionAttempts[city] = SubversionAttemptsOn(city) + 1;
+
+        /// <summary>取出并清空某城待生效施计效果（出征发起时消费；仅供服务编排）。</summary>
+        internal SubversionEffect ConsumePendingSubversion(CityId city)
+        {
+            SubversionEffect e = PendingSubversionFor(city);
+            _pendingSubversion.Remove(city);
+            return e;
+        }
+
+        /// <summary>只读：各城待生效施计效果（存档序列化用）。</summary>
+        public IReadOnlyDictionary<CityId, SubversionEffect> PendingSubversionMap => _pendingSubversion;
+
+        /// <summary>只读：各城施计次数（存档序列化用）。</summary>
+        public IReadOnlyDictionary<CityId, int> SubversionAttemptsMap => _subversionAttempts;
 
         /// <summary>会话军议装配配置（M04 / GDD_008）；启用军议时存在。</summary>
         internal SessionCouncilSetup? Council { get; }
@@ -281,7 +317,9 @@ namespace ThreeKingdom.Application.Session
             TacticChainConfig? tacticChains = null, IReadOnlyCollection<TacticCondition>? battleConditions = null,
             OutcomeBranch? lastOutcomeBranch = null, IReadOnlyList<ContinuationOption>? lastOptions = null,
             HistoricalEventCatalog? historyCatalog = null, PlayerReach? historyReach = null,
-            DivergencePropagationConfig? divergenceConfig = null)
+            DivergencePropagationConfig? divergenceConfig = null,
+            IReadOnlyDictionary<CityId, SubversionEffect>? pendingSubversion = null,
+            IReadOnlyDictionary<CityId, int>? subversionAttempts = null)
         {
             if (logisticsHolding < 0) throw new ArgumentOutOfRangeException(nameof(logisticsHolding), "后勤持有量不可为负。");
             if (cityEconomy != null && settlementConfig == null)
@@ -315,6 +353,8 @@ namespace ThreeKingdom.Application.Session
             OffensiveAuthorization = offensiveAuthorization ?? OffensiveAuthorization.None;
             ConquestCount = conquestCount;
             RebellionLean = rebellionLean;
+            if (pendingSubversion != null) foreach (KeyValuePair<CityId, SubversionEffect> kv in pendingSubversion) _pendingSubversion[kv.Key] = kv.Value;
+            if (subversionAttempts != null) foreach (KeyValuePair<CityId, int> kv in subversionAttempts) _subversionAttempts[kv.Key] = kv.Value;
             Pool = pool;
             _draft = draft ?? (pool != null ? new PlanDraft() : null);
             PrepConfig = prepConfig;

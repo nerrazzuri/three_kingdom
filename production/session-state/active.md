@@ -1430,3 +1430,11 @@ ADR-0003（数据驱动配置的正式锁定）。
 - dotnet 980/980 绿（970→980，-warnaserror 0）；3 DLL Release 同步。
 - ⏳ 人心杠杆待续：Application 战役接线（施计命令 + 会话态待生效效果 + 存档 + 喂 LaunchOffensive）。
 - ▶ 后续任务 #7 生涯纵深 / #8 事件分级+心里话 / #9 战法内容包+失败路径 / #10 全局装配+ViewModel / #11 Unity UI(需编辑器验证)。
+
+## Session Extract — 人心杠杆战役闭环收尾 2026-07-04
+- Application 接线：CampaignSessionService.AttemptSubversion（反全知门→种子结算→成功累积待生效效果到城）+ LaunchOffensive 消费待生效效果削弱守备（有效守军×(1−倒戈比)、工事因子按士气/军纪 delta 减，下限0.1）。
+- 会话态：CampaignSession 每城 PendingSubversion + SubversionAttempts（含只读映射 + restore 构造参数）。
+- 存档：CaptureSnapshot 加 subversion 段 + Restore 解析（照 conquest 段模式，往返一致，GDD_024 §14）。
+- 测试 +3：SubversionCampaignTests（施计降门槛 400兵无施计败·施计胜 / 施计次数累计 / 待生效存读档往返）。
+- GDD_024 登记 gdd-index（Implemented，epic-032）。dotnet 983/983 绿（980→983）；3 DLL Release 同步。
+- ✅ 任务 #6 人心杠杆全线完成（Domain+接缝+战役+存档+16测试）。转 #7 生涯纵深。

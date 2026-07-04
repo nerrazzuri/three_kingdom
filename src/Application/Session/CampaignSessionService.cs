@@ -15,6 +15,7 @@ using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.Preparation;
+using ThreeKingdom.Domain.Subversion;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 
@@ -680,6 +681,41 @@ namespace ThreeKingdom.Application.Session
         private readonly OffensiveAuthorizationService _offensiveAuth = new OffensiveAuthorizationService();
         private readonly OffensiveSetupService _offensiveSetup = new OffensiveSetupService();
         private readonly SiegeResolutionService _siege = new SiegeResolutionService();
+        private readonly SubversionService _subversion = new SubversionService();
+
+        /// <summary>
+        /// 战前人心杠杆施计（GDD_024 全循环）：反全知门（守将画像自 Intel/Relationships 投影，未侦察折扣）→
+        /// 种子化结算（成/反噬/无效）→ 成功则把战斗接缝效果<b>累积</b>到该城待生效态（出征发起时消费）。
+        /// 无论成败均记一次尝试（成功度递减源，W5）。授权/立场约束由调用方按 GDD_023 先行校验。
+        /// </summary>
+        public SubversionOutcome AttemptSubversion(
+            CampaignSession session, CityId city, SubversionScheme scheme,
+            SubversionTargetProfile target, FixedPoint intensity, ulong seed, SubversionConfig config)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (target is null) throw new ArgumentNullException(nameof(target));
+            if (config is null) throw new ArgumentNullException(nameof(config));
+
+            int prior = session.SubversionAttemptsOn(city);
+            SubversionOutcome outcome = _subversion.Resolve(scheme, target, intensity, prior, seed, config);
+            session.RecordSubversionAttempt(city);
+            if (outcome.Result == SubversionResult.Success)
+                session.AccumulateSubversion(city, outcome.Effect);
+            // 反噬（outcome.Exposed）的情报暴露/守将怨恨副作用由调用方经 Intel/Relationships 写回（反全知，GDD_024 R4）。
+            return outcome;
+        }
+
+        /// <summary>把人心杠杆效果作用于守备（GDD_024 F3 抽象攻城接缝）：有效守军×(1−倒戈比)、工事因子按士气/军纪 delta 削弱（下限 0.1）。</summary>
+        private static SiegeDefense ApplySubversion(SiegeDefense defense, SubversionEffect effect)
+        {
+            if (effect is null || effect.IsNone) return defense;
+            int garrison = (FixedPoint.FromInt(defense.Garrison) * (FixedPoint.One - effect.GarrisonDefectRatio)).RoundToInt();
+            if (garrison < 0) garrison = 0;
+            FixedPoint fort = defense.FortFactor + effect.DefenderMoraleDelta + effect.DefenderDisciplineDelta;
+            FixedPoint floor = FixedPoint.FromFraction(1, 10);
+            if (fort < floor) fort = floor;
+            return new SiegeDefense(garrison, fort);
+        }
 
         /// <summary>
         /// 出征攻城端到端（GDD_019 全循环）：授权门 → 闭合因果（准备→战力）→ 攻城结算（准备决定胜负）→
@@ -700,8 +736,11 @@ namespace ThreeKingdom.Application.Session
             OffensiveGateResult gate = CheckOffensiveTarget(session, city, playerFaction);
             if (gate != OffensiveGateResult.Authorized) return OffensiveResult.Rejected(gate);
 
+            // 人心杠杆（GDD_024）：消费该城战前累积的施计效果 → 削弱守备（守军倒戈/士气军纪崩）。
+            SiegeDefense effectiveDefense = ApplySubversion(defense, session.ConsumePendingSubversion(city));
+
             OffensiveForce force = _offensiveSetup.Derive(prep, setupConfig);           // 闭合因果
-            if (!_siege.AttackerWins(force, defense, siegeConfig))
+            if (!_siege.AttackerWins(force, effectiveDefense, siegeConfig))
                 return OffensiveResult.Defeated(force);                                 // 败：不占城，可继续
 
             ConquestResult conquest = ResolveConquest(                                   // 胜：占城归属 C
@@ -881,6 +920,19 @@ namespace ThreeKingdom.Application.Session
             foreach (CityId t in authTargets)
                 head += "authtarget\t" + t.Value + "\n";
 
+            // 人心杠杆待生效段（GDD_024 §14）：每城累积效果（士气/倒戈/军纪 raw）+ 施计次数（稳定序，取待生效∪已施计城并集）。
+            var subCities = new SortedSet<string>(StringComparer.Ordinal);
+            foreach (KeyValuePair<CityId, SubversionEffect> kv in session.PendingSubversionMap) subCities.Add(kv.Key.Value);
+            foreach (KeyValuePair<CityId, int> kv in session.SubversionAttemptsMap) subCities.Add(kv.Key.Value);
+            foreach (string cv in subCities)
+            {
+                var cid = new CityId(cv);
+                SubversionEffect e = session.PendingSubversionFor(cid);
+                head += "subversion\t" + cv
+                      + "\t" + e.DefenderMoraleDelta.Raw + "\t" + e.GarrisonDefectRatio.Raw + "\t" + e.DefenderDisciplineDelta.Raw
+                      + "\t" + session.SubversionAttemptsOn(cid) + "\n";
+            }
+
             return head + BodyMarker + "\n" + body;
         }
 
@@ -1049,6 +1101,8 @@ namespace ThreeKingdom.Application.Session
             // 出征攻城段（GDD_019 / ADR-0010）：占城计数 + 自立倾向 + 授权目标。
             int conquestCount = 0, rebellionLean = 0;
             var authTargets = new List<CityId>();
+            var pendingSubversion = new Dictionary<CityId, SubversionEffect>();
+            var subversionAttempts = new Dictionary<CityId, int>();
             if (idx < lines.Length && lines[idx].StartsWith("conquest\t", StringComparison.Ordinal))
             {
                 string[] cq = lines[idx].Split('\t');
@@ -1061,6 +1115,23 @@ namespace ThreeKingdom.Application.Session
                     string[] at = lines[idx].Split('\t');
                     if (at.Length != 2) throw new SaveFormatException($"授权目标段格式不符：「{lines[idx]}」。");
                     authTargets.Add(new CityId(at[1]));
+                    idx++;
+                }
+                // 人心杠杆待生效段（GDD_024 §14）。
+                while (idx < lines.Length && lines[idx].StartsWith("subversion\t", StringComparison.Ordinal))
+                {
+                    string[] sv = lines[idx].Split('\t');
+                    if (sv.Length != 6) throw new SaveFormatException($"人心杠杆段格式不符：「{lines[idx]}」。");
+                    try
+                    {
+                        var cid = new CityId(sv[1]);
+                        var eff = new SubversionEffect(
+                            FixedPoint.FromRaw(int.Parse(sv[2])), FixedPoint.FromRaw(int.Parse(sv[3])), FixedPoint.FromRaw(int.Parse(sv[4])));
+                        if (!eff.IsNone) pendingSubversion[cid] = eff;
+                        int attempts = int.Parse(sv[5]);
+                        if (attempts > 0) subversionAttempts[cid] = attempts;
+                    }
+                    catch (FormatException ex) { throw new SaveFormatException("人心杠杆段数值解析失败：" + ex.Message); }
                     idx++;
                 }
             }
@@ -1098,7 +1169,8 @@ namespace ThreeKingdom.Application.Session
                 reachableRegions: reachableRegions, authorizedOrders: authorizedOrders, committedPlan: committed,
                 battle: battle, battleConfig: battleConfig, battleSeed: battleSeed,
                 tacticChains: tacticChains, battleConditions: battleConditions,
-                lastOutcomeBranch: lastOutcomeBranch, lastOptions: lastOptions);
+                lastOutcomeBranch: lastOutcomeBranch, lastOptions: lastOptions,
+                pendingSubversion: pendingSubversion, subversionAttempts: subversionAttempts);
         }
 
         /// <summary>解析战斗单位段：<c>battleunit\t{id}\t{faction}\t{region}\t{force}\t{morale.Raw}…{support.Raw}</c>。</summary>
