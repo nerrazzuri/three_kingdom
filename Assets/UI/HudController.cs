@@ -53,6 +53,15 @@ namespace ThreeKingdom.Unity.UI
             var persona = SessionRuntime.Persona();
             SetLabel(root, "hud-persona", "性情 · " + persona.Name + "（" + persona.Description + "）");
 
+            // E3：战略状态（争霸/终局）+ 攻心入口——把此前够不到的差异化系统接给玩家。
+            RenderStrategic(root);
+            Wire(root, "subvert-enemy", () =>
+            {
+                var v = SessionRuntime.Subvert("city-hulao", ThreeKingdom.Domain.Subversion.SubversionScheme.UnderminedMorale, 100);
+                SetLabel(root, "subvert-status", v.ResultLabel);
+                RenderStrategic(root);
+            });
+
             var advance = root.Q<Button>("advance-time");
             if (advance != null)
                 advance.clicked += () =>
@@ -247,6 +256,20 @@ namespace ThreeKingdom.Unity.UI
         }
 
         /// <summary>把真实世界状态投影渲染到时间条（合成时辰标签 + 跨日提示）。</summary>
+        /// <summary>E3：战略状态条（争霸领城 + 终局走向）。逻辑经 SessionRuntime（CampaignRuntime dotnet 已测）。</summary>
+        private static void RenderStrategic(VisualElement root)
+        {
+            var c = SessionRuntime.Contention;
+            string endgame;
+            switch (SessionRuntime.Endgame())
+            {
+                case ThreeKingdom.Domain.Contention.EndgameStatus.PlayerUnifies: endgame = "已统一天下"; break;
+                case ThreeKingdom.Domain.Contention.EndgameStatus.PlayerEliminated: endgame = "势力覆灭"; break;
+                default: endgame = "群雄争霸中"; break;
+            }
+            SetLabel(root, "strategic-status", "争霸：天下共 " + c.TotalCities + " 城 · " + endgame);
+        }
+
         private void RenderTime(VisualElement root, WorldStatusView status)
         {
             var label = root.Q<Label>("time-bar-label");

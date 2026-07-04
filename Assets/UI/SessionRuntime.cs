@@ -156,5 +156,38 @@ namespace ThreeKingdom.Unity.UI
         public static ZoneBattleView DefenseBattleAutoResolve() => _runtime.DefenseBattleAutoResolve();
         /// <summary>守城是否守住。</summary>
         public static bool DefenseHeld => _runtime.DefenseHeld;
+
+        // --- E3：把此前 HUD 够不到的 5 个系统接给玩家（施计/外交/多城/人才/争霸）。逻辑经 CampaignRuntime（dotnet 已单测）。---
+
+        // 人心杠杆施计（GDD_024）。
+        public static SubversionView Subvert(string cityId, ThreeKingdom.Domain.Subversion.SubversionScheme scheme, int intensityPercent = 100)
+            => _runtime.AttemptSubversion(cityId, scheme, intensityPercent);
+        public static bool HasPendingSubversion(string cityId) => _runtime.HasPendingSubversion(cityId);
+
+        // 君主争霸 + 统一终局（GDD_017/018）。
+        public static ThreeKingdom.Domain.Contention.ContentionState Contention => _runtime.Contention;
+        public static ThreeKingdom.Domain.Contention.EndgameStatus Endgame() => _runtime.Endgame();
+
+        // 战略外交（GDD_023）。
+        public static ThreeKingdom.Domain.Diplomacy.PactResult ProposePact(
+            ThreeKingdom.Domain.Map.FactionId power, ThreeKingdom.Domain.Diplomacy.DiplomaticStance target, ThreeKingdom.Domain.Diplomacy.PactFactors factors)
+            => _runtime.ProposePact(power, target, factors);
+        public static ThreeKingdom.Domain.Diplomacy.BreachResult BreachPact(ThreeKingdom.Domain.Map.FactionId power)
+            => _runtime.BreachPact(power);
+
+        // 多城战区委任（GDD_022）。
+        public static System.Collections.Generic.IReadOnlyList<ThreeKingdom.Domain.Theater.TheaterCityReport> TheaterReports(ThreeKingdom.Domain.Theater.TheaterResources reported)
+            => _runtime.TheaterReports(reported);
+        public static ThreeKingdom.Application.Theater.TheaterCommandResult DelegateCity(
+            ThreeKingdom.Domain.City.CityId city, ThreeKingdom.Domain.Characters.CharacterId governor)
+            => _runtime.DelegateCity(city, governor);
+        public static ThreeKingdom.Application.Theater.TheaterCommandResult SelfGovernCity(ThreeKingdom.Domain.City.CityId city)
+            => _runtime.SelfGovernCity(city);
+
+        // 人才招揽（GDD_020）。
+        public static ThreeKingdom.Application.Talent.TalentRecruitAttempt RecruitTalent(
+            ThreeKingdom.Domain.Talent.TalentId id, ThreeKingdom.Domain.Talent.RecruitmentOffer offer)
+            => _runtime.RecruitTalent(id, offer);
+        public static bool HasRecruited(ThreeKingdom.Domain.Talent.TalentId id) => _runtime.HasRecruited(id);
     }
 }
