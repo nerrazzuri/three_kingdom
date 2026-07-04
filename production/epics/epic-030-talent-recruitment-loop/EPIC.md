@@ -3,7 +3,7 @@
 > **Layer**: Feature（复用 人物/关系 epic-003 · 情报 GDD_007 · 条件历史 GDD_015 · 种子化随机 ADR-0006）
 > **Architecture Module**: 计划外新增循环（2026-07-04 用户设计对话补入；"人才/武将"此前无独立循环）
 > **Governing ADR**: ADR-0006（种子化确定性随机 softmax）· ADR-0007（条件历史世界模型，人才按时间线登场）· ADR-0004（确定性）
-> **Status**: Draft（需先补 GDD_020-talent-recruitment + ADR，再转 Ready）
+> **Status**: ✅ Complete（2026-07-04：GDD_020 + 4 story 全实现+测试。Domain/Talent（目录+登场窗+知晓反全知+招揽种子判定+为将）+ Application/Talent 编排 + CampaignRuntime 接入 + TR-talent-001~004。dotnet 940/940 绿。ADR 复用 0006/0007（无新增）。平衡打磨延后。UI 面板为 Presentation 轻接入，Unity 面板待后续 UI 批。）
 > **设计来源**: 2026-07-04 用户设计对话裁定（见下"设计裁定"）
 
 ## 背景与问题

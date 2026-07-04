@@ -13,6 +13,7 @@ using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Preparation;
+using ThreeKingdom.Domain.Talent;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 using WTimeWindow = ThreeKingdom.Domain.World.TimeWindow;
@@ -124,6 +125,32 @@ namespace ThreeKingdom.Application.Scenarios
 
         /// <summary>守城区域防御战：来犯敌军突击兵力（敌AI攻方）。</summary>
         public int EnemyAssaultForce => 500;
+
+        // ---- 人才招揽（GDD_020）：目录含登场时间窗（反全历史）；单一数据源 ----
+
+        /// <summary>卧龙（智略绝顶·善奇袭；晚登场——第 3 日后才出世，志向低·阻力高，难招）。</summary>
+        public static readonly TalentId Wolong = new TalentId("talent-wolong");
+        /// <summary>骁将（统率武勇高·善攻坚；开局即在，志向高·易招）。</summary>
+        public static readonly TalentId Xiaojiang = new TalentId("talent-xiaojiang");
+        /// <summary>能吏（内政/后勤·善辎重；第 1 日后登场，中庸）。</summary>
+        public static readonly TalentId Nengli = new TalentId("talent-nengli");
+
+        /// <summary>人才目录（数据驱动，含各人时间窗/属性/志向）。</summary>
+        public TalentRoster TalentRoster => new TalentRoster(new[]
+        {
+            new TalentProfile(Wolong, new CharacterId("char-wolong"), Frac(9, 10), Frac(3, 10), FixedPoint.One,
+                GeneralSpecialty.Ambush, willingness: Frac(2, 10), reluctance: Frac(5, 10), appearFrom: new WorldTime(3, DaySegment.Dawn)),
+            new TalentProfile(Xiaojiang, new CharacterId("char-xiaojiang"), Frac(8, 10), Frac(9, 10), Frac(4, 10),
+                GeneralSpecialty.Siege, willingness: Frac(7, 10), reluctance: Frac(1, 10), appearFrom: new WorldTime(0, DaySegment.Dawn)),
+            new TalentProfile(Nengli, new CharacterId("char-nengli"), Frac(5, 10), Frac(3, 10), Frac(7, 10),
+                GeneralSpecialty.Logistics, willingness: Frac(5, 10), reluctance: Frac(3, 10), appearFrom: new WorldTime(1, DaySegment.Dawn)),
+        });
+
+        /// <summary>招揽概率映射配置。</summary>
+        public TalentRecruitmentConfig TalentRecruit => TalentRecruitmentConfig.Default;
+
+        /// <summary>招揽种子基（确定性）。</summary>
+        public ulong TalentSeed => 0x7A1E27UL;
 
         /// <summary>占城后进驻的守军（占城 C 控制权变更的新驻军）。</summary>
         public Garrison ConqueredGarrison => new Garrison(600);

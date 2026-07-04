@@ -1,6 +1,9 @@
 using NUnit.Framework;
 using ThreeKingdom.Application.Scenarios;
+using ThreeKingdom.Application.Talent;
 using ThreeKingdom.Domain.Conquest;
+using ThreeKingdom.Domain.Numerics;
+using ThreeKingdom.Domain.Talent;
 using ThreeKingdom.Domain.Tests.Persistence;
 using ThreeKingdom.Presentation.Runtime;
 using ThreeKingdom.Presentation.Screens;
@@ -129,6 +132,27 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
             for (int i = 0; i < 12 && _runtime.HasDefenseBattle; i++) _runtime.DefenseBattleResolveRound();
             Assert.That(_runtime.DefenseBattleOver, Is.True, "守城战分出胜负。");
             Assert.That(_runtime.DefenseHeld, Is.True, "守军挡住来犯敌军 → 守土成功（攻守统一同引擎）。");
+        }
+
+        [Test]
+        public void test_talent_recruitment_through_campaign_runtime()
+        {
+            // 反全知：未知晓不可见 → 侦察知晓 → 可见 → 厚待招揽 → 入伙为将（GDD_020 四层）。
+            Assert.That(HasTalent(_runtime.VisibleTalents(), PlayableCampaign.Xiaojiang), Is.False, "未知晓 → 不可见。");
+            _runtime.RevealTalent(PlayableCampaign.Xiaojiang, TalentChannel.Scouting);
+            Assert.That(HasTalent(_runtime.VisibleTalents(), PlayableCampaign.Xiaojiang), Is.True, "侦察知晓后可见。");
+
+            var strong = new RecruitmentOffer(FixedPoint.One, FixedPoint.One, FixedPoint.One, FixedPoint.One);
+            TalentRecruitAttempt r = _runtime.RecruitTalent(PlayableCampaign.Xiaojiang, strong);
+            Assert.That(r.Valid && r.Verdict == RecruitmentVerdict.Joined, Is.True, "厚待易招之将 → 出仕。");
+            Assert.That(_runtime.HasRecruited(PlayableCampaign.Xiaojiang), Is.True, "入伙记入。");
+            Assert.That(r.Joined, Is.Not.Null, "入伙人才为将（喂战斗）。");
+        }
+
+        private static bool HasTalent(System.Collections.Generic.IReadOnlyList<TalentProfile> list, TalentId id)
+        {
+            foreach (TalentProfile p in list) if (p.Id == id) return true;
+            return false;
         }
 
         [Test]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ThreeKingdom.Application.Battle;
 using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Session;
+using ThreeKingdom.Application.Talent;
 using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
@@ -402,6 +403,32 @@ namespace ThreeKingdom.Presentation.Runtime
         }
 
         private ZoneBattleRuntime Defense() => _defenseBattle ?? throw new InvalidOperationException("尚未发起守城战。");
+
+        // --- 人才招揽（GDD_020）：出现随历史 · 知晓靠情报（反全知）· 入伙靠条件+种子判定 · 喂给战斗/生涯 ---
+
+        private readonly TalentService _talentService = new TalentService();
+        private ThreeKingdom.Domain.Talent.TalentState _talent = ThreeKingdom.Domain.Talent.TalentState.Empty;
+
+        /// <summary>玩家可见人才（已登场 ∩ 已知晓；反全知，未知晓者不入）。</summary>
+        public IReadOnlyList<ThreeKingdom.Domain.Talent.TalentProfile> VisibleTalents()
+            => _talentService.Visible(_scenario.TalentRoster, _talent, Session.CurrentTime);
+
+        /// <summary>经渠道知晓某人才（侦察/军师/部曲人脉/历史事件）→ 进入视野。</summary>
+        public void RevealTalent(ThreeKingdom.Domain.Talent.TalentId id, ThreeKingdom.Domain.Talent.TalentChannel channel)
+            => _talent = _talentService.Reveal(_talent, id, channel);
+
+        /// <summary>发起招揽（须已登场+已知晓）：条件+种子判定出仕与否；出仕则入伙（返回为将）。返回尝试结果。</summary>
+        public TalentRecruitAttempt RecruitTalent(ThreeKingdom.Domain.Talent.TalentId id, ThreeKingdom.Domain.Talent.RecruitmentOffer offer)
+        {
+            TalentRecruitAttempt r = _talentService.AttemptRecruit(
+                _scenario.TalentRoster, _talent, id, Session.CurrentTime, offer,
+                _scenario.TalentSeed, PlayableCampaign.Player, _scenario.TalentRecruit);
+            if (r.Valid) _talent = r.State;
+            return r;
+        }
+
+        /// <summary>已入伙某人才。</summary>
+        public bool HasRecruited(ThreeKingdom.Domain.Talent.TalentId id) => _talent.IsRecruited(id);
 
         /// <summary>目标是否已侦察（反全知：有非过时敌情估计 → 可得突袭类条件、免情报盲区折扣）。</summary>
         private bool TargetScouted()

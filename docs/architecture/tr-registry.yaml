@@ -25,7 +25,7 @@
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
 version: 5
-last_updated: "2026-07-04"   # 追加 TR-offensive-006~010（GDD_019 v2 / ADR-0011 六维出征准备）+ TR-zone-001~010（GDD_021 / ADR-0012/0013 战斗核心层 epic-031）
+last_updated: "2026-07-04"   # + TR-zone-001~010（GDD_021 战斗核心 epic-031）+ TR-talent-001~004（GDD_020 人才招揽 epic-030）
 
 requirements:
   # --- 时间 (GDD_001) ---
@@ -598,6 +598,36 @@ requirements:
     system: zone-battle
     gdd: design/gdd/gdd-021-zone-battle.md
     requirement: "敌AI渐进记忆 + LLM隔离：敌记玩家近 K 回合区域动作纳入因子（多回合博弈），记忆入 ZoneBattleState 随存档、确定性；LLM 仅装饰敌将台词，结算路径无 LLM 依赖（断言）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+
+  # --- 人才招揽 (GDD_020 / epic-030；反全知 + 条件涌现) ---
+  - id: TR-talent-001
+    system: talent
+    gdd: design/gdd/gdd-020-talent-recruitment.md
+    requirement: "人才登场时间窗（F1）：人才按历史时间窗可用/不可用（未到 AppearFrom 不存在、不可知不可招），确定性；经 GDD_015 时间推进解锁（ADR-0007）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-talent-002
+    system: talent
+    gdd: design/gdd/gdd-020-talent-recruitment.md
+    requirement: "知晓靠情报（反全知，负向不变量）：人才须经知晓渠道（侦察/军师/部曲/历史事件）才进入玩家可见面；未知晓者不入 Visible 列表、类型层取不到未知人才真值（延续 GDD_007 反全知锁）；无全知人才列表"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-talent-003
+    system: talent
+    gdd: design/gdd/gdd-020-talent-recruitment.md
+    requirement: "招揽条件 + 种子化判定（无胜率）：p_join=clamp(base+Σw·条件+willingness-reluctance,0,1)（对名望/官职/关系/待遇单调不降）；种子化确定性判定（注入式流，非掷骰）同(人才,条件,种子)→同结果（人各有志）；p=1 恒出仕、p=0 恒婉拒；不向玩家显示胜率数字（ADR-0004/0006）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-talent-004
+    system: talent
+    gdd: design/gdd/gdd-020-talent-recruitment.md
+    requirement: "喂给战斗/生涯 + 存读档：入伙人才提供为将属性（复用 OffensiveGeneral 统率/武勇/智略）+ 进僚属（GDD_014）；招揽尝试各次独立（attemptIndex 分流种子）；已知晓/已入伙/尝试计数纳入统一存档、确定性哈希 round-trip 一致"
     created: 2026-07-04
     revised: ""
     status: active
