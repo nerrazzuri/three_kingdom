@@ -140,6 +140,8 @@
 - 兵种/路线门：`CavalryMinShare`(0.3, 骑兵占三成方利追击)、`StarveSupplyMin`(200)、`StarveSegments`(8)、各 `ApproachForceMod`（强攻+50/长围−80/诱敌0/夜袭0）、`FitBonus`(40)、`IntelBlindPenalty`(80)。
 
 > **反支柱护栏（W5，强制）**：出征是**强战功→功绩/名望**通道。平衡须保证**出征功绩产出速率不压过治理/招揽/外交/平叛**——单次出征功绩设上限 + 出征有真实成本（兵粮消耗/时间/失败折损）+ 堆将有递减（decay），使"只刷出征"不优于均衡经营（承接 GDD_014 N10 与 2026-06-24 W5）。列入平衡验证用例。
+>
+> **打磨确认（2026-07-04）**：§8 上列出征派生值经 `OffensiveDomainTests` 单调性/边界/决定性用例确认（兵力↑→战力↑、补给↑→士气↑并封顶、统率/勇武↑→战力/士气↑、副将贡献 decay 递减、组装校验拒越界）——**默认值无需改动**。W5 决定性护栏由 `ZoneBattleBalanceTests.test_preparation_decides_outcome_against_same_garrison` 端到端锁定：**同守备（400）下，唯"准备"决定胜负**——备足（900兵）经六维准备派生足够战力破城（AttackerVictory），裸战（120兵）同守备下退兵（DefenderVictory·失败可继续）。堆将递减/占城归属频谱见 GDD_021 §11 与 `OffensiveDomainTests` 占城 C 用例（前 N 归玩家 / p_grant 极值 / renown 单调 / 种子决定性）。
 
 ## 9. Edge Cases（边界情况）
 

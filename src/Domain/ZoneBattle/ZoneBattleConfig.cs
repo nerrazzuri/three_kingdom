@@ -30,23 +30,34 @@ namespace ThreeKingdom.Domain.ZoneBattle
         public FixedPoint AttritionCap { get; }
         /// <summary>败方每回合士气跌幅。</summary>
         public FixedPoint MoraleDropOnLoss { get; }
-        /// <summary>每回合疲劳增幅。</summary>
+        /// <summary>每回合基础疲劳增幅（实际增幅 = 基础 × 姿态疲劳倍率）。</summary>
         public FixedPoint FatiguePerRound { get; }
-        /// <summary>主攻姿态战力乘数。</summary>
+        /// <summary>主攻姿态战力乘数（最高——猛攻速破，但疲劳累积最快）。</summary>
         public FixedPoint AssaultMod { get; }
-        /// <summary>守姿态战力乘数。</summary>
+        /// <summary>守姿态战力乘数（居中偏防——依托工事久持，疲劳累积最慢）。</summary>
         public FixedPoint HoldMod { get; }
-        /// <summary>佯攻姿态战力乘数。</summary>
+        /// <summary>佯攻姿态战力乘数（最低——示弱诱敌/掩护蓄势）。</summary>
         public FixedPoint FeintMod { get; }
+        /// <summary>疲劳战力权重（有效战力 = 名义 ×(1 − 疲劳×此值)；令疲劳成真代价，久战侵蚀战力）。</summary>
+        public FixedPoint FatiguePowerWeight { get; }
+        /// <summary>主攻疲劳倍率（&gt;1：猛攻耗力快）。</summary>
+        public FixedPoint AssaultFatigueMul { get; }
+        /// <summary>坚守疲劳倍率（&lt;1：据守省力）。</summary>
+        public FixedPoint HoldFatigueMul { get; }
+        /// <summary>佯攻疲劳倍率（居中）。</summary>
+        public FixedPoint FeintFatigueMul { get; }
         /// <summary>涌现兵法一次性士气冲击（对被打击方）。</summary>
         public FixedPoint EmergenceMoraleShock { get; }
+        /// <summary>守方在坚固地形（城门/关隘正面）的城防战力加成（守城之利：破坚城须真优势而非均势，强化 W5）。</summary>
+        public FixedPoint FortifiedDefenseBonus { get; }
 
         public ZoneBattleConfig(
             FixedPoint cavalryMinShare, FixedPoint guileMin, FixedPoint disciplineMin,
             int ambushChargeRounds, int starveRounds,
             FixedPoint conditionBonusEach, FixedPoint attritionRate, FixedPoint attritionCap, FixedPoint moraleDropOnLoss,
             FixedPoint fatiguePerRound, FixedPoint assaultMod, FixedPoint holdMod, FixedPoint feintMod,
-            FixedPoint emergenceMoraleShock)
+            FixedPoint fatiguePowerWeight, FixedPoint assaultFatigueMul, FixedPoint holdFatigueMul, FixedPoint feintFatigueMul,
+            FixedPoint emergenceMoraleShock, FixedPoint fortifiedDefenseBonus)
         {
             if (ambushChargeRounds < 1) throw new ArgumentOutOfRangeException(nameof(ambushChargeRounds));
             if (starveRounds < 1) throw new ArgumentOutOfRangeException(nameof(starveRounds));
@@ -63,10 +74,44 @@ namespace ThreeKingdom.Domain.ZoneBattle
             AssaultMod = assaultMod;
             HoldMod = holdMod;
             FeintMod = feintMod;
+            FatiguePowerWeight = fatiguePowerWeight;
+            AssaultFatigueMul = assaultFatigueMul;
+            HoldFatigueMul = holdFatigueMul;
+            FeintFatigueMul = feintFatigueMul;
             EmergenceMoraleShock = emergenceMoraleShock;
+            FortifiedDefenseBonus = fortifiedDefenseBonus;
         }
 
-        /// <summary>默认（GDD_021 §11 起始值，待平衡）。</summary>
+        /// <summary>某姿态战力乘数。</summary>
+        public FixedPoint PostureMod(Posture p) => p switch
+        {
+            Posture.Assault => AssaultMod,
+            Posture.Hold => HoldMod,
+            Posture.Feint => FeintMod,
+            _ => FixedPoint.One,
+        };
+
+        /// <summary>某姿态疲劳倍率。</summary>
+        public FixedPoint PostureFatigueMul(Posture p) => p switch
+        {
+            Posture.Assault => AssaultFatigueMul,
+            Posture.Hold => HoldFatigueMul,
+            Posture.Feint => FeintFatigueMul,
+            _ => FixedPoint.One,
+        };
+
+        /// <summary>疲劳侵蚀后的有效战力乘数 (1 − 疲劳×权重)，下限 0（疲劳∈[0,1]、权重≤1 时自然 ≥0）。</summary>
+        public FixedPoint FatiguePowerMul(FixedPoint fatigue)
+        {
+            FixedPoint m = FixedPoint.One - fatigue * FatiguePowerWeight;
+            return m < FixedPoint.Zero ? FixedPoint.Zero : m;
+        }
+
+        /// <summary>
+        /// 默认（GDD_021 §11 平衡定值，2026-07-04 打磨）：
+        /// 姿态从"纯战力乘数"升级为<b>速攻 vs 久持</b>权衡——主攻战力最高但疲劳最快、坚守居中但省力；
+        /// 疲劳纳入战力（久战侵蚀）。攻方受回合上限时压（须速破），令三姿态皆无占优。
+        /// </summary>
         public static ZoneBattleConfig Default { get; } = new ZoneBattleConfig(
             cavalryMinShare: FixedPoint.FromFraction(3, 10),
             guileMin: FixedPoint.FromFraction(6, 10),
@@ -77,10 +122,15 @@ namespace ThreeKingdom.Domain.ZoneBattle
             attritionCap: FixedPoint.FromFraction(6, 10),
             moraleDropOnLoss: FixedPoint.FromFraction(1, 10),
             fatiguePerRound: FixedPoint.FromFraction(5, 100),
-            assaultMod: FixedPoint.FromFraction(11, 10),
-            holdMod: FixedPoint.FromFraction(12, 10),
-            feintMod: FixedPoint.FromFraction(8, 10),
-            emergenceMoraleShock: FixedPoint.FromFraction(3, 10));
+            assaultMod: FixedPoint.FromFraction(125, 100),
+            holdMod: FixedPoint.FromFraction(110, 100),
+            feintMod: FixedPoint.FromFraction(75, 100),
+            fatiguePowerWeight: FixedPoint.FromFraction(5, 10),
+            assaultFatigueMul: FixedPoint.FromInt(2),
+            holdFatigueMul: FixedPoint.FromFraction(1, 2),
+            feintFatigueMul: FixedPoint.One,
+            emergenceMoraleShock: FixedPoint.FromFraction(3, 10),
+            fortifiedDefenseBonus: FixedPoint.FromFraction(35, 100));
     }
 
     /// <summary>

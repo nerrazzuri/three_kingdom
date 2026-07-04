@@ -57,6 +57,42 @@ namespace ThreeKingdom.Domain.Tests.Contention
             Assert.That(after.CitiesOf(Player), Is.EqualTo(3), "玩家不受对手互兼并影响。");
         }
 
+        [Test]
+        public void test_rival_annexation_conserves_total_cities()
+        {
+            // 平衡不变量：兼并只在势力间转移城池（弱失一→强得一），天下总城恒定——不凭空增减。
+            ContentionState s = State(("faction-player", 2), ("faction-wei", 5), ("faction-wu", 2), ("faction-shu", 1));
+            int total = s.TotalCities;
+            var svc = new RivalExpansionService();
+            for (int i = 0; i < 200; i++)
+            {
+                s = svc.Step(s, Player, (ulong)i, ContentionConfig.Default);
+                Assert.That(s.TotalCities, Is.EqualTo(total), $"第{i}步后天下总城须守恒（兼并=转移非增减）。");
+                Assert.That(s.CitiesOf(Player), Is.EqualTo(2), "玩家领城不受对手互兼并影响。");
+            }
+        }
+
+        [Test]
+        public void test_rival_contention_converges_to_single_survivor()
+        {
+            // 收敛性：非对称群雄局，强吞弱雪球在有限步内必收敛为单一残余——终局可达，无无限僵局。
+            // （等强对峙的停滞是设计正确：僵局由玩家出征打破，非靠 AI 自兼并收敛。）
+            ContentionState s = State(("faction-player", 2), ("faction-wei", 5), ("faction-wu", 2), ("faction-shu", 1));
+            var svc = new RivalExpansionService();
+            int Rivals(ContentionState st)
+            {
+                int n = 0;
+                foreach (FactionId f in st.AlivePowers()) if (f != Player) n++;
+                return n;
+            }
+            Assert.That(Rivals(s), Is.EqualTo(3), "起始三家对手。");
+            int step = 0;
+            for (; step < 500 && Rivals(s) > 1; step++)
+                s = svc.Step(s, Player, (ulong)step, ContentionConfig.Default);
+            Assert.That(Rivals(s), Is.EqualTo(1), "有限步内收敛为单一残余对手（雪球终止 → 终局可达）。");
+            Assert.That(step, Is.LessThan(500), "在有界步数内收敛（非无限僵局）。");
+        }
+
         // ---- M14 终局判定 ----
 
         [Test]

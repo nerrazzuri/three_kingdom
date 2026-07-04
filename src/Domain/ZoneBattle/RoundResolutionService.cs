@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ThreeKingdom.Domain.Battle;
+using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Numerics;
 
 namespace ThreeKingdom.Domain.ZoneBattle
@@ -94,7 +95,11 @@ namespace ThreeKingdom.Domain.ZoneBattle
 
             FixedPoint condMul = FixedPoint.One + config.ConditionBonusEach * FixedPoint.FromInt(attackerFormedCount);
             FixedPoint attPower = SidePower(attackers, config) * condMul;
-            FixedPoint defPower = SidePower(defenders, config);
+            // 城防之利：守方在坚固地形（城门正面）得工事加成——破坚城须真优势（W5），非均势可下。
+            FixedPoint defMul = zone.Terrain == TerrainKind.Fortified
+                ? FixedPoint.One + config.FortifiedDefenseBonus
+                : FixedPoint.One;
+            FixedPoint defPower = SidePower(defenders, config) * defMul;
 
             // 单方占据：无交战（占据推进目标，如断粮/破口），仅增疲劳。
             if (attackers.Count == 0 || defenders.Count == 0)
@@ -126,36 +131,32 @@ namespace ThreeKingdom.Domain.ZoneBattle
             }
         }
 
+        /// <summary>阵营有效战力：Σ 兵力×士气×姿态乘数×<b>疲劳侵蚀</b>（久战/猛攻的兵疲则战力衰减）。</summary>
         private static FixedPoint SidePower(IReadOnlyList<Detachment> dets, ZoneBattleConfig config)
         {
             FixedPoint sum = FixedPoint.Zero;
             foreach (Detachment d in dets)
-                sum += FixedPoint.FromInt(d.Strength) * d.Morale * PostureMod(d.Posture, config);
+                sum += FixedPoint.FromInt(d.Strength) * d.Morale * config.PostureMod(d.Posture) * config.FatiguePowerMul(d.Fatigue);
             return sum;
         }
-
-        private static FixedPoint PostureMod(Posture p, ZoneBattleConfig c) => p switch
-        {
-            Posture.Assault => c.AssaultMod,
-            Posture.Hold => c.HoldMod,
-            Posture.Feint => c.FeintMod,
-            _ => FixedPoint.One,
-        };
 
         private static Detachment ApplyCombat(Detachment d, FixedPoint lossRate, FixedPoint moraleDelta, ZoneBattleConfig config)
         {
             int loss = (FixedPoint.FromInt(d.Strength) * lossRate).RoundToInt();
             int newStrength = Math.Max(0, d.Strength - loss);
             FixedPoint morale = (d.Morale - moraleDelta).Clamp(FixedPoint.Zero, FixedPoint.One);
-            FixedPoint fatigue = (d.Fatigue + config.FatiguePerRound).Clamp(FixedPoint.Zero, FixedPoint.One);
-            return d.WithCombat(newStrength, morale, fatigue);
+            return d.WithCombat(newStrength, morale, NextFatigue(d, config));
         }
 
         private static void ApplyFatigue(IReadOnlyList<Detachment> dets, Dictionary<string, Detachment> byId, ZoneBattleConfig config)
         {
             foreach (Detachment d in dets)
-                byId[d.Id.Value] = d.WithCombat(d.Strength, d.Morale, (d.Fatigue + config.FatiguePerRound).Clamp(FixedPoint.Zero, FixedPoint.One));
+                byId[d.Id.Value] = d.WithCombat(d.Strength, d.Morale, NextFatigue(d, config));
         }
+
+        /// <summary>按姿态差异化累积疲劳（主攻耗力快、坚守省力），封顶 1。</summary>
+        private static FixedPoint NextFatigue(Detachment d, ZoneBattleConfig config)
+            => (d.Fatigue + config.FatiguePerRound * config.PostureFatigueMul(d.Posture)).Clamp(FixedPoint.Zero, FixedPoint.One);
 
         /// <summary>士气跌幅上限（防单回合直接归零，留博弈余地）。</summary>
         private static readonly FixedPoint MoraleDropCap = FixedPoint.FromFraction(45, 100);

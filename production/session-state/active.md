@@ -1410,3 +1410,13 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 5 story → Complete + 完成说明；EPIC → ✅ Complete。GDD_019 Reviewed·ADR-0010 Accepted·TR-offensive-001..005·跨系统审查5 Warning闭(外部流程)。
 - commit链：2502183(Domain)→4324e8b(Application)→17add6b(端到端)。
 - ⚠️ 待接：Unity HUD「出征」入口(选目标+发起)属 Presentation 层，随后续 UI 批做（epic-029 Logic/Integration 核心已完）。
+
+## Session Extract — 全系统平衡打磨（战斗核心 + 争霸收敛） 2026-07-04
+- **战斗核心（最高优先，战斗=差异化卖点）**：铲除"坚守恒占优"退化解 + 激活死数值"疲劳"。
+  - `ZoneBattleConfig`：姿态从纯战力乘数升级为**速攻 vs 久持权衡**——AssaultMod 1.25 / HoldMod 1.10 / FeintMod 0.75；疲劳倍率 Assault 2.0 / Hold 0.5 / Feint 1.0；FatiguePowerWeight 0.5（有效战力=名义×(1−疲劳×0.5)）；新增 FortifiedDefenseBonus +35%（坚固地形守方城防之利）。
+  - `RoundResolutionService`：SidePower 纳入 FatiguePowerMul（久战侵蚀战力）；ResolveZoneCombat 对 TerrainKind.Fortified 守方施城防加成；NextFatigue 按姿态差异化累积。修复：去 Hold 独大暴露"城门无工事优势"→ 补 FortifiedDefenseBonus（真机制非补丁）令 test_defense_battle...holds_the_gate 复绿。
+- **测试 +7**：ZoneBattleBalanceTests(5：主攻>坚守/坚守省力/疲劳翻盘/城防反胜/**同守备唯准备决定胜负**) + ContentionTests(2：兼并守恒/争霸有限步收敛单一残余)。
+- **次级系统校核**：出征/占城/人才/外交默认值经现有单调性+边界+决定性用例确认**合理无需改值**（OffensiveDomainTests 兵力/补给/统率/勇武单调 + decay + 占城C频谱；TalentTests/StrategicDiplomacyTests 单调+必入/必拒边界+决定性）。争霸唯一真缺口（收敛性）已补：等强停滞=设计正确（僵局由玩家出征打破，非靠AI自兼并）。
+- GDD_021 §11 落定值表+理据 + W5验证映射；GDD_019 §8 补打磨确认（默认值经测试锁定、W5端到端映射）。
+- dotnet **970/970 绿**（-warnaserror 0，963→970）；3 DLL Release 重建同步 Assets/Plugins。
+- 待提交 → tk/main。
