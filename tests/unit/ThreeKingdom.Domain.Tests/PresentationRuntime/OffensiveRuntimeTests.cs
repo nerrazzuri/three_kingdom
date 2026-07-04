@@ -3,6 +3,7 @@ using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Talent;
 using ThreeKingdom.Application.Theater;
 using ThreeKingdom.Domain.Characters;
+using ThreeKingdom.Domain.Contention;
 using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Diplomacy;
 using ThreeKingdom.Domain.Numerics;
@@ -125,6 +126,24 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
             OffensiveResultView result = _runtime.AutoResolveOffensive();   // 挂 AI 代打
             Assert.That(result.Victory, Is.True, "强部署 → AI 代打破城。");
             Assert.That(_runtime.Session.ConquestCount, Is.EqualTo(1), "代打胜亦经权威占城结算。");
+        }
+
+        [Test]
+        public void test_conquest_advances_contention_toward_endgame()
+        {
+            // 争霸领土（M13/M14）：破敌城 → 玩家领土增、敌减；本最小场景群雄尽灭 → 统一终局。
+            _runtime.RequestOffensiveAuthorization();
+            OffensivePlan plan = _runtime.BeginOffensive(PlayableCampaign.EnemyCity);
+            plan.Muster = 900;
+            plan.Supply = 400;
+            plan.Approach = ApproachPlan.FrontalAssault;
+            _runtime.LaunchOffensive();
+            OffensiveResultView result = _runtime.AutoResolveOffensive();
+
+            Assert.That(result.Victory, Is.True);
+            Assert.That(_runtime.Contention.CitiesOf(PlayableCampaign.Player), Is.EqualTo(2), "破城 → 玩家领土 +1。");
+            Assert.That(_runtime.Contention.CitiesOf(PlayableCampaign.Enemy), Is.EqualTo(0), "被夺方领土 −1。");
+            Assert.That(_runtime.Endgame(), Is.EqualTo(EndgameStatus.PlayerUnifies), "群雄尽灭 → 统一天下（终局）。");
         }
 
         [Test]

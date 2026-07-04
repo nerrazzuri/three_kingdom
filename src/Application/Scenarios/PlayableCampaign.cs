@@ -128,6 +128,15 @@ namespace ThreeKingdom.Application.Scenarios
             return null;
         }
 
+        /// <summary>初始群雄争霸态（GDD_017）：玩家汜水关1 · 曹魏虎牢关1 · 孙吴0（历史势力，暂无本场景城）。</summary>
+        public Domain.Contention.ContentionState InitialContention()
+            => new Domain.Contention.ContentionState(new[]
+            {
+                new Domain.Contention.PowerStanding(Player, 1),
+                new Domain.Contention.PowerStanding(Enemy, 1),
+                new Domain.Contention.PowerStanding(Sun, 0),
+            });
+
         /// <summary>守城区域防御战：玩家守军（汜水关；GDD_021 攻守统一，守方视角）。</summary>
         public int DefenseGarrison => 700;
 

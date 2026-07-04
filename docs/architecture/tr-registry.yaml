@@ -692,6 +692,29 @@ requirements:
     revised: ""
     status: active
 
+  # --- 君主争霸 (GDD_017 / epic-026 / M13) + 统一终局 (GDD_018 / epic-027 / M14) ---
+  - id: TR-contention-001
+    system: contention
+    gdd: design/gdd/gdd-017-warlord-contention.md
+    requirement: "争霸态 + 支配度 + 存档：ContentionState（各势力领城/存续，建于 GDD_015）+ Dominance=领城/天下总城；纳入统一存档、确定性哈希 round-trip 一致；玩家占城→领土增、被夺→减"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-contention-002
+    system: contention
+    gdd: design/gdd/gdd-017-warlord-contention.md
+    requirement: "对手种子化确定性扩张：RivalExpansionService 最强非玩家势力以 p=clamp(实力差归一化·权重) 种子化兼并最弱存续对手一城（实力差越大越易兼并·单调，非掷骰·可复现，ADR-0006）；玩家不受对手互兼并影响"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-endgame-001
+    system: endgame
+    gdd: design/gdd/gdd-018-unification-endgame.md
+    requirement: "统一终局判定（确定性纯函数）：玩家领城归零→PlayerEliminated；支配度≥UnificationThreshold 或群雄尽灭→PlayerUnifies；否则 Ongoing；同争霸态→同判（可复现）；接争霸态推进（CampaignRuntime.Endgame）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+
   # --- 表现与理解层 (M15 UX / epic-028；契约文档 design/ux/m15-campaign-loop-ux.md，Approved 2026-07-03) ---
   - id: TR-ux-001
     system: ux

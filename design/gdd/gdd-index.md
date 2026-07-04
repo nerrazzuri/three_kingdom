@@ -33,6 +33,8 @@
 | GDD_014 | 战役与生涯 | [GDD_014_CAMPAIGN_AND_CAREER](gdd-014-campaign-and-career.md) | Implemented |
 | GDD_015 | 条件历史世界模型 | [GDD_015_HISTORICAL_WORLD_MODEL](gdd-015-historical-world-model.md) | Implemented |
 | GDD_016 | 敌方 AI | [GDD_016_ENEMY_AI](gdd-016-enemy-ai.md) | Reviewed |
+| GDD_017 | 君主争霸 | [GDD_017_WARLORD_CONTENTION](gdd-017-warlord-contention.md) | Implemented（epic-026；争霸态/对手种子化兼并/支配度） |
+| GDD_018 | 统一终局 | [GDD_018_UNIFICATION_ENDGAME](gdd-018-unification-endgame.md) | Implemented（epic-027；统一/覆灭终局判定） |
 | GDD_019 | 出征攻城 | [GDD_019_OFFENSIVE_CAMPAIGN](gdd-019-offensive-campaign.md) | Revised v2 |
 | GDD_020 | 人才招揽 | [GDD_020_TALENT_RECRUITMENT](gdd-020-talent-recruitment.md) | Implemented（epic-030；出现/知晓/招揽/喂给四层） |
 | GDD_021 | 战场区域部署与区域战斗 | [GDD_021_ZONE_BATTLE](gdd-021-zone-battle.md) | Implemented（核心；epic-031 S1-S7 + 战役接线 + AI代打） |
