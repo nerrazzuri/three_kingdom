@@ -1438,3 +1438,11 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 测试 +3：SubversionCampaignTests（施计降门槛 400兵无施计败·施计胜 / 施计次数累计 / 待生效存读档往返）。
 - GDD_024 登记 gdd-index（Implemented，epic-032）。dotnet 983/983 绿（980→983）；3 DLL Release 同步。
 - ✅ 任务 #6 人心杠杆全线完成（Domain+接缝+战役+存档+16测试）。转 #7 生涯纵深。
+
+## Session Extract — 任务#7 生涯纵深：忠诚经营+被挖角 2026-07-04
+- 发现自立结局分支(FullSupport/PartialFollow/Abandoned by loyal_ratio)、晋升(Rank/Promotion)、官职任免(AssignOffice)**本已存在且测试**。#7 真缺口=忠诚经营+被挖角。
+- Domain/Career 新增：RetinueState.WithMemberAffinity/WithoutMember(内部变更器) + RetinueLoyaltyConfig + PoachResult + RetinueLoyaltyService(Reward升忠诚/Decay久疏衰减不越下限/AttemptPoach敌挖角种子化·忠者不可挖·带走官职)。
+- 被挖角与 GDD_024 人心杠杆对玩家守将策反**对称**；维持的忠诚自然喂已有自立结局(loyal_ratio)。
+- 测试 +6：RetinueLoyaltyTests(赏赐升/衰减不越下限/忠者免挖/低忠诚被挖失官职/确定性/非成员不变)。
+- dotnet 989/989 绿(983→989)；3 DLL 同步。Application 日界 tick 接线(衰减/挖角触发)归 #10 全局装配。
+- ✅ 任务 #7 完成。转 #8 事件分级+心里话。

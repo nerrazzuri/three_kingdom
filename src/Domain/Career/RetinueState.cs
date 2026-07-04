@@ -109,6 +109,29 @@ namespace ThreeKingdom.Domain.Career
             return new RetinueState(_members, assignments);
         }
 
+        /// <summary>替换某僚属好感产出新态（忠诚经营，仅供服务命令路径）。非成员则原样返回。</summary>
+        internal RetinueState WithMemberAffinity(CharacterId character, FixedPoint affinity)
+        {
+            if (!IsMember(character)) return this;
+            var members = new List<RetinueMember>();
+            foreach (RetinueMember m in _members)
+                members.Add(m.Character == character ? new RetinueMember(character, affinity) : m);
+            return new RetinueState(members, Assignments());
+        }
+
+        /// <summary>移除某僚属（被挖角/叛离）产出新态，并撤销其所任官职（仅供服务命令路径）。非成员则原样返回。</summary>
+        internal RetinueState WithoutMember(CharacterId character)
+        {
+            if (!IsMember(character)) return this;
+            var members = new List<RetinueMember>();
+            foreach (RetinueMember m in _members)
+                if (m.Character != character) members.Add(m);
+            var assignments = new List<KeyValuePair<OfficeRole, CharacterId>>();
+            for (int i = 0; i < _offices.Length; i++)
+                if (_holders[i] != character) assignments.Add(new KeyValuePair<OfficeRole, CharacterId>(_offices[i], _holders[i]));
+            return new RetinueState(members, assignments);
+        }
+
         /// <summary>
         /// 以规范顺序追加到状态哈希（ADR-0004）。顺序：成员数 → 各成员(ID 长度+字符, 好感.Raw)
         /// → 任免数 → 各任免((int)职位, 持有者 ID 长度+字符)，全部按上述稳定排序遍历。
