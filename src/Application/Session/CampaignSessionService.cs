@@ -678,6 +678,39 @@ namespace ThreeKingdom.Application.Session
 
         private readonly OccupationOwnershipService _occupation = new OccupationOwnershipService();
         private readonly OffensiveAuthorizationService _offensiveAuth = new OffensiveAuthorizationService();
+        private readonly OffensiveSetupService _offensiveSetup = new OffensiveSetupService();
+        private readonly SiegeResolutionService _siege = new SiegeResolutionService();
+
+        /// <summary>
+        /// 出征攻城端到端（GDD_019 全循环）：授权门 → 闭合因果（准备→战力）→ 攻城结算（准备决定胜负）→
+        /// 胜则占城归属 C（控制权/记功/自立倾向）、败则退兵可继续。全程确定性、无胜率。
+        /// </summary>
+        public OffensiveResult LaunchOffensive(
+            CampaignSession session, CityId city,
+            OffensivePreparation prep, OffensiveSetupConfig setupConfig,
+            SiegeDefense defense, SiegeResolutionConfig siegeConfig,
+            FactionId playerFaction, FactionId lordFaction, Garrison conqueredGarrison,
+            FixedPoint renownNorm, FixedPoint standingNorm, FixedPoint cityValueNorm,
+            ulong seed, OccupationConfig occupationConfig,
+            PromotionLadderConfig? ladder = null)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (prep is null) throw new ArgumentNullException(nameof(prep));
+
+            OffensiveGateResult gate = CheckOffensiveTarget(session, city, playerFaction);
+            if (gate != OffensiveGateResult.Authorized) return OffensiveResult.Rejected(gate);
+
+            OffensiveForce force = _offensiveSetup.Derive(prep, setupConfig);           // 闭合因果
+            if (!_siege.AttackerWins(force, defense, siegeConfig))
+                return OffensiveResult.Defeated(force);                                 // 败：不占城，可继续
+
+            ConquestResult conquest = ResolveConquest(                                   // 胜：占城归属 C
+                session, city, conqueredGarrison, playerFaction, lordFaction,
+                renownNorm, standingNorm, cityValueNorm, seed, occupationConfig,
+                ladder, CareerGainSource.MajorBattleVictory);
+
+            return OffensiveResult.Won(force, conquest);
+        }
 
         /// <summary>君主授权出征（GDD_019 R1）：设置可攻目标城集合（由君主政令按官阶组装）。</summary>
         public void AuthorizeOffensive(CampaignSession session, IReadOnlyCollection<CityId> targets)

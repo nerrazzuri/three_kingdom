@@ -1,6 +1,8 @@
+using System;
 using NUnit.Framework;
 using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Session;
+using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Map;
@@ -85,6 +87,57 @@ namespace ThreeKingdom.Domain.Tests.Session
 
             Assert.That(r.CareerApplied, Is.True, "出征胜记功。");
             Assert.That(s.Career.Career.Merit, Is.GreaterThan(meritBefore), "功绩增长。");
+        }
+
+        // ---- 闭合因果端到端（GDD_019 AC-3）：准备决定胜负 ----
+
+        [Test]
+        public void test_strong_preparation_wins_and_conquers_weak_loses()
+        {
+            var setup = OffensiveSetupConfig.Default;
+            var siegeCfg = SiegeResolutionConfig.Default;
+            var occ = OccupationConfig.Default;
+            var defense = new SiegeDefense(500, FixedPoint.FromFraction(12, 10));   // 守方战力 = 500 × 1.2 = 600
+
+            // 强准备：600 兵 + 300 粮 + 兵法条件 → 攻方战力远超守方 → 破城占城。
+            var strong = NewSession();
+            _service.AuthorizeOffensive(strong, new[] { PlayableCampaign.EnemyCity });
+            var strongPrep = new OffensivePreparation(600, 300, new[] { TacticCondition.ControlledRetreatKeptFormation });
+            OffensiveResult won = _service.LaunchOffensive(
+                strong, PlayableCampaign.EnemyCity, strongPrep, setup, defense, siegeCfg,
+                PlayableCampaign.Player, Lord, new Garrison(600), Zero, Zero, Zero, 1UL, occ);
+
+            Assert.That(won.Victory, Is.True, "准备充分 → 破城。");
+            Assert.That(won.Conquest, Is.Not.Null);
+            Assert.That(won.Conquest!.ConquestCount, Is.EqualTo(1), "破城 → 占城计数 +1。");
+
+            // 裸战：0 兵 0 粮 → 攻方战力 100 << 守方 600 → 败，不占城，可继续。
+            var weak = NewSession();
+            _service.AuthorizeOffensive(weak, new[] { PlayableCampaign.EnemyCity });
+            var weakPrep = new OffensivePreparation(0, 0, Array.Empty<TacticCondition>());
+            OffensiveResult lost = _service.LaunchOffensive(
+                weak, PlayableCampaign.EnemyCity, weakPrep, setup, defense, siegeCfg,
+                PlayableCampaign.Player, Lord, new Garrison(600), Zero, Zero, Zero, 1UL, occ);
+
+            Assert.That(lost.Launched, Is.True, "出征（授权通过）。");
+            Assert.That(lost.Victory, Is.False, "裸战 → 败。");
+            Assert.That(lost.Conquest, Is.Null, "败不占城。");
+            Assert.That(weak.ConquestCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void test_offensive_rejected_when_unauthorized()
+        {
+            var s = NewSession();   // 未授权
+            OffensiveResult r = _service.LaunchOffensive(
+                s, PlayableCampaign.EnemyCity,
+                new OffensivePreparation(600, 300, Array.Empty<TacticCondition>()),
+                OffensiveSetupConfig.Default, new SiegeDefense(500, FixedPoint.FromFraction(12, 10)),
+                SiegeResolutionConfig.Default, PlayableCampaign.Player, Lord, new Garrison(600),
+                Zero, Zero, Zero, 1UL, OccupationConfig.Default);
+
+            Assert.That(r.Launched, Is.False);
+            Assert.That(r.Gate, Is.EqualTo(OffensiveGateResult.NotAuthorized), "未授权 → 未出征。");
         }
 
         [Test]
