@@ -55,6 +55,31 @@ on time_window_enter(e):
         reevaluate(downstream(e))         # 依赖 e 的下游事件重检前置
 ```
 
+### 1b. 事件分级通报 + 主角心里话（2026-07-04 升级，破全演义内容爆炸）
+
+事件按**可达性**分级通报，让"全演义事件网"从内容爆炸变为可做——够不着的事件近零成本，仍以"心里话"丰富代入感：
+
+```
+on new_game():
+    persona ← roll(seed)                    # 开局随机赋主角人设：雄心/忠义/务实/谨慎
+
+on event_fired(e, reason):                  # reason 来自 §1 触发判定
+    if reachable(e):                        # Diverged / NormalPreconditionsHeld
+        tier ← Personal                     # 走完整事件 + 分叉结算（§1）
+    else:                                   # NormalUnreachable（够不着）
+        rule ← monologue_catalog[e.outcome.label]
+        if rule ≠ ∅:
+            tier ← Notable                  # 通报 + 主角心里话
+            show(rule.line_for(persona))    # 口吻随人设：雄心者"那我是不是也可以？"、忠义者"僭号人神共愤！"
+        else:
+            tier ← Background               # 仅记世界事实，不打扰玩家
+```
+
+- **心里话纯为丰富体验/代入感，非机械种子**：同一事件（如袁术称帝），雄心人设动心、忠义人设不齿、务实人设冷眼、谨慎人设避险——**不**直接改生涯状态，自立与否仍由玩家凭局势自选。
+- **主角人设开局随机**（种子化确定性，ADR-0006）：给每局一个"性格底色"，`ProtagonistPersona{Ambitious|Loyalist|Pragmatist|Cautious}`。
+- 数据驱动（`MonologueCatalog`，每条按人设给台词、缺则回退通用）：内容层逐步扩充演义条目，代码不变（GDD_015 §Future 全演义事件网）。
+- 落地：`EventReflectionService` / `NoticeTier{Personal|Notable|Background}` / `MonologueRule.LineFor(persona)`。复用既有 `FireReason` 可达区分，**不改事件四元组定义**。
+
 ### 2. 城池归属（只读投影，订阅 GDD_004 控制权变更）
 
 > **权威边界（跨系统裁定 2026-06-24）**：城级控制权的**唯一权威是 GDD_004**（独占「控制权变更事件」）。

@@ -1446,3 +1446,12 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 测试 +6：RetinueLoyaltyTests(赏赐升/衰减不越下限/忠者免挖/低忠诚被挖失官职/确定性/非成员不变)。
 - dotnet 989/989 绿(983→989)；3 DLL 同步。Application 日界 tick 接线(衰减/挖角触发)归 #10 全局装配。
 - ✅ 任务 #7 完成。转 #8 事件分级+心里话。
+
+## Session Extract — 任务#8 事件分级通报 + 主角人设心里话 2026-07-04
+- 复用既有 FireReason（NormalUnreachable=够不着 / Diverged+PreconditionsHeld=够得着）做分级——不改事件四元组。
+- **用户裁定修正**：心里话不埋自立种子；改为开局**随机主角人设**（Ambitious/Loyalist/Pragmatist/Cautious，种子化），心里话口吻随人设而异，纯丰富体验不改状态。
+- Domain/World 新增：ProtagonistPersona + ProtagonistPersonas.Roll（开局随机）· NoticeTier{Personal|Notable|Background} · MonologueRule(按人设给台词，缺回退通用)/MonologueCatalog(Default含袁术称帝等,分人设口吻) · EventReflection · EventReflectionService(纯函数，取人设台词)。
+- 测试 +8：EventReflectionTests（够得着=Personal/分叉=Personal/够不着可述=Notable带心里话/口吻随人设异/无专属回退/够不着未知=Background/未触发=null/人设Roll确定性）。
+- GDD_015 §1b 升级（分级+人设心里话，去种子）。dotnet 997/997 绿(989→997)；3 DLL 同步。
+- Application 接线（开局赋人设存会话 + 推进产通报流）归 #10 全局装配。
+- ✅ 任务 #8 完成。转 #9 战法内容包 + 失败可继续路径。
