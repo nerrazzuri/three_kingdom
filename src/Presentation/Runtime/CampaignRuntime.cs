@@ -18,6 +18,7 @@ using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.Preparation;
+using ThreeKingdom.Domain.Subversion;
 using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Domain.World;
 using ThreeKingdom.Domain.ZoneBattle;
@@ -107,6 +108,41 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             ulong h = 1469598103934665603UL;
             if (id != null) foreach (char c in id) { h ^= c; h *= 1099511628211UL; }
+            return h;
+        }
+
+        // --- 人心杠杆施计（GDD_024）：攻城前对敌守将施离间/策反/攻心。反全知——须先侦察方能读弱点、准施计。---
+
+        /// <summary>
+        /// 对某敌城守将施一计（离间/策反/攻心）。反全知门：未侦察（无情报）则盲施大打折扣。
+        /// 成功累积待生效效果（出征时削弱守备）；反噬则该城暴露、守将警觉。返回结果视图（无胜率）。
+        /// </summary>
+        public SubversionView AttemptSubversion(string cityId, SubversionScheme scheme, int intensityPercent = 100)
+        {
+            CampaignSession session = Session;
+            var city = new CityId(cityId);
+            bool scouted = session.HasIntel && session.PlayerKnowledge != null && session.PlayerKnowledge.Count > 0;
+            FixedPoint quality = scouted ? FixedPoint.FromFraction(7, 10) : FixedPoint.Zero;
+            bool exposed = session.IsSubversionExposed(city);
+            FixedPoint intensity = FixedPoint.FromFraction(Math.Max(0, Math.Min(100, intensityPercent)), 100);
+
+            SubversionTargetProfile target = SubversionTargetProfileFactory.Build(
+                city, scouted, quality, exposed, PersonaSeed(session.Id));
+            ulong seed = SubversionSeed(session, cityId, scheme);
+            SubversionOutcome outcome = _service.AttemptSubversion(
+                session, city, scheme, target, intensity, seed, SubversionConfig.Default);
+            return new SubversionView(scheme, outcome);
+        }
+
+        /// <summary>某城当前是否已被施计（待生效效果存在，出征时会削弱守备）。</summary>
+        public bool HasPendingSubversion(string cityId) => !Session.PendingSubversionFor(new CityId(cityId)).IsNone;
+
+        private static ulong SubversionSeed(CampaignSession session, string cityId, SubversionScheme scheme)
+        {
+            ulong h = PersonaSeed(session.Id) ^ PersonaSeed(cityId);
+            h ^= (ulong)(session.CurrentTime.AbsoluteIndex + 1) * 2654435761UL;
+            h ^= (ulong)((int)scheme + 1) * 40503UL;
+            h ^= (ulong)(session.SubversionAttemptsOn(new CityId(cityId)) + 1) * 2246822519UL;   // 每次尝试异种子
             return h;
         }
 

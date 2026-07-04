@@ -176,6 +176,14 @@ namespace ThreeKingdom.Application.Session
         /// <summary>只读：各城施计次数（存档序列化用）。</summary>
         public IReadOnlyDictionary<CityId, int> SubversionAttemptsMap => _subversionAttempts;
 
+        private readonly HashSet<CityId> _subversionExposed = new HashSet<CityId>();
+
+        /// <summary>某城是否已因施计被识破而暴露（守将警觉↑，反全知门收紧，GDD_024 R4）。</summary>
+        public bool IsSubversionExposed(CityId city) => _subversionExposed.Contains(city);
+
+        /// <summary>标记某城施计暴露（反噬后；仅供服务编排）。</summary>
+        internal void MarkSubversionExposed(CityId city) => _subversionExposed.Add(city);
+
         /// <summary>会话军议装配配置（M04 / GDD_008）；启用军议时存在。</summary>
         internal SessionCouncilSetup? Council { get; }
 

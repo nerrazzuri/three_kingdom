@@ -701,7 +701,8 @@ namespace ThreeKingdom.Application.Session
             session.RecordSubversionAttempt(city);
             if (outcome.Result == SubversionResult.Success)
                 session.AccumulateSubversion(city, outcome.Effect);
-            // 反噬（outcome.Exposed）的情报暴露/守将怨恨副作用由调用方经 Intel/Relationships 写回（反全知，GDD_024 R4）。
+            else if (outcome.Exposed)
+                session.MarkSubversionExposed(city);   // 反噬 → 该城守将警觉、情报暴露（GDD_024 R4）
             return outcome;
         }
 
