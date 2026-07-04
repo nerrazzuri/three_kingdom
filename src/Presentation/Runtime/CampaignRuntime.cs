@@ -19,6 +19,7 @@ using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.Preparation;
 using ThreeKingdom.Domain.Time;
+using ThreeKingdom.Domain.World;
 using ThreeKingdom.Domain.ZoneBattle;
 using ThreeKingdom.Presentation.Screens;
 
@@ -91,6 +92,22 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             WorldTime t = Session.CurrentTime;
             return new WorldStatusView(new WorldStatusProjection(t.Day, t.Segment, t.AbsoluteIndex, _daysCrossedLastAdvance));
+        }
+
+        // --- 主角人设（GDD_015：开局随机人设，给天下事件"心里话"着色）。由会话 id 确定性派生 → 存读档一致，无需新存档字段。---
+
+        /// <summary>本局主角人设（雄心/忠义/务实/谨慎；由会话 id 确定性生成，重开新局才变）。</summary>
+        public ProtagonistPersona Persona => ProtagonistPersonas.Roll(PersonaSeed(Session.Id));
+
+        /// <summary>主角人设展示视图（中文名 + 性情描述）。</summary>
+        public PersonaView PersonaView() => new PersonaView(Persona);
+
+        /// <summary>由会话 id 稳定散列出人设种子（FNV-1a 64；确定性、存读档一致）。</summary>
+        private static ulong PersonaSeed(string id)
+        {
+            ulong h = 1469598103934665603UL;
+            if (id != null) foreach (char c in id) { h ^= c; h *= 1099511628211UL; }
+            return h;
         }
 
         // --- 军议/敌情屏（epic-028 story-003 / TR-ux-002/003）。只读投影 + 军议编排，反全知：UI 只经玩家知识投影。---

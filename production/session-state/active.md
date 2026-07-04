@@ -1464,3 +1464,10 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 测试 +6：FireAttackTests(5:三门齐成型/雨天不成/无智将不纵火/无敌不暴露/非易燃区不成) + FailureContinuableTests(1 败后再战)。
 - dotnet 1003/1003 绿(997→1003)；3 DLL 同步。
 - ✅ 任务 #9 完成。转 #10 全局循环装配 + ViewModel。
+
+## Session Extract — 任务#10 全局装配(既存)+ 人设接线 2026-07-04
+- 发现 CampaignRuntime 已装配绝大部分全局循环（NewGame/Advance/Council/Scout/Governance/Prep/Battle/Offensive/Defense + 大量 *View ViewModel）。#10 真缺口=把新系统接进运行期。
+- 本次：主角人设接入运行期——CampaignRuntime.Persona（由 Session.Id FNV-1a 确定性派生 → 存读档一致，无需新存档字段）+ PersonaView(中文名+性情描述)。完成 #8 的 Presentation 侧。
+- 测试 +2：PersonaWiringTests(赋人设+展示视图 / 存读档人设稳定)。dotnet 1005/1005 绿(1003→1005)；3 DLL 同步。
+- 遗留（归 #11 屏幕层随用随接）：施计命令/忠诚 tick/事件通报流的运行期专用命令方法——待具体 UI 屏调用时接。
+- ✅ 任务 #10（装配既存 + 人设接线）。转 #11 Unity UI 骨架（需编辑器验证）。
