@@ -89,6 +89,8 @@
 - [ADR-0009](../docs/architecture/adr-0009-campaign-session-assembly.md): CampaignSession 装配边界（Application 装配脊梁，只编排不拥规则；统一存档信封 + 日界全局序 + 命名原子写回；势力创建经 015）— Accepted（2026-06-28）
 - [ADR-0010](../docs/architecture/adr-0010-conquest-occupation-ownership.md): 占城归属契约（出征占城复用 ADR-0008 控制权变更；归属方案 C——前2默认归玩家、后续君主种子化确定性取舍；被夺战果累积自立倾向）— Accepted（2026-07-04）
 - [ADR-0011](../docs/architecture/adr-0011-offensive-preparation-model.md): 多维确定性出征准备模型（六维闭合因果：兵力/补给/将领/兵种/布势/时机；布势路线复用 4 兵法链非坐标、兵种杠杆非克制、其余维做条件成型门、反全知侦察门；纯函数整数/定点）— Accepted（2026-07-04）
+- [ADR-0012](../docs/architecture/adr-0012-deterministic-zone-battle-engine.md): 确定性区域战斗引擎（命名区域图非坐标 + 回合纯函数状态机 + 部署/战中调整命令[相邻+在途] + 条件按区按回合涌现 + 结算确定性优先序 + 攻守统一 + 战中存档续战）— Accepted（2026-07-04）
+- [ADR-0013](../docs/architecture/adr-0013-enemy-zone-ai.md): 敌方区域AI效用模型（特化 ADR-0006：区域动作空间 + 反全知 AiWorldView 不接受真值 + 数据驱动效用 + 种子softmax + 渐进记忆 + 同规则不作弊 + LLM隔离；落地 GDD_016，架构一次到位、深度分期迭代）— Accepted（2026-07-04）
 
 ## Engine Specialists
 

@@ -25,7 +25,7 @@
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
 version: 5
-last_updated: "2026-07-04"   # 追加出征攻城 TR-offensive-001~005（/create-stories epic-029）+ TR-offensive-006~010（GDD_019 v2 / ADR-0011 六维出征准备维度）
+last_updated: "2026-07-04"   # 追加 TR-offensive-006~010（GDD_019 v2 / ADR-0011 六维出征准备）+ TR-zone-001~010（GDD_021 / ADR-0012/0013 战斗核心层 epic-031）
 
 requirements:
   # --- 时间 (GDD_001) ---
@@ -526,6 +526,78 @@ requirements:
     system: offensive
     gdd: design/gdd/gdd-019-offensive-campaign.md
     requirement: "反全知侦察门 + 情报盲区折扣：未侦察目标拿不到守方未察觉/伏兵突然性一类条件且承受战力折扣；守方守备的呈现只经玩家知识投影（军师/目标视图不显真值，AC-7）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+
+  # --- 战场区域部署与区域战斗 (GDD_021 / ADR-0012/0013；战斗核心层 epic-031) ---
+  - id: TR-zone-001
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "确定性区域战斗状态机：ZoneBattleState 回合推进为纯函数变换，整数/定点、无随机、无 UnityEngine（ADR-0004/0012）；同种子+同玩家指令序→同结果，确定性哈希、可回放"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-zone-002
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "区域图非坐标（负向不变量）：BattleField/Zone/Detachment 数据模型无 position/grid/facing/坐标字段；MVP 固定 5 区模板，预留场景注入自定义战场（数据驱动，ADR-0003）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-zone-003
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "部署/战中调整命令契约：DeploymentCommand（部署/调动/投预备/改姿态）前置校验→稳定错误码→无部分写入；调动仅限相邻区+在途 N 回合（不能瞬移），在途支队不参与当回合结算"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-zone-004
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "条件按区按回合涌现门：某区凑齐门（地形+兵种份额+将属性+时机/天气+已侦察+累计回合）才携入/成型兵法（复用 GDD_010 §7 + TacticCondition）；门不齐不成型、不打标签；无同名计策按钮（延续 TR-battle-002 负向不变量）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-zone-005
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "回合结算确定性优先序：一回合内多区/双方结算先后固定（守方→攻方→涌现→写回），各区按 id 规范序遍历；同时互破关键区按此裁定，可复现"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-zone-006
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "攻守统一 + 战中存档续战：同一引擎攻/守两向复用（仅初始阵营角色异）；ZoneBattleState 纳入统一存档信封（ADR-0009/0005）round-trip 一致、确定性哈希、支持战中存档续战；由 Application 从出征(GDD_019 六维准备为初始部署)或守城发起"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-zone-007
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "敌方区域动作空间 + 同规则不作弊：敌AI动作（增援/反扑/佯动/设伏/收缩/断粮/按兵不动）受与玩家同的合法性约束（相邻+在途，ADR-0012/0013）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-zone-008
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "敌AI反全知（负向不变量）：敌只见 AiWorldView 区域投影，结构上拒绝真值注入；玩家未被侦破的隐蔽区（伏兵）不入敌视野（不预判未知伏兵，延续 ADR-0006 反全知锁）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-zone-009
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "敌AI种子softmax确定性：U=Σw·factor 定点整数；P=softmax(U/τ)；seed=Hash(worldTick,battleRound,factionId,actionId) 注入式确定性流取样；不可预测却可复现，存读档/回放一致（ADR-0006/0013）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-zone-010
+    system: zone-battle
+    gdd: design/gdd/gdd-021-zone-battle.md
+    requirement: "敌AI渐进记忆 + LLM隔离：敌记玩家近 K 回合区域动作纳入因子（多回合博弈），记忆入 ZoneBattleState 随存档、确定性；LLM 仅装饰敌将台词，结算路径无 LLM 依赖（断言）"
     created: 2026-07-04
     revised: ""
     status: active
