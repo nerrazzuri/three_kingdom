@@ -85,7 +85,29 @@ namespace ThreeKingdom.Presentation.Runtime
             int dayBefore = session.CurrentTime.Day;
             _service.Advance(session, segments);
             _daysCrossedLastAdvance = session.CurrentTime.Day - dayBefore;
+
+            // 天下大势在轨推演（GDD_015）：触发到期历史事件 → 按可达性 + 主角人设产出通报流（含心里话）。
+            RefreshEventNotices(session);
             return Status();
+        }
+
+        private readonly List<EventNoticeView> _lastNotices = new List<EventNoticeView>();
+        private readonly EventReflectionService _reflection = new EventReflectionService();
+
+        /// <summary>最近一次推进产生的天下事件通报（可述/切身；背景事件不入通报，不打扰玩家）。</summary>
+        public IReadOnlyList<EventNoticeView> EventNotices() => _lastNotices;
+
+        private void RefreshEventNotices(CampaignSession session)
+        {
+            _lastNotices.Clear();
+            if (!session.HasHistory) return;
+            ProtagonistPersona persona = Persona;
+            foreach (HistoryAdvanceResult r in _service.AdvanceHistory(session))
+            {
+                EventReflection? refl = _reflection.Reflect(r, MonologueCatalog.Default, persona);
+                if (refl != null && refl.Tier != NoticeTier.Background)
+                    _lastNotices.Add(new EventNoticeView(refl));
+            }
         }
 
         /// <summary>取当前世界状态视图（不推进；纯函数——同会话态两次调用结果恒等）。</summary>
