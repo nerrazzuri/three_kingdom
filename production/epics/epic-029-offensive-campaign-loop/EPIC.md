@@ -2,8 +2,9 @@
 
 > **Layer**: Feature（复用 M05 备战 / M06 战斗 / M07 后果 / GDD_004 控制权，反向用于**进攻**）
 > **Architecture Module**: 计划外新增循环（`full-game-loop-module-plan` 原缺"主动出征"，2026-07-04 用户实玩裁定补入）
-> **Governing ADR**: ADR-0009（会话装配）· ADR-0004（确定性）· ADR-0008（城池控制权唯一权威 + 变更事件）· ADR-0006（种子化随机，用于占城归属判定）
-> **Status**: Draft（需补设计锚点后转 Ready；见下"实现前置"）
+> **Governing ADR**: ADR-0009（会话装配）· ADR-0004（确定性）· ADR-0008（城池控制权唯一权威 + 变更事件）· ADR-0006（种子化随机）· **ADR-0010（占城归属契约，Proposed）**
+> **GDD**: **GDD_019 出征攻城（Draft，2026-07-04 起草）**
+> **Status**: Draft（设计锚点已起草：GDD_019 + ADR-0010；待 /review-all-gdds + /architecture-decision 转 Accepted 后即可 /create-stories → 可开工）
 > **设计来源**: 2026-07-04 用户设计对话裁定（见下"设计裁定"）
 
 ## 背景与问题
@@ -37,11 +38,11 @@
 | 004 | 占城归属结算（方案 C） | Logic | 前 2 座默认归玩家；之后君主种子化随机取舍（可复现）；经 GDD_004 控制权变更事件写入；被抢累积自立动机量 | ADR-0008, epic-020/022 |
 | 005 | 出征后果→功绩→升官联动 | Integration | 胜→功绩/名望→晋升门槛（epic-022）；败→折损 + 必留可继续；存读档确定性 | epic-022 |
 
-## 实现前置（Draft → Ready 需补）
+## 实现前置（Draft → Ready）
 
-- **GDD**：扩展 GDD_004（占城归属 C 规则 + 授权出征触发）或新建 GDD_019-offensive-campaign；GDD_010/014 引用出征。
-- **ADR**：占城归属 C 的随机取舍如落权威路径，须挂 ADR-0006（种子化）+ ADR-0008（控制权唯一权威）；确认无新违反禁则。
-- 之后 `/create-stories` 细化各 story（AC/TR-ID/QA 用例）。
+- ✅ **GDD 已起草**：`design/gdd/gdd-019-offensive-campaign.md`（Draft，12 段含公式/边界/验收）。
+- ✅ **ADR 已起草**：`docs/architecture/adr-0010-conquest-occupation-ownership.md`（Proposed，占城归属 C 契约）。
+- ⏳ **待**：`/review-all-gdds`（GDD_019 跨系统审查，尤其与 GDD_004/010/014/015 边界）→ `/architecture-decision`（ADR-0010 转 Accepted）→ `/create-stories epic-029`（细化各 story 的 AC/TR-ID/QA 用例）→ 可开工。
 
 ## 强制设计锁（继承）
 

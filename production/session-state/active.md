@@ -1310,3 +1310,10 @@ ADR-0003（数据驱动配置的正式锁定）。
 - index.md 已登记三 epic(Draft)。推荐序:029→025→030。
 - ⚠️ 均 Draft:实现前须补 GDD/ADR 锚点(各 EPIC "实现前置"列明);出征需扩 GDD_004 或新 GDD_019 + ADR;人才需 GDD_019-talent + ADR;多城需先定委任/权限机制。
 - 未提交。
+
+## Session Extract — epic-029 补设计锚点 2026-07-04
+- 起草 GDD_019 出征攻城(Draft,12段:授权/闭合因果/占城C/回报/失败可继续/公式/边界/验收8条) + ADR-0010 占城归属契约(Proposed:复用004控制权 + 归属方案C种子化判定 + 自立倾向累积)。
+- 登记:gdd-index(GDD_019 Draft, GDD_020 未创建) · adr-index(ADR-0010 Proposed) · technical-preferences ADR日志 · epic-030 GDD引用改GDD_020。
+- epic-029 EPIC 更新:Governing ADR加0010、GDD_019、实现前置改"已起草待审"。
+- ▶ epic-029 可开工路径:/review-all-gdds(GDD_019) → /architecture-decision(ADR-0010转Accepted) → /create-stories epic-029 → /dev-story。
+- 未提交。

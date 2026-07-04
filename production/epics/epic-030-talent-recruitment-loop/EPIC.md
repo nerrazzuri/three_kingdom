@@ -3,7 +3,7 @@
 > **Layer**: Feature（复用 人物/关系 epic-003 · 情报 GDD_007 · 条件历史 GDD_015 · 种子化随机 ADR-0006）
 > **Architecture Module**: 计划外新增循环（2026-07-04 用户设计对话补入；"人才/武将"此前无独立循环）
 > **Governing ADR**: ADR-0006（种子化确定性随机 softmax）· ADR-0007（条件历史世界模型，人才按时间线登场）· ADR-0004（确定性）
-> **Status**: Draft（需先补 GDD_019-talent-recruitment + ADR，再转 Ready）
+> **Status**: Draft（需先补 GDD_020-talent-recruitment + ADR，再转 Ready）
 > **设计来源**: 2026-07-04 用户设计对话裁定（见下"设计裁定"）
 
 ## 背景与问题
@@ -37,7 +37,7 @@
 
 ## 实现前置（Draft → Ready 需补）
 
-- **GDD**：新建 GDD_019-talent-recruitment（出现/知晓/入伙/喂给四层 + 与 GDD_005/006/007/015 的边界）。
+- **GDD**：新建 GDD_020-talent-recruitment（出现/知晓/入伙/喂给四层 + 与 GDD_005/006/007/015 的边界）。
 - **ADR**：确认招揽随机走 ADR-0006 注入式确定性流；反全知落类型层（如 GDD_007 投影不含未知人才真值）。
 - 之后 `/create-stories` 细化。
 
