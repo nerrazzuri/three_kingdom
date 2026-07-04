@@ -65,4 +65,20 @@ namespace ThreeKingdom.Domain.Career
             Holder = holder;
         }
     }
+
+    /// <summary>撤职命令（GDD_014 官职任免）：撤销某官职位；前任因失位而<b>派系不满</b>——好感降 <see cref="Discontent"/>。</summary>
+    public sealed class DismissOfficeCommand : CareerCommand
+    {
+        /// <summary>被撤的官职位。</summary>
+        public OfficeRole Role { get; }
+
+        /// <summary>前任因撤职的好感降幅（派系不满，数据驱动由 Application 提供，[0,1]）。</summary>
+        public FixedPoint Discontent { get; }
+
+        public DismissOfficeCommand(OfficeRole role, FixedPoint discontent)
+        {
+            Role = role;
+            Discontent = discontent;
+        }
+    }
 }

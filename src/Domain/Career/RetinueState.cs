@@ -132,6 +132,16 @@ namespace ThreeKingdom.Domain.Career
             return new RetinueState(members, assignments);
         }
 
+        /// <summary>撤销某官职位（保留僚属，仅去任免）产出新态（仅供服务命令路径）。无此任免则原样返回。</summary>
+        internal RetinueState WithoutOffice(OfficeRole role)
+        {
+            if (Holder(role) == null) return this;
+            var assignments = new List<KeyValuePair<OfficeRole, CharacterId>>();
+            for (int i = 0; i < _offices.Length; i++)
+                if (_offices[i] != role) assignments.Add(new KeyValuePair<OfficeRole, CharacterId>(_offices[i], _holders[i]));
+            return new RetinueState(_members, assignments);
+        }
+
         /// <summary>
         /// 以规范顺序追加到状态哈希（ADR-0004）。顺序：成员数 → 各成员(ID 长度+字符, 好感.Raw)
         /// → 任免数 → 各任免((int)职位, 持有者 ID 长度+字符)，全部按上述稳定排序遍历。

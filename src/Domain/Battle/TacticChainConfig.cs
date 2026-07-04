@@ -55,6 +55,10 @@ namespace ThreeKingdom.Domain.Battle
             {
                 TacticCondition.IsNight, TacticCondition.StealthSuccess, TacticCondition.DefenderUnaware, TacticCondition.RaiderDisciplineMet,
             }),
+            new TacticChainDefinition(TacticTag.FireAttack, new[]
+            {
+                TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
+            }),
         });
     }
 }

@@ -35,5 +35,8 @@ namespace ThreeKingdom.Domain.Career
 
         /// <summary>自立发动条件未满足（story-003）。</summary>
         RebellionConditionNotMet = 9,
+
+        /// <summary>撤职时该官职位无人在任（无可撤对象）。</summary>
+        NoOfficeHolder = 10,
     }
 }

@@ -349,11 +349,14 @@ namespace ThreeKingdom.Unity.UI
             switch (SessionRuntime.Phase().Phase)
             {
                 case CampaignPhase.Governance:
+                    candidates.Add(OnboardingCue.PersonaIntro);      // 开局先点出主角性情
                     candidates.Add(OnboardingCue.Observe);
                     candidates.Add(OnboardingCue.Plan);
                     candidates.Add(OnboardingCue.AdvanceToHistory);
                     break;
                 case CampaignPhase.Preparing:
+                    candidates.Add(OnboardingCue.PreparationDecides); // 备战：六维准备决定胜负
+                    candidates.Add(OnboardingCue.MindLever);          // 攻城亦可攻心
                     candidates.Add(OnboardingCue.Prepare);
                     candidates.Add(OnboardingCue.Fight);
                     break;

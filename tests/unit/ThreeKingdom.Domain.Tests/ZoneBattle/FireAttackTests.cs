@@ -87,6 +87,19 @@ namespace ThreeKingdom.Domain.Tests.ZoneBattle
             Assert.That(Has(em, "EnemyExposedToFire"), Is.False, "无敌暴露 → 暴露门不齐。");
         }
 
+        // ---- B4：火攻已注册复盘链（TacticChainConfig）→ 条件齐可识别为"火攻" ----
+        [Test]
+        public void test_fire_attack_registered_in_tactic_chains()
+        {
+            ThreeKingdom.Domain.Battle.TacticChainDefinition? fire = null;
+            foreach (var def in ThreeKingdom.Domain.Battle.TacticChainConfig.SliceDefault().Chains)
+                if (def.Tag == ThreeKingdom.Domain.Battle.TacticTag.FireAttack) fire = def;
+            Assert.That(fire, Is.Not.Null, "火攻已注册复盘链（否则条件加战力但识别不出兵法名）。");
+            Assert.That(fire!.Required, Does.Contain(TacticCondition.DryField));
+            Assert.That(fire.Required, Does.Contain(TacticCondition.EnemyExposedToFire));
+            Assert.That(fire.Required, Does.Contain(TacticCondition.FireIgnited));
+        }
+
         // ---- 非易燃地形（平原预备区无火攻禀赋）→ 不成型 ----
         [Test]
         public void test_fire_does_not_form_in_non_flammable_zone()

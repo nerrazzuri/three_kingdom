@@ -1,4 +1,5 @@
 using System;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.Numerics;
 
 namespace ThreeKingdom.Domain.Career
@@ -31,6 +32,7 @@ namespace ThreeKingdom.Domain.Career
                 case AdjustLordStandingCommand s: return ApplyAdjustStanding(before, s);
                 case PromoteRankCommand p: return ApplyPromote(before, p);
                 case AssignOfficeCommand a: return ApplyAssignOffice(before, a);
+                case DismissOfficeCommand d: return ApplyDismissOffice(before, d);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(command), $"未知生涯命令类型：{command.GetType().Name}。");
             }
@@ -91,6 +93,27 @@ namespace ThreeKingdom.Domain.Career
 
             RetinueState next = retinue.WithOffice(cmd.Role, cmd.Holder);
             return CareerCommandResult.Success(new CareerSnapshot(before.Career, next));
+        }
+
+        private static CareerCommandResult ApplyDismissOffice(CareerSnapshot before, DismissOfficeCommand cmd)
+        {
+            RetinueState retinue = before.Retinue;
+            CharacterId? holder = retinue.Holder(cmd.Role);
+            if (holder == null)
+                return CareerCommandResult.Failure(before, CareerErrorCode.NoOfficeHolder, $"该官职位无人在任，无可撤：{cmd.Role}。");
+
+            // 撤职 → 前任派系不满：好感下降（钳制 [0,1]）。喂忠诚经营（可能因此跌破可挖角阈）。
+            FixedPoint before2 = AffinityOf(retinue, holder.Value);
+            FixedPoint discontented = (before2 - cmd.Discontent).Clamp(FixedPoint.Zero, FixedPoint.One);
+            RetinueState next = retinue.WithoutOffice(cmd.Role).WithMemberAffinity(holder.Value, discontented);
+            return CareerCommandResult.Success(new CareerSnapshot(before.Career, next));
+        }
+
+        private static FixedPoint AffinityOf(RetinueState retinue, CharacterId member)
+        {
+            foreach (RetinueMember m in retinue.Members)
+                if (m.Character == member) return m.Affinity;
+            return FixedPoint.Zero;
         }
     }
 }

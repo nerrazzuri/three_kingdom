@@ -466,13 +466,26 @@ namespace ThreeKingdom.Presentation.Runtime
             && _defenseBattle.Outcome == ZoneBattleOutcome.DefenderVictory;
 
         /// <summary>发起守城区域防御战：以守军分区布防，敌军来攻（敌AI驱动攻方）。返回初始战斗投影。</summary>
+        /// <summary>上一场守城战，玩家守将是否被敌方策反/攻心（GDD_024 §13 对称威胁的预警）。</summary>
+        public bool WasDefenseSubverted { get; private set; }
+
         public ZoneBattleView StartDefenseBattle()
         {
             var field = BattleField.Default();
             var planner = new OffensiveDeploymentPlanner();
             FixedPoint morale = FixedPoint.FromFraction(7, 10);
+
+            // 敌方对玩家守城施人心杠杆（GDD_024 §13 对称）：种子化攻心，成功则挫玩家守方士气 + 预警（非无解，仅削弱）。
+            SubversionTargetProfile ownGuard = SubversionTargetProfileFactory.Build(
+                new CityId("player-defense"), scouted: true, FixedPoint.FromFraction(6, 10), false, PersonaSeed(Session.Id));
+            SubversionOutcome enemyPlot = new SubversionService().Resolve(
+                SubversionScheme.UnderminedMorale, ownGuard, FixedPoint.FromFraction(5, 10), 0,
+                _scenario.OffensiveSeed ^ 0x5EED_D00Dul, SubversionConfig.Default);
+            SubversionEffect enemyEffect = enemyPlot.Result == SubversionResult.Success ? enemyPlot.Effect : SubversionEffect.None;
+            WasDefenseSubverted = enemyPlot.Result == SubversionResult.Success;
+
             var dets = new List<Detachment>(planner.PlanDefender(
-                new SiegeDefense(_scenario.DefenseGarrison, FixedPoint.FromFraction(12, 10)), morale, field));
+                new SiegeDefense(_scenario.DefenseGarrison, FixedPoint.FromFraction(12, 10)), morale, field, enemyEffect));
             dets.Add(new Detachment(new DetachmentId("enemy-assault"), BattleSide.Attacker, null,
                 TroopComposition.AllInfantry(_scenario.EnemyAssaultForce), _scenario.EnemyAssaultForce,
                 morale, FixedPoint.FromFraction(2, 10), Posture.Assault, BattleField.Front));
