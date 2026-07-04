@@ -1455,3 +1455,12 @@ ADR-0003（数据驱动配置的正式锁定）。
 - GDD_015 §1b 升级（分级+人设心里话，去种子）。dotnet 997/997 绿(989→997)；3 DLL 同步。
 - Application 接线（开局赋人设存会话 + 推进产通报流）归 #10 全局装配。
 - ✅ 任务 #8 完成。转 #9 战法内容包 + 失败可继续路径。
+
+## Session Extract — 任务#9 战法内容包(火攻)+ 失败可继续红线 2026-07-04
+- **火攻**作为条件涌现内容包典范（非按钮）：TacticTag.FireAttack + 3 条件(DryField干燥/EnemyExposedToFire敌暴露/FireIgnited智将纵火)。三门齐方成型；条件计入 attacker formed count 经现有 condMul 自然增威。
+- 天时：ZoneBattleContext +IsDry（Default false 保护平衡套件；ContextFrom 晴天→dry）。禀赋：BattleField Supply(乌巢/赤壁烧船)+Cover(火烧连营)区。修正 DryField 须攻方在场。
+- 证明内容包架构——水攻/诈降/围点打援为同机制纯内容扩展（新条件+禀赋，代码不变），作为快随内容。
+- 失败可继续红线：验证出征败后同会话可重整再战胜（败非死局）。众叛流浪续局(RebellionTests AC-6)/区域战超时退兵(平衡套件)已有覆盖。
+- 测试 +6：FireAttackTests(5:三门齐成型/雨天不成/无智将不纵火/无敌不暴露/非易燃区不成) + FailureContinuableTests(1 败后再战)。
+- dotnet 1003/1003 绿(997→1003)；3 DLL 同步。
+- ✅ 任务 #9 完成。转 #10 全局循环装配 + ViewModel。

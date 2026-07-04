@@ -106,10 +106,14 @@ namespace ThreeKingdom.Domain.ZoneBattle
                 new Zone(Supply, TerrainKind.Plain, new[]
                 {
                     TacticCondition.SupplyLineCut, TacticCondition.ShortageReachedGrace, TacticCondition.EnemyCohesionCrossedThreshold,
+                    // 粮营易燃（乌巢烧粮/赤壁烧船）：火攻禀赋。
+                    TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
                 }, softCapacity: 300),
                 new Zone(Cover, TerrainKind.Cover, new[]
                 {
                     TacticCondition.IsNight, TacticCondition.StealthSuccess, TacticCondition.DefenderUnaware, TacticCondition.RaiderDisciplineMet,
+                    // 林莽/连营易燃（火烧连营）：火攻禀赋。
+                    TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
                 }, softCapacity: 300),
                 new Zone(Reserve, TerrainKind.Plain, Array.Empty<TacticCondition>(), softCapacity: 500),
             };

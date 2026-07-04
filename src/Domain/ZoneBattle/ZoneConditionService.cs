@@ -79,6 +79,11 @@ namespace ThreeKingdom.Domain.ZoneBattle
             if (Affords(zone, TacticCondition.DefenderUnaware) && context.IsNight && context.AttackerScouted) formed.Add(TacticCondition.DefenderUnaware);
             if (Affords(zone, TacticCondition.RaiderDisciplineMet) && context.IsNight && disciplined) formed.Add(TacticCondition.RaiderDisciplineMet);
 
+            // 火攻（瞬时多条件：干燥天时 + 敌暴露于易燃地形 + 智将纵火）。条件计入战力加成，无需另设按钮。
+            if (Affords(zone, TacticCondition.DryField) && present && context.IsDry) formed.Add(TacticCondition.DryField);
+            if (Affords(zone, TacticCondition.EnemyExposedToFire) && present && enemyContesting) formed.Add(TacticCondition.EnemyExposedToFire);
+            if (Affords(zone, TacticCondition.FireIgnited) && present && guileEnough) formed.Add(TacticCondition.FireIgnited);
+
             // 切断补给（瞬时：己方占据敌粮道区）。
             bool cuttingSupply = Affords(zone, TacticCondition.SupplyLineCut) && present;
             if (cuttingSupply) formed.Add(TacticCondition.SupplyLineCut);

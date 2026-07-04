@@ -146,17 +146,21 @@ namespace ThreeKingdom.Domain.ZoneBattle
         /// <summary>攻方是否已侦察目标（反全知：突袭类条件门 + 免情报盲区）。</summary>
         public bool AttackerScouted { get; }
 
-        public ZoneBattleContext(bool isNight, bool isFoggy, bool attackerScouted)
+        /// <summary>是否干燥天时（晴，无雨无雾）——火攻条件门（DryField）。</summary>
+        public bool IsDry { get; }
+
+        public ZoneBattleContext(bool isNight, bool isFoggy, bool attackerScouted, bool isDry = false)
         {
             IsNight = isNight;
             IsFoggy = isFoggy;
             AttackerScouted = attackerScouted;
+            IsDry = isDry;
         }
 
-        /// <summary>白昼晴、已侦察的中性上下文。</summary>
-        public static ZoneBattleContext Default { get; } = new ZoneBattleContext(false, false, true);
+        /// <summary>白昼、已侦察的中性上下文（isDry 默认 false：火攻须由天时显式开启，避免默认场景意外起火）。</summary>
+        public static ZoneBattleContext Default { get; } = new ZoneBattleContext(false, false, true, isDry: false);
 
         internal void AppendTo(StateHasher hasher)
-            => hasher.Append(IsNight).Append(IsFoggy).Append(AttackerScouted);
+            => hasher.Append(IsNight).Append(IsFoggy).Append(AttackerScouted).Append(IsDry);
     }
 }

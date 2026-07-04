@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ThreeKingdom.Domain.Conquest;
+using ThreeKingdom.Domain.Environment;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Subversion;
 using ThreeKingdom.Domain.ZoneBattle;
@@ -88,9 +89,10 @@ namespace ThreeKingdom.Application.Battle
             return dets;
         }
 
-        /// <summary>六维时机/侦察 → 战斗上下文（反全知门）。</summary>
+        /// <summary>六维时机/侦察 → 战斗上下文（反全知门）。晴天=干燥→火攻天时门（DryField）。</summary>
         public ZoneBattleContext ContextFrom(OffensivePreparation prep)
-            => new ZoneBattleContext(prep.Timing.IsNight, prep.Timing.IsFoggy, prep.Scouted);
+            => new ZoneBattleContext(prep.Timing.IsNight, prep.Timing.IsFoggy, prep.Scouted,
+                isDry: prep.Timing.Weather == WeatherType.Clear);
 
         private static Detachment Make(
             string id, BattleSide side, OffensiveGeneral? general, TroopComposition comp, int strength,

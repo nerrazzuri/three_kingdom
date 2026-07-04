@@ -17,6 +17,9 @@ namespace ThreeKingdom.Domain.Battle
 
         /// <summary>夜袭（夜间 + 隐蔽成功 + 守方未察觉 + 袭方军纪达标）——执行手段，可与其他链组合。</summary>
         NightRaid = 3,
+
+        /// <summary>火攻（干燥天时 + 敌暴露于易燃地形 + 智将纵火）——乌巢烧粮/赤壁烧船，多条件涌现非按钮。</summary>
+        FireAttack = 4,
     }
 
     /// <summary>
@@ -45,5 +48,10 @@ namespace ThreeKingdom.Domain.Battle
         StealthSuccess = 31,
         DefenderUnaware = 32,
         RaiderDisciplineMet = 33,
+
+        // 火攻
+        DryField = 40,              // 干燥天时（晴，无雨无雾）——火势可燃
+        EnemyExposedToFire = 41,    // 敌暴露于易燃地形（粮营/连营/林莽）
+        FireIgnited = 42,           // 智将纵火（己方在场 + 智谋达标）
     }
 }
