@@ -84,6 +84,23 @@ namespace ThreeKingdom.Domain.ZoneBattle
             if (Affords(zone, TacticCondition.EnemyExposedToFire) && present && enemyContesting) formed.Add(TacticCondition.EnemyExposedToFire);
             if (Affords(zone, TacticCondition.FireIgnited) && present && guileEnough) formed.Add(TacticCondition.FireIgnited);
 
+            // 水攻（湿润天时 + 敌处低地 + 己控水利决堤）。以 !干燥（雨/水）区别于火攻同一天时轴。
+            bool wet = !context.IsDry;
+            if (Affords(zone, TacticCondition.EnemyInLowGround) && enemyContesting && wet) formed.Add(TacticCondition.EnemyInLowGround);
+            if (Affords(zone, TacticCondition.WaterworksHeld) && present && guileEnough && wet) formed.Add(TacticCondition.WaterworksHeld);
+            if (Affords(zone, TacticCondition.FloodReleased) && present && wet) formed.Add(TacticCondition.FloodReleased);
+
+            // 诈降（己方佯降诱敌 + 敌中计 + 军纪突袭）。须佯攻姿态（示弱）。
+            if (Affords(zone, TacticCondition.SurrenderFeigned) && present && hasFeint && guileEnough) formed.Add(TacticCondition.SurrenderFeigned);
+            if (Affords(zone, TacticCondition.EnemyLuredOpen) && enemyContesting && hasFeint) formed.Add(TacticCondition.EnemyLuredOpen);
+            if (Affords(zone, TacticCondition.StrikeFromWithin) && present && hasFeint && disciplined) formed.Add(TacticCondition.StrikeFromWithin);
+
+            // 围点打援（围点 + 诱援 + 途伏）。须骑兵机动。
+            bool mobile = cavShare >= config.CavalryMinShare;
+            if (Affords(zone, TacticCondition.PointBesieged) && present && mobile) formed.Add(TacticCondition.PointBesieged);
+            if (Affords(zone, TacticCondition.ReliefIntercepted) && enemyContesting && mobile) formed.Add(TacticCondition.ReliefIntercepted);
+            if (Affords(zone, TacticCondition.AmbushOnRoute) && present && guileEnough && mobile) formed.Add(TacticCondition.AmbushOnRoute);
+
             // 切断补给（瞬时：己方占据敌粮道区）。
             bool cuttingSupply = Affords(zone, TacticCondition.SupplyLineCut) && present;
             if (cuttingSupply) formed.Add(TacticCondition.SupplyLineCut);

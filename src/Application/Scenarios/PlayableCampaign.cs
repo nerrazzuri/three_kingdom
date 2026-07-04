@@ -303,7 +303,15 @@ namespace ThreeKingdom.Application.Scenarios
                 new HistoricalOutcome("historical-yiling"),
                 new HistoricalOutcome("yiling-diverged"),
                 Array.Empty<EventId>());
-            return HistoricalEventCatalog.TryCreate(new[] { chibi, yiling }).Value!;
+            // 够不着的天下大事（袁术称帝）：玩家圈（触孙权）不及袁术 → 只作通报 + 主角心里话（GDD_015 事件分级）。
+            var yuanshu = new HistoricalEvent(
+                new EventId("evt-yuanshu-emperor"),
+                new WTimeWindow(new WorldTime(0, DaySegment.Dawn), new WorldTime(4, DaySegment.Dawn)),
+                new[] { Precondition.FactionAliveOf(new FactionId("faction-yuanshu")) },
+                new HistoricalOutcome("yuanshu-declares-emperor"),
+                new HistoricalOutcome("yuanshu-emperor-averted"),
+                Array.Empty<EventId>());
+            return HistoricalEventCatalog.TryCreate(new[] { chibi, yiling, yuanshu }).Value!;
         }
 
         private static PromotionLadderConfig BuildLadder()

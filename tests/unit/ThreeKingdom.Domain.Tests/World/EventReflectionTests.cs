@@ -64,11 +64,11 @@ namespace ThreeKingdom.Domain.Tests.World
         [Test]
         public void test_persona_without_specific_line_falls_back_to_default()
         {
-            // "dong-zhuo-burns-luoyang" 无人设专属台词 → 任何人设都回退通用心里话。
-            HistoryAdvanceResult ev = Fired(FireReason.NormalUnreachable, "dong-zhuo-burns-luoyang");
-            string a = _svc.Reflect(ev, MonologueCatalog.Default, ProtagonistPersona.Ambitious)!.Monologue;
+            // "guan-yu-loses-jingzhou" 仅有雄心/务实专属台词 → 忠义/谨慎皆回退通用心里话。
+            HistoryAdvanceResult ev = Fired(FireReason.NormalUnreachable, "guan-yu-loses-jingzhou");
+            string a = _svc.Reflect(ev, MonologueCatalog.Default, ProtagonistPersona.Loyalist)!.Monologue;
             string b = _svc.Reflect(ev, MonologueCatalog.Default, ProtagonistPersona.Cautious)!.Monologue;
-            Assert.That(a, Is.EqualTo(b), "无专属台词 → 回退同一通用心里话。");
+            Assert.That(a, Is.EqualTo(b), "无专属台词的人设 → 回退同一通用心里话。");
             Assert.That(a.Length, Is.GreaterThan(0));
         }
 

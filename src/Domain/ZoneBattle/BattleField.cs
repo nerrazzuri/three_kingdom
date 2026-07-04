@@ -98,7 +98,11 @@ namespace ThreeKingdom.Domain.ZoneBattle
         {
             var zones = new[]
             {
-                new Zone(Front, TerrainKind.Fortified, Array.Empty<TacticCondition>(), softCapacity: 800),
+                new Zone(Front, TerrainKind.Fortified, new[]
+                {
+                    // 城门正面可诈降赚城（黄盖诈降）：诈降禀赋。
+                    TacticCondition.SurrenderFeigned, TacticCondition.EnemyLuredOpen, TacticCondition.StrikeFromWithin,
+                }, softCapacity: 800),
                 new Zone(Flank, TerrainKind.Pass, new[]
                 {
                     TacticCondition.ControlledRetreatKeptFormation, TacticCondition.EnemyPursued, TacticCondition.AmbushSurprise,
@@ -108,12 +112,16 @@ namespace ThreeKingdom.Domain.ZoneBattle
                     TacticCondition.SupplyLineCut, TacticCondition.ShortageReachedGrace, TacticCondition.EnemyCohesionCrossedThreshold,
                     // 粮营易燃（乌巢烧粮/赤壁烧船）：火攻禀赋。
                     TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
+                    // 粮道近水低地（水淹七军）：水攻禀赋。
+                    TacticCondition.EnemyInLowGround, TacticCondition.WaterworksHeld, TacticCondition.FloodReleased,
                 }, softCapacity: 300),
                 new Zone(Cover, TerrainKind.Cover, new[]
                 {
                     TacticCondition.IsNight, TacticCondition.StealthSuccess, TacticCondition.DefenderUnaware, TacticCondition.RaiderDisciplineMet,
                     // 林莽/连营易燃（火烧连营）：火攻禀赋。
                     TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
+                    // 掩护侧翼利机动伏援（围点打援）：禀赋。
+                    TacticCondition.PointBesieged, TacticCondition.ReliefIntercepted, TacticCondition.AmbushOnRoute,
                 }, softCapacity: 300),
                 new Zone(Reserve, TerrainKind.Plain, Array.Empty<TacticCondition>(), softCapacity: 500),
             };

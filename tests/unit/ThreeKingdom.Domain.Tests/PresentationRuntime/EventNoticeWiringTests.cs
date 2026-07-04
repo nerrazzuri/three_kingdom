@@ -25,6 +25,18 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         }
 
         [Test]
+        public void test_unreachable_event_surfaces_persona_monologue()
+        {
+            var runtime = new CampaignRuntime(new InMemorySaveMedium());
+            runtime.NewGame();
+            runtime.Advance(2);   // 袁术称帝（够不着）在早期窗口触发 → 通报 + 主角心里话
+            bool anyMonologue = false;
+            foreach (EventNoticeView n in runtime.EventNotices())
+                if (n.Tier == NoticeTier.Notable && n.HasMonologue && n.Text.Length > 0) anyMonologue = true;
+            Assert.That(anyMonologue, Is.True, "够不着的天下大事（袁术称帝）→ 通报带主角心里话（随人设着色）。");
+        }
+
+        [Test]
         public void test_notices_refresh_and_clear_each_advance()
         {
             var runtime = new CampaignRuntime(new InMemorySaveMedium());

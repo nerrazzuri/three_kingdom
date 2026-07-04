@@ -59,6 +59,18 @@ namespace ThreeKingdom.Domain.Battle
             {
                 TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
             }),
+            new TacticChainDefinition(TacticTag.FloodAttack, new[]
+            {
+                TacticCondition.EnemyInLowGround, TacticCondition.WaterworksHeld, TacticCondition.FloodReleased,
+            }),
+            new TacticChainDefinition(TacticTag.FeignedSurrender, new[]
+            {
+                TacticCondition.SurrenderFeigned, TacticCondition.EnemyLuredOpen, TacticCondition.StrikeFromWithin,
+            }),
+            new TacticChainDefinition(TacticTag.BesiegeRelief, new[]
+            {
+                TacticCondition.PointBesieged, TacticCondition.ReliefIntercepted, TacticCondition.AmbushOnRoute,
+            }),
         });
     }
 }

@@ -77,7 +77,20 @@ namespace ThreeKingdom.Domain.World
                     [ProtagonistPersona.Loyalist]  = "背主自立，终究名不正言不顺，难成大器。",
                 }),
             new MonologueRule("dong-zhuo-burns-luoyang",
-                "洛阳付之一炬，苍生何辜。这乱世，忠义又能保我几时？"),
+                "洛阳付之一炬，苍生何辜。这乱世，忠义又能保我几时？",
+                new Dictionary<ProtagonistPersona, string>
+                {
+                    [ProtagonistPersona.Ambitious] = "旧秩序既已焚毁，新天下正待人取——乱世予我机也。",
+                    [ProtagonistPersona.Loyalist]  = "董卓焚都弑君，罪不容诛！我辈当扶汉室于将倾。",
+                    [ProtagonistPersona.Cautious]  = "京师尚且成灰，边城更难自保。深沟高垒，谨守为上。",
+                }),
+            new MonologueRule("guan-yu-loses-jingzhou",
+                "关云长竟败走麦城……名将尚有此劫，何况你我。",
+                new Dictionary<ProtagonistPersona, string>
+                {
+                    [ProtagonistPersona.Ambitious] = "关羽既失荆州，天下棋局再乱——正是我落子之时。",
+                    [ProtagonistPersona.Pragmatist] = "大意失荆州，骄兵必败。前车之鉴，我当引以为戒。",
+                }),
         });
     }
 }
