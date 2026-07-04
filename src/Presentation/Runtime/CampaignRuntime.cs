@@ -8,6 +8,7 @@ using ThreeKingdom.Application.Theater;
 using ThreeKingdom.Domain.Theater;
 using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Diplomacy;
@@ -153,8 +154,12 @@ namespace ThreeKingdom.Presentation.Runtime
             bool exposed = session.IsSubversionExposed(city);
             FixedPoint intensity = FixedPoint.FromFraction(Math.Max(0, Math.Min(100, intensityPercent)), 100);
 
-            SubversionTargetProfile target = SubversionTargetProfileFactory.Build(
-                city, scouted, quality, exposed, PersonaSeed(session.Id));
+            // 目标为世界模型的真实守将（该城所属势力之君主）；无则回退合成守将。施计遂指向具名武将。
+            FactionId? owner = session.World.OwnershipOf(city)?.Owner;
+            CharacterId? lord = owner.HasValue ? session.World.FactionById(owner.Value)?.Lord : null;
+            SubversionTargetProfile target = lord.HasValue
+                ? SubversionTargetProfileFactory.Build(lord.Value, scouted, quality, exposed, PersonaSeed(session.Id))
+                : SubversionTargetProfileFactory.Build(city, scouted, quality, exposed, PersonaSeed(session.Id));
             ulong seed = SubversionSeed(session, cityId, scheme);
             SubversionOutcome outcome = _service.AttemptSubversion(
                 session, city, scheme, target, intensity, seed, SubversionConfig.Default);

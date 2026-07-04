@@ -91,6 +91,21 @@ namespace ThreeKingdom.Domain.World
                     [ProtagonistPersona.Ambitious] = "关羽既失荆州，天下棋局再乱——正是我落子之时。",
                     [ProtagonistPersona.Pragmatist] = "大意失荆州，骄兵必败。前车之鉴，我当引以为戒。",
                 }),
+            new MonologueRule("cao-cao-controls-emperor",
+                "曹孟德挟天子以令诸侯，好大的手笔。",
+                new Dictionary<ProtagonistPersona, string>
+                {
+                    [ProtagonistPersona.Ambitious] = "挟天子以令诸侯——名正则言顺。此局，我亦想弈。",
+                    [ProtagonistPersona.Loyalist]  = "名为汉相，实为汉贼！挟持天子，是可忍孰不可忍。",
+                    [ProtagonistPersona.Pragmatist] = "奉天子者得大义之名，曹操这步棋走得极精。",
+                }),
+            new MonologueRule("liu-bei-recruits-zhuge",
+                "刘玄德三顾茅庐，终得卧龙。求贤如此，难怪成事。",
+                new Dictionary<ProtagonistPersona, string>
+                {
+                    [ProtagonistPersona.Ambitious] = "得一大才可安天下——我也当访遍山野，求我的卧龙。",
+                    [ProtagonistPersona.Cautious]  = "礼贤下士固好，只是这乱世，人心最难测。",
+                }),
         });
     }
 }

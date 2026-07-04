@@ -41,6 +41,22 @@ namespace ThreeKingdom.Domain.Tests.Session
         }
 
         [Test]
+        public void test_profile_targets_named_general_with_person_consistent_traits()
+        {
+            var yuan = new ThreeKingdom.Domain.Characters.CharacterId("char-yuan");
+            SubversionTargetProfile a = SubversionTargetProfileFactory.Build(yuan, true, FixedPoint.FromFraction(7, 10), false, 42UL);
+            SubversionTargetProfile b = SubversionTargetProfileFactory.Build(yuan, true, FixedPoint.FromFraction(7, 10), false, 42UL);
+            Assert.That(a.General, Is.EqualTo(yuan), "施计指向具名武将（真实守将）。");
+            Assert.That(b.Loyalty.Raw, Is.EqualTo(a.Loyalty.Raw), "同一武将性情一致（跨城可复现）。");
+
+            var cao = new ThreeKingdom.Domain.Characters.CharacterId("char-cao");
+            SubversionTargetProfile other = SubversionTargetProfileFactory.Build(cao, true, FixedPoint.FromFraction(7, 10), false, 42UL);
+            bool differ = other.Loyalty.Raw != a.Loyalty.Raw || other.ResentmentToLord.Raw != a.ResentmentToLord.Raw
+                || other.Charm.Raw != a.Charm.Raw;
+            Assert.That(differ, Is.True, "不同武将性情各异（性情随人而定）。");
+        }
+
+        [Test]
         public void test_unscouted_zeroes_intel_quality()
         {
             SubversionTargetProfile blind = SubversionTargetProfileFactory.Build(CityA, false, FixedPoint.One, false, 42UL);

@@ -18,8 +18,16 @@ namespace ThreeKingdom.Application.Battle
         /// </summary>
         public static SubversionTargetProfile Build(
             CityId city, bool scouted, FixedPoint intelQuality, bool exposed, ulong worldSeed)
+            => Build(new CharacterId("def-" + city.Value), scouted, intelQuality, exposed, worldSeed);
+
+        /// <summary>
+        /// 同上，但目标为<b>世界模型的真实守将/君主</b>（<paramref name="general"/>）——性情随此人确定性生成
+        /// （同一人物性情一致，跨城可复现），施计指向具名武将而非合成守将。
+        /// </summary>
+        public static SubversionTargetProfile Build(
+            CharacterId general, bool scouted, FixedPoint intelQuality, bool exposed, ulong worldSeed)
         {
-            ulong baseSeed = worldSeed ^ Fnv(city.Value);
+            ulong baseSeed = worldSeed ^ Fnv(general.Value);
             FixedPoint loyalty = Unit(baseSeed, 0x11);
             FixedPoint resentment = Unit(baseSeed, 0x22);
             FixedPoint greed = Unit(baseSeed, 0x33);
@@ -32,7 +40,7 @@ namespace ThreeKingdom.Application.Battle
             FixedPoint quality = scouted ? intelQuality.Clamp(FixedPoint.Zero, FixedPoint.One) : FixedPoint.Zero;
 
             return new SubversionTargetProfile(
-                new CharacterId("def-" + city.Value), loyalty, resentment, greed, charm, alertness, scouted, quality);
+                general, loyalty, resentment, greed, charm, alertness, scouted, quality);
         }
 
         /// <summary>由种子 + 盐派生 [0,1] 定点（确定性，均匀）。</summary>
