@@ -4,7 +4,7 @@
 > **Architecture Module**: 计划外新增循环（`full-game-loop-module-plan` 原缺"主动出征"，2026-07-04 用户实玩裁定补入）
 > **Governing ADR**: ADR-0009（会话装配）· ADR-0004（确定性）· ADR-0008（城池控制权唯一权威 + 变更事件）· ADR-0006（种子化随机）· **ADR-0010（占城归属契约，Proposed）**
 > **GDD**: **GDD_019 出征攻城（Draft，2026-07-04 起草）**
-> **Status**: Ready for Stories（2026-07-04：GDD_019 → Reviewed、ADR-0010 → Accepted，焦点跨系统审查 gdd-cross-review-2026-07-04.md 5 Warning 全闭；下一步 /create-stories epic-029）
+> **Status**: ✅ Complete（2026-07-04：5/5 story Domain+Application 核心实现+测试；dotnet 871/871 绿、3 DLL 同步。待接 Unity HUD「出征」入口——Presentation 层）
 > **设计来源**: 2026-07-04 用户设计对话裁定（见下"设计裁定"）
 
 ## 背景与问题

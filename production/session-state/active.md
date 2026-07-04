@@ -1332,3 +1332,11 @@ ADR-0003（数据驱动配置的正式锁定）。
 - epic-029 EPIC 更新:Governing ADR加0010、GDD_019、实现前置改"已起草待审"。
 - ▶ epic-029 可开工路径:/review-all-gdds(GDD_019) → /architecture-decision(ADR-0010转Accepted) → /create-stories epic-029 → /dev-story。
 - 未提交。
+
+## Session Extract — epic-029 出征攻城 实现完成 2026-07-04
+- 5 story Domain+Application 核心全实现+测试（S1授权门/S2攻城接入LaunchOffensive/S3闭合因果OffensiveSetup/S4占城C OccupationOwnership+ResolveConquest/S5升官联动）。
+- Domain/Conquest：OccupationOwnership(占城C种子化) · OffensiveAuthorization · OffensiveSetup · SiegeResolution。Application：AuthorizeOffensive/CheckOffensiveTarget/ResolveConquest/LaunchOffensive + ConquestResult/OffensiveResult + 会话态(ConquestCount/RebellionLean/OffensiveAuthorization)+存读档。PlayableCampaign 增敌城(虎牢关)。StartCampaign 登记非开局初始城。
+- 测试：OffensiveDomainTests(9) + CampaignConquestTests(8含端到端强准备胜/裸战败/未授权拒)。dotnet 871/871 绿(-warnaserror 0)；3 DLL Release 同步。
+- 5 story → Complete + 完成说明；EPIC → ✅ Complete。GDD_019 Reviewed·ADR-0010 Accepted·TR-offensive-001..005·跨系统审查5 Warning闭(外部流程)。
+- commit链：2502183(Domain)→4324e8b(Application)→17add6b(端到端)。
+- ⚠️ 待接：Unity HUD「出征」入口(选目标+发起)属 Presentation 层，随后续 UI 批做（epic-029 Logic/Integration 核心已完）。

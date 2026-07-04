@@ -1,12 +1,12 @@
 # Story 002: 攻城战接入（进攻视角）
 
 > **Epic**: 出征攻城循环（epic-029-offensive-campaign-loop）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L（~6h）[待 sprint 规划确认]
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-07-04
 
 ## Context
 
@@ -100,3 +100,10 @@
 
 - Depends on: Story 001（授权+目标入口须先给出合法目标城）。跨 epic：既有 BattleResolution 管线（epic-006/007/010）、CampaignSession 战役段（ADR-0009）。
 - Unlocks: Story 003。
+
+
+## Completion Notes
+**Completed**: 2026-07-04
+**实现**: `SiegeResolutionService`（Domain，攻方战力 vs 守方战力确定性结算）+ `LaunchOffensive`（Application 端到端：授权→闭合因果→攻城→占城/退兵）+ `OffensiveResult`。复用 M07 后果精神（败可继续）。
+**测试**: test_strong_preparation_wins_and_conquers_weak_loses / test_offensive_rejected_when_unauthorized。871/871 绿。
+**Code Review**: lean inline（本会话）· ADR-0010/0008/0006/0004 COMPLIANT · 反全知/确定性/无胜率/失败可继续均合规。

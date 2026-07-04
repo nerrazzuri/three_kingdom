@@ -1,12 +1,12 @@
 # Story 003: 闭合因果——准备→战果
 
 > **Epic**: 出征攻城循环（epic-029-offensive-campaign-loop）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L（~6h）[待 sprint 规划确认]
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-07-04
 
 ## Context
 
@@ -104,3 +104,10 @@
 
 - Depends on: Story 002（战斗管线 + 初始条件输入契约）。跨 epic：GDD_009 CommittedPlan、GDD_010 §7 结算、GDD_012 补给、GDD_007 情报投影（均已落地）。
 - Unlocks: Story 004。
+
+
+## Completion Notes
+**Completed**: 2026-07-04
+**实现**: `OffensiveSetupService`（Domain）——准备态（兵/粮/兵法条件）确定性单调映射为进攻方战力，取代脚本固定胜局；经 LaunchOffensive 接入攻城结算。
+**测试**: OffensiveDomainTests（准备单调+封顶+确定性）+ 端到端 test_strong...weak_loses（准备不同→胜负不同）。871/871 绿。
+**Code Review**: lean inline（本会话）· ADR-0010/0008/0006/0004 COMPLIANT · 反全知/确定性/无胜率/失败可继续均合规。

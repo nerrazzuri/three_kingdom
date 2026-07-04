@@ -1,12 +1,12 @@
 # Story 004: 占城归属结算（方案 C）
 
 > **Epic**: 出征攻城循环（epic-029-offensive-campaign-loop）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M（~4h）[待 sprint 规划确认]
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-07-04
 
 ## Context
 
@@ -115,3 +115,10 @@
 
 - Depends on: Story 003（须有确定性胜负结果驱动占城）。跨 epic：GDD_004 `ICityControlAuthority`/ControlChanged（ADR-0008，已落地）、GDD_014 rebellion_lean 消费口（W1 已接线）、GDD_015 势力投影。
 - Unlocks: Story 005。
+
+
+## Completion Notes
+**Completed**: 2026-07-04
+**实现**: `OccupationOwnership`（Domain，ADR-0010：前2座归玩家、第三座起 DeterministicRandom 种子化伯努利、反全知、定点[0,1]）+ `ResolveConquest`（Application：判定→GDD_004控制权变更→LordKeeps累积自立倾向→占城计数→记功）+ 存读档。
+**测试**: OffensiveDomainTests（前N归玩家/p=1|0/确定性/名望抬概率）+ CampaignConquestTests（首座归玩家/第三座归君主+自立倾向/存档）。871/871 绿。
+**Code Review**: lean inline（本会话）· ADR-0010/0008/0006/0004 COMPLIANT · 反全知/确定性/无胜率/失败可继续均合规。

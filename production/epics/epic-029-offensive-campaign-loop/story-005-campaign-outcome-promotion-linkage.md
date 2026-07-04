@@ -1,12 +1,12 @@
 # Story 005: 出征后果→功绩→升官联动
 
 > **Epic**: 出征攻城循环（epic-029-offensive-campaign-loop）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: M（~4h）[待 sprint 规划确认]
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-07-04
 
 ## Context
 
@@ -100,3 +100,10 @@
 
 - Depends on: Story 004（占城 verdict + rebellion_lean 增量）。跨 epic：GDD_014 CareerState/晋升（epic-011/022）、GDD_010 §后果（TR-outcome-002）、CampaignSession 存档信封（ADR-0009/TR-session-003）、ADR-0005 存档。
 - Unlocks: None（epic 内末 story）。后续：epic-025 多城委任 / 全循环端到端平衡验证。
+
+
+## Completion Notes
+**Completed**: 2026-07-04
+**实现**: ResolveConquest/LaunchOffensive 胜局经 CareerProgressionService 记功（MajorBattleVictory→功绩/名望→晋升门槛，接 epic-022）；败局不占城但 OffensiveResult 保留可继续（失败可继续红线）。
+**测试**: test_conquest_applies_career_gain（功绩增长）+ 端到端胜/败分支。871/871 绿。
+**Code Review**: lean inline（本会话）· ADR-0010/0008/0006/0004 COMPLIANT · 反全知/确定性/无胜率/失败可继续均合规。

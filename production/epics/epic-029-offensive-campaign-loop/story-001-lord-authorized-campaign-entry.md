@@ -1,12 +1,12 @@
 # Story 001: 君主授权出征入口
 
 > **Epic**: 出征攻城循环（epic-029-offensive-campaign-loop）
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: M（~4h）[待 sprint 规划确认]
 > **Manifest Version**: 2 (2026-06-28)
-> **Last Updated**: [由 /dev-story 实现时设置]
+> **Last Updated**: 2026-07-04
 
 ## Context
 
@@ -101,3 +101,10 @@
 
 - Depends on: None（epic 内首 story）。跨 epic 前置：CampaignSession 装配（ADR-0009/epic-013）、GDD_004 `ICityControlAuthority`（epic-004/ADR-0008，已落地）、GDD_007 情报投影、GDD_014 CareerState.Rank（epic-011/022，已落地/进行中）须可用。
 - Unlocks: Story 002。
+
+
+## Completion Notes
+**Completed**: 2026-07-04
+**实现**: `OffensiveAuthorization`/`OffensiveAuthorizationService`（Domain）+ `AuthorizeOffensive`/`CheckOffensiveTarget`（CampaignSessionService）；目标合法性只读控制权投影（反全知）；StartCampaign 登记非开局初始城入权威。
+**测试**: OffensiveDomainTests（授权门四路）+ CampaignConquestTests.test_authorize_and_gate。871/871 绿。
+**Code Review**: lean inline（本会话）· ADR-0010/0008/0006/0004 COMPLIANT · 反全知/确定性/无胜率/失败可继续均合规。
