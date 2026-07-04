@@ -1,9 +1,12 @@
 using NUnit.Framework;
 using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Talent;
+using ThreeKingdom.Application.Theater;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Talent;
+using ThreeKingdom.Domain.Theater;
 using ThreeKingdom.Domain.Tests.Persistence;
 using ThreeKingdom.Presentation.Runtime;
 using ThreeKingdom.Presentation.Screens;
@@ -153,6 +156,26 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         {
             foreach (TalentProfile p in list) if (p.Id == id) return true;
             return false;
+        }
+
+        [Test]
+        public void test_conquered_city_enters_theater_and_can_be_delegated()
+        {
+            // 占城 C 归玩家（首座）→ 城入多城战区 → 可委任下属打理（M12）。
+            _runtime.RequestOffensiveAuthorization();
+            OffensivePlan plan = _runtime.BeginOffensive(PlayableCampaign.EnemyCity);
+            plan.Muster = 900;
+            plan.Supply = 400;
+            plan.Approach = ApproachPlan.FrontalAssault;
+            _runtime.LaunchOffensive();
+            OffensiveResultView result = _runtime.AutoResolveOffensive();
+
+            Assert.That(result.Victory, Is.True);
+            Assert.That(_runtime.Theater.Holds(PlayableCampaign.EnemyCity), Is.True, "占城归玩家 → 入多城战区。");
+
+            TheaterCommandResult d = _runtime.DelegateCity(PlayableCampaign.EnemyCity, new CharacterId("char-aide"));
+            Assert.That(d.Applied, Is.True);
+            Assert.That(_runtime.Theater.Of(PlayableCampaign.EnemyCity)!.Mode, Is.EqualTo(GovernanceMode.Delegated), "可委任打理。");
         }
 
         [Test]

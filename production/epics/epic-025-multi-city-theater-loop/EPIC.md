@@ -3,7 +3,7 @@
 > **Layer**: Feature
 > **Architecture Module**: M12（`full-game-loop-module-plan` §M12）
 > **Governing ADR**: ADR-0008（城池控制权唯一权威 + 变更事件）· ADR-0009（会话装配）· ADR-0004（确定性）
-> **Status**: Draft（需补设计锚点后转 Ready；风险已标注"复杂度指数膨胀，须先定权限/委任机制"）
+> **Status**: ✅ Complete（2026-07-04：GDD_022 + 4 story 全实现+测试。Domain/Theater（多城态+掌管范围+委任治理不越权+资源守恒+反全知报告）+ Application/Theater 编排 + CampaignRuntime 接入（占城 C→入战区）+ TR-theater-001~004。dotnet 949/949 绿。ADR 复用 0004/0006/0008/0009（无新增）。平衡打磨延后。）
 > **设计来源**: 模块计划 §M12 + 2026-07-04 用户设计对话（占城 C 使玩家真会直辖多城）
 
 ## 背景与问题

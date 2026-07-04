@@ -4,6 +4,8 @@ using ThreeKingdom.Application.Battle;
 using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Session;
 using ThreeKingdom.Application.Talent;
+using ThreeKingdom.Application.Theater;
+using ThreeKingdom.Domain.Theater;
 using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
@@ -337,6 +339,8 @@ namespace ThreeKingdom.Presentation.Runtime
                     Session, _offensiveTarget, _scenario.ConqueredGarrison, PlayableCampaign.Player, PlayableCampaign.LordFaction,
                     FixedPoint.Zero, FixedPoint.Zero, FixedPoint.Zero,
                     _scenario.OffensiveSeed, _scenario.Occupation, _scenario.Ladder, CareerGainSource.MajorBattleVictory);
+                if (conquest.Verdict == OwnershipVerdict.GrantToPlayer)   // 归玩家直辖 → 入多城战区（M12）
+                    _theater = _theaterService.HoldConqueredCity(_theater, _offensiveTarget);
                 view = OffensiveResultView.Victorious(conquest);
             }
             else
@@ -403,6 +407,35 @@ namespace ThreeKingdom.Presentation.Runtime
         }
 
         private ZoneBattleRuntime Defense() => _defenseBattle ?? throw new InvalidOperationException("尚未发起守城战。");
+
+        // --- 多城战区（GDD_022 / M12）：占城 C 归玩家的城入战区；委任下属打理；掌管范围随官阶；反全知报告 ---
+
+        private readonly TheaterService _theaterService = new TheaterService();
+        private TheaterState _theater = TheaterState.Empty;
+
+        /// <summary>当前多城战区态（直辖城 + 委任）。</summary>
+        public TheaterState Theater => _theater;
+
+        /// <summary>委任某直辖城给下属打理（须已持有）。</summary>
+        public TheaterCommandResult DelegateCity(ThreeKingdom.Domain.City.CityId city, ThreeKingdom.Domain.Characters.CharacterId governor)
+        {
+            TheaterCommandResult r = _theaterService.Delegate(_theater, city, governor);
+            if (r.Applied) _theater = r.State;
+            return r;
+        }
+
+        /// <summary>收回某城亲管（受官阶亲管范围约束——取玩家当前官阶）。</summary>
+        public TheaterCommandResult SelfGovernCity(ThreeKingdom.Domain.City.CityId city)
+        {
+            int rank = (int)Session.Career.Career.Rank;
+            TheaterCommandResult r = _theaterService.SelfGovern(_theater, city, rank, SpanOfControlConfig.Default);
+            if (r.Applied) _theater = r.State;
+            return r;
+        }
+
+        /// <summary>战区报告（亲管城即时、委任城下属汇报·反全知）。</summary>
+        public IReadOnlyList<TheaterCityReport> TheaterReports(TheaterResources reported)
+            => new TheaterReportService().Build(_theater, reported);
 
         // --- 人才招揽（GDD_020）：出现随历史 · 知晓靠情报（反全知）· 入伙靠条件+种子判定 · 喂给战斗/生涯 ---
 

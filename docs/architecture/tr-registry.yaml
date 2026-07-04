@@ -632,6 +632,36 @@ requirements:
     revised: ""
     status: active
 
+  # --- 多城战区与委任 (GDD_022 / epic-025 / M12) ---
+  - id: TR-theater-001
+    system: theater
+    gdd: design/gdd/gdd-022-multi-city-theater.md
+    requirement: "直辖多城 + 委任 + 存档：占城 C 产出的城入 TheaterState（默认亲管）；可委任 DelegatedGovernor 打理；持有/委任态纳入统一存档、确定性哈希 round-trip 一致"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-theater-002
+    system: theater
+    gdd: design/gdd/gdd-022-multi-city-theater.md
+    requirement: "委任 AI 不越权（负向不变量）：委任下属动作空间结构上仅本地治理（征用/修工事/安抚/无为），无出征/宣战/战区令等战略；确定性规则化择动（无旁路随机）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-theater-003
+    system: theater
+    gdd: design/gdd/gdd-022-multi-city-theater.md
+    requirement: "跨城资源守恒：TheaterResources.Transfer 总量前后不变（无凭空产出/丢失）；源粮不足或量非法拒（无部分写入）；调配经命令路径"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-theater-004
+    system: theater
+    gdd: design/gdd/gdd-022-multi-city-theater.md
+    requirement: "掌管范围随官阶 + 反全知：亲管城数受 SpanOfControlConfig(rank) 上限约束（超阶收回亲管拒，须委任或升官）；多城态经战区报告呈现，委任城标 Fresh=false（下属汇报·非即时全知面板，反全知）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+
   # --- 表现与理解层 (M15 UX / epic-028；契约文档 design/ux/m15-campaign-loop-ux.md，Approved 2026-07-03) ---
   - id: TR-ux-001
     system: ux
