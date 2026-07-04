@@ -10,6 +10,7 @@
             <ui:Label name="hud-banner" class="hud-banner" />
             <!-- story-004：相位 + 该相位可做动作集（AC-5：任一相位都看得到下一步能做什么）。 -->
             <ui:Label name="hud-phase" class="hud-note" />
+            <ui:Label name="hud-persona" class="hud-note" />
             <!-- story-005 新手引导：沿自然循环序一次一条 in-world 提示（不模态、不替选）+ 可关闭。 -->
             <ui:VisualElement name="onboarding" class="hud-top">
                 <ui:Label name="onboarding-hint" class="hud-note" />

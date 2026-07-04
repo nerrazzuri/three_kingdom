@@ -77,6 +77,21 @@ namespace ThreeKingdom.Domain.Tests.Presentation
             Assert.That(cues, Is.Empty, "关闭引导后一律不打扰。");
         }
 
+        // ---- 新系统引导点（备足决定胜负 / 人心杠杆 / 人设）有原创文案，非枚举名回退 ----
+
+        [Test]
+        public void test_new_system_cues_have_authored_text()
+        {
+            foreach (OnboardingCue cue in new[] { OnboardingCue.PreparationDecides, OnboardingCue.MindLever, OnboardingCue.PersonaIntro })
+            {
+                string text = OnboardingHints.CueText(cue);
+                Assert.That(text, Is.Not.Empty);
+                Assert.That(text, Is.Not.EqualTo(cue.ToString()), $"{cue} 应有原创引导文案，非枚举名回退。");
+            }
+            Assert.That(OnboardingHints.CueText(OnboardingCue.MindLever), Does.Contain("攻心"), "人心杠杆引导点明攻心。");
+            Assert.That(OnboardingHints.CueText(OnboardingCue.PreparationDecides), Does.Contain("六维"), "备战引导点明六维准备。");
+        }
+
         // ---- AC-6：引导不进 Domain——渲染引导不改会话权威态哈希 ----
 
         [Test]

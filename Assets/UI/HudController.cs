@@ -49,6 +49,10 @@ namespace ThreeKingdom.Unity.UI
             RenderTime(root, SessionRuntime.Status());
             RenderPendingPanels(root);
 
+            // 主角人设（GDD_015：开局随机性情，给天下事件"心里话"着色）。
+            var persona = SessionRuntime.Persona();
+            SetLabel(root, "hud-persona", "性情 · " + persona.Name + "（" + persona.Description + "）");
+
             var advance = root.Q<Button>("advance-time");
             if (advance != null)
                 advance.clicked += () =>

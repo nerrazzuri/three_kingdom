@@ -27,6 +27,9 @@ namespace ThreeKingdom.Unity.UI
         /// <summary>取当前世界状态视图（不推进；纯函数渲染恒等）。</summary>
         public static WorldStatusView Status() => _runtime.Status();
 
+        /// <summary>本局主角人设展示视图（GDD_015：开局随机性情，给心里话着色）。</summary>
+        public static PersonaView Persona() => _runtime.PersonaView();
+
         /// <summary>默认槽是否有存档（主菜单「继续」可用性）。</summary>
         public static bool HasSave() => _runtime.HasSave();
 

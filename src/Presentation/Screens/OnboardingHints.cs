@@ -43,6 +43,12 @@ namespace ThreeKingdom.Presentation.Screens
         AdvanceToHistory = 5,
         /// <summary>首次失败强化「可继续」（与 story-002 联动）。</summary>
         DefeatCanContinue = 6,
+        /// <summary>出征：六维准备决定胜负（备足以势破城，裸战多退兵）。</summary>
+        PreparationDecides = 7,
+        /// <summary>人心杠杆：攻城亦可攻心（离间/策反/流言撬动战局，非替代备战）。</summary>
+        MindLever = 8,
+        /// <summary>主角人设：开局性情各异，天下事件引出心里话（丰富代入，去留仍由你）。</summary>
+        PersonaIntro = 9,
     }
 
     /// <summary>
@@ -88,6 +94,9 @@ namespace ThreeKingdom.Presentation.Screens
             OnboardingCue.OutcomeToCareer => "战果之后：记功累积功绩与名望，通往晋升——胜负都在续写生涯长线。",
             OnboardingCue.AdvanceToHistory => "推进时段：历史大势自行在轨上推演——唯有你够得着之处，才会因你而分叉。",
             OnboardingCue.DefeatCanContinue => "此战失利并非终局——重整旗鼓，战役继续；这一败也是来路。",
+            OnboardingCue.PreparationDecides => "出征胜负先在案头定——兵力、补给、将领、兵种、布势、时机六维备足，方能以势破城；裸战强攻，多半退兵。",
+            OnboardingCue.MindLever => "攻城亦可攻心——先探明守将嫌隙，再离间、策反、散布流言，令其未战先乱。但攻心是撬动，非替代备战。",
+            OnboardingCue.PersonaIntro => "你自有性情——或雄心、或忠义、或务实、或谨慎。天下风云入眼，心里话随你本心；何去何从，仍由你定。",
             _ => cue.ToString(),
         };
     }

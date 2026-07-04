@@ -1471,3 +1471,10 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 测试 +2：PersonaWiringTests(赋人设+展示视图 / 存读档人设稳定)。dotnet 1005/1005 绿(1003→1005)；3 DLL 同步。
 - 遗留（归 #11 屏幕层随用随接）：施计命令/忠诚 tick/事件通报流的运行期专用命令方法——待具体 UI 屏调用时接。
 - ✅ 任务 #10（装配既存 + 人设接线）。转 #11 Unity UI 骨架（需编辑器验证）。
+
+## Session Extract — 任务#11 onboarding新引导点 + 人设入HUD 2026-07-04
+- 发现 Unity UI 已有框架（Hud/MainMenu/ZoneBattle/PauseMenu/Accessibility + OnboardingRuntime）。核心机制引导（"兵法条件组合非按钮"/"敌情只给估计"）本已存在且测。
+- 可验证（纯C#）：OnboardingHints 加 3 引导点——PreparationDecides(六维备足决定胜负)/MindLever(攻心是撬动非替代)/PersonaIntro(人设)。测试 +1（OnboardingViewModelTests：新引导点有原创文案）。
+- Unity 侧（★需编辑器验证，无法无头编译）：SessionRuntime.Persona 委托 + Hud.uxml hud-persona 标签 + HudController 绑定人设标签。约定一致但未经我验证。
+- dotnet 1006/1006 绿(1005→1006)；3 DLL 同步。
+- ✅ 任务 #11（可验证部分完成；Unity 视觉待编辑器验证）。全部 6 任务完成。
