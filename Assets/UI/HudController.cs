@@ -131,33 +131,26 @@ namespace ThreeKingdom.Unity.UI
             Wire(root, "offensive-cavalry", () => AdjustPlan(root, AddCavalry));
             Wire(root, "offensive-advisor", () => AdjustPlan(root, p => p.Advisor = !p.Advisor));
             Wire(root, "offensive-deputy", () => AdjustPlan(root, AddDeputy));
+            // 发起出征：授权通过 → 进入<b>独立区域战斗场景</b>（结算后返回本 HUD）。
             Wire(root, "offensive-launch", () =>
             {
                 if (SessionRuntime.CurrentOffensivePlan == null) return;
                 OffensiveResultView r = SessionRuntime.LaunchOffensive();
-                if (r.BattleInProgress) { _battleMode = "offensive"; _offensiveResult = null; }
-                else _offensiveResult = r;   // 被门拒 → 在出征面板显示原因
-                RenderOffensive(root);
-                RenderBattle(root);
+                if (r.BattleInProgress)
+                {
+                    ZoneBattleSession.EnterOffensive(SceneManager.GetActiveScene().name);
+                    SceneManager.LoadScene("ZoneBattle");
+                }
+                else { _offensiveResult = r; RenderOffensive(root); }   // 被门拒 → 显示原因
             });
 
-            // 守城迎敌：进入区域防御战浮层。
+            // 守城迎敌：进入独立区域防御战场景。
             Wire(root, "offensive-defend", () =>
             {
                 SessionRuntime.StartDefenseBattle();
-                _battleMode = "defense";
-                RenderBattle(root);
+                ZoneBattleSession.EnterDefense(SceneManager.GetActiveScene().name);
+                SceneManager.LoadScene("ZoneBattle");
             });
-
-            // 战斗浮层：推进回合 / 结算战果。
-            Wire(root, "cb-resolve", () =>
-            {
-                if (_battleMode == "offensive") SessionRuntime.OffensiveBattleResolveRound();
-                else if (_battleMode == "defense") SessionRuntime.DefenseBattleResolveRound();
-                RenderBattle(root);
-            });
-            Wire(root, "cb-conclude", () => ConcludeBattle(root));
-            RenderBattle(root);
 
             // 新手引导（story-005 / §3/§5/§7 Q2）：前 N 回合自动展开军议（配置驱动，可关闭）。
             if (OnboardingHints.ShouldAutoExpandCouncil(SessionRuntime.Round(), OnboardingConfig.Default, OnboardingRuntime.Disabled)
@@ -622,86 +615,6 @@ namespace ThreeKingdom.Unity.UI
             var roster = SessionRuntime.DeputyRoster;
             if (roster.Count == 0 || plan.Deputies.Count > 0) return;
             plan.Deputies.Add(roster[0]);
-        }
-
-        /// <summary>当前战斗浮层模式（"offensive"/"defense"/null=无战斗）。表现态。</summary>
-        private string _battleMode;
-
-        /// <summary>
-        /// 战斗浮层（GDD_021 §12）：出征/守城发起后在 HUD 内逐回合排兵布阵；驱动 campaign 真战斗（SessionRuntime），
-        /// 结算后隐去。逻辑（区域引擎/敌AI/结算）已 dotnet 单测；本壳只绑定渲染。
-        /// </summary>
-        private void RenderBattle(VisualElement root)
-        {
-            bool active = _battleMode != null;
-            SetDisplay(root, "campaign-battle", active);
-            if (!active) return;
-
-            ZoneBattleView v = _battleMode == "offensive" ? SessionRuntime.OffensiveBattleView() : SessionRuntime.DefenseBattleView();
-            SetLabel(root, "cb-title", _battleMode == "offensive" ? "出征 · 战场区域" : "守城 · 战场区域");
-            SetLabel(root, "cb-round", $"第 {v.Round} / {v.MaxRounds} 回合");
-            SetLabel(root, "cb-outcome", v.IsOver ? v.OutcomeLabel : string.Empty);
-
-            var zones = root.Q<VisualElement>("cb-zones");
-            if (zones != null)
-            {
-                zones.Clear();
-                foreach (ZoneLineView z in v.Zones)
-                {
-                    string star = z.IsObjective ? "★" : "　";
-                    zones.Add(new Label($"{star}{z.ZoneLabel}　我 {z.OwnStrength} ｜ 敌 {z.EnemyStrength}"));
-                    foreach (string c in z.FormedConditions) zones.Add(new Label("　　✦ " + c));
-                    foreach (string d in z.OwnDetachments) zones.Add(new Label("　　· " + d));
-                }
-            }
-
-            var moves = root.Q<VisualElement>("cb-moves");
-            if (moves != null)
-            {
-                moves.Clear();
-                if (v.IsOver) moves.Add(new Label("　战斗已终局，点「结算战果」。"));
-                else
-                    foreach (ZoneMoveOption m in v.MoveOptions)
-                    {
-                        var captured = m;
-                        moves.Add(new Button(() =>
-                        {
-                            if (_battleMode == "offensive") SessionRuntime.OffensiveBattleMove(captured.DetachmentId, captured.TargetZoneId);
-                            else SessionRuntime.DefenseBattleMove(captured.DetachmentId, captured.TargetZoneId);
-                            RenderBattle(root);
-                        })
-                        { text = $"{captured.DetachmentLabel} → {captured.TargetZoneLabel}" });
-                    }
-            }
-
-            var emerg = root.Q<VisualElement>("cb-emergences");
-            if (emerg != null)
-            {
-                emerg.Clear();
-                foreach (string e in v.Emergences) emerg.Add(new Label("　⚡ " + e));
-            }
-
-            SetEnabled(root, "cb-resolve", !v.IsOver);
-            SetEnabled(root, "cb-conclude", v.IsOver);
-        }
-
-        /// <summary>结算当前战斗：出征→占城归属/退兵（写回会话）；守城→守土成败。隐去浮层、刷新循环。</summary>
-        private void ConcludeBattle(VisualElement root)
-        {
-            if (_battleMode == "offensive")
-            {
-                if (!SessionRuntime.OffensiveBattleOver) return;
-                _offensiveResult = SessionRuntime.ConcludeOffensive();   // 占城归属 C / 退兵可继续（权威写回）
-            }
-            else if (_battleMode == "defense")
-            {
-                if (!SessionRuntime.DefenseBattleOver) return;
-                SetLabel(root, "offensive-result", SessionRuntime.DefenseHeld ? "守土成功，退敌！" : "城破——守御失利。");
-            }
-            _battleMode = null;
-            RenderBattle(root);
-            RenderOffensive(root);
-            RenderLoop(root);   // 占城/记功可能改会话态 → 刷新
         }
 
         private static void SetDisplay(VisualElement root, string name, bool shown)

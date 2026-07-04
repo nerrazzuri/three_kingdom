@@ -18,6 +18,7 @@ namespace ThreeKingdom.Presentation.Runtime
     {
         private readonly ZoneBattleService _service = new ZoneBattleService();
         private readonly ZoneCommandService _commands = new ZoneCommandService();
+        private readonly EnemyZoneAiService _autoAi = new EnemyZoneAiService();
         private readonly ZoneBattleContext _context;
         private readonly ZoneBattleConfig _config;
         private readonly EnemyAiConfig _aiConfig;
@@ -101,6 +102,25 @@ namespace ThreeKingdom.Presentation.Runtime
                 _lastEmergences = new List<string>(r.Emergences);
                 _outcome = r.Outcome;
             }
+            return View();
+        }
+
+        /// <summary>
+        /// AI 代打一回合（GDD_021：玩家可选亲自打或挂 AI）：<b>玩家方也由 AI 决策</b>（同一套角色感知 AI，
+        /// 受同规则、不作弊）→ 再走标准回合（敌AI + 结算）。胜负仍由部署/对阵决定——<b>代打不保证赢</b>。
+        /// </summary>
+        public ZoneBattleView AutoResolveRound()
+        {
+            if (IsOver) return View();
+            _state = _autoAi.Decide(_state, PlayerSide, _config, _aiConfig);   // AI 替玩家指挥
+            return ResolveRound();                                             // 敌AI + 同步结算
+        }
+
+        /// <summary>AI 代打至终局（挂机）：双方皆 AI，确定性，胜负由准备/对阵决定（可能赢也可能输）。</summary>
+        public ZoneBattleView AutoResolve()
+        {
+            int guard = 0;
+            while (!IsOver && guard++ < 100) AutoResolveRound();
             return View();
         }
 

@@ -32,6 +32,8 @@ namespace ThreeKingdom.Unity.EditorTools
         {
             new ScreenDef { Name = "MainMenu", Uxml = "Assets/UI/MainMenu.uxml", Controller = typeof(MainMenuController) },
             new ScreenDef { Name = "Hud", Uxml = "Assets/UI/Hud.uxml", Controller = typeof(HudController) },
+            // 独立区域战斗场景（GDD_021 / epic-031）：出征/守城从 HUD 进入此屏排兵布阵，结算后返回 HUD。
+            new ScreenDef { Name = "ZoneBattle", Uxml = "Assets/UI/ZoneBattle.uxml", Controller = typeof(ZoneBattleController) },
             new ScreenDef { Name = "PauseMenu", Uxml = "Assets/UI/PauseMenu.uxml", Controller = typeof(PauseMenuController) },
             // story-005 无障碍设置面板：自我演示屏（改设置即时应用文本缩放/色盲/减少动态到本屏）。
             new ScreenDef { Name = "AccessibilitySettings", Uxml = "Assets/UI/AccessibilitySettings.uxml", Controller = typeof(AccessibilitySettingsController) },

@@ -315,6 +315,8 @@ namespace ThreeKingdom.Presentation.Runtime
         public ZoneCommandResult OffensiveBattleSetPosture(string detachmentId, Posture posture) => Battle().SetPosture(detachmentId, posture);
         /// <summary>推进出征战斗一回合（敌AI + 结算），返回战后投影。</summary>
         public ZoneBattleView OffensiveBattleResolveRound() => Battle().ResolveRound();
+        /// <summary>挂 AI 代打出征至终局（不结算，供场景展示后再由玩家点结算），返回终局投影。</summary>
+        public ZoneBattleView OffensiveBattleAutoResolve() => Battle().AutoResolve();
 
         private ZoneBattleRuntime Battle() => _offensiveBattle ?? throw new InvalidOperationException("尚未发起出征战斗。");
 
@@ -344,6 +346,13 @@ namespace ThreeKingdom.Presentation.Runtime
             _offensiveBattle = null;
             _offensivePlan = null;
             return view;
+        }
+
+        /// <summary>挂 AI 代打出征至终局并结算后果（玩家可选亲自打或代打；代打不保证赢，胜负由六维准备/对阵定）。</summary>
+        public OffensiveResultView AutoResolveOffensive()
+        {
+            Battle().AutoResolve();
+            return ConcludeOffensive();
         }
 
         // --- 守城区域防御战（GDD_021 R7 攻守统一：玩家=守方，攻方=敌AI）。替换脚本守城的可玩战斗。---
@@ -382,6 +391,15 @@ namespace ThreeKingdom.Presentation.Runtime
         public ZoneCommandResult DefenseBattleSetPosture(string detachmentId, Posture posture) => Defense().SetPosture(detachmentId, posture);
         /// <summary>推进守城战一回合（敌AI + 结算），返回战后投影。</summary>
         public ZoneBattleView DefenseBattleResolveRound() => Defense().ResolveRound();
+        /// <summary>挂 AI 代打守城至终局（不结算），返回终局投影。</summary>
+        public ZoneBattleView DefenseBattleAutoResolve() => Defense().AutoResolve();
+
+        /// <summary>挂 AI 代打守城至终局；返回是否守住（代打不保证守成，胜负由守备/对阵定）。</summary>
+        public bool AutoResolveDefense()
+        {
+            Defense().AutoResolve();
+            return DefenseHeld;
+        }
 
         private ZoneBattleRuntime Defense() => _defenseBattle ?? throw new InvalidOperationException("尚未发起守城战。");
 

@@ -130,6 +130,8 @@ namespace ThreeKingdom.Unity.UI
         public static bool OffensiveBattleMove(string detId, string zoneId) => _runtime.OffensiveBattleMove(detId, zoneId).Applied;
         /// <summary>推进出征战斗一回合（敌AI + 结算）。</summary>
         public static ZoneBattleView OffensiveBattleResolveRound() => _runtime.OffensiveBattleResolveRound();
+        /// <summary>挂 AI 代打出征至终局（不结算）。</summary>
+        public static ZoneBattleView OffensiveBattleAutoResolve() => _runtime.OffensiveBattleAutoResolve();
         /// <summary>战斗终局后结算出征后果（占城归属 / 退兵可继续）。</summary>
         public static OffensiveResultView ConcludeOffensive() => _runtime.ConcludeOffensive();
 
@@ -147,6 +149,8 @@ namespace ThreeKingdom.Unity.UI
         public static bool DefenseBattleMove(string detId, string zoneId) => _runtime.DefenseBattleMove(detId, zoneId).Applied;
         /// <summary>推进守城战一回合。</summary>
         public static ZoneBattleView DefenseBattleResolveRound() => _runtime.DefenseBattleResolveRound();
+        /// <summary>挂 AI 代打守城至终局（不结算）。</summary>
+        public static ZoneBattleView DefenseBattleAutoResolve() => _runtime.DefenseBattleAutoResolve();
         /// <summary>守城是否守住。</summary>
         public static bool DefenseHeld => _runtime.DefenseHeld;
     }

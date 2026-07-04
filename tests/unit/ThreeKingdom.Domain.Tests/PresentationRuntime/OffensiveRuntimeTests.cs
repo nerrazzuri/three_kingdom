@@ -103,6 +103,24 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         }
 
         [Test]
+        public void test_ai_can_autoresolve_offensive_for_the_player()
+        {
+            // 玩家可选挂 AI 代打：发起后 AI 代打至终局并结算占城（强部署 → 胜、占城）。
+            _runtime.RequestOffensiveAuthorization();
+            OffensivePlan plan = _runtime.BeginOffensive(PlayableCampaign.EnemyCity);
+            plan.Muster = 900;
+            plan.Supply = 400;
+            plan.Approach = ApproachPlan.FrontalAssault;
+
+            OffensiveResultView launched = _runtime.LaunchOffensive();
+            Assert.That(launched.BattleInProgress, Is.True);
+
+            OffensiveResultView result = _runtime.AutoResolveOffensive();   // 挂 AI 代打
+            Assert.That(result.Victory, Is.True, "强部署 → AI 代打破城。");
+            Assert.That(_runtime.Session.ConquestCount, Is.EqualTo(1), "代打胜亦经权威占城结算。");
+        }
+
+        [Test]
         public void test_defense_battle_enters_zone_battle_and_holds_the_gate()
         {
             // 守城=攻守统一：玩家守方分区布防，敌AI 来攻；守军(700) 挡住来犯(500) → 守土成功。

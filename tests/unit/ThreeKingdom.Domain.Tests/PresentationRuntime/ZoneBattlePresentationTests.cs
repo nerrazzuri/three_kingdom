@@ -84,6 +84,32 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         }
 
         [Test]
+        public void test_ai_autoresolve_strong_attacker_wins()
+        {
+            ZoneBattleRuntime rt = Battle(900, ApproachPlan.FrontalAssault, garrison: 150);
+            ZoneBattleView v = rt.AutoResolve();
+            Assert.That(rt.IsOver, Is.True, "AI 代打推进至终局。");
+            Assert.That(rt.Outcome, Is.EqualTo(ZoneBattleOutcome.AttackerVictory), "强部署 → 代打胜。");
+        }
+
+        [Test]
+        public void test_ai_autoresolve_does_not_guarantee_victory()
+        {
+            // 弱部署对强守：AI 代打不作弊 → 仍会输（代打不必胜）。
+            ZoneBattleRuntime rt = Battle(60, ApproachPlan.FrontalAssault, garrison: 900);
+            rt.AutoResolve();
+            Assert.That(rt.Outcome, Is.EqualTo(ZoneBattleOutcome.DefenderVictory), "弱部署 → 代打亦败（不保证赢）。");
+        }
+
+        [Test]
+        public void test_ai_autoresolve_is_deterministic()
+        {
+            ZoneBattleOutcome a = Battle(500, ApproachPlan.FeintLure, garrison: 300, cavalry: 250, seed: 88UL).AutoResolve().Outcome;
+            ZoneBattleOutcome b = Battle(500, ApproachPlan.FeintLure, garrison: 300, cavalry: 250, seed: 88UL).AutoResolve().Outcome;
+            Assert.That(b, Is.EqualTo(a), "同种子+同部署 → 代打同终局（确定性可复现）。");
+        }
+
+        [Test]
         public void test_resolve_round_advances_clock_and_projects_view()
         {
             ZoneBattleRuntime rt = Battle(500, ApproachPlan.FeintLure, garrison: 300, cavalry: 250);

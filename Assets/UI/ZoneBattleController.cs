@@ -6,9 +6,9 @@ using ThreeKingdom.Presentation.Screens;
 namespace ThreeKingdom.Unity.UI
 {
     /// <summary>
-    /// 区域战斗屏控制器（Presentation 薄壳 / ADR-0002，GDD_021 §12 / epic-031 S7）。
-    /// 把只读 <see cref="ZoneBattleView"/> 绑定到 UXML：各区态势 + 排兵布阵调动按钮 + 推进回合 + 涌现 + 终局。
-    /// 逻辑（部署/调整/敌AI/结算/终局）已由 dotnet 测试覆盖（BLOCKING）；本壳无规则。
+    /// 区域战斗屏控制器（Presentation 薄壳 / ADR-0002，GDD_021 §12 / epic-031 S7）——<b>独立战斗场景</b>。
+    /// 按 <see cref="ZoneBattleSession"/> 模式驱动 campaign 真战斗（出征/守城）或演示局：各区态势 + 排兵布阵调动 +
+    /// <b>亲自打</b>（逐回合）/ <b>挂 AI 代打</b>（不作弊、不保证赢）+ 结算返回来源场景。逻辑已 dotnet 单测；本壳只渲染。
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class ZoneBattleController : MonoBehaviour
@@ -18,11 +18,15 @@ namespace ThreeKingdom.Unity.UI
             var root = GetComponent<UIDocument>().rootVisualElement;
             Render(root);
 
-            var resolve = root.Q<Button>("zb-resolve");
-            if (resolve != null) resolve.clicked += () => { ZoneBattleSession.ResolveRound(); Render(root); };
-
-            var toMenu = root.Q<Button>("zb-to-menu");
-            if (toMenu != null) toMenu.clicked += () => SceneManager.LoadScene("MainMenu");
+            Wire(root, "zb-resolve", () => { if (!ZoneBattleSession.IsOver) ZoneBattleSession.ResolveRound(); Render(root); });
+            Wire(root, "zb-auto", () => { if (!ZoneBattleSession.IsOver) ZoneBattleSession.AutoResolve(); Render(root); });
+            Wire(root, "zb-conclude", () =>
+            {
+                if (!ZoneBattleSession.IsOver) return;
+                ZoneBattleSession.Conclude();                        // 出征→占城/退兵（权威）；守城→守土成败
+                SceneManager.LoadScene(ZoneBattleSession.ReturnScene); // 返回来源场景（HUD）
+            });
+            Wire(root, "zb-to-menu", () => SceneManager.LoadScene("MainMenu"));
         }
 
         /// <summary>渲染当前战斗投影（纯读；同态渲染恒等）。</summary>
@@ -32,11 +36,12 @@ namespace ThreeKingdom.Unity.UI
 
             SetLabel(root, "zb-round", $"第 {view.Round} / {view.MaxRounds} 回合");
             SetLabel(root, "zb-outcome", view.IsOver ? view.OutcomeLabel : string.Empty);
+            SetLabel(root, "zb-result", view.IsOver ? "点「结算战果并返回」收兵。" : string.Empty);
 
-            var resolve = root.Q<Button>("zb-resolve");
-            if (resolve != null) resolve.SetEnabled(!view.IsOver);
+            SetEnabled(root, "zb-resolve", !view.IsOver);
+            SetEnabled(root, "zb-auto", !view.IsOver);
+            SetEnabled(root, "zb-conclude", view.IsOver);
 
-            // 各区态势：我方/敌方投影 + 已成兵法条件。
             var zones = root.Q<VisualElement>("zb-zones");
             if (zones != null)
             {
@@ -50,7 +55,6 @@ namespace ThreeKingdom.Unity.UI
                 }
             }
 
-            // 排兵布阵：合法调动按钮（点击 → 调动 → 重渲染）。
             var moves = root.Q<VisualElement>("zb-moves");
             if (moves != null)
             {
@@ -68,7 +72,6 @@ namespace ThreeKingdom.Unity.UI
                     }
             }
 
-            // 涌现兵法。
             var emerg = root.Q<VisualElement>("zb-emergences");
             if (emerg != null)
             {
@@ -77,10 +80,22 @@ namespace ThreeKingdom.Unity.UI
             }
         }
 
+        private static void Wire(VisualElement root, string name, System.Action handler)
+        {
+            var button = root.Q<Button>(name);
+            if (button != null) button.clicked += handler;
+        }
+
         private static void SetLabel(VisualElement root, string name, string text)
         {
             var label = root.Q<Label>(name);
             if (label != null) label.text = text;
+        }
+
+        private static void SetEnabled(VisualElement root, string name, bool enabled)
+        {
+            var button = root.Q<Button>(name);
+            if (button != null) button.SetEnabled(enabled);
         }
     }
 }

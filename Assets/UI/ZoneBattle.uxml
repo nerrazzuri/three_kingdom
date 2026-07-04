@@ -7,7 +7,10 @@
             <ui:Label name="zb-title" text="出征·虎牢关 — 战场区域" class="hud-objective" />
             <ui:Label name="zb-round" class="hud-note" />
             <ui:Label name="zb-outcome" class="hud-banner" />
-            <ui:Button name="zb-resolve" text="推进回合（敌军亦动）" />
+            <ui:Button name="zb-resolve" text="亲自打 · 推进回合（敌军亦动）" />
+            <ui:Button name="zb-auto" text="挂 AI 代打（有胜有负，不作弊）" />
+            <ui:Button name="zb-conclude" text="结算战果并返回" />
+            <ui:Label name="zb-result" class="hud-note" />
             <ui:Button name="zb-to-menu" text="返回主菜单" />
         </ui:VisualElement>
 
