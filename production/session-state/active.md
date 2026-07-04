@@ -1,5 +1,56 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## ▶▶▶ 新方向（2026-07-04）— 战斗核心层：战场区域部署与区域战斗（用户定为核心玩法，须最完善）
+
+> 用户澄清「排兵布阵是重点」：不是纯角色布阵（嫌单薄）、也不是三国志坐标微操——要**区域布阵**（指范围非坐标 + 军师按区给方法）。三点拍板：① **战中可调整**（战争核心好玩点）；② 先固定几类区域，**预留每城场景自定义**（数据驱动 Future）；③ **敌方AI区域博弈必做**（战争核心，须最完善）。
+> - 已建 **GDD_021 战场区域部署与区域战斗**（Draft，18 段）：区域部署 + 回合制战中调整 + 敌方区域AI + 攻守统一；实现 GDD_010 执行层、**首次落地 GDD_016 敌AI**。登记 gdd-index。
+> - 核心模型：战场=~5 命名区域（地形/条件禀赋/邻接）；支队(将+兵种+兵力+姿态)派到区；回合循环=玩家调整→敌AI(反全知种子softmax)→同步结算→按区条件涌现；复用 TacticCondition/六维准备/士气/情报/天气；全确定性(ADR-0004/0006)。
+> - 待补 ADR：拟 ADR-0012（确定性区域战斗引擎）+ ADR-0013（敌方区域AI效用模型，或扩 0006）。
+> - **规模=一个战斗核心 epic（epic-031-zone-battle-core）**，非小加法。设计先行，模型确认后逐 story 建。
+> - **▶ 待用户确认**：① 模型方向对不对；② 迁移：区域引擎**替换**竖切 scripted 战斗（推荐）vs 并存；③ 敌AI"便宜80% MVP→迭代到完善"分期可接受否。确认后：ADR → epic/stories → Domain 引擎+敌AI+Presentation+Unity+测试。
+> - 前置已完成（见下）：出征六维准备 + HUD 入口（892/892 绿，未提交）——区域战斗将把"单选布势路线"升级为"多区域部署"，六维准备作为部署输入保留复用。
+
+---
+
+## ✅ 完成（2026-07-04）— epic-029 续：出征准备维度重做 + Unity HUD 出征入口（用户选「档3」，自主做完）
+
+> **已全部实现 + 测试 + 同步 DLL。dotnet 892/892 绿（-warnaserror；基线 871 + 21 新测），零回归。未提交。**
+> - 设计权威：**GDD_019 → v2**（六维准备：§4a/§5 F1-F3 门表/§6/§8/§12 AC-3a~3d+7）+ **ADR-0011 Accepted**（多维确定性出征准备模型）。登记齐：adr-index/gdd-index(Revised v2)/technical-preferences/tr-registry(TR-offensive-006~010)。
+> - Domain/Conquest（新）：OffensiveEnums(TroopType/GeneralSpecialty/ApproachPlan/TerrainKind) · OffensiveCommand(OffensiveGeneral 统率/武勇/智略/专长 + 副将 decay + 军师) · TroopComposition · OffensiveTiming；OffensiveSetup 重写（六维闭合因果 Derive，纯函数/整数定点/无随机/无克制/无坐标）。
+> - Application：PlayableCampaign 暴露出征卫星配置（LeadGeneral/DeputyRoster/DefenseOf虎牢关/TerrainOf/OffensiveSetup/SiegeResolution/Occupation/LordFaction/OffensiveTargetCities）。LaunchOffensive 签名不变（透传 prep）。
+> - Presentation：CampaignRuntime 出征编排（RequestOffensiveAuthorization/OffensiveTargets/BeginOffensive/PreviewOffensive/LaunchOffensive + TargetScouted 反全知）；OffensiveScreens（OffensiveText/OffensiveTargetsView/OffensivePlan 草稿/OffensivePlanView 预览含缺失提示无胜率/OffensiveResultView）；HudPhaseView 治理加「出征」。
+> - Unity 壳：SessionRuntime 透传 + HudController 出征面板（授权/选目标/四路线/增兵加粮配骑兵/军师/副将/预览/发起/结果）+ Hud.uxml 出征卡。**Unity .cs 只 Unity 编译，未 dotnet 验证（同既有薄壳惯例）。**
+> - 测试：OffensiveDomainTests（30，含单调/门/无克制/无坐标/堆将递减/端到端）· CampaignConquestTests 适配新 prep · OffensiveRuntimeTests（7，Presentation 入口端到端）。
+> - **待用户回改/后续**：数值平衡（§8 Tuning 系数占位待调）；专长 GeneralSpecialty 目前仅展示未接降门逻辑；水军/火攻未入 MVP（无风/旱天气）；可选把本批正式立成 epic-029 补充 story + /code-review + commit。
+
+## ▶▶▶（历史）进行中（2026-07-04）— epic-029 续：出征准备维度重做（用户选「档3」，授权自主做完再汇报）
+
+> 用户要求把「出征入口」从最小接线升级为**完整重做出征准备维度**，自主实现，做完汇报。设计锁框架已达成：
+> **阵型=布势路线（非坐标）· 兵种=杠杆（非克制三角）· 武将/副将/军师=派谁轴（接 GDD_014）· 加时机/天气 + 侦察情报门（反全知）**。
+
+### 核心设计（复用最大化，零新造兵法）
+- **布势路线 = 复用现有 4 个 TacticTag**：正面强攻(无兵法·纯战力) / 假退诱敌(FeintAmbush) / 长围断粮(SupplyExhaustion) / 夜袭(NightRaid)。守城待变属守方，不作进攻路线。
+- **多维准备做成「条件能否成型的门」**：兵种份额/时机时段/天气/军师随军/是否侦察 → 决定所选路线的 TacticCondition 是否携入开战态。`OffensiveSetupService.Derive` 扩为多维确定性映射（整数/定点，ADR-0004）。
+- **闭合因果**：force = 基 + 兵力·系数 + 主将统率 + 兵种地形契合 + 路线修正；morale = 基 + 补给档 + 主将武勇（封顶）；conditions = 路线模板 ∩ 门（兵种/时机/天气/军师/侦察）。
+
+### 执行序（跨层大批次，逐层补 dotnet 测试）
+1. **设计权威**：GDD_019 → v2（§4 六维规则 / §5 公式 / §6 数据模型 / §8 Tuning / §12 AC）+ 新 **ADR-0011**（多维确定性出征准备模型）。
+2. **Domain/Conquest**：扩 OffensivePreparation（+ OffensiveCommand/OffensiveGeneral/GeneralSpecialty、TroopComposition/TroopType、ApproachPlan、OffensiveTiming、Scouted）；扩 OffensiveSetupService + OffensiveSetupConfig。+ 测试。
+3. **Application**：PlayableCampaign 暴露 将领roster/兵种/路线/时机/真守备(虎牢关)/君主势力id/占城配置；CampaignSessionService 出征备战草稿态 + 组装命令 + LaunchOffensive 消费草稿。+ 测试。
+4. **Presentation**：CampaignRuntime 出征组装方法 + OffensivePanelView/OffensiveTargetView/OffensiveResultView；HudPhaseView 治理相位加「出征」。+ 测试。
+5. **Unity 壳**：SessionRuntime 透传 + HudController 出征面板 + UXML。
+6. 验证 dotnet 全绿 + 同步 3 DLL Release + 汇报（含我替定的全部设计细节）。
+
+### 复用锚点（已确认）
+- TacticCondition 枚举（TacticEnums.cs）：假退伏击(0-2)/断粮(10-12)/守城(20-22)/夜袭(30-33) 原子齐全。
+- WeatherType：Clear/Overcast/Rain/Fog（无风/旱 → 火攻不入 MVP，与既有 scope 一致）。
+- RetinueMember 仅 Affinity，无战斗属性 → 武将战斗属性需新建 OffensiveGeneral（统率/武勇/智略/专长）。
+- 现有 LaunchOffensive/占城C/授权门/存档已实现（epic-029 5 story Complete），本批只**扩准备维度前段** + 补 Presentation 入口。
+- 基线：dotnet 871/871 绿（开工前）。**未提交。**
+
+---
+
+
 ## Session Extract — /create-stories epic-029 2026-07-04
 - **5 story 已写**（Ready，0 Blocked，governing ADR 全 Accepted）：001 君主授权出征入口(Int/ADR-0009) · 002 攻城战接入进攻视角(Int/ADR-0009) · 003 闭合因果准备→战果(Logic/ADR-0004) · 004 占城归属方案C(Logic/**ADR-0010**) · 005 出征后果→功绩→升官(Int/ADR-0009)。依赖链线性 001→005。覆盖 GDD_019 全 8 AC。
 - **TR-offensive-001..005 已补登** tr-registry（v5，沿 epic-028 TR-ux 补登惯例——GDD_019 未过 /architecture-review）。
