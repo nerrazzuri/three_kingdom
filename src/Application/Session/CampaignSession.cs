@@ -106,6 +106,18 @@ namespace ThreeKingdom.Application.Session
         /// <summary>移除一支已返报的在途侦察兵（仅供服务解析编排）。</summary>
         internal void RemovePendingScout(PendingScout scout) => _pendingScouts.Remove(scout);
 
+        // --- 在办治理事务（GDD_004 太守派人处理，需时见效）。下令记为在办，推进到完成时刻由服务应用效果。---
+        private readonly List<PendingGovernanceTask> _pendingGovernance = new List<PendingGovernanceTask>();
+
+        /// <summary>在办（未完成）治理事务只读列表（供治理面板显示「处理中」+ 存档）。</summary>
+        public IReadOnlyList<PendingGovernanceTask> PendingGovernance => _pendingGovernance;
+
+        /// <summary>登记一件在办治理事务（仅供 <see cref="CampaignSessionService"/> 下令编排）。</summary>
+        internal void AddPendingGovernance(PendingGovernanceTask task) => _pendingGovernance.Add(task);
+
+        /// <summary>移除一件已完成治理事务（仅供服务应用编排）。</summary>
+        internal void RemovePendingGovernance(PendingGovernanceTask task) => _pendingGovernance.Remove(task);
+
         /// <summary>会话军议装配配置（M04 / GDD_008）；启用军议时存在。</summary>
         internal SessionCouncilSetup? Council { get; }
 
@@ -238,6 +250,7 @@ namespace ThreeKingdom.Application.Session
             CityGovernanceConfig? governanceConfig = null,
             WorldTruthLedger? truth = null, FactionIntel? playerIntel = null, IntelConfig? intelConfig = null,
             SessionCouncilSetup? council = null, IReadOnlyList<PendingScout>? pendingScouts = null,
+            IReadOnlyList<PendingGovernanceTask>? pendingGovernance = null,
             ResourcePool? pool = null, PlanDraft? draft = null, PreparationConfig? prepConfig = null,
             IReadOnlyCollection<RegionId>? reachableRegions = null, IReadOnlyCollection<OrderId>? authorizedOrders = null,
             CommittedPlan? committedPlan = null,
@@ -275,6 +288,7 @@ namespace ThreeKingdom.Application.Session
             IntelConfig = intelConfig;
             Council = council;
             if (pendingScouts != null) _pendingScouts.AddRange(pendingScouts);
+            if (pendingGovernance != null) _pendingGovernance.AddRange(pendingGovernance);
             Pool = pool;
             _draft = draft ?? (pool != null ? new PlanDraft() : null);
             PrepConfig = prepConfig;

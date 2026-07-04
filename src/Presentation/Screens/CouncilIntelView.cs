@@ -122,9 +122,9 @@ namespace ThreeKingdom.Presentation.Screens
         {
             if (s == null) throw new ArgumentNullException(nameof(s));
             var missing = new List<string>();
-            foreach (IntelSubjectId m in s.MissingIntel) missing.Add(m.ToString());
+            foreach (IntelSubjectId m in s.MissingIntel) missing.Add(DisplayNames.Of(m.Value));
             return new CampaignAdviceView(
-                s.CandidateId, s.Observation, s.Assumption,
+                DisplayNames.Of(s.CandidateId), s.Observation, s.Assumption,
                 new List<string>(s.RequiredConditions),
                 new List<string>(s.Risks),
                 missing,
@@ -219,8 +219,15 @@ namespace ThreeKingdom.Presentation.Screens
             string ago = age <= 0 ? "本时段获报" : age + " 段前";
             bool stale = age > ttlSegments;
             return new CampaignEnemyIntelView(
-                entry.Subject.ToString(), entry.KnownStrength, entry.Source.ToString(), age, ago, stale);
+                DisplayNames.Of(entry.Subject.Value), entry.KnownStrength, SourceText(entry.Source), age, ago, stale);
         }
+
+        private static string SourceText(IntelSource source) => source switch
+        {
+            IntelSource.Scouting => "斥候",
+            IntelSource.DirectObservation => "目视",
+            _ => source.ToString(),
+        };
     }
 
     /// <summary>
@@ -273,7 +280,7 @@ namespace ThreeKingdom.Presentation.Screens
                     return c != 0 ? c : string.CompareOrdinal(a.Subject.Value, b.Subject.Value);
                 });
                 foreach (PendingScout p in ordered)
-                    transit.Add($"{p.Subject.Value}：侦察兵在途，约第 {p.ArrivalTime.Day} 日返报");
+                    transit.Add($"{DisplayNames.Of(p.Subject.Value)}：侦察兵在途，约第 {p.ArrivalTime.Day} 日返报");
             }
             return new CampaignEnemyIntelPanelView(list, transit);
         }

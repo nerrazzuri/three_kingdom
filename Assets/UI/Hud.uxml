@@ -45,6 +45,7 @@
                         <ui:Button name="appease" text="安抚" />
                         <ui:Label name="appease-hint" class="hud-note" />
                         <ui:Label name="govern-status" class="ledger-warning" />
+                        <ui:VisualElement name="govern-inprogress" />
                         <!-- B6 外交求粮（受控一局一次，延迟交付/可背约）。 -->
                         <ui:Button name="request-aid" text="求援（求粮）" />
                         <ui:Label name="diplo-status" class="hud-note" />

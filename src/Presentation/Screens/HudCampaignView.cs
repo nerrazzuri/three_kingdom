@@ -117,10 +117,15 @@ namespace ThreeKingdom.Presentation.Screens
         /// <summary>三治理动作（征用军粮/修工事/安抚）各带因果方向说明。</summary>
         public IReadOnlyList<GovernanceActionDescriptor> Actions { get; }
 
-        private GovernanceActionView(CityLedgerView ledger, IReadOnlyList<GovernanceActionDescriptor> actions)
+        /// <summary>在办治理事务提示（GDD_004 派人处理→需时见效；一条一句「处理中，约第 X 日完成」，确定性序）。</summary>
+        public IReadOnlyList<string> InProgress { get; }
+
+        private GovernanceActionView(
+            CityLedgerView ledger, IReadOnlyList<GovernanceActionDescriptor> actions, IReadOnlyList<string> inProgress)
         {
             Ledger = ledger;
             Actions = actions;
+            InProgress = inProgress;
         }
 
         // 因果方向表（数据驱动集中承载；说明「方向」不说明「精确数值预测」，无胜率精神同源）。
@@ -131,13 +136,32 @@ namespace ThreeKingdom.Presentation.Screens
             new GovernanceActionDescriptor("appease", "安抚", "↑ 城中民心"),
         };
 
-        /// <summary>从会话城市治理态构造（含多维账本 + 三动作因果说明）。未启用治理时抛。</summary>
+        /// <summary>从会话城市治理态构造（含多维账本 + 三动作因果说明 + 在办事务）。未启用治理时抛。</summary>
         public static GovernanceActionView FromSession(CampaignSession s)
         {
             if (s == null) throw new ArgumentNullException(nameof(s));
             if (!s.HasCityGovernance) throw new InvalidOperationException("会话未启用城市治理。");
-            return new GovernanceActionView(BuildLedgerView(s), CausalTable);
+
+            var inProgress = new List<string>();
+            var tasks = new List<PendingGovernanceTask>(s.PendingGovernance);
+            tasks.Sort((a, b) =>
+            {
+                int c = a.CompletionTime.AbsoluteIndex.CompareTo(b.CompletionTime.AbsoluteIndex);
+                return c != 0 ? c : ((int)a.Kind).CompareTo((int)b.Kind);
+            });
+            foreach (PendingGovernanceTask t in tasks)
+                inProgress.Add($"{KindLabel(t.Kind)}：处理中，约第 {t.CompletionTime.Day} 日完成");
+
+            return new GovernanceActionView(BuildLedgerView(s), CausalTable, inProgress);
         }
+
+        private static string KindLabel(GovernanceActionKind kind) => kind switch
+        {
+            GovernanceActionKind.Requisition => "征用军粮",
+            GovernanceActionKind.RepairFortification => "修工事",
+            GovernanceActionKind.Appease => "安抚",
+            _ => kind.ToString(),
+        };
 
         /// <summary>把会话城市态映射为多维账本展示视图（日界短缺为瞬时结算输出，会话不留存 → 0/false）。</summary>
         internal static CityLedgerView BuildLedgerView(CampaignSession s)

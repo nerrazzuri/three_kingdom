@@ -137,14 +137,17 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>治理面板（多维账本 + 三动作因果说明）。</summary>
         public GovernanceActionView Governance() => GovernanceActionView.FromSession(Session);
 
-        /// <summary>征用军粮（GDD_004）：超可分配量返回稳定错误码、账本不变。</summary>
-        public CampaignCommandResult Requisition(long amount) => _service.RequisitionFood(Session, amount);
+        /// <summary>下令征用军粮（GDD_004 派人处理→需时见效）：校验后记为在办，约 1 日后见效；超可分配量稳定错误码。</summary>
+        public CampaignCommandResult Requisition(long amount)
+            => _service.DispatchRequisition(Session, amount, _scenario.RequisitionLeadSegments);
 
-        /// <summary>修工事（GDD_004）：工事已满返回稳定错误码。</summary>
-        public CampaignCommandResult Repair() => _service.RepairFortification(Session);
+        /// <summary>下令修工事（GDD_004）：工事已满稳定错误码，否则记为在办，约 1 日后见效。</summary>
+        public CampaignCommandResult Repair()
+            => _service.DispatchRepair(Session, _scenario.RepairLeadSegments);
 
-        /// <summary>安抚民心（GDD_004）。</summary>
-        public CampaignCommandResult Appease() => _service.Appease(Session);
+        /// <summary>下令安抚民心（GDD_004）：记为在办，约半日后见效。</summary>
+        public CampaignCommandResult Appease()
+            => _service.DispatchAppease(Session, _scenario.AppeaseLeadSegments);
 
         /// <summary>备战面板（草稿 vs 已提交视觉区分）。</summary>
         public PrepPanelView Prep() => PrepPanelView.FromSession(Session);

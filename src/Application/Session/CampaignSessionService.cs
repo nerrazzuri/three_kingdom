@@ -115,10 +115,43 @@ namespace ThreeKingdom.Application.Session
                 }
             }
 
+            // 治理（GDD_004 派人处理→需时见效）：推进后应用已到完成时刻的在办治理事务。
+            ResolveArrivedGovernance(session);
+
             // 情报（GDD_007 派出→在途→返报）：推进后解析已到返报时刻的在途侦察 → 报告并入玩家知识。
             ResolveArrivedScouts(session);
 
             return session;
+        }
+
+        /// <summary>
+        /// 应用已到完成时刻（CompletionTime ≤ 当前）的在办治理事务：按 (完成时刻, 类别) 稳定序调既有即时结算逻辑
+        /// 应用效果 → 移出在办列表（确定性）。完成时若前置已不满足（如工事已满）则该件无效果，仍移除。
+        /// </summary>
+        private void ResolveArrivedGovernance(CampaignSession session)
+        {
+            if (!session.HasCityGovernance || session.PendingGovernance.Count == 0) return;
+            WorldTime now = session.CurrentTime;
+
+            var arrived = new List<PendingGovernanceTask>();
+            foreach (PendingGovernanceTask t in session.PendingGovernance)
+                if (t.CompletionTime <= now) arrived.Add(t);
+            arrived.Sort((a, b) =>
+            {
+                int c = a.CompletionTime.AbsoluteIndex.CompareTo(b.CompletionTime.AbsoluteIndex);
+                return c != 0 ? c : ((int)a.Kind).CompareTo((int)b.Kind);
+            });
+
+            foreach (PendingGovernanceTask t in arrived)
+            {
+                switch (t.Kind)
+                {
+                    case GovernanceActionKind.Requisition: RequisitionFood(session, t.Amount); break;
+                    case GovernanceActionKind.RepairFortification: RepairFortification(session); break;
+                    case GovernanceActionKind.Appease: Appease(session); break;
+                }
+                session.RemovePendingGovernance(t);
+            }
         }
 
         /// <summary>
@@ -210,6 +243,55 @@ namespace ThreeKingdom.Application.Session
             CityEconomyState city = session.CityEconomy!;
             int newMorale = ClampInt(checked(city.CivMorale + session.GovernanceConfig!.AppeaseMoraleGain), 0, session.SettlementConfig!.CivMoraleMax);
             session.SetCityEconomy(city.With(civMorale: newMorale));
+            return CampaignCommandResult.Success();
+        }
+
+        // --- 治理下令（GDD_004 派人处理→需时见效，非即时）。校验通过记为在办，推进到完成时刻由 Advance 应用效果。---
+
+        /// <summary>下令征用军粮（非即时）：校验可分配量足够后记为在办，约 <paramref name="leadSegments"/> 时段后见效。</summary>
+        public CampaignCommandResult DispatchRequisition(CampaignSession session, long amount, int leadSegments)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasCityGovernance)
+                return CampaignCommandResult.Failure(CampaignErrorCode.CityGovernanceDisabled, "会话未启用城市治理。");
+            if (amount < 0 || leadSegments < 0)
+                return CampaignCommandResult.Failure(CampaignErrorCode.InvalidAmount, "征用量与办理时段不可为负。");
+            if (amount > session.CityEconomy!.Available)
+                return CampaignCommandResult.Failure(CampaignErrorCode.InsufficientStock,
+                    $"可分配量不足：available={session.CityEconomy!.Available}，请求={amount}。");
+
+            session.AddPendingGovernance(new PendingGovernanceTask(
+                GovernanceActionKind.Requisition, amount, session.CurrentTime.Advance(leadSegments)));
+            return CampaignCommandResult.Success();
+        }
+
+        /// <summary>下令修工事（非即时）：工事已满则拒绝，否则记为在办，约 <paramref name="leadSegments"/> 时段后见效。</summary>
+        public CampaignCommandResult DispatchRepair(CampaignSession session, int leadSegments)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasCityGovernance)
+                return CampaignCommandResult.Failure(CampaignErrorCode.CityGovernanceDisabled, "会话未启用城市治理。");
+            if (leadSegments < 0)
+                return CampaignCommandResult.Failure(CampaignErrorCode.InvalidAmount, "办理时段不可为负。");
+            if (session.CityEconomy!.FortificationCurrent >= session.CityEconomy!.FortificationMax)
+                return CampaignCommandResult.Failure(CampaignErrorCode.FortificationFull, "工事已满，无可修复余量。");
+
+            session.AddPendingGovernance(new PendingGovernanceTask(
+                GovernanceActionKind.RepairFortification, 0, session.CurrentTime.Advance(leadSegments)));
+            return CampaignCommandResult.Success();
+        }
+
+        /// <summary>下令安抚（非即时）：记为在办，约 <paramref name="leadSegments"/> 时段后见效。</summary>
+        public CampaignCommandResult DispatchAppease(CampaignSession session, int leadSegments)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (!session.HasCityGovernance)
+                return CampaignCommandResult.Failure(CampaignErrorCode.CityGovernanceDisabled, "会话未启用城市治理。");
+            if (leadSegments < 0)
+                return CampaignCommandResult.Failure(CampaignErrorCode.InvalidAmount, "办理时段不可为负。");
+
+            session.AddPendingGovernance(new PendingGovernanceTask(
+                GovernanceActionKind.Appease, 0, session.CurrentTime.Advance(leadSegments)));
             return CampaignCommandResult.Success();
         }
 
@@ -616,6 +698,17 @@ namespace ThreeKingdom.Application.Session
                 head += "city\t" + c.Id.Value + "\t" + c.Stock + "\t" + c.Reserved + "\t" + c.CivMorale
                       + "\t" + c.Security + "\t" + c.FortificationCurrent + "\t" + c.FortificationMax
                       + "\t" + session.LogisticsHolding + "\n";
+
+                // 在办治理事务段（GDD_004）：按 (完成时刻, 类别) 稳定序，确定性。
+                var govTasks = new List<PendingGovernanceTask>(session.PendingGovernance);
+                govTasks.Sort((a, b) =>
+                {
+                    int cc = a.CompletionTime.AbsoluteIndex.CompareTo(b.CompletionTime.AbsoluteIndex);
+                    return cc != 0 ? cc : ((int)a.Kind).CompareTo((int)b.Kind);
+                });
+                foreach (PendingGovernanceTask t in govTasks)
+                    head += "govtask\t" + (int)t.Kind + "\t" + t.Amount
+                          + "\t" + t.CompletionTime.Day + "\t" + (int)t.CompletionTime.Segment + "\n";
             }
 
             // 情报段（M04 / TR-intel-003）：世界真值与玩家知识**分别序列化**（独立段，加载不交叉污染）。
@@ -713,10 +806,17 @@ namespace ThreeKingdom.Application.Session
             int idx = 3;
             CityEconomyState? city = null;
             long cityLogistics = 0;
+            var pendingGovernance = new List<PendingGovernanceTask>();
             if (idx < lines.Length && lines[idx].StartsWith("city\t", StringComparison.Ordinal))
             {
                 (city, cityLogistics) = ParseCity(lines[idx]);
                 idx++;
+                // 在办治理事务段（GDD_004）：恢复未完成事务（推进到完成时刻由 Advance 应用）。
+                while (idx < lines.Length && lines[idx].StartsWith("govtask\t", StringComparison.Ordinal))
+                {
+                    pendingGovernance.Add(ParseGovTask(lines[idx]));
+                    idx++;
+                }
             }
 
             // 可选情报段（M04 / TR-intel-003）：世界真值与玩家知识**分别**重建，互不污染。
@@ -871,7 +971,7 @@ namespace ThreeKingdom.Application.Session
                 cityEconomy: city, settlementConfig: settlementConfig, populationPressure: populationPressure,
                 logisticsHolding: cityLogistics, governanceConfig: governanceConfig,
                 truth: truth, playerIntel: playerIntel, intelConfig: intelConfig, council: councilSetup,
-                pendingScouts: pendingScouts,
+                pendingScouts: pendingScouts, pendingGovernance: pendingGovernance,
                 pool: pool, draft: draft, prepConfig: prepConfig,
                 reachableRegions: reachableRegions, authorizedOrders: authorizedOrders, committedPlan: committed,
                 battle: battle, battleConfig: battleConfig, battleSeed: battleSeed,
@@ -909,6 +1009,24 @@ namespace ThreeKingdom.Application.Session
             foreach (IntelKnowledgeEntry e in source.Project().Entries)
                 fresh.ApplyReport(new IntelReport(e.Subject, source.Faction, e.KnownStrength, e.Source, e.ObservedAt));
             return fresh;
+        }
+
+        /// <summary>解析在办治理段：<c>govtask\t{kind}\t{amount}\t{completionDay}\t{completionSegment}</c>。</summary>
+        private static PendingGovernanceTask ParseGovTask(string line)
+        {
+            string[] p = line.Split('\t');
+            if (p.Length != 5 || p[0] != "govtask")
+                throw new SaveFormatException($"在办治理段格式不符：「{line}」。");
+            try
+            {
+                return new PendingGovernanceTask(
+                    (GovernanceActionKind)int.Parse(p[1]), long.Parse(p[2]),
+                    new WorldTime(int.Parse(p[3]), (DaySegment)int.Parse(p[4])));
+            }
+            catch (FormatException ex)
+            {
+                throw new SaveFormatException("在办治理段数值解析失败：" + ex.Message);
+            }
         }
 
         /// <summary>解析在途侦察段：<c>pendingscout\t{subject}\t{method}\t{arrivalDay}\t{arrivalSegment}</c>。</summary>

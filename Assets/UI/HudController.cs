@@ -22,9 +22,6 @@ namespace ThreeKingdom.Unity.UI
         [SerializeField] private HudContext _context = HudContext.JudgmentLayout;
         [SerializeField] private bool _modalActive;
 
-        /// <summary>未接线面板的占位文案（story-003/004 接入后移除）。</summary>
-        private const string PendingLabel = "接入战役会话中……";
-
         // HudElement → UXML 元素名。
         private static readonly Dictionary<HudElement, string> ElementNames = new Dictionary<HudElement, string>
         {
@@ -104,9 +101,9 @@ namespace ThreeKingdom.Unity.UI
 
             // 战役主循环（story-004 / TR-ux-001/005）：治理/备战/战斗命令经 CampaignSessionService，HUD 只读投影。
             RenderLoop(root);
-            Wire(root, "requisition", () => { ShowCmd(root, SessionRuntime.Requisition(RequisitionAmount)); RenderLoop(root); });
-            Wire(root, "repair-fort", () => { ShowCmd(root, SessionRuntime.Repair()); RenderLoop(root); });
-            Wire(root, "appease", () => { ShowCmd(root, SessionRuntime.Appease()); RenderLoop(root); });
+            Wire(root, "requisition", () => { ShowGovern(root, SessionRuntime.Requisition(RequisitionAmount)); RenderLoop(root); });
+            Wire(root, "repair-fort", () => { ShowGovern(root, SessionRuntime.Repair()); RenderLoop(root); });
+            Wire(root, "appease", () => { ShowGovern(root, SessionRuntime.Appease()); RenderLoop(root); });
             Wire(root, "add-ambush", () => { SessionRuntime.AddAmbushOrder(); RenderLoop(root); });
             Wire(root, "submit-plan", () => { SessionRuntime.SubmitPlan(); RenderLoop(root); });
             Wire(root, "start-battle", () => { ShowCmd(root, SessionRuntime.StartBattle()); RenderLoop(root); });
@@ -141,6 +138,10 @@ namespace ThreeKingdom.Unity.UI
         /// <summary>命令结果反馈：失败按稳定错误码显示原因（AC-5：不做 UI 侧预判吞掉），成功清空。</summary>
         private static void ShowCmd(VisualElement root, ThreeKingdom.Application.Session.CampaignCommandResult result)
             => SetLabel(root, "govern-status", result.Applied ? string.Empty : CampaignErrorText.For(result.Error));
+
+        /// <summary>治理下令反馈：成功=已派人处理（需时见效），失败=稳定错误码文案。</summary>
+        private static void ShowGovern(VisualElement root, ThreeKingdom.Application.Session.CampaignCommandResult result)
+            => SetLabel(root, "govern-status", result.Applied ? "已派人处理——需时见效（推进时段等待完成）" : CampaignErrorText.For(result.Error));
 
         /// <summary>当前复盘展示模型（表现态，不入 Domain/存档；null=尚无战果）。</summary>
         private BattleReviewView _review;
@@ -371,6 +372,14 @@ namespace ThreeKingdom.Unity.UI
                 };
                 if (hintElement != null) SetLabel(root, hintElement, a.CausalHint);
             }
+
+            // 在办治理事务（GDD_004 派人处理→需时见效）：显示「处理中，约第 X 日完成」。
+            var inProgress = root.Q<VisualElement>("govern-inprogress");
+            if (inProgress != null)
+            {
+                inProgress.Clear();
+                foreach (var line in gov.InProgress) inProgress.Add(new Label("⏳ " + line));
+            }
         }
 
         /// <summary>备战面板：草稿（可移除按钮）vs 已提交（不可移除·朱批承诺态）。</summary>
@@ -406,30 +415,38 @@ namespace ThreeKingdom.Unity.UI
             SetEnabled(root, "start-battle", SessionRuntime.Phase().Phase == CampaignPhase.Preparing && prep.IsCommitted);
         }
 
-        /// <summary>战斗条件进度：战中/战后显示各兵法链已满足✓/未满足✗ + 还差 N 条（非按钮，纯状态指示）。</summary>
+        /// <summary>战况/复盘区元素（战后复盘的一组，与战中条件<b>互斥</b>显示，避免同框重叠）。</summary>
+        private static readonly string[] ReviewElements =
+        {
+            "review-conclusion", "review-toggle", "review-detail",
+            "review-notice", "review-continuations", "review-career-hint", "review-selection",
+        };
+
+        /// <summary>
+        /// 战况/战果复盘区（战中/战后才显示；其余相位整块隐藏）。
+        /// <b>战中</b>只显兵法条件进度 + 「结算战果」；<b>战后</b>只显复盘——两者互斥，杜绝重叠。
+        /// </summary>
         private static void RenderBattleConditions(VisualElement root)
         {
             CampaignPhase phase = SessionRuntime.Phase().Phase;
             bool inBattle = phase == CampaignPhase.Battle;
             bool aftermath = phase == CampaignPhase.Aftermath;
 
-            // 修复 story-004 集成疏漏：「战况/战果复盘」区（outcome-chain）在竖切「情境显隐」规则下默认隐藏，
-            // 导致开战后看不到条件/结算/复盘。战中/战后强制显示该区，其余相位隐藏（无内容可展示）。
-            var outcomeChain = root.Q<VisualElement>("outcome-chain");
-            if (outcomeChain != null)
-                outcomeChain.style.display = (inBattle || aftermath) ? DisplayStyle.Flex : DisplayStyle.None;
+            SetDisplay(root, "outcome-chain", inBattle || aftermath);
 
-            SetLabel(root, "battle-status",
-                inBattle ? "战斗进行中——满足兵法条件后「结算战果」。"
-                : aftermath ? "已结算——见下方复盘。"
-                : "尚未开战（备战提交后可开战）。");
+            // 战中元素只在战中显示；复盘元素只在战后显示。
+            SetDisplay(root, "battle-status", inBattle);
+            SetDisplay(root, "battle-conditions", inBattle);
+            SetDisplay(root, "resolve-outcome", inBattle);
+            foreach (var name in ReviewElements) SetDisplay(root, name, aftermath);
 
-            var area = root.Q<VisualElement>("battle-conditions");
-            if (area != null)
+            if (inBattle)
             {
-                area.Clear();
-                if (inBattle || aftermath)
+                SetLabel(root, "battle-status", "战斗进行中——满足兵法条件后点「结算战果」。");
+                var area = root.Q<VisualElement>("battle-conditions");
+                if (area != null)
                 {
+                    area.Clear();
                     BattleConditionProgressView progress = SessionRuntime.BattleConditionProgress();
                     foreach (var line in progress.Lines)
                     {
@@ -438,27 +455,32 @@ namespace ThreeKingdom.Unity.UI
                         foreach (var unmet in line.Unsatisfied) area.Add(new Label("　✗ " + unmet));
                     }
                 }
+                SetEnabled(root, "resolve-outcome", true);
             }
-
-            SetEnabled(root, "resolve-outcome", inBattle);
         }
 
         /// <summary>
-        /// 未接线面板统一占位（后续故事接入后逐一移除）：状态标签显示「接入中」、对应命令按钮禁用。
-        /// 军议/敌情/侦察（story-003）、账本/治理/备战/战斗（story-004）已接入战役投影，不在此占位；
-        /// 残留占位：外交求援 + 袭扰/伏击战术动作（另属准备/战斗子系统）+ 目标横幅。
+        /// 未接线面板占位收敛（后续接入后移除）：不再刷屏「接入中」——顶栏给真实目标，未接按钮仅禁用、状态留空。
+        /// 军议/敌情/侦察（003）、账本/治理/备战/战斗（004）已接入；残留：外交求援 + 袭扰/伏击（另属子系统）。
         /// </summary>
         private static void RenderPendingPanels(VisualElement root)
         {
-            SetLabel(root, "diplo-status", PendingLabel);
-            SetLabel(root, "raid-status", PendingLabel);
-            SetLabel(root, "ambush-status", PendingLabel);
-            SetLabel(root, "hud-objective", PendingLabel);
+            SetLabel(root, "hud-objective", "汜水关太守 · 守土拒敌，御曹魏前锋");
             SetLabel(root, "hud-banner", string.Empty);
+            // 未接面板：状态留空（不刷「接入中」），按钮禁用即可。
+            SetLabel(root, "diplo-status", string.Empty);
+            SetLabel(root, "raid-status", string.Empty);
+            SetLabel(root, "ambush-status", string.Empty);
 
             SetEnabled(root, "request-aid", false);
             SetEnabled(root, "raid", false);
             SetEnabled(root, "ambush", false);
+        }
+
+        private static void SetDisplay(VisualElement root, string name, bool shown)
+        {
+            var element = root.Q<VisualElement>(name);
+            if (element != null) element.style.display = shown ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private static void SetEnabled(VisualElement root, string name, bool enabled)

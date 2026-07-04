@@ -88,6 +88,15 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>侦察行程时段（GDD_007 派出→在途→返报；默认约 1 日返报，可调）。</summary>
         public int ScoutLeadSegments => WorldTime.SegmentsPerDay;
 
+        /// <summary>征用军粮办理时段（GDD_004 派人处理→需时见效；约 1 日，可调）。</summary>
+        public int RequisitionLeadSegments => WorldTime.SegmentsPerDay;
+
+        /// <summary>修工事办理时段（工程较重；约 1 日，可调）。</summary>
+        public int RepairLeadSegments => WorldTime.SegmentsPerDay;
+
+        /// <summary>安抚办理时段（派吏安民较快；约半日，可调）。</summary>
+        public int AppeaseLeadSegments => WorldTime.SegmentsPerDay / 2;
+
         private PlayableCampaign()
         {
             StartConfig = BuildStartConfig();
