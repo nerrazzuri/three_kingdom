@@ -131,7 +131,7 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         [Test]
         public void test_conquest_advances_contention_toward_endgame()
         {
-            // 争霸领土（M13/M14）：破敌城 → 玩家领土增、敌减；本最小场景群雄尽灭 → 统一终局。
+            // 争霸领土（M13/M14）：破敌城 → 玩家领土增、敌减；群雄割据世界里这是"推进"而非"统一"（群雄尚存）。
             _runtime.RequestOffensiveAuthorization();
             OffensivePlan plan = _runtime.BeginOffensive(PlayableCampaign.EnemyCity);
             plan.Muster = 900;
@@ -141,9 +141,9 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
             OffensiveResultView result = _runtime.AutoResolveOffensive();
 
             Assert.That(result.Victory, Is.True);
-            Assert.That(_runtime.Contention.CitiesOf(PlayableCampaign.Player), Is.EqualTo(2), "破城 → 玩家领土 +1。");
-            Assert.That(_runtime.Contention.CitiesOf(PlayableCampaign.Enemy), Is.EqualTo(0), "被夺方领土 −1。");
-            Assert.That(_runtime.Endgame(), Is.EqualTo(EndgameStatus.PlayerUnifies), "群雄尽灭 → 统一天下（终局）。");
+            Assert.That(_runtime.Contention.CitiesOf(PlayableCampaign.Player), Is.EqualTo(2), "破城 → 玩家领土 +1（汜水关→+虎牢关）。");
+            Assert.That(_runtime.Contention.CitiesOf(PlayableCampaign.Enemy), Is.EqualTo(1), "被夺方（袁术）领土 −1（尚余寿春）。");
+            Assert.That(_runtime.Endgame(), Is.EqualTo(EndgameStatus.Ongoing), "群雄割据世界：占一城是推进，群雄尚存 → 争霸继续（非一城即统一）。");
         }
 
         [Test]
