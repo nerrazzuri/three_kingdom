@@ -88,6 +88,11 @@ namespace ThreeKingdom.Presentation.Runtime
 
             // 天下大势在轨推演（GDD_015）：触发到期历史事件 → 按可达性 + 主角人设产出通报流（含心里话）。
             RefreshEventNotices(session);
+
+            // 君主争霸自动推演（GDD_017/018）：每跨一日群雄兼并一步（强吞弱）；终局既定则止。玩家占城另经 ConcludeOffensive 增领土。
+            for (int d = 0; d < _daysCrossedLastAdvance
+                 && Endgame() == ThreeKingdom.Domain.Contention.EndgameStatus.Ongoing; d++)
+                AdvanceContention();
             return Status();
         }
 
@@ -529,10 +534,14 @@ namespace ThreeKingdom.Presentation.Runtime
         public ThreeKingdom.Domain.Contention.EndgameStatus Endgame()
             => _endgameService.Evaluate(Contend, PlayableCampaign.Player, ThreeKingdom.Domain.Contention.EndgameConfig.Default);
 
-        /// <summary>推进一战略步（对手种子化兼并——强吞弱）。</summary>
+        private int _contentionSteps;
+
+        /// <summary>推进一战略步（对手种子化兼并——强吞弱）。每步种子相异，确定性、可复现。</summary>
         public void AdvanceContention()
         {
-            ulong seed = new StateHasher().Append(_scenario.OffensiveSeed).Append(Session.CurrentTime.AbsoluteIndex).ToHash().Value;
+            ulong seed = new StateHasher()
+                .Append(_scenario.OffensiveSeed).Append(Session.CurrentTime.AbsoluteIndex).Append(_contentionSteps++)
+                .ToHash().Value;
             _contention = _rivalExpansion.Step(Contend, PlayableCampaign.Player, seed, ThreeKingdom.Domain.Contention.ContentionConfig.Default);
         }
 
