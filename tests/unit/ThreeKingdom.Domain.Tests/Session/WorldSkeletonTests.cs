@@ -31,8 +31,8 @@ namespace ThreeKingdom.Domain.Tests.Session
         {
             // 争霸盘每方城数应与世界模型城归属一致（数据自洽）。
             ContentionState c = PlayableCampaign.Default().InitialContention();
-            Assert.That(c.CitiesOf(PlayableCampaign.Cao), Is.EqualTo(3), "曹操 3 城（许昌/濮阳/陈留）。");
-            Assert.That(c.CitiesOf(PlayableCampaign.Enemy), Is.EqualTo(2), "袁术 2 城（虎牢关/寿春）。");
+            Assert.That(c.CitiesOf(PlayableCampaign.Cao), Is.EqualTo(4), "曹操 4 城（许昌/濮阳/陈留/鄄城）。");
+            Assert.That(c.CitiesOf(PlayableCampaign.Enemy), Is.EqualTo(3), "袁术 3 城（寿春/虎牢关/汝南）。");
             Assert.That(c.CitiesOf(PlayableCampaign.Player), Is.EqualTo(1), "玩家太守 1 城（汜水关）。");
         }
     }

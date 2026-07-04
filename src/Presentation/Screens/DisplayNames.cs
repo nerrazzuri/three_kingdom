@@ -60,6 +60,41 @@ namespace ThreeKingdom.Presentation.Screens
             ["char-gongsun"] = "公孙瓒",
             ["char-sunquan"] = "孙权",
             ["char-yuan"] = "袁术",
+
+            // 群雄割据扩充（势力）。
+            ["faction-lijue"] = "李傕",
+            ["faction-zhangxiu"] = "张绣",
+            ["faction-kongrong"] = "孔融",
+            ["faction-hansui"] = "韩遂",
+            ["faction-shixie"] = "士燮",
+            // 城池。
+            ["city-juancheng"] = "鄄城",
+            ["city-pingyuan"] = "平原",
+            ["city-jinyang"] = "晋阳",
+            ["city-runan"] = "汝南",
+            ["city-kuaiji"] = "会稽",
+            ["city-lujiang"] = "庐江",
+            ["city-xuzhou"] = "徐州",
+            ["city-jiangling"] = "江陵",
+            ["city-jiangxia"] = "江夏",
+            ["city-changsha"] = "长沙",
+            ["city-jiangzhou"] = "江州",
+            ["city-zitong"] = "梓潼",
+            ["city-wuwei"] = "武威",
+            ["city-jicheng"] = "蓟城",
+            ["city-changan"] = "长安",
+            ["city-luoyang"] = "洛阳",
+            ["city-wancheng"] = "宛城",
+            ["city-beihai"] = "北海",
+            ["city-hanyang"] = "汉阳",
+            ["city-jiaozhou"] = "交州",
+            // 君主。
+            ["char-sunce"] = "孙策",
+            ["char-lijue"] = "李傕",
+            ["char-zhangxiu"] = "张绣",
+            ["char-kongrong"] = "孔融",
+            ["char-hansui"] = "韩遂",
+            ["char-shixie"] = "士燮",
         };
 
         /// <summary>取某 id 的中文展示名；未登记则回退原文。</summary>

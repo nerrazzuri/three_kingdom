@@ -61,6 +61,11 @@ namespace ThreeKingdom.Application.Scenarios
         public static readonly FactionId LiuZhang = new FactionId("faction-liuzhang");
         public static readonly FactionId ZhangLu = new FactionId("faction-zhanglu");
         public static readonly FactionId GongSun = new FactionId("faction-gongsun");
+        public static readonly FactionId LiJue = new FactionId("faction-lijue");
+        public static readonly FactionId ZhangXiu = new FactionId("faction-zhangxiu");
+        public static readonly FactionId KongRong = new FactionId("faction-kongrong");
+        public static readonly FactionId HanSui = new FactionId("faction-hansui");
+        public static readonly FactionId ShiXie = new FactionId("faction-shixie");
 
         public static readonly CityId Xuchang = new CityId("city-xuchang");
         public static readonly CityId Puyang = new CityId("city-puyang");
@@ -77,6 +82,26 @@ namespace ThreeKingdom.Application.Scenarios
         public static readonly CityId Chengdu = new CityId("city-chengdu");
         public static readonly CityId Hanzhong = new CityId("city-hanzhong");
         public static readonly CityId Beiping = new CityId("city-beiping");
+        public static readonly CityId Juancheng = new CityId("city-juancheng");
+        public static readonly CityId Pingyuan = new CityId("city-pingyuan");
+        public static readonly CityId Jinyang = new CityId("city-jinyang");
+        public static readonly CityId Runan = new CityId("city-runan");
+        public static readonly CityId Kuaiji = new CityId("city-kuaiji");
+        public static readonly CityId Lujiang = new CityId("city-lujiang");
+        public static readonly CityId Xuzhou = new CityId("city-xuzhou");
+        public static readonly CityId Jiangling = new CityId("city-jiangling");
+        public static readonly CityId Jiangxia = new CityId("city-jiangxia");
+        public static readonly CityId Changsha = new CityId("city-changsha");
+        public static readonly CityId Jiangzhou = new CityId("city-jiangzhou");
+        public static readonly CityId Zitong = new CityId("city-zitong");
+        public static readonly CityId Wuwei = new CityId("city-wuwei");
+        public static readonly CityId Jicheng = new CityId("city-jicheng");
+        public static readonly CityId Changan = new CityId("city-changan");
+        public static readonly CityId Luoyang = new CityId("city-luoyang");
+        public static readonly CityId Wancheng = new CityId("city-wancheng");
+        public static readonly CityId Beihai = new CityId("city-beihai");
+        public static readonly CityId Hanyang = new CityId("city-hanyang");
+        public static readonly CityId Jiaozhou = new CityId("city-jiaozhou");
         /// <summary>战役可达区域（隘口，伏击发生地）。</summary>
         public static readonly RegionId Pass = new RegionId("region-pass");
         /// <summary>军粮资源键。</summary>
@@ -163,18 +188,23 @@ namespace ThreeKingdom.Application.Scenarios
         public Domain.Contention.ContentionState InitialContention()
             => new Domain.Contention.ContentionState(new[]
             {
-                new Domain.Contention.PowerStanding(Player, 1),      // 汜水关
-                new Domain.Contention.PowerStanding(Cao, 3),         // 许昌/濮阳/陈留
-                new Domain.Contention.PowerStanding(YuanShao, 2),   // 邺城/南皮
-                new Domain.Contention.PowerStanding(Enemy, 2),      // 袁术：虎牢关/寿春
-                new Domain.Contention.PowerStanding(Sun, 2),        // 孙吴：建业/吴郡
-                new Domain.Contention.PowerStanding(LiuBiao, 1),    // 襄阳
-                new Domain.Contention.PowerStanding(LiuBei, 1),     // 小沛
-                new Domain.Contention.PowerStanding(LuBu, 1),       // 下邳
-                new Domain.Contention.PowerStanding(MaTeng, 1),     // 西凉
-                new Domain.Contention.PowerStanding(LiuZhang, 1),   // 成都
-                new Domain.Contention.PowerStanding(ZhangLu, 1),    // 汉中
-                new Domain.Contention.PowerStanding(GongSun, 1),    // 北平
+                new Domain.Contention.PowerStanding(Player, 1),      // 汜水关（太守）
+                new Domain.Contention.PowerStanding(Cao, 4),         // 曹操：许昌/濮阳/陈留/鄄城
+                new Domain.Contention.PowerStanding(YuanShao, 4),    // 袁绍：邺城/南皮/平原/晋阳
+                new Domain.Contention.PowerStanding(Enemy, 3),       // 袁术：寿春/虎牢关/汝南
+                new Domain.Contention.PowerStanding(Sun, 4),         // 孙策：建业/吴郡/会稽/庐江
+                new Domain.Contention.PowerStanding(LiuBiao, 4),     // 刘表：襄阳/江陵/江夏/长沙
+                new Domain.Contention.PowerStanding(LiuZhang, 3),    // 刘璋：成都/江州/梓潼
+                new Domain.Contention.PowerStanding(LuBu, 2),        // 吕布：下邳/徐州
+                new Domain.Contention.PowerStanding(MaTeng, 2),      // 马腾：西凉/武威
+                new Domain.Contention.PowerStanding(GongSun, 2),     // 公孙瓒：北平/蓟城
+                new Domain.Contention.PowerStanding(LiJue, 2),       // 李傕：长安/洛阳
+                new Domain.Contention.PowerStanding(LiuBei, 1),      // 刘备：小沛
+                new Domain.Contention.PowerStanding(ZhangLu, 1),     // 张鲁：汉中
+                new Domain.Contention.PowerStanding(ZhangXiu, 1),    // 张绣：宛城
+                new Domain.Contention.PowerStanding(KongRong, 1),    // 孔融：北海
+                new Domain.Contention.PowerStanding(HanSui, 1),      // 韩遂：汉阳
+                new Domain.Contention.PowerStanding(ShiXie, 1),      // 士燮：交州
             });
 
         /// <summary>守城区域防御战：玩家守军（汜水关；GDD_021 攻守统一，守方视角）。</summary>
@@ -274,27 +304,42 @@ namespace ThreeKingdom.Application.Scenarios
                 initialFactions: new[]
                 {
                     new FactionRecord(Player, Lord, SurvivalStatus.Active, RelationToPlayer.Self, new[] { Fanshui }),
-                    new FactionRecord(Enemy, new CharacterId("char-yuan"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { EnemyCity, Shouchun }),
-                    new FactionRecord(Sun, new CharacterId("char-sunquan"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Jianye, Wujun }),
-                    new FactionRecord(Cao, new CharacterId("char-caocao"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xuchang, Puyang, Chenliu }),
-                    new FactionRecord(YuanShao, new CharacterId("char-yuanshao"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Ye, Nanpi }),
+                    new FactionRecord(Cao, new CharacterId("char-caocao"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xuchang, Puyang, Chenliu, Juancheng }),
+                    new FactionRecord(YuanShao, new CharacterId("char-yuanshao"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Ye, Nanpi, Pingyuan, Jinyang }),
+                    new FactionRecord(Enemy, new CharacterId("char-yuan"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { Shouchun, EnemyCity, Runan }),
+                    new FactionRecord(Sun, new CharacterId("char-sunce"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Jianye, Wujun, Kuaiji, Lujiang }),
                     new FactionRecord(LiuBei, new CharacterId("char-liubei"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xiaopei }),
-                    new FactionRecord(LuBu, new CharacterId("char-lubu"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { Xiapi }),
-                    new FactionRecord(LiuBiao, new CharacterId("char-liubiao"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xiangyang }),
-                    new FactionRecord(MaTeng, new CharacterId("char-mateng"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xiliang }),
-                    new FactionRecord(LiuZhang, new CharacterId("char-liuzhang"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Chengdu }),
+                    new FactionRecord(LuBu, new CharacterId("char-lubu"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { Xiapi, Xuzhou }),
+                    new FactionRecord(LiuBiao, new CharacterId("char-liubiao"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xiangyang, Jiangling, Jiangxia, Changsha }),
+                    new FactionRecord(LiuZhang, new CharacterId("char-liuzhang"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Chengdu, Jiangzhou, Zitong }),
+                    new FactionRecord(MaTeng, new CharacterId("char-mateng"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xiliang, Wuwei }),
                     new FactionRecord(ZhangLu, new CharacterId("char-zhanglu"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Hanzhong }),
-                    new FactionRecord(GongSun, new CharacterId("char-gongsun"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Beiping }),
+                    new FactionRecord(GongSun, new CharacterId("char-gongsun"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Beiping, Jicheng }),
+                    new FactionRecord(LiJue, new CharacterId("char-lijue"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { Changan, Luoyang }),
+                    new FactionRecord(ZhangXiu, new CharacterId("char-zhangxiu"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { Wancheng }),
+                    new FactionRecord(KongRong, new CharacterId("char-kongrong"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Beihai }),
+                    new FactionRecord(HanSui, new CharacterId("char-hansui"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Hanyang }),
+                    new FactionRecord(ShiXie, new CharacterId("char-shixie"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Jiaozhou }),
                 },
                 initialCities: new[]
                 {
-                    new CityOwnership(Fanshui, Player, 800), new CityOwnership(EnemyCity, Enemy, 600), new CityOwnership(Shouchun, Enemy, 500),
-                    new CityOwnership(Jianye, Sun, 700), new CityOwnership(Wujun, Sun, 500),
-                    new CityOwnership(Xuchang, Cao, 900), new CityOwnership(Puyang, Cao, 600), new CityOwnership(Chenliu, Cao, 600),
-                    new CityOwnership(Ye, YuanShao, 800), new CityOwnership(Nanpi, YuanShao, 600),
-                    new CityOwnership(Xiaopei, LiuBei, 400), new CityOwnership(Xiapi, LuBu, 700),
-                    new CityOwnership(Xiangyang, LiuBiao, 700), new CityOwnership(Xiliang, MaTeng, 600),
-                    new CityOwnership(Chengdu, LiuZhang, 800), new CityOwnership(Hanzhong, ZhangLu, 500), new CityOwnership(Beiping, GongSun, 500),
+                    new CityOwnership(Fanshui, Player, 800),
+                    new CityOwnership(Xuchang, Cao, 900), new CityOwnership(Puyang, Cao, 600), new CityOwnership(Chenliu, Cao, 600), new CityOwnership(Juancheng, Cao, 500),
+                    new CityOwnership(Ye, YuanShao, 900), new CityOwnership(Nanpi, YuanShao, 700), new CityOwnership(Pingyuan, YuanShao, 500), new CityOwnership(Jinyang, YuanShao, 500),
+                    new CityOwnership(Shouchun, Enemy, 700), new CityOwnership(EnemyCity, Enemy, 600), new CityOwnership(Runan, Enemy, 500),
+                    new CityOwnership(Jianye, Sun, 700), new CityOwnership(Wujun, Sun, 500), new CityOwnership(Kuaiji, Sun, 500), new CityOwnership(Lujiang, Sun, 400),
+                    new CityOwnership(Xiaopei, LiuBei, 400),
+                    new CityOwnership(Xiapi, LuBu, 700), new CityOwnership(Xuzhou, LuBu, 600),
+                    new CityOwnership(Xiangyang, LiuBiao, 800), new CityOwnership(Jiangling, LiuBiao, 600), new CityOwnership(Jiangxia, LiuBiao, 500), new CityOwnership(Changsha, LiuBiao, 500),
+                    new CityOwnership(Chengdu, LiuZhang, 800), new CityOwnership(Jiangzhou, LiuZhang, 500), new CityOwnership(Zitong, LiuZhang, 400),
+                    new CityOwnership(Xiliang, MaTeng, 700), new CityOwnership(Wuwei, MaTeng, 500),
+                    new CityOwnership(Hanzhong, ZhangLu, 600),
+                    new CityOwnership(Beiping, GongSun, 700), new CityOwnership(Jicheng, GongSun, 500),
+                    new CityOwnership(Changan, LiJue, 700), new CityOwnership(Luoyang, LiJue, 600),
+                    new CityOwnership(Wancheng, ZhangXiu, 600),
+                    new CityOwnership(Beihai, KongRong, 400),
+                    new CityOwnership(Hanyang, HanSui, 500),
+                    new CityOwnership(Jiaozhou, ShiXie, 400),
                 },
                 // 城市治理（M03）：库存100 / 民心60 / 城防20。
                 cityEconomy: new CityEconomyState(Fanshui, stock: 100, reserved: 0, civMorale: 60, security: 50, fortificationCurrent: 20, fortificationMax: 100),

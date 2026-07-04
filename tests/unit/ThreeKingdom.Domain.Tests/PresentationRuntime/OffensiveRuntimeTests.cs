@@ -142,7 +142,7 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
 
             Assert.That(result.Victory, Is.True);
             Assert.That(_runtime.Contention.CitiesOf(PlayableCampaign.Player), Is.EqualTo(2), "破城 → 玩家领土 +1（汜水关→+虎牢关）。");
-            Assert.That(_runtime.Contention.CitiesOf(PlayableCampaign.Enemy), Is.EqualTo(1), "被夺方（袁术）领土 −1（尚余寿春）。");
+            Assert.That(_runtime.Contention.CitiesOf(PlayableCampaign.Enemy), Is.EqualTo(2), "被夺方（袁术）领土 −1（3→2，尚余寿春/汝南）。");
             Assert.That(_runtime.Endgame(), Is.EqualTo(EndgameStatus.Ongoing), "群雄割据世界：占一城是推进，群雄尚存 → 争霸继续（非一城即统一）。");
         }
 
