@@ -64,5 +64,7 @@ namespace ThreeKingdom.Domain.Conquest
         Ford = 2,
         /// <summary>坚城（攻坚地形）。</summary>
         Fortified = 3,
+        /// <summary>遮蔽高地/林（利隐蔽/夜袭；GDD_021 区域战斗，末尾追加保序）。</summary>
+        Cover = 4,
     }
 }

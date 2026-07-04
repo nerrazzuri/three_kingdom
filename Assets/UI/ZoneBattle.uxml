@@ -1,0 +1,37 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 区域战斗屏（GDD_021 §12）：战场区域态势 + 排兵布阵（调动）+ 推进回合 + 涌现 + 终局。
+         逻辑在纯 C# ZoneBattleRuntime（dotnet 已单测）；本壳只绑定 name 渲染。 -->
+    <ui:VisualElement name="zb-root" class="hud-root">
+        <ui:Style src="Hud.uss" />
+        <ui:VisualElement name="zb-header" class="hud-header">
+            <ui:Label name="zb-title" text="出征·虎牢关 — 战场区域" class="hud-objective" />
+            <ui:Label name="zb-round" class="hud-note" />
+            <ui:Label name="zb-outcome" class="hud-banner" />
+            <ui:Button name="zb-resolve" text="推进回合（敌军亦动）" />
+            <ui:Button name="zb-to-menu" text="返回主菜单" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="hud-main" class="hud-main">
+            <ui:ScrollView class="hud-col">
+                <ui:VisualElement class="hud-left">
+                    <ui:VisualElement name="zb-zones-card" class="card">
+                        <ui:Label text="各区态势" class="card-title" />
+                        <ui:VisualElement name="zb-zones" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:ScrollView>
+            <ui:ScrollView class="hud-col">
+                <ui:VisualElement class="hud-right">
+                    <ui:VisualElement name="zb-moves-card" class="card">
+                        <ui:Label text="排兵布阵（调动 · 仅相邻，在途 1 回合）" class="card-title" />
+                        <ui:VisualElement name="zb-moves" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="zb-emerg-card" class="card">
+                        <ui:Label text="涌现兵法" class="card-title" />
+                        <ui:VisualElement name="zb-emergences" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:ScrollView>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

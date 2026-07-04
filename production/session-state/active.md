@@ -1,6 +1,17 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
-## ▶▶▶ 新方向（2026-07-04）— 战斗核心层：战场区域部署与区域战斗（用户定为核心玩法，须最完善）
+## ✅ 完成（2026-07-04）— epic-031 战斗核心层 S1-S7 实现（用户授权自主做完；替换/区域/敌AI最完善）
+
+> 用户裁定：替换脚本战斗 · 敌AI一步到位最完善 · 战斗=与其他三国演义差异点须最溢满。**S1-S7 全实现+测试，dotnet 924/924 绿(+32)，3 DLL 同步。**
+> - Domain/ZoneBattle：ZoneId/DetachmentId/BattleSide/Posture · Zone/BattleField(5区+邻接,非坐标) · Detachment(减员按比例缩放编成) · ZoneEngagementState/BattleClock · ZoneBattleState(确定性哈希+记忆) · ZoneBattleConfig/Context · ZoneConditionService(按区按回合涌现门) · RoundResolutionService(交战/减员随战力比封顶/涌现冲击/优先序) · ZoneCommandService(调动邻接+在途/姿态/稳定错误码) · EnemyAiMemory/AiWorldView(反全知)/EnemyAiConfig/EnemyZoneAiService(种子化整数加权,饱和Pow,同规则不作弊,落地GDD_016) · ZoneBattleOutcome(破正面即破城)。
+> - Application/Battle：ZoneBattleService(回合编排:玩家命令前置→敌AI→结算→终局) · OffensiveDeploymentPlanner(六维→分区部署桥/守方布防/上下文)。
+> - Presentation：ZoneBattleView(各区态势+涌现+MoveOptions排兵布阵) · ZoneBattleRuntime(可玩:调动/姿态/推进/投影 + Demo + FromOffensive)。
+> - Unity 壳：ZoneBattle.uxml + ZoneBattleSession + ZoneBattleController（只 Unity 编译，未 dotnet 验证）。
+> - 锚点：GDD_021 Implemented · ADR-0012/0013 Accepted · TR-zone-001~010 · epic-031 EPIC 7/7 Core Complete。
+> - **迁移待办（接线，非新能力）**：把 CampaignRuntime 守城脚本战斗 + LaunchOffensive 一击结算改为进入 ZoneBattleRuntime → 终局接占城C/后果（单独 story 谨慎替换，勿破既有 892 出征/HUD 测试）。敌AI 深度按 ADR-0013 D8 迭代。
+> - 提交链见下（此前 d322714 出征六维 / 631d925 GDD_021 / 63f7206 ADR-0012/0013，均 push）。
+
+## （历史）新方向（2026-07-04）— 战斗核心层：战场区域部署与区域战斗（用户定为核心玩法，须最完善）
 
 > 用户澄清「排兵布阵是重点」：不是纯角色布阵（嫌单薄）、也不是三国志坐标微操——要**区域布阵**（指范围非坐标 + 军师按区给方法）。三点拍板：① **战中可调整**（战争核心好玩点）；② 先固定几类区域，**预留每城场景自定义**（数据驱动 Future）；③ **敌方AI区域博弈必做**（战争核心，须最完善）。
 > - 已建 **GDD_021 战场区域部署与区域战斗**（Draft，18 段）：区域部署 + 回合制战中调整 + 敌方区域AI + 攻守统一；实现 GDD_010 执行层、**首次落地 GDD_016 敌AI**。登记 gdd-index。

@@ -4,7 +4,7 @@
 > **Architecture Module**: 战斗执行层，替换竖切脚本战斗；实现 GDD_010 兵法沙盒执行、首次落地 GDD_016 敌方AI（吸收 epic-021-enemy-ai-loop 意图于区域战斗层）
 > **Governing ADR**: **ADR-0012（确定性区域战斗引擎）** · **ADR-0013（敌方区域AI）** · ADR-0004（确定性）· ADR-0006（种子化随机）· ADR-0011（多维准备/无克制/无坐标）· ADR-0009（会话装配/存档）· ADR-0008（城池控制权）
 > **GDD**: **GDD_021 战场区域部署与区域战斗（Draft，2026-07-04）** · 复用 GDD_010/011/007/008/002/016/019
-> **Status**: 🟢 Ready for Stories（2026-07-04：设计锚点齐——GDD_021 Draft + ADR-0012/0013 Accepted + TR-zone-001~010）
+> **Status**: ✅ Core Complete（2026-07-04：S1-S7 全实现+测试。Domain 区域战斗引擎 + 敌AI + Application 编排/部署桥 + Presentation 可玩运行期/视图 + Unity 战斗屏壳。dotnet 924/924 绿(-warnaserror；+32 战斗测试)；3 DLL 同步。**待接**：把区域引擎接入战役出征/守城流（替换脚本战斗的接线，见下"迁移"）；敌AI 深度迭代（ADR-0013 D8）。）
 > **设计来源**: 2026-07-04 用户设计对话裁定（排兵布阵=核心；见下"设计裁定"）
 
 ## 背景与问题
@@ -30,17 +30,21 @@
 
 ## Stories（拟，待 /create-stories 细化 AC/QA）
 
-| # | Story | Type | ADR（primary） | TR-ID | 依赖 |
+| # | Story | Type | ADR（primary） | TR-ID | Status |
 |---|-------|------|------|-------|------|
-| 001 | 战场区域模型（BattleField/Zone/Detachment/ZoneEngagementState + 确定性哈希 + 无坐标负向不变量） | Logic | ADR-0012 | TR-zone-001/002 | None |
-| 002 | 部署 + 按区初始条件映射（六维准备→各区支队→条件门） | Logic | ADR-0012 | TR-zone-003/004 | 001 |
-| 003 | 回合同步结算（各区交战/减员士气/条件按回合累积/涌现触发/确定性优先序） | Logic | ADR-0012 | TR-zone-004/005 | 002 |
-| 004 | 战中调整（调动邻接+在途/投预备/改姿态 + 代价 + 命令契约） | Logic | ADR-0012 | TR-zone-003 | 003 |
-| 005 | 敌方区域AI（反全知 AiWorldView + 种子softmax效用 + 渐进记忆 + 同规则不作弊 + LLM隔离） | Logic | ADR-0013 | TR-zone-007/008/009/010 | 003 |
-| 006 | 攻守统一接入 + 战中存档续战（LaunchOffensive/守城→区域战斗，替换 scripted；接六维准备+占城C） | Integration | ADR-0009/0012 | TR-zone-006 | 004,005 |
-| 007 | Presentation 部署界面 + 战中回合界面 + Unity 壳 | UI | ADR-0002 | — | 006 |
+| 001 | 战场区域模型（BattleField/Zone/Detachment/ZoneEngagementState + 确定性哈希 + 无坐标负向不变量） | Logic | ADR-0012 | TR-zone-001/002 | ✅ Complete |
+| 002 | 部署 + 按区条件涌现映射（ZoneConditionService + 上下文/配置；六维→条件门） | Logic | ADR-0012 | TR-zone-003/004 | ✅ Complete |
+| 003 | 回合同步结算（RoundResolutionService：各区交战/减员随战力比/条件按回合累积/涌现冲击/确定性优先序） | Logic | ADR-0012 | TR-zone-004/005 | ✅ Complete |
+| 004 | 战中调整（ZoneCommandService：调动邻接+在途/改姿态 + 稳定错误码 + 不作弊） | Logic | ADR-0012 | TR-zone-003 | ✅ Complete |
+| 005 | 敌方区域AI（AiWorldView 反全知 + 种子化整数加权效用 + 渐进记忆 + 同规则不作弊 + LLM隔离；落地 GDD_016） | Logic | ADR-0013 | TR-zone-007~010 | ✅ Complete |
+| 006 | 攻守统一编排 + 六维→部署桥（ZoneBattleService/OffensiveDeploymentPlanner/ZoneBattleOutcome；破正面即破城） | Integration | ADR-0009/0012 | TR-zone-006 | ✅ Complete |
+| 007 | Presentation 可玩运行期 + 战斗视图（ZoneBattleRuntime/ZoneBattleView）+ Unity 战斗屏壳（ZoneBattleController/uxml） | UI | ADR-0002 | — | ✅ Complete |
 
-依赖链 001→002→003→004→006→007；**005 在 003 后可并行**。
+依赖链 001→002→003→004→006→007；005 在 003 后并行。**7/7 Complete。**
+
+## 迁移待办（接线，非新能力）
+
+区域引擎已完整替换**脚本战斗的规则/结算**；剩「接线替换」——把战役 `CampaignRuntime.StartBattle/ResolveOutcome`（守城脚本）与 `LaunchOffensive`（一击结算）改为进入 `ZoneBattleRuntime`（多回合区域战斗）→ 终局接占城 C/后果。属集成接线，建议单独一 story 谨慎替换（勿破 892 既有出征/HUD 测试），故本 EPIC 标 Core Complete 而非全 Complete。
 
 ## 实现前置
 

@@ -1,0 +1,112 @@
+using System;
+using ThreeKingdom.Domain.Numerics;
+
+namespace ThreeKingdom.Domain.ZoneBattle
+{
+    /// <summary>
+    /// 区域战斗配置（GDD_021 §11 Balancing，数据驱动，ADR-0012）。不可变。全部权威整数/定点（ADR-0004）。
+    /// 含条件门槛 + 累积回合门 + 交战/减员/姿态/地形系数。
+    /// </summary>
+    public sealed class ZoneBattleConfig
+    {
+        // ---- 条件门槛（复用 ADR-0011 语义）----
+        /// <summary>骑兵份额门槛（追击条件）。</summary>
+        public FixedPoint CavalryMinShare { get; }
+        /// <summary>智略门槛（伏兵突然性）。</summary>
+        public FixedPoint GuileMin { get; }
+        /// <summary>军纪门槛（夜袭隐蔽/军纪，取主将统率）。</summary>
+        public FixedPoint DisciplineMin { get; }
+        /// <summary>伏兵蓄势所需连续隐蔽回合。</summary>
+        public int AmbushChargeRounds { get; }
+        /// <summary>断粮达宽限所需连续切断回合。</summary>
+        public int StarveRounds { get; }
+
+        // ---- 交战/结算 ----
+        /// <summary>每满足一条兵法条件的战力加成。</summary>
+        public FixedPoint ConditionBonusEach { get; }
+        /// <summary>基础减员率（均势时败方每回合损失比例，定点）。实际败方损失随战力比放大（封顶 <see cref="AttritionCap"/>）。</summary>
+        public FixedPoint AttritionRate { get; }
+        /// <summary>败方减员率上限（战力悬殊时不至瞬间全灭却能快速崩解）。</summary>
+        public FixedPoint AttritionCap { get; }
+        /// <summary>败方每回合士气跌幅。</summary>
+        public FixedPoint MoraleDropOnLoss { get; }
+        /// <summary>每回合疲劳增幅。</summary>
+        public FixedPoint FatiguePerRound { get; }
+        /// <summary>主攻姿态战力乘数。</summary>
+        public FixedPoint AssaultMod { get; }
+        /// <summary>守姿态战力乘数。</summary>
+        public FixedPoint HoldMod { get; }
+        /// <summary>佯攻姿态战力乘数。</summary>
+        public FixedPoint FeintMod { get; }
+        /// <summary>涌现兵法一次性士气冲击（对被打击方）。</summary>
+        public FixedPoint EmergenceMoraleShock { get; }
+
+        public ZoneBattleConfig(
+            FixedPoint cavalryMinShare, FixedPoint guileMin, FixedPoint disciplineMin,
+            int ambushChargeRounds, int starveRounds,
+            FixedPoint conditionBonusEach, FixedPoint attritionRate, FixedPoint attritionCap, FixedPoint moraleDropOnLoss,
+            FixedPoint fatiguePerRound, FixedPoint assaultMod, FixedPoint holdMod, FixedPoint feintMod,
+            FixedPoint emergenceMoraleShock)
+        {
+            if (ambushChargeRounds < 1) throw new ArgumentOutOfRangeException(nameof(ambushChargeRounds));
+            if (starveRounds < 1) throw new ArgumentOutOfRangeException(nameof(starveRounds));
+            CavalryMinShare = cavalryMinShare;
+            GuileMin = guileMin;
+            DisciplineMin = disciplineMin;
+            AmbushChargeRounds = ambushChargeRounds;
+            StarveRounds = starveRounds;
+            ConditionBonusEach = conditionBonusEach;
+            AttritionRate = attritionRate;
+            AttritionCap = attritionCap;
+            MoraleDropOnLoss = moraleDropOnLoss;
+            FatiguePerRound = fatiguePerRound;
+            AssaultMod = assaultMod;
+            HoldMod = holdMod;
+            FeintMod = feintMod;
+            EmergenceMoraleShock = emergenceMoraleShock;
+        }
+
+        /// <summary>默认（GDD_021 §11 起始值，待平衡）。</summary>
+        public static ZoneBattleConfig Default { get; } = new ZoneBattleConfig(
+            cavalryMinShare: FixedPoint.FromFraction(3, 10),
+            guileMin: FixedPoint.FromFraction(6, 10),
+            disciplineMin: FixedPoint.FromFraction(6, 10),
+            ambushChargeRounds: 2, starveRounds: 2,
+            conditionBonusEach: FixedPoint.FromFraction(15, 100),
+            attritionRate: FixedPoint.FromFraction(2, 10),
+            attritionCap: FixedPoint.FromFraction(6, 10),
+            moraleDropOnLoss: FixedPoint.FromFraction(1, 10),
+            fatiguePerRound: FixedPoint.FromFraction(5, 100),
+            assaultMod: FixedPoint.FromFraction(11, 10),
+            holdMod: FixedPoint.FromFraction(12, 10),
+            feintMod: FixedPoint.FromFraction(8, 10),
+            emergenceMoraleShock: FixedPoint.FromFraction(3, 10));
+    }
+
+    /// <summary>
+    /// 战斗全局上下文（GDD_021 D6/D7：时机/天气/侦察，battle-wide）。不可变。
+    /// 来自出征六维准备（时机 → 夜/雾；侦察 → 反全知门）或守城场景。
+    /// </summary>
+    public sealed class ZoneBattleContext
+    {
+        /// <summary>是否夜间（夜袭条件门）。</summary>
+        public bool IsNight { get; }
+        /// <summary>是否有雾（隐蔽成功门之一）。</summary>
+        public bool IsFoggy { get; }
+        /// <summary>攻方是否已侦察目标（反全知：突袭类条件门 + 免情报盲区）。</summary>
+        public bool AttackerScouted { get; }
+
+        public ZoneBattleContext(bool isNight, bool isFoggy, bool attackerScouted)
+        {
+            IsNight = isNight;
+            IsFoggy = isFoggy;
+            AttackerScouted = attackerScouted;
+        }
+
+        /// <summary>白昼晴、已侦察的中性上下文。</summary>
+        public static ZoneBattleContext Default { get; } = new ZoneBattleContext(false, false, true);
+
+        internal void AppendTo(StateHasher hasher)
+            => hasher.Append(IsNight).Append(IsFoggy).Append(AttackerScouted);
+    }
+}

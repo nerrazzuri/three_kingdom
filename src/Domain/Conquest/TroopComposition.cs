@@ -41,6 +41,23 @@ namespace ThreeKingdom.Domain.Conquest
         /// <summary>某兵种数量（缺省 0）。</summary>
         public int Count(TroopType type) => _counts.TryGetValue(type, out int v) ? v : 0;
 
+        /// <summary>
+        /// 按比例缩放到新总数（战中减员用：兵种份额近似保持，各兵种数按 floor 缩放 → 缩放后总数 ≤ <paramref name="newTotal"/>）。
+        /// 原总数 0 或 <paramref name="newTotal"/> ≤ 0 → 空编成；newTotal ≥ 原总数 → 原样返回。
+        /// </summary>
+        public TroopComposition ScaledTo(int newTotal)
+        {
+            if (Total == 0 || newTotal <= 0) return None;
+            if (newTotal >= Total) return this;
+            var scaled = new Dictionary<TroopType, int>();
+            foreach (KeyValuePair<TroopType, int> kv in _counts)
+            {
+                int v = (int)((long)kv.Value * newTotal / Total);   // floor；∑floor ≤ newTotal
+                if (v > 0) scaled[kv.Key] = v;
+            }
+            return new TroopComposition(scaled);
+        }
+
         /// <summary>全步卒的简易编成（未细分兵种时的默认，用于纯战力路线）。</summary>
         public static TroopComposition AllInfantry(int troops)
             => new TroopComposition(new Dictionary<TroopType, int> { [TroopType.Infantry] = troops });
