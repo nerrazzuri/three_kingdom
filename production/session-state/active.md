@@ -1294,3 +1294,19 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 用户已实玩确认 A、B 通。待提交这批修复。
 
 <!-- QA RUN: 2026-07-04 | Sprint: M15 epic-028 | Verdict: APPROVED WITH CONDITIONS | Report: production/qa/qa-signoff-m15-2026-07-04.md -->
+
+## Session Extract — 实玩打磨批次 2 2026-07-04（HUD 可读性 + 延迟治理）
+- HUD 可读性:战况/复盘互斥显示(消除开战后重叠)+底部整条宽栏+内部id中文化(DisplayNames)+去「接入中」刷屏(顶栏真实目标)。
+- 延迟治理(GDD_004 派人处理→需时见效):PendingGovernanceTask + DispatchRequisition/Repair/Appease + Advance 到点应用 + 存档 round-trip;时长数据驱动(安抚半日/征用·修工事约1日);治理面板显「⏳处理中」。6 测。
+- dotnet 855/855 绿;3 DLL 同步;commit 2c493fd push tk。
+- 用户实玩已确认界面清爽、治理延迟合理。
+- ▶ 待接通的核心命门:玩家选择(工事/补给/情报/设伏)目前仍不改变脚本战斗结果——下一步最高价值=闭合"选择→战果"因果。
+
+## Session Extract — 方向设计对话落 story 2026-07-04
+- 用户实玩后设计对话裁定"让游戏不无聊"方向,落成 3 个 Draft epic(决策嵌 EPIC.md + story 拆分):
+  - epic-029 出征攻城循环(最高优先):君主授权出征 + 闭合因果(准备决定胜负,取代脚本固定胜局) + 占城归属方案C(前2默认归玩家/后续君主种子化随机取舍→喂自立张力) + 升官联动。5 story。
+  - epic-030 人才招揽循环:出现随历史(GDD_015)/知晓靠情报(反全知)/入伙靠条件+种子化随机(ADR-0006)。4 story。
+  - epic-025 多城战区(M12):占城C→玩家直辖多城→委任下属打理、只碰关键决策、不全知。4 story。
+- index.md 已登记三 epic(Draft)。推荐序:029→025→030。
+- ⚠️ 均 Draft:实现前须补 GDD/ADR 锚点(各 EPIC "实现前置"列明);出征需扩 GDD_004 或新 GDD_019 + ADR;人才需 GDD_019-talent + ADR;多城需先定委任/权限机制。
+- 未提交。
