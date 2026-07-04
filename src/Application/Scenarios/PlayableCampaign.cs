@@ -120,6 +120,14 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>可出征目标城清单（GDD_019 §7 选目标；授权门/敌控由运行期按会话控制权投影判定）。</summary>
         public IReadOnlyList<CityId> OffensiveTargetCities => new[] { EnemyCity };
 
+        /// <summary>某城的初始控制方（供外交战争约束按目标势力判立场；MVP 场景映射）。</summary>
+        public FactionId? DefendingFactionOf(CityId city)
+        {
+            if (city == EnemyCity) return Enemy;
+            if (city == Fanshui) return Player;
+            return null;
+        }
+
         /// <summary>守城区域防御战：玩家守军（汜水关；GDD_021 攻守统一，守方视角）。</summary>
         public int DefenseGarrison => 700;
 

@@ -37,6 +37,7 @@
 | GDD_020 | 人才招揽 | [GDD_020_TALENT_RECRUITMENT](gdd-020-talent-recruitment.md) | Implemented（epic-030；出现/知晓/招揽/喂给四层） |
 | GDD_021 | 战场区域部署与区域战斗 | [GDD_021_ZONE_BATTLE](gdd-021-zone-battle.md) | Implemented（核心；epic-031 S1-S7 + 战役接线 + AI代打） |
 | GDD_022 | 多城战区与委任 | [GDD_022_MULTI_CITY_THEATER](gdd-022-multi-city-theater.md) | Implemented（epic-025；掌管随官阶/委任不越权/资源守恒/反全知报告） |
+| GDD_023 | 战略外交约束 | [GDD_023_STRATEGIC_DIPLOMACY](gdd-023-strategic-diplomacy.md) | Implemented（epic-024；立场约束战争/缔约/背约代价） |
 
 这三篇定义游戏三层结构的上两层（历史世界模型 + 太守生涯）与让“自由布阵”有深度的敌方 AI，锁定整体大方向（见 [game-concept.md](game-concept.md)），防止竖切与大规划脱节。GDD_016 关联 [ADR-0006](../../docs/architecture/adr-0006-deterministic-enemy-ai.md)。
 

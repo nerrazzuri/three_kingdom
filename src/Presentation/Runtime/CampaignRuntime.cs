@@ -10,6 +10,8 @@ using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Conquest;
+using ThreeKingdom.Domain.Diplomacy;
+using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Numerics;
@@ -296,6 +298,15 @@ namespace ThreeKingdom.Presentation.Runtime
             if (gate != OffensiveGateResult.Authorized)
                 return OffensiveResultView.FromResult(OffensiveResult.Rejected(gate));
 
+            // 外交战略约束门（GDD M11）：目标属盟/互不侵犯势力 → 须先背约方可攻。
+            FactionId? owner = _scenario.DefendingFactionOf(target);
+            if (owner != null)
+            {
+                WarConstraint wc = _diplomacyService.CheckWarTarget(_diplomacy, owner.Value, StrategicDiplomacyConfig.Default);
+                if (wc.RequiresBreach)
+                    return OffensiveResultView.Blocked($"与「{DisplayNames.Of(owner.Value.Value)}」有盟约/互不侵犯，不可径攻。");
+            }
+
             bool scouted = TargetScouted();
             OffensivePreparation prep = _offensivePlan.Build(_scenario.TerrainOf(target), scouted);
             FixedPoint morale = _offensiveDerive.Derive(prep, _scenario.OffensiveSetup).Morale;
@@ -407,6 +418,44 @@ namespace ThreeKingdom.Presentation.Runtime
         }
 
         private ZoneBattleRuntime Defense() => _defenseBattle ?? throw new InvalidOperationException("尚未发起守城战。");
+
+        // --- 战略外交（GDD M11 / epic-024）：外交立场约束战争；缔约；背约代价 ---
+
+        private readonly StrategicDiplomacyService _diplomacyService = new StrategicDiplomacyService();
+        private DiplomaticStanceState _diplomacy = DiplomaticStanceState.Empty;
+
+        /// <summary>当前外交立场态。</summary>
+        public DiplomaticStanceState Diplomacy => _diplomacy;
+
+        /// <summary>攻打某势力的战略约束（盟约/互不侵犯须背约）。</summary>
+        public WarConstraint CheckDiplomaticWarTarget(FactionId power)
+            => _diplomacyService.CheckWarTarget(_diplomacy, power, StrategicDiplomacyConfig.Default);
+
+        /// <summary>提议缔约（互不侵犯/盟约）：条件+种子判定；成则立约。返回结果。</summary>
+        public PactResult ProposePact(FactionId power, DiplomaticStance target, PactFactors factors)
+        {
+            ulong seed = ComposeDiploSeed(power, target);
+            PactResult r = _diplomacyService.ProposePact(_diplomacy, power, target, factors, seed, StrategicDiplomacyConfig.Default);
+            if (r.Accepted) _diplomacy = r.State;
+            return r;
+        }
+
+        /// <summary>背约（对盟/邻）：被背方转敌对 + 声誉惩罚（写回生涯名望，简化为记录）。返回背约结果。</summary>
+        public BreachResult BreachPact(FactionId power)
+        {
+            BreachResult r = _diplomacyService.Breach(_diplomacy, power, StrategicDiplomacyConfig.Default);
+            _diplomacy = r.State;
+            return r;
+        }
+
+        private ulong ComposeDiploSeed(FactionId power, DiplomaticStance target)
+        {
+            var h = new StateHasher();
+            h.Append(_scenario.OffensiveSeed).Append(Session.CurrentTime.AbsoluteIndex);
+            foreach (char c in power.Value) h.Append((int)c);
+            h.Append((int)target);
+            return h.ToHash().Value;
+        }
 
         // --- 多城战区（GDD_022 / M12）：占城 C 归玩家的城入战区；委任下属打理；掌管范围随官阶；反全知报告 ---
 

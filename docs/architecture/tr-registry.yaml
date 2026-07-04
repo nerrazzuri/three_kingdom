@@ -662,6 +662,36 @@ requirements:
     revised: ""
     status: active
 
+  # --- 战略外交约束 (GDD_023 / epic-024 / M11) ---
+  - id: TR-diplomacy-101
+    system: diplomacy-strategic
+    gdd: design/gdd/gdd-023-strategic-diplomacy.md
+    requirement: "外交立场态 + 存档：DiplomaticStanceState（FactionId→{Hostile|Neutral|NonAggression|Alliance}，缺省中立）纳入统一存档、确定性哈希 round-trip 一致"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-diplomacy-102
+    system: diplomacy-strategic
+    gdd: design/gdd/gdd-023-strategic-diplomacy.md
+    requirement: "缔约条件+种子判定：p_accept 对名望/交情/厚礼单调不降、盟约较互不侵犯更难（额外阻力）；种子化确定性（可复现·非掷骰）；成则立约；不显 p 数字（ADR-0004/0006）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-diplomacy-103
+    system: diplomacy-strategic
+    gdd: design/gdd/gdd-023-strategic-diplomacy.md
+    requirement: "战争约束门：CheckWarTarget——敌对/中立 Allowed（无约束）；互不侵犯/盟约 RequiresBreach + 声誉代价；接出征授权门之后（CampaignRuntime.LaunchOffensive：有约→受阻，背约→可攻）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-diplomacy-104
+    system: diplomacy-strategic
+    gdd: design/gdd/gdd-023-strategic-diplomacy.md
+    requirement: "背约代价：Breach → 被背方转敌对 + 声誉惩罚（盟>互不侵犯>0，写回 GDD_006）；中立/敌对无背约无罚；确定性"
+    created: 2026-07-04
+    revised: ""
+    status: active
+
   # --- 表现与理解层 (M15 UX / epic-028；契约文档 design/ux/m15-campaign-loop-ux.md，Approved 2026-07-03) ---
   - id: TR-ux-001
     system: ux

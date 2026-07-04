@@ -325,6 +325,11 @@ namespace ThreeKingdom.Presentation.Screens
             return new OffensiveResultView(true, false, true, "破城取胜！", ownership, notes, tactics ?? Array.Empty<string>());
         }
 
+        /// <summary>受外交约束未能出征（GDD M11：盟约/互不侵犯须先背约）。未出征。</summary>
+        public static OffensiveResultView Blocked(string reason)
+            => new OffensiveResultView(false, false, false, reason, string.Empty,
+                new[] { "此为盟/邻——如执意攻取，须先背约（承担声誉代价），或改攻他敌。" }, Array.Empty<string>());
+
         /// <summary>攻城未克退兵（区域战斗败局；失败可继续，红线）。</summary>
         public static OffensiveResultView Defeated()
             => new OffensiveResultView(true, false, false, "攻城未克——折兵退兵。", string.Empty,

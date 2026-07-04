@@ -4,6 +4,7 @@ using ThreeKingdom.Application.Talent;
 using ThreeKingdom.Application.Theater;
 using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.Conquest;
+using ThreeKingdom.Domain.Diplomacy;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Talent;
 using ThreeKingdom.Domain.Theater;
@@ -176,6 +177,29 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
             TheaterCommandResult d = _runtime.DelegateCity(PlayableCampaign.EnemyCity, new CharacterId("char-aide"));
             Assert.That(d.Applied, Is.True);
             Assert.That(_runtime.Theater.Of(PlayableCampaign.EnemyCity)!.Mode, Is.EqualTo(GovernanceMode.Delegated), "可委任打理。");
+        }
+
+        [Test]
+        public void test_offensive_blocked_by_pact_until_breach()
+        {
+            // 外交战略约束（M11）：与敌城之主缔互不侵犯 → 出征受阻；背约后方可攻。
+            _runtime.RequestOffensiveAuthorization();
+            OffensivePlan plan = _runtime.BeginOffensive(PlayableCampaign.EnemyCity);
+            plan.Muster = 900;
+            plan.Supply = 400;
+            plan.Approach = ApproachPlan.FrontalAssault;
+
+            PactResult pact = _runtime.ProposePact(PlayableCampaign.Enemy, DiplomaticStance.NonAggression,
+                new PactFactors(FixedPoint.One, FixedPoint.One, FixedPoint.One));
+            Assert.That(pact.Accepted, Is.True, "厚礼睦邻 → 缔约成。");
+
+            OffensiveResultView blocked = _runtime.LaunchOffensive();
+            Assert.That(blocked.BattleInProgress, Is.False, "有约 → 不可径攻。");
+            Assert.That(blocked.ConclusionLabel, Does.Contain("不可径攻"));
+
+            _runtime.BreachPact(PlayableCampaign.Enemy);   // 背约（承声誉代价）
+            OffensiveResultView launched = _runtime.LaunchOffensive();
+            Assert.That(launched.BattleInProgress, Is.True, "背约后（转敌对）可攻。");
         }
 
         [Test]
