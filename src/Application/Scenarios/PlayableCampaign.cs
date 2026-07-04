@@ -396,13 +396,14 @@ namespace ThreeKingdom.Application.Scenarios
 
         private static PromotionLadderConfig BuildLadder()
         {
-            // 低门槛梯队：阶1（merit40/renown10/standing0.01）一次战功即可达；阶2+ 暂不可达（harness 体验晋升即可）。
-            var merit = new[] { 0, 40, 9999, 9999, 9999, 9999, 9999, 9999 };
-            var renown = new[] { 0, 10, 9999, 9999, 9999, 9999, 9999, 9999 };
+            // 完整晋升曲线（太守→上守→刺史→镇将→护军→副都督→大都督→继承基业）：门槛递增，
+            // 忠臣晋升线成真长期成长（首阶一战即达，问鼎需数十战功 + 高君主好感）。
+            var merit = new[] { 0, 40, 120, 280, 550, 950, 1500, 2400 };
+            var renown = new[] { 0, 10, 60, 150, 320, 600, 1000, 1600 };
             var standing = new[]
             {
-                FixedPoint.Zero, Frac(1, 100), FixedPoint.One, FixedPoint.One,
-                FixedPoint.One, FixedPoint.One, FixedPoint.One, FixedPoint.One,
+                FixedPoint.Zero, Frac(1, 100), Frac(15, 100), Frac(30, 100),
+                Frac(45, 100), Frac(60, 100), Frac(75, 100), Frac(90, 100),
             };
             var gains = new Dictionary<CareerGainSource, CareerGain>
             {
