@@ -362,6 +362,7 @@ namespace ThreeKingdom.Application.Scenarios
                 new HistoricalOutcome("yiling-diverged"),
                 Array.Empty<EventId>());
             // 够不着的天下大事（袁术称帝）：玩家圈（触孙权）不及袁术 → 只作通报 + 主角心里话（GDD_015 事件分级）。
+            // 够不着的天下大事（袁术称帝）：玩家圈（触孙权）不及袁术 → 只作通报 + 主角心里话（GDD_015 事件分级）。
             var yuanshu = new HistoricalEvent(
                 new EventId("evt-yuanshu-emperor"),
                 new WTimeWindow(new WorldTime(0, DaySegment.Dawn), new WorldTime(4, DaySegment.Dawn)),
@@ -369,7 +370,28 @@ namespace ThreeKingdom.Application.Scenarios
                 new HistoricalOutcome("yuanshu-declares-emperor"),
                 new HistoricalOutcome("yuanshu-emperor-averted"),
                 Array.Empty<EventId>());
-            return HistoricalEventCatalog.TryCreate(new[] { chibi, yiling, yuanshu }).Value!;
+
+            // 演义主线事件网（够不着→通报+心里话，随人设着色；前置势力皆不在玩家圈内）。
+            HistoricalEvent Notable(string id, int start, int end, FactionId precond, string outcome, string diverged)
+                => new HistoricalEvent(new EventId(id),
+                    new WTimeWindow(new WorldTime(start, DaySegment.Dawn), new WorldTime(end, DaySegment.Dawn)),
+                    new[] { Precondition.FactionAliveOf(precond) },
+                    new HistoricalOutcome(outcome), new HistoricalOutcome(diverged), Array.Empty<EventId>());
+
+            HistoricalEvent taoyuan = Notable("evt-taoyuan", 0, 3, LiuBei, "taoyuan-oath", "taoyuan-averted");
+            HistoricalEvent dongBurns = Notable("evt-dong-burns", 0, 3, new FactionId("faction-dong"), "dong-zhuo-burns-luoyang", "luoyang-spared");
+            HistoricalEvent wangyun = Notable("evt-wangyun-plot", 1, 4, LuBu, "wang-yun-chain-plot", "dong-zhuo-survives");
+            HistoricalEvent caoEmperor = Notable("evt-cao-emperor", 2, 6, Cao, "cao-cao-controls-emperor", "emperor-free");
+            HistoricalEvent guandu = Notable("evt-guandu", 3, 7, YuanShao, "guandu-cao-wins", "yuanshao-prevails");
+            HistoricalEvent lubuEnd = Notable("evt-lubu-executed", 3, 7, LuBu, "lubu-executed", "lubu-survives");
+            HistoricalEvent sangu = Notable("evt-sangu", 4, 9, LiuBei, "liu-bei-recruits-zhuge", "zhuge-declines");
+            HistoricalEvent guanyu = Notable("evt-guanyu-jingzhou", 6, 12, LiuBei, "guan-yu-loses-jingzhou", "jingzhou-held");
+
+            return HistoricalEventCatalog.TryCreate(new[]
+            {
+                chibi, yiling, yuanshu,
+                taoyuan, dongBurns, wangyun, caoEmperor, guandu, lubuEnd, sangu, guanyu,
+            }).Value!;
         }
 
         private static PromotionLadderConfig BuildLadder()

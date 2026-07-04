@@ -37,6 +37,23 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         }
 
         [Test]
+        public void test_romance_event_network_surfaces_multiple_monologues_over_timeline()
+        {
+            var runtime = new CampaignRuntime(new InMemorySaveMedium());
+            runtime.NewGame();
+            int monologues = 0;
+            var seen = new System.Collections.Generic.HashSet<string>();
+            for (int i = 0; i < 60; i++)   // 沿时间线推进（覆盖各事件时间窗）
+            {
+                runtime.Advance(1);
+                foreach (EventNoticeView n in runtime.EventNotices())
+                    if (n.HasMonologue) { monologues++; seen.Add(n.OutcomeLabel); }
+            }
+            Assert.That(monologues, Is.GreaterThanOrEqualTo(5), "演义主线多条事件在时间线上触发 → 心里话通报（事件网可玩）。");
+            Assert.That(seen.Count, Is.GreaterThanOrEqualTo(5), "触发的是多条不同事件（非同一条重复）。");
+        }
+
+        [Test]
         public void test_notices_refresh_and_clear_each_advance()
         {
             var runtime = new CampaignRuntime(new InMemorySaveMedium());

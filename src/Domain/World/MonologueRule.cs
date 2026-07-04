@@ -106,6 +106,35 @@ namespace ThreeKingdom.Domain.World
                     [ProtagonistPersona.Ambitious] = "得一大才可安天下——我也当访遍山野，求我的卧龙。",
                     [ProtagonistPersona.Cautious]  = "礼贤下士固好，只是这乱世，人心最难测。",
                 }),
+            new MonologueRule("taoyuan-oath",
+                "桃园三结义，不求同生但求同死。这般义气，乱世难得。",
+                new Dictionary<ProtagonistPersona, string>
+                {
+                    [ProtagonistPersona.Loyalist]  = "义结金兰、生死与共——大丈夫立身，正当如此。",
+                    [ProtagonistPersona.Pragmatist] = "义气固可聚人，然成大事，终究还得看实力与时机。",
+                }),
+            new MonologueRule("wang-yun-chain-plot",
+                "王允一出连环计，借吕布之手除了董卓。美人计、离间计，环环相扣。",
+                new Dictionary<ProtagonistPersona, string>
+                {
+                    [ProtagonistPersona.Ambitious] = "以计除强敌，胜过千军万马——攻心为上，我当习之。",
+                    [ProtagonistPersona.Pragmatist] = "连环计精妙，然吕布反复，除一董卓又来一董卓。治标而已。",
+                }),
+            new MonologueRule("guandu-cao-wins",
+                "官渡一战，曹操以弱胜袁绍。烧乌巢粮草，一举定北方。",
+                new Dictionary<ProtagonistPersona, string>
+                {
+                    [ProtagonistPersona.Ambitious] = "以少胜多，正是英雄本色。断其粮道、攻其必救——用兵之道，我记下了。",
+                    [ProtagonistPersona.Loyalist]  = "曹操虽奸，用兵却真有过人之处。北方从此姓曹了。",
+                    [ProtagonistPersona.Pragmatist] = "袁绍兵多而败，可见胜负不在众寡，在断粮攻心。",
+                }),
+            new MonologueRule("lubu-executed",
+                "吕布殒命白门楼。天下第一猛将，终究反复无信、身死人手。",
+                new Dictionary<ProtagonistPersona, string>
+                {
+                    [ProtagonistPersona.Loyalist]  = "三姓家奴，背主求荣，有此下场不足惜。忠信二字，重于武勇。",
+                    [ProtagonistPersona.Cautious]  = "武勇冠世尚且如此收场，做人还是信义、谨慎为本。",
+                }),
         });
     }
 }
