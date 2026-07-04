@@ -92,9 +92,17 @@ namespace ThreeKingdom.Domain.Tests.ZoneBattle
         [Test]
         public void test_feint_lure_ambush_emerges_hidden_from_ai()
         {
-            // 攻方侧翼设伏（骑兵+智将+已侦察），守方AI 看不见蓄势伏兵 → 伏兵突然性成型（排兵布阵涌现）。
-            OffensivePreparation prep = Prep(600, 200, ApproachPlan.FeintLure, cavalry: 300, scouted: true);
-            var (_, _, emergences) = RunToEnd(StartBattle(prep, 300), _planner.ContextFrom(prep));
+            // 攻方侧翼设伏（骑兵+智将+已侦察），守方AI 看不见蓄势伏兵、且守方只在正面（无兵可探侧翼）→ 伏兵突然性成型。
+            var guile = new OffensiveGeneral(new CharacterId("cunning"), F(6, 10), F(7, 10), F(8, 10));
+            var cav = new TroopComposition(new Dictionary<TroopType, int> { [TroopType.Cavalry] = 300 });
+            var dets = new List<Detachment>
+            {
+                new Detachment(new DetachmentId("atk-front"), BattleSide.Attacker, null, TroopComposition.AllInfantry(400), 400, F(7, 10), F(2, 10), Posture.Assault, BattleField.Front),
+                new Detachment(new DetachmentId("atk-flank"), BattleSide.Attacker, guile, cav, 300, F(7, 10), F(2, 10), Posture.Feint, BattleField.Flank),
+                new Detachment(new DetachmentId("def-front"), BattleSide.Defender, null, TroopComposition.AllInfantry(500), 500, F(7, 10), F(1, 10), Posture.Hold, BattleField.Front),
+            };
+            ZoneBattleState start = _service.Start(BattleField.Default(), dets, BattleSide.Attacker, 6, 909UL);
+            var (_, _, emergences) = RunToEnd(start, new ZoneBattleContext(false, false, true));
             Assert.That(emergences, Has.Some.Contains("AmbushSurprise"), "侧翼伏兵在敌不知情下蓄势成型（反全知涌现）。");
             Assert.That(emergences, Has.Some.Contains("zone-flank"), "涌现发生在侧翼隘口。");
         }

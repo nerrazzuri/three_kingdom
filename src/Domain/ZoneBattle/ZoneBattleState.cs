@@ -91,15 +91,15 @@ namespace ThreeKingdom.Domain.ZoneBattle
         public ZoneEngagementState EngagementOf(ZoneId zone)
             => _engagements.TryGetValue(zone.Value ?? string.Empty, out ZoneEngagementState? e) ? e : ZoneEngagementState.Empty(zone);
 
-        /// <summary>某阵营在场（未被打散且未全在途）总兵力。</summary>
+        /// <summary>某阵营<b>未溃散</b>支队的总兵力（溃散=兵尽或士气崩，不计入）。</summary>
         public long TotalStrength(BattleSide side)
         {
             long sum = 0;
-            foreach (Detachment d in _detachments) if (d.Side == side) sum += d.Strength;
+            foreach (Detachment d in _detachments) if (d.Side == side && !d.IsBroken) sum += d.Strength;
             return sum;
         }
 
-        /// <summary>某阵营是否已无战力（全被打散）。</summary>
+        /// <summary>某阵营是否已无战力（全部溃散）。</summary>
         public bool IsRouted(BattleSide side) => TotalStrength(side) <= 0;
 
         // ---- 不可变更新（回合/命令产出新态；S3/S4 用）----

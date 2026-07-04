@@ -63,8 +63,8 @@ namespace ThreeKingdom.Domain.ZoneBattle
         /// <summary>是否调动在途（本回合失位，不参与结算）。</summary>
         public bool InTransit => TransitTarget != null && TransitRemaining > 0;
 
-        /// <summary>是否已被打散（兵力 0）。</summary>
-        public bool IsBroken => Strength <= 0;
+        /// <summary>是否已溃散（兵力耗尽<b>或</b>士气崩溃）——被碾压者常先崩士气而溃，GDD_011。</summary>
+        public bool IsBroken => Strength <= 0 || Morale <= FixedPoint.Zero;
 
         private Detachment With(
             int? strength = null, FixedPoint? morale = null, FixedPoint? fatigue = null, Posture? posture = null,

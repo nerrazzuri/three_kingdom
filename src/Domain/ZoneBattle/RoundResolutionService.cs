@@ -107,18 +107,20 @@ namespace ThreeKingdom.Domain.ZoneBattle
             bool attackerWinsZone = attPower > defPower;
             bool tie = attPower == defPower;
             FixedPoint winnerLoss = Half(config.AttritionRate);
-            FixedPoint loserLoss = LoserLoss(attPower, defPower, tie, attackerWinsZone, config);
+            FixedPoint ratio = PowerRatio(attPower, defPower, tie, attackerWinsZone);
+            FixedPoint loserLoss = Cap(config.AttritionRate * ratio, config.AttritionCap);
+            FixedPoint loserMoraleDrop = Cap(config.MoraleDropOnLoss * ratio, MoraleDropCap);   // 被碾压→士气崩得快
 
             foreach (Detachment d in attackers)
             {
                 FixedPoint loss = tie ? winnerLoss : (attackerWinsZone ? winnerLoss : loserLoss);
-                FixedPoint moraleDelta = attackerWinsZone ? FixedPoint.Zero : config.MoraleDropOnLoss;
+                FixedPoint moraleDelta = attackerWinsZone || tie ? FixedPoint.Zero : loserMoraleDrop;
                 byId[d.Id.Value] = ApplyCombat(d, loss, moraleDelta, config);
             }
             foreach (Detachment d in defenders)
             {
                 FixedPoint loss = tie ? winnerLoss : (attackerWinsZone ? loserLoss : winnerLoss);
-                FixedPoint moraleDelta = attackerWinsZone ? config.MoraleDropOnLoss : FixedPoint.Zero;
+                FixedPoint moraleDelta = attackerWinsZone ? loserMoraleDrop : FixedPoint.Zero;
                 if (attackerWinsZone && newlyFormed) moraleDelta = moraleDelta + config.EmergenceMoraleShock;   // 涌现兵法冲击守方
                 byId[d.Id.Value] = ApplyCombat(d, loss, moraleDelta, config);
             }
@@ -155,17 +157,20 @@ namespace ThreeKingdom.Domain.ZoneBattle
                 byId[d.Id.Value] = d.WithCombat(d.Strength, d.Morale, (d.Fatigue + config.FatiguePerRound).Clamp(FixedPoint.Zero, FixedPoint.One));
         }
 
-        /// <summary>败方减员率：随战力比放大（悬殊→崩解快），封顶 <see cref="ZoneBattleConfig.AttritionCap"/>。</summary>
-        private static FixedPoint LoserLoss(FixedPoint attPower, FixedPoint defPower, bool tie, bool attackerWins, ZoneBattleConfig config)
+        /// <summary>士气跌幅上限（防单回合直接归零，留博弈余地）。</summary>
+        private static readonly FixedPoint MoraleDropCap = FixedPoint.FromFraction(45, 100);
+
+        /// <summary>战力比 winner/loser（≥1；悬殊→大，封顶于调用处）。tie=1。</summary>
+        private static FixedPoint PowerRatio(FixedPoint attPower, FixedPoint defPower, bool tie, bool attackerWins)
         {
-            if (tie) return Half(config.AttritionRate);
+            if (tie) return FixedPoint.One;
             FixedPoint loserPower = attackerWins ? defPower : attPower;
             FixedPoint winnerPower = attackerWins ? attPower : defPower;
-            if (loserPower.Raw <= 0) return config.AttritionCap;
-            FixedPoint loss = config.AttritionRate * (winnerPower / loserPower);
-            return loss > config.AttritionCap ? config.AttritionCap : loss;
+            if (loserPower.Raw <= 0) return FixedPoint.FromInt(8);   // 悬殊上界（配合各 Cap）
+            return winnerPower / loserPower;
         }
 
+        private static FixedPoint Cap(FixedPoint v, FixedPoint cap) => v > cap ? cap : v;
         private static FixedPoint Half(FixedPoint v) => v * FixedPoint.FromFraction(1, 2);
     }
 }

@@ -1,4 +1,5 @@
 using ThreeKingdom.Application.Session;
+using ThreeKingdom.Domain.ZoneBattle;
 using ThreeKingdom.Presentation.Runtime;
 using ThreeKingdom.Presentation.Screens;
 
@@ -114,7 +115,37 @@ namespace ThreeKingdom.Unity.UI
         /// <summary>当前草稿的计划预览（预计战力/士气/成型条件 + 缺失提示，无胜率）。</summary>
         public static OffensivePlanView PreviewOffensive() => _runtime.PreviewOffensive();
 
-        /// <summary>发起出征，返回结果展示模型（被门拒/战败退兵/破城占城归属）。</summary>
+        /// <summary>发起出征：授权门通过则进入区域战斗（多回合），返回发起结果（战斗进行中/被门拒）。</summary>
         public static OffensiveResultView LaunchOffensive() => _runtime.LaunchOffensive();
+
+        // --- 出征区域战斗驱动（GDD_021；发起后逐回合排兵布阵 → 终局结算占城）---
+
+        /// <summary>出征战斗进行中。</summary>
+        public static bool HasOffensiveBattle => _runtime.HasOffensiveBattle;
+        /// <summary>出征战斗已分胜负（待结算）。</summary>
+        public static bool OffensiveBattleOver => _runtime.OffensiveBattleOver;
+        /// <summary>出征战斗当前投影。</summary>
+        public static ZoneBattleView OffensiveBattleView() => _runtime.OffensiveBattleView();
+        /// <summary>战中调动己方支队到相邻区。</summary>
+        public static bool OffensiveBattleMove(string detId, string zoneId) => _runtime.OffensiveBattleMove(detId, zoneId).Applied;
+        /// <summary>推进出征战斗一回合（敌AI + 结算）。</summary>
+        public static ZoneBattleView OffensiveBattleResolveRound() => _runtime.OffensiveBattleResolveRound();
+        /// <summary>战斗终局后结算出征后果（占城归属 / 退兵可继续）。</summary>
+        public static OffensiveResultView ConcludeOffensive() => _runtime.ConcludeOffensive();
+
+        // --- 守城区域防御战（攻守统一，玩家守方）---
+
+        /// <summary>发起守城区域防御战，返回初始投影。</summary>
+        public static ZoneBattleView StartDefenseBattle() => _runtime.StartDefenseBattle();
+        /// <summary>守城战进行中。</summary>
+        public static bool HasDefenseBattle => _runtime.HasDefenseBattle;
+        /// <summary>守城战当前投影。</summary>
+        public static ZoneBattleView DefenseBattleView() => _runtime.DefenseBattleView();
+        /// <summary>守城战中调动己方守军到相邻区。</summary>
+        public static bool DefenseBattleMove(string detId, string zoneId) => _runtime.DefenseBattleMove(detId, zoneId).Applied;
+        /// <summary>推进守城战一回合。</summary>
+        public static ZoneBattleView DefenseBattleResolveRound() => _runtime.DefenseBattleResolveRound();
+        /// <summary>守城是否守住。</summary>
+        public static bool DefenseHeld => _runtime.DefenseHeld;
     }
 }

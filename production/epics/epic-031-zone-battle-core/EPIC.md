@@ -4,7 +4,7 @@
 > **Architecture Module**: 战斗执行层，替换竖切脚本战斗；实现 GDD_010 兵法沙盒执行、首次落地 GDD_016 敌方AI（吸收 epic-021-enemy-ai-loop 意图于区域战斗层）
 > **Governing ADR**: **ADR-0012（确定性区域战斗引擎）** · **ADR-0013（敌方区域AI）** · ADR-0004（确定性）· ADR-0006（种子化随机）· ADR-0011（多维准备/无克制/无坐标）· ADR-0009（会话装配/存档）· ADR-0008（城池控制权）
 > **GDD**: **GDD_021 战场区域部署与区域战斗（Draft，2026-07-04）** · 复用 GDD_010/011/007/008/002/016/019
-> **Status**: ✅ Core Complete（2026-07-04：S1-S7 全实现+测试。Domain 区域战斗引擎 + 敌AI + Application 编排/部署桥 + Presentation 可玩运行期/视图 + Unity 战斗屏壳。dotnet 924/924 绿(-warnaserror；+32 战斗测试)；3 DLL 同步。**待接**：把区域引擎接入战役出征/守城流（替换脚本战斗的接线，见下"迁移"）；敌AI 深度迭代（ADR-0013 D8）。）
+> **Status**: ✅ Complete（2026-07-04：S1-S7 + 战役接线 + 敌AI深度。区域引擎 + 敌AI（角色感知/姿态/反全知/记忆/不作弊）+ 编排/部署桥 + 可玩运行期/视图 + Unity 壳 + **出征全接入（发起→区域战斗→占城C）+ 守城入区域防御战**。dotnet 927/927 绿(-warnaserror)；3 DLL 同步。后续：敌AI 深度可持续迭代（ADR-0013 D8 多回合诈术）；HUD 战斗屏路由为 Unity veneer 待接。）
 > **设计来源**: 2026-07-04 用户设计对话裁定（排兵布阵=核心；见下"设计裁定"）
 
 ## 背景与问题
@@ -42,9 +42,16 @@
 
 依赖链 001→002→003→004→006→007；005 在 003 后并行。**7/7 Complete。**
 
-## 迁移待办（接线，非新能力）
+## 迁移接线（已完成 2026-07-04）
 
-区域引擎已完整替换**脚本战斗的规则/结算**；剩「接线替换」——把战役 `CampaignRuntime.StartBattle/ResolveOutcome`（守城脚本）与 `LaunchOffensive`（一击结算）改为进入 `ZoneBattleRuntime`（多回合区域战斗）→ 终局接占城 C/后果。属集成接线，建议单独一 story 谨慎替换（勿破 892 既有出征/HUD 测试），故本 EPIC 标 Core Complete 而非全 Complete。
+- **出征**：`CampaignRuntime.LaunchOffensive` 由一击结算改为**授权门→进入区域战斗**（多回合）；`OffensiveBattleResolveRound/Move/SetPosture/View` 驱动；`ConcludeOffensive` 终局→占城归属 C（权威 `ResolveConquest`：控制权变更+记功+自立倾向）/退兵可继续。OffensiveRuntimeTests 更新为新流。
+- **守城**：新增 `CampaignRuntime.StartDefenseBattle`（攻守统一，玩家守方 vs 敌AI攻方）+ 驱动/终局。
+- Application 一击结算 `CampaignSessionService.LaunchOffensive` 与脚本战斗**保留**（CampaignConquest/BattleSave/Phase 等既有测试不破；作快速结算/存档基元），玩家实际经历的战斗流已切换到区域引擎。
+- SessionRuntime 加出征/守城战斗驱动透传（Unity 可驱动）。**残留 Unity veneer**：HUD 出征面板→战斗屏的场景路由（HudController/UXML 接线，只 Unity 编译）。
+
+## 敌AI深度（已迭代一轮 2026-07-04，ADR-0013 D8）
+
+角色感知（攻方压目标/乘虚·守方巩固）+ 姿态决策（守/主攻/侧翼佯攻·低士气转守）+ 优势/退避因子。反全知/种子复现/记忆/不作弊不变。更深（多回合诈术/诱敌深入/兵种协同）按 D8 续迭代。
 
 ## 实现前置
 

@@ -57,24 +57,32 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
             Assert.That(view.ForcePreview, Is.GreaterThan(0), "预览派生进攻方战力（闭合因果可见）。");
         }
 
+        /// <summary>推进出征战斗至终局并结算后果。</summary>
+        private OffensiveResultView FightToEnd()
+        {
+            for (int i = 0; i < 12 && _runtime.HasOffensiveBattle; i++) _runtime.OffensiveBattleResolveRound();
+            return _runtime.ConcludeOffensive();
+        }
+
         [Test]
-        public void test_strong_six_dimensional_plan_wins_and_conquers()
+        public void test_strong_six_dimensional_plan_enters_battle_wins_and_conquers()
         {
             _runtime.RequestOffensiveAuthorization();
             OffensivePlan plan = _runtime.BeginOffensive(PlayableCampaign.EnemyCity);
             plan.Muster = 900;
             plan.Supply = 400;
-            plan.Approach = ApproachPlan.FeintLure;
-            plan.Composition[TroopType.Cavalry] = 400;   // 骑兵份额 → 追击条件
+            plan.Approach = ApproachPlan.FrontalAssault;   // 强攻压破正面
+            plan.Composition[TroopType.Cavalry] = 400;
             plan.Composition[TroopType.Infantry] = 500;
             plan.Advisor = true;
 
-            OffensiveResultView result = _runtime.LaunchOffensive();
+            OffensiveResultView launched = _runtime.LaunchOffensive();
+            Assert.That(launched.BattleInProgress, Is.True, "授权通过 → 进入区域战斗（多回合，非一击）。");
 
-            Assert.That(result.Launched, Is.True);
+            OffensiveResultView result = FightToEnd();
             Assert.That(result.Victory, Is.True, "六维准备充分 → 破城（准备决定胜负）。");
             Assert.That(result.OwnershipLabel, Does.Contain("直辖"), "首座占城归玩家直辖（占城 C 前两座）。");
-            Assert.That(result.Tactics, Is.Not.Empty, "携入兵法条件（诱敌链成型）。");
+            Assert.That(_runtime.Session.ConquestCount, Is.EqualTo(1), "破城 → 占城计数 +1（权威结算）。");
         }
 
         [Test]
@@ -82,15 +90,27 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         {
             _runtime.RequestOffensiveAuthorization();
             OffensivePlan plan = _runtime.BeginOffensive(PlayableCampaign.EnemyCity);
-            plan.Muster = 0;
+            plan.Muster = 20;
             plan.Supply = 0;
             plan.Approach = ApproachPlan.FrontalAssault;
 
-            OffensiveResultView result = _runtime.LaunchOffensive();
+            _runtime.LaunchOffensive();
+            OffensiveResultView result = FightToEnd();
 
-            Assert.That(result.Launched, Is.True, "授权通过 → 出征。");
-            Assert.That(result.Victory, Is.False, "裸战 → 败。");
+            Assert.That(result.Victory, Is.False, "裸战 → 败（守军压倒）。");
             Assert.That(result.Notes, Has.Some.Contains("继续"), "失败必留可继续状态（红线）。");
+            Assert.That(_runtime.Session.ConquestCount, Is.EqualTo(0), "败不占城。");
+        }
+
+        [Test]
+        public void test_defense_battle_enters_zone_battle_and_holds_the_gate()
+        {
+            // 守城=攻守统一：玩家守方分区布防，敌AI 来攻；守军(700) 挡住来犯(500) → 守土成功。
+            ZoneBattleView start = _runtime.StartDefenseBattle();
+            Assert.That(start.PlayerIsAttacker, Is.False, "守城 → 玩家为守方。");
+            for (int i = 0; i < 12 && _runtime.HasDefenseBattle; i++) _runtime.DefenseBattleResolveRound();
+            Assert.That(_runtime.DefenseBattleOver, Is.True, "守城战分出胜负。");
+            Assert.That(_runtime.DefenseHeld, Is.True, "守军挡住来犯敌军 → 守土成功（攻守统一同引擎）。");
         }
 
         [Test]

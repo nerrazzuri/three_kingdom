@@ -75,10 +75,20 @@ namespace ThreeKingdom.Domain.ZoneBattle
         public int MoveCost { get; }
         /// <summary>选择锐度（≥1；权重指数，高=更倾向高效用，realizes 种子softmax 温度反比）。</summary>
         public int Sharpness { get; }
+        /// <summary>攻方进攻目标（正面）推进加成（攻方角色向破城目标施压）。</summary>
+        public int ObjectivePush { get; }
+        /// <summary>优势加成（该区己方 &gt; 可见敌 → +此值：攻方乘虚、守方巩固）。</summary>
+        public int OpportunityBonus { get; }
+        /// <summary>低士气退避阈值（支队士气低于此则偏好向低威胁区退避保全）。</summary>
+        public FixedPoint RetreatMoraleThreshold { get; }
+        /// <summary>退避加成（低士气支队移向低威胁区 +此值）。</summary>
+        public int PreserveBonus { get; }
 
         public EnemyAiConfig(
             IReadOnlyDictionary<string, int>? zoneValue, int defaultZoneValue, int threatWeight,
-            int deficitBonus, int trendBonus, int moveCost, int sharpness)
+            int deficitBonus, int trendBonus, int moveCost, int sharpness,
+            int objectivePush = 50, int opportunityBonus = 30,
+            FixedPoint? retreatMoraleThreshold = null, int preserveBonus = 35)
         {
             if (sharpness < 1) throw new ArgumentOutOfRangeException(nameof(sharpness));
             var zv = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -90,6 +100,10 @@ namespace ThreeKingdom.Domain.ZoneBattle
             TrendBonus = trendBonus;
             MoveCost = moveCost;
             Sharpness = sharpness;
+            ObjectivePush = objectivePush;
+            OpportunityBonus = opportunityBonus;
+            RetreatMoraleThreshold = retreatMoraleThreshold ?? FixedPoint.FromFraction(3, 10);
+            PreserveBonus = preserveBonus;
         }
 
         /// <summary>某区战略价值。</summary>

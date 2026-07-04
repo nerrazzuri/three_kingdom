@@ -119,6 +119,12 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>可出征目标城清单（GDD_019 §7 选目标；授权门/敌控由运行期按会话控制权投影判定）。</summary>
         public IReadOnlyList<CityId> OffensiveTargetCities => new[] { EnemyCity };
 
+        /// <summary>守城区域防御战：玩家守军（汜水关；GDD_021 攻守统一，守方视角）。</summary>
+        public int DefenseGarrison => 700;
+
+        /// <summary>守城区域防御战：来犯敌军突击兵力（敌AI攻方）。</summary>
+        public int EnemyAssaultForce => 500;
+
         /// <summary>占城后进驻的守军（占城 C 控制权变更的新驻军）。</summary>
         public Garrison ConqueredGarrison => new Garrison(600);
 

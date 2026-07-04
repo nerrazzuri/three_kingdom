@@ -102,6 +102,38 @@ namespace ThreeKingdom.Domain.Tests.ZoneBattle
         }
 
         [Test]
+        public void test_attacker_ai_presses_toward_undefended_objective()
+        {
+            // AI=攻方（玩家=守方），守方不在正面 → 攻方AI 从预备压向破城目标（正面），姿态主攻。
+            var dets = new[]
+            {
+                Det("p-def", BattleSide.Defender, BattleField.Flank, 100),   // 守方在侧翼，正面空虚
+                Det("e-atk", BattleSide.Attacker, BattleField.Reserve, 600),
+            };
+            var s = new ZoneBattleState(BattleField.Default(), dets, Array.Empty<ZoneEngagementState>(),
+                new BattleClock(1, 6), BattleSide.Defender, seed: 12UL);
+            ZoneBattleState after = _ai.Decide(s, BattleSide.Attacker, ZoneBattleConfig.Default, EnemyAiConfig.Default);
+            Detachment atk = after.TryGet(new DetachmentId("e-atk"))!;
+            Assert.That(atk.InTransit && atk.TransitTarget == BattleField.Front, Is.True, "攻方AI 压向空虚的破城目标。");
+            Assert.That(atk.Posture, Is.EqualTo(Posture.Assault), "攻方乘虚 → 主攻姿态。");
+        }
+
+        [Test]
+        public void test_defender_ai_adopts_hold_posture()
+        {
+            // AI=守方，守方支队应取守姿态（角色感知）。
+            var dets = new[]
+            {
+                Det("p-atk", BattleSide.Attacker, BattleField.Front, 400),
+                Det("e-def", BattleSide.Defender, BattleField.Front, 500),
+            };
+            var s = new ZoneBattleState(BattleField.Default(), dets, Array.Empty<ZoneEngagementState>(),
+                new BattleClock(1, 6), BattleSide.Attacker, seed: 34UL);
+            ZoneBattleState after = _ai.Decide(s, BattleSide.Defender, ZoneBattleConfig.Default, EnemyAiConfig.Default);
+            Assert.That(after.TryGet(new DetachmentId("e-def"))!.Posture, Is.EqualTo(Posture.Hold), "守方AI 取守姿态。");
+        }
+
+        [Test]
         public void test_ai_updates_memory_with_visible_enemy()
         {
             ZoneBattleState s = State(new[]

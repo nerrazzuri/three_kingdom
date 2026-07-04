@@ -1,6 +1,14 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
-## ✅ 完成（2026-07-04）— epic-031 战斗核心层 S1-S7 实现（用户授权自主做完；替换/区域/敌AI最完善）
+## ✅ 完成（2026-07-04）— epic-031 战斗核心 + 战役接线(#1) + 敌AI深度(#2)（用户授权自主做完）
+
+> **续做 #1 接线 + #2 敌AI深度，dotnet 927/927 绿，DLL 同步。epic-031 → Complete。**
+> - **#1 接线**：CampaignRuntime.LaunchOffensive 改为 授权门→进入区域战斗（多回合）→ ConcludeOffensive 终局接占城C（ResolveConquest 权威）/退兵可继续；新增 StartDefenseBattle 守城入区域防御战（玩家守方 vs 敌AI）。OffensiveResultView 加 Started/Victorious/Defeated 工厂 + BattleInProgress。SessionRuntime 加战斗驱动透传。Application 一击结算+脚本战斗保留（既有测试不破）。OffensiveRuntimeTests 更新为新流 + 守城测试。
+> - **#2 敌AI深度**：EnemyZoneAiService 角色感知（攻方 ObjectivePush 压目标/乘虚·守方巩固）+ 姿态决策（守/主攻/侧翼佯攻·低士气转守）+ 优势/退避因子（EnemyAiConfig 扩）。反全知/种子/记忆/不作弊不变。+2 测。
+> - **平衡**：引入士气崩溃溃散（IsBroken 含 morale≤0）+ 减员/掉士气随战力比放大封顶 → 强攻方 6 回合内可破正面。TotalStrength 只计未溃散。
+> - 残留：HUD 出征面板→战斗屏场景路由（Unity veneer）；敌AI 更深迭代（ADR-0013 D8）。
+
+## （历史）✅ 完成（2026-07-04）— epic-031 战斗核心层 S1-S7 实现
 
 > 用户裁定：替换脚本战斗 · 敌AI一步到位最完善 · 战斗=与其他三国演义差异点须最溢满。**S1-S7 全实现+测试，dotnet 924/924 绿(+32)，3 DLL 同步。**
 > - Domain/ZoneBattle：ZoneId/DetachmentId/BattleSide/Posture · Zone/BattleField(5区+邻接,非坐标) · Detachment(减员按比例缩放编成) · ZoneEngagementState/BattleClock · ZoneBattleState(确定性哈希+记忆) · ZoneBattleConfig/Context · ZoneConditionService(按区按回合涌现门) · RoundResolutionService(交战/减员随战力比封顶/涌现冲击/优先序) · ZoneCommandService(调动邻接+在途/姿态/稳定错误码) · EnemyAiMemory/AiWorldView(反全知)/EnemyAiConfig/EnemyZoneAiService(种子化整数加权,饱和Pow,同规则不作弊,落地GDD_016) · ZoneBattleOutcome(破正面即破城)。

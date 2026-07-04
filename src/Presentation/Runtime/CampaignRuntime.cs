@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ThreeKingdom.Application.Battle;
 using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Session;
 using ThreeKingdom.Domain.Battle;
@@ -13,6 +14,7 @@ using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.Preparation;
 using ThreeKingdom.Domain.Time;
+using ThreeKingdom.Domain.ZoneBattle;
 using ThreeKingdom.Presentation.Screens;
 
 namespace ThreeKingdom.Presentation.Runtime
@@ -275,26 +277,113 @@ namespace ThreeKingdom.Presentation.Runtime
             return OffensivePlanView.FromPlan(_offensivePlan, preview, scouted);
         }
 
+        private ZoneBattleRuntime? _offensiveBattle;
+        private CityId _offensiveTarget;
+
         /// <summary>
-        /// 发起出征（GDD_019 R3/R4/R5 端到端）：以当前草稿派生战力 → 攻城结算 → 胜则占城归属 C、败则退兵可继续。
-        /// 权威结算全在 <see cref="CampaignSessionService.LaunchOffensive"/>；本方法只组装参数并投影结果。未开始则抛。
+        /// 发起出征（GDD_019 + GDD_021 端到端）：授权门通过 → <b>进入区域战斗</b>（多回合排兵布阵，替换一击结算）；
+        /// 被门拒则即时返回拒绝。战斗由 <see cref="OffensiveBattleResolveRound"/> 等推进，终局后经 <see cref="ConcludeOffensive"/>
+        /// 结算占城归属 C。未开始组装则抛。
         /// </summary>
         public OffensiveResultView LaunchOffensive()
         {
             if (_offensivePlan == null) throw new InvalidOperationException("尚未开始组装出征（先 BeginOffensive）。");
             CityId target = _offensivePlan.Target;
+            OffensiveGateResult gate = _service.CheckOffensiveTarget(Session, target, PlayableCampaign.Player);
+            if (gate != OffensiveGateResult.Authorized)
+                return OffensiveResultView.FromResult(OffensiveResult.Rejected(gate));
+
             bool scouted = TargetScouted();
             OffensivePreparation prep = _offensivePlan.Build(_scenario.TerrainOf(target), scouted);
-
-            OffensiveResult result = _service.LaunchOffensive(
-                Session, target, prep, _scenario.OffensiveSetup,
-                _scenario.DefenseOf(target), _scenario.SiegeResolution,
-                PlayableCampaign.Player, PlayableCampaign.LordFaction, _scenario.ConqueredGarrison,
-                FixedPoint.Zero, FixedPoint.Zero, FixedPoint.Zero,
-                _scenario.OffensiveSeed, _scenario.Occupation, _scenario.Ladder);
-
-            return OffensiveResultView.FromResult(result);
+            FixedPoint morale = _offensiveDerive.Derive(prep, _scenario.OffensiveSetup).Morale;
+            int garrison = _scenario.DefenseOf(target).Garrison;
+            _offensiveBattle = ZoneBattleRuntime.FromOffensive(prep, morale, garrison, _scenario.OffensiveSeed);
+            _offensiveTarget = target;
+            return OffensiveResultView.Started();
         }
+
+        /// <summary>出征区域战斗进行中（未分胜负）。</summary>
+        public bool HasOffensiveBattle => _offensiveBattle != null && !_offensiveBattle.IsOver;
+        /// <summary>出征区域战斗已分胜负（待 ConcludeOffensive 结算后果）。</summary>
+        public bool OffensiveBattleOver => _offensiveBattle != null && _offensiveBattle.IsOver;
+
+        /// <summary>出征战斗当前投影（各区态势 + 涌现 + 排兵布阵选项）。未发起则抛。</summary>
+        public ZoneBattleView OffensiveBattleView() => Battle().View();
+        /// <summary>战中调动己方支队到相邻区（排兵布阵）。</summary>
+        public ZoneCommandResult OffensiveBattleMove(string detachmentId, string zoneId) => Battle().MoveDetachment(detachmentId, zoneId);
+        /// <summary>战中改己方支队姿态。</summary>
+        public ZoneCommandResult OffensiveBattleSetPosture(string detachmentId, Posture posture) => Battle().SetPosture(detachmentId, posture);
+        /// <summary>推进出征战斗一回合（敌AI + 结算），返回战后投影。</summary>
+        public ZoneBattleView OffensiveBattleResolveRound() => Battle().ResolveRound();
+
+        private ZoneBattleRuntime Battle() => _offensiveBattle ?? throw new InvalidOperationException("尚未发起出征战斗。");
+
+        /// <summary>
+        /// 战斗终局后结算出征后果（权威）：破城 → 占城归属 C（经 <see cref="CampaignSessionService.ResolveConquest"/>：
+        /// 控制权变更 + 记功 + 自立倾向）；败/超时 → 退兵可继续。清空战斗与草稿。战斗未结束则抛。
+        /// </summary>
+        public OffensiveResultView ConcludeOffensive()
+        {
+            if (_offensiveBattle == null || !_offensiveBattle.IsOver)
+                throw new InvalidOperationException("战斗尚未结束，不能结算出征后果。");
+
+            OffensiveResultView view;
+            if (_offensiveBattle.Outcome == ZoneBattleOutcome.AttackerVictory)
+            {
+                ConquestResult conquest = _service.ResolveConquest(
+                    Session, _offensiveTarget, _scenario.ConqueredGarrison, PlayableCampaign.Player, PlayableCampaign.LordFaction,
+                    FixedPoint.Zero, FixedPoint.Zero, FixedPoint.Zero,
+                    _scenario.OffensiveSeed, _scenario.Occupation, _scenario.Ladder, CareerGainSource.MajorBattleVictory);
+                view = OffensiveResultView.Victorious(conquest);
+            }
+            else
+            {
+                view = OffensiveResultView.Defeated();
+            }
+
+            _offensiveBattle = null;
+            _offensivePlan = null;
+            return view;
+        }
+
+        // --- 守城区域防御战（GDD_021 R7 攻守统一：玩家=守方，攻方=敌AI）。替换脚本守城的可玩战斗。---
+
+        private ZoneBattleRuntime? _defenseBattle;
+
+        /// <summary>守城区域防御战进行中。</summary>
+        public bool HasDefenseBattle => _defenseBattle != null && !_defenseBattle.IsOver;
+        /// <summary>守城已分胜负。</summary>
+        public bool DefenseBattleOver => _defenseBattle != null && _defenseBattle.IsOver;
+        /// <summary>守城是否守住（守方胜=退敌）。</summary>
+        public bool DefenseHeld => _defenseBattle != null && _defenseBattle.IsOver
+            && _defenseBattle.Outcome == ZoneBattleOutcome.DefenderVictory;
+
+        /// <summary>发起守城区域防御战：以守军分区布防，敌军来攻（敌AI驱动攻方）。返回初始战斗投影。</summary>
+        public ZoneBattleView StartDefenseBattle()
+        {
+            var field = BattleField.Default();
+            var planner = new OffensiveDeploymentPlanner();
+            FixedPoint morale = FixedPoint.FromFraction(7, 10);
+            var dets = new List<Detachment>(planner.PlanDefender(
+                new SiegeDefense(_scenario.DefenseGarrison, FixedPoint.FromFraction(12, 10)), morale, field));
+            dets.Add(new Detachment(new DetachmentId("enemy-assault"), BattleSide.Attacker, null,
+                TroopComposition.AllInfantry(_scenario.EnemyAssaultForce), _scenario.EnemyAssaultForce,
+                morale, FixedPoint.FromFraction(2, 10), Posture.Assault, BattleField.Front));
+            ZoneBattleState start = new ZoneBattleService().Start(field, dets, BattleSide.Defender, 6, _scenario.OffensiveSeed);
+            _defenseBattle = new ZoneBattleRuntime(start, ZoneBattleContext.Default);
+            return _defenseBattle.View();
+        }
+
+        /// <summary>守城战当前投影。</summary>
+        public ZoneBattleView DefenseBattleView() => Defense().View();
+        /// <summary>守城战中调动己方守军到相邻区。</summary>
+        public ZoneCommandResult DefenseBattleMove(string detachmentId, string zoneId) => Defense().MoveDetachment(detachmentId, zoneId);
+        /// <summary>守城战中改己方守军姿态。</summary>
+        public ZoneCommandResult DefenseBattleSetPosture(string detachmentId, Posture posture) => Defense().SetPosture(detachmentId, posture);
+        /// <summary>推进守城战一回合（敌AI + 结算），返回战后投影。</summary>
+        public ZoneBattleView DefenseBattleResolveRound() => Defense().ResolveRound();
+
+        private ZoneBattleRuntime Defense() => _defenseBattle ?? throw new InvalidOperationException("尚未发起守城战。");
 
         /// <summary>目标是否已侦察（反全知：有非过时敌情估计 → 可得突袭类条件、免情报盲区折扣）。</summary>
         private bool TargetScouted()

@@ -35,13 +35,13 @@ namespace ThreeKingdom.Domain.ZoneBattle
                 var targets = new List<ZoneId> { det.Location };
                 foreach (ZoneId n in state.Field.Neighbors(det.Location)) targets.Add(n);
 
-                // 评分。
+                // 评分（角色感知：攻方压目标/乘虚，守方巩固；低士气退避）。
                 var scores = new int[targets.Count];
                 int min = int.MaxValue;
                 for (int i = 0; i < targets.Count; i++)
                 {
                     bool isMove = targets[i] != det.Location;
-                    scores[i] = Score(targets[i], isMove, view, state.Memory, ai);
+                    scores[i] = Score(targets[i], isMove, aiSide, det, view, state.Memory, ai);
                     if (scores[i] < min) min = scores[i];
                 }
 
@@ -55,26 +55,63 @@ namespace ThreeKingdom.Domain.ZoneBattle
                 }
 
                 int pick = WeightedPick(rng, weights, total);
-                if (targets[pick] != det.Location)
+                ZoneId chosen = targets[pick];
+                if (chosen != det.Location)
                 {
-                    ZoneCommandResult r = _commands.MoveDetachment(working, aiSide, det.Id, targets[pick]);
+                    ZoneCommandResult r = _commands.MoveDetachment(working, aiSide, det.Id, chosen);
                     if (r.Applied) working = r.State;   // 命令契约把关；失败则留守（不作弊、不强改）
                 }
+
+                // 姿态决策（角色感知；同经命令契约）。
+                Posture desired = DecidePosture(aiSide, chosen, det, view, ai);
+                ZoneCommandResult pr = _commands.SetPosture(working, aiSide, det.Id, desired);
+                if (pr.Applied) working = pr.State;
             }
 
             // 更新记忆（只记可见敌情，反全知）。
             return working.WithMemory(new EnemyAiMemory(view.VisibleEnemyMap));
         }
 
-        private static int Score(ZoneId target, bool isMove, AiWorldView view, EnemyAiMemory memory, EnemyAiConfig ai)
+        private static int Score(
+            ZoneId target, bool isMove, BattleSide aiSide, Detachment det, AiWorldView view, EnemyAiMemory memory, EnemyAiConfig ai)
         {
             int visibleEnemy = view.VisibleEnemyIn(target);
+            int ownHere = view.OwnIn(target);
+            int effectiveOwn = ownHere + (isMove ? det.Strength : 0);   // 若移入则计入本支队
+
             int score = ai.ValueOf(target);
             score += (visibleEnemy / 50) * ai.ThreatWeight;                     // 向受威胁区集中
-            if (visibleEnemy > view.OwnIn(target)) score += ai.DeficitBonus;    // 增援劣势区
+            if (visibleEnemy > ownHere) score += ai.DeficitBonus;               // 增援劣势区
             if (visibleEnemy > memory.LastVisible(target)) score += ai.TrendBonus; // 玩家增兵趋势
+
+            if (aiSide == BattleSide.Attacker)
+            {
+                if (target == BattleField.Front) score += ai.ObjectivePush;     // 攻方压破城目标
+                if (effectiveOwn > visibleEnemy) score += ai.OpportunityBonus;  // 乘虚/press advantage
+            }
+            else if (visibleEnemy > 0 && effectiveOwn >= visibleEnemy)
+            {
+                score += ai.OpportunityBonus;                                   // 守方在能守处巩固
+            }
+
+            // 低士气退避：偏好向无威胁区保全。
+            if (det.Morale < ai.RetreatMoraleThreshold && visibleEnemy == 0) score += ai.PreserveBonus;
+
             if (isMove) score -= ai.MoveCost;                                   // 调动代价
             return score;
+        }
+
+        /// <summary>角色感知姿态决策（守方守/攻方主攻·侧翼佯攻/劣势或低士气则守）。</summary>
+        private static Posture DecidePosture(BattleSide aiSide, ZoneId target, Detachment det, AiWorldView view, EnemyAiConfig ai)
+        {
+            if (det.Morale < ai.RetreatMoraleThreshold) return Posture.Hold;    // 士气动摇 → 转守
+            if (aiSide == BattleSide.Defender) return Posture.Hold;
+
+            // 攻方
+            if (target == BattleField.Flank) return Posture.Feint;              // 侧翼 → 佯攻诱敌
+            int enemy = view.VisibleEnemyIn(target);
+            int own = view.OwnIn(target) + (target != det.Location ? det.Strength : 0);
+            return own > enemy ? Posture.Assault : Posture.Hold;
         }
 
         private static int WeightedPick(DeterministicRandom rng, long[] weights, long total)

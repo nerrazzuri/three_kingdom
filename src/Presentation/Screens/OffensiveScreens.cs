@@ -281,6 +281,8 @@ namespace ThreeKingdom.Presentation.Screens
     {
         /// <summary>是否通过授权门并出征。</summary>
         public bool Launched { get; }
+        /// <summary>是否进入区域战斗、尚未分胜负（多回合作战进行中）。</summary>
+        public bool BattleInProgress { get; }
         /// <summary>是否破城取胜。</summary>
         public bool Victory { get; }
         /// <summary>一句话结论。</summary>
@@ -293,16 +295,40 @@ namespace ThreeKingdom.Presentation.Screens
         public IReadOnlyList<string> Tactics { get; }
 
         private OffensiveResultView(
-            bool launched, bool victory, string conclusion, string ownership,
+            bool launched, bool battleInProgress, bool victory, string conclusion, string ownership,
             IReadOnlyList<string> notes, IReadOnlyList<string> tactics)
         {
             Launched = launched;
+            BattleInProgress = battleInProgress;
             Victory = victory;
             ConclusionLabel = conclusion;
             OwnershipLabel = ownership;
             Notes = notes;
             Tactics = tactics;
         }
+
+        /// <summary>出征已发起、进入区域战斗（多回合作战，未分胜负）。</summary>
+        public static OffensiveResultView Started()
+            => new OffensiveResultView(true, true, false, "出征已发起——进入战场，排兵布阵、逐回合决胜。", string.Empty,
+                new[] { "指挥各区支队、推进回合，破敌正面即克城。" }, Array.Empty<string>());
+
+        /// <summary>破城取胜后的占城归属结算收口（区域战斗胜局）。</summary>
+        public static OffensiveResultView Victorious(ConquestResult conquest, IReadOnlyList<string>? tactics = null)
+        {
+            bool toPlayer = conquest.Verdict == OwnershipVerdict.GrantToPlayer;
+            string ownership = toPlayer
+                ? "破城！此城归你直辖。"
+                : "破城！然君主收归直辖——你得功绩名望，战果却被夺，自立之心渐起。";
+            var notes = new List<string> { $"累计占城：{conquest.ConquestCount} 座" };
+            if (conquest.CareerApplied) notes.Add("战功记入——晋阶门槛推进。");
+            if (!toPlayer) notes.Add($"自立倾向累积至 {conquest.RebellionLean}（战果屡被夺 → 更易/更想自立）。");
+            return new OffensiveResultView(true, false, true, "破城取胜！", ownership, notes, tactics ?? Array.Empty<string>());
+        }
+
+        /// <summary>攻城未克退兵（区域战斗败局；失败可继续，红线）。</summary>
+        public static OffensiveResultView Defeated()
+            => new OffensiveResultView(true, false, false, "攻城未克——折兵退兵。", string.Empty,
+                new[] { "战役继续：可再备战、改守、或转攻他城（失败不切死局）。" }, Array.Empty<string>());
 
         /// <summary>由 Application 出征结果构造展示模型。</summary>
         public static OffensiveResultView FromResult(OffensiveResult result)
@@ -314,12 +340,12 @@ namespace ThreeKingdom.Presentation.Screens
                 foreach (TacticCondition c in result.Force.Conditions) tactics.Add(OffensiveText.Condition(c));
 
             if (!result.Launched)
-                return new OffensiveResultView(false, false,
+                return new OffensiveResultView(false, false, false,
                     "未能出征：" + OffensiveText.Gate(result.Gate), string.Empty,
                     new[] { "调整目标或先请君主授权，再出征。" }, tactics);
 
             if (!result.Victory)
-                return new OffensiveResultView(true, false,
+                return new OffensiveResultView(true, false, false,
                     "攻城未克——折兵退兵。", string.Empty,
                     new[] { "战役继续：可再备战、改守、或转攻他城（失败不切死局）。" }, tactics);
 
@@ -332,7 +358,7 @@ namespace ThreeKingdom.Presentation.Screens
             if (c2.CareerApplied) notes.Add("战功记入——晋阶门槛推进。");
             if (!toPlayer) notes.Add($"自立倾向累积至 {c2.RebellionLean}（战果屡被夺 → 更易/更想自立）。");
 
-            return new OffensiveResultView(true, true, "破城取胜！", ownership, notes, tactics);
+            return new OffensiveResultView(true, false, true, "破城取胜！", ownership, notes, tactics);
         }
     }
 }
