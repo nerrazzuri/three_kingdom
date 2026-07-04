@@ -1,3 +1,4 @@
+using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Numerics;
@@ -27,12 +28,28 @@ namespace ThreeKingdom.Application.Battle
         public static SubversionTargetProfile Build(
             CharacterId general, bool scouted, FixedPoint intelQuality, bool exposed, ulong worldSeed)
         {
-            ulong baseSeed = worldSeed ^ Fnv(general.Value);
-            FixedPoint loyalty = Unit(baseSeed, 0x11);
-            FixedPoint resentment = Unit(baseSeed, 0x22);
-            FixedPoint greed = Unit(baseSeed, 0x33);
-            FixedPoint charm = Unit(baseSeed, 0x44);
-            FixedPoint alertness = Unit(baseSeed, 0x55);
+            FixedPoint loyalty, resentment, greed, charm, alertness;
+
+            // 有档案（GDD_025）：性情由武将的隐秘心（忠诚倾向/野心/标签）确定性派生——
+            // 于是"离间吕布（怀贰）易、离间关羽（忠义）难"由标签驱动，非数字。无档案则回退种子化。
+            GeneralDossier? dossier = GeneralDossiers.Find(general);
+            if (dossier != null)
+            {
+                loyalty = dossier.LoyaltyScore;
+                resentment = dossier.ResentmentScore;
+                greed = dossier.GreedScore;
+                charm = dossier.CharmScore;
+                alertness = dossier.AlertnessScore;
+            }
+            else
+            {
+                ulong baseSeed = worldSeed ^ Fnv(general.Value);
+                loyalty = Unit(baseSeed, 0x11);
+                resentment = Unit(baseSeed, 0x22);
+                greed = Unit(baseSeed, 0x33);
+                charm = Unit(baseSeed, 0x44);
+                alertness = Unit(baseSeed, 0x55);
+            }
             if (exposed)   // 曾被识破 → 警觉大增（后续更易反噬）
                 alertness = (alertness + FixedPoint.FromFraction(4, 10)).Clamp(FixedPoint.Zero, FixedPoint.One);
 
