@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Numerics;
+using ThreeKingdom.Domain.Subversion;
 using ThreeKingdom.Domain.ZoneBattle;
 
 namespace ThreeKingdom.Application.Battle
@@ -58,9 +59,24 @@ namespace ThreeKingdom.Application.Battle
 
         /// <summary>由守备（守军 + 工事）构造守方分区布防：主力守正面，一部护粮道。</summary>
         public IReadOnlyList<Detachment> PlanDefender(SiegeDefense defense, FixedPoint morale, BattleField field)
+            => PlanDefender(defense, morale, field, SubversionEffect.None);
+
+        /// <summary>
+        /// 同上，但先应用<b>人心杠杆</b>施计效果（GDD_024 F3 接缝）：有效守军 = 守军×(1−倒戈比)；
+        /// 守方开战士气 += 士气增量 + 军纪增量（区域引擎无独立军纪项，MVP 军纪损失折进士气——见 GDD_024 §17 后续独立军纪项）。
+        /// </summary>
+        public IReadOnlyList<Detachment> PlanDefender(SiegeDefense defense, FixedPoint morale, BattleField field, SubversionEffect subversion)
         {
             if (defense == null) throw new ArgumentNullException(nameof(defense));
+            subversion = subversion ?? SubversionEffect.None;
+
             int garrison = defense.Garrison;
+            if (subversion.GarrisonDefectRatio > FixedPoint.Zero)
+                garrison = (FixedPoint.FromInt(garrison) * (FixedPoint.One - subversion.GarrisonDefectRatio)).RoundToInt();
+            garrison = Math.Max(0, garrison);
+            morale = (morale + subversion.DefenderMoraleDelta + subversion.DefenderDisciplineDelta)
+                .Clamp(FixedPoint.Zero, FixedPoint.One);
+
             int frontG = garrison - garrison / 3;
             int supplyG = garrison - frontG;
             FixedPoint fatigue = FixedPoint.FromFraction(1, 10);

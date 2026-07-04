@@ -1420,3 +1420,13 @@ ADR-0003（数据驱动配置的正式锁定）。
 - GDD_021 §11 落定值表+理据 + W5验证映射；GDD_019 §8 补打磨确认（默认值经测试锁定、W5端到端映射）。
 - dotnet **970/970 绿**（-warnaserror 0，963→970）；3 DLL Release 重建同步 Assets/Plugins。
 - 待提交 → tk/main。
+
+## Session Extract — 人心杠杆核心（护城河）Domain+接缝+W5 2026-07-04
+- 用户裁定：不砍人心杠杆，连同 P0/P1/P2 全做（任务 #6-#11）。终局由玩家推进（已定）。
+- **人心杠杆（GDD_024 Draft）**：离间/策反/攻心三计，复用 Intel/Relationships/Cohesion 零件，做成"施计→改变战斗条件"闭环。
+  - Domain/Subversion：SubversionScheme/TargetProfile(反全知投影)/Effect(战斗接缝)/Config/Outcome/Service。纯函数、种子化(ADR-0006)、反全知门(未侦察折扣)、可反噬(暴露+守方士气反升)、策反门(低忠诚∧高怨恨)、重复递减。
+  - 接缝：OffensiveDeploymentPlanner.PlanDefender 重载 + ZoneBattleRuntime.FromOffensive 可选 SubversionEffect → 有效守军×(1−倒戈比)、守方士气+=士气/军纪delta（区域引擎无独立军纪项，MVP 折进士气，GDD_024 §17 后续）。
+  - 测试 +10：SubversionTests(8：反全知门/策反门/确定性/三计效果映射/反噬暴露/无效/递减/强度单调) + SubversionBattleIntegrationTests(2 W5：施计降门槛 garrison800 t500 无施计败·施计胜；施计不单独决定 t100 施计仍败)。
+- dotnet 980/980 绿（970→980，-warnaserror 0）；3 DLL Release 同步。
+- ⏳ 人心杠杆待续：Application 战役接线（施计命令 + 会话态待生效效果 + 存档 + 喂 LaunchOffensive）。
+- ▶ 后续任务 #7 生涯纵深 / #8 事件分级+心里话 / #9 战法内容包+失败路径 / #10 全局装配+ViewModel / #11 Unity UI(需编辑器验证)。

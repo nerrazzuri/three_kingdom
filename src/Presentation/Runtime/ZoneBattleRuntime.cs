@@ -4,6 +4,7 @@ using ThreeKingdom.Application.Battle;
 using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Numerics;
+using ThreeKingdom.Domain.Subversion;
 using ThreeKingdom.Domain.ZoneBattle;
 using ThreeKingdom.Presentation.Screens;
 
@@ -36,15 +37,21 @@ namespace ThreeKingdom.Presentation.Runtime
             _aiConfig = aiConfig ?? EnemyAiConfig.Default;
         }
 
-        /// <summary>由出征六维准备开战（攻方经部署桥分区、守方由守备布防；玩家=攻方）。</summary>
+        /// <summary>
+        /// 由出征六维准备开战（攻方经部署桥分区、守方由守备布防；玩家=攻方）。
+        /// 可选 <paramref name="subversion"/>：战前<b>人心杠杆</b>施计效果（GDD_024）——改守方士气/军纪/有效守军。
+        /// </summary>
         public static ZoneBattleRuntime FromOffensive(
-            OffensivePreparation prep, FixedPoint morale, int garrison, ulong seed, int maxRounds = 6)
+            OffensivePreparation prep, FixedPoint morale, int garrison, ulong seed, int maxRounds = 6,
+            SubversionEffect? subversion = null)
         {
             var field = BattleField.Default();
             var planner = new OffensiveDeploymentPlanner();
             var dets = new List<Detachment>();
             dets.AddRange(planner.PlanAttacker(prep, morale, field));
-            dets.AddRange(planner.PlanDefender(new SiegeDefense(garrison, FixedPoint.FromFraction(12, 10)), FixedPoint.FromFraction(7, 10), field));
+            dets.AddRange(planner.PlanDefender(
+                new SiegeDefense(garrison, FixedPoint.FromFraction(12, 10)), FixedPoint.FromFraction(7, 10), field,
+                subversion ?? SubversionEffect.None));
             ZoneBattleState start = new ZoneBattleService().Start(field, dets, BattleSide.Attacker, maxRounds, seed);
             return new ZoneBattleRuntime(start, planner.ContextFrom(prep));
         }
