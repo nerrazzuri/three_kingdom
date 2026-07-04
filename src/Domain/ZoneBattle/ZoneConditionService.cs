@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ThreeKingdom.Domain.Battle;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Numerics;
 
@@ -40,7 +41,7 @@ namespace ThreeKingdom.Domain.ZoneBattle
             // 聚合该区己方在场支队（排除在途/被打散）。
             long total = 0, cavalry = 0;
             FixedPoint guile = FixedPoint.Zero, discipline = FixedPoint.Zero;
-            bool present = false, hasFeint = false, enemyContesting = false;
+            bool present = false, hasFeint = false, enemyContesting = false, hasCunning = false;
             foreach (Detachment d in state.DetachmentsIn(zone.Id))
             {
                 bool active = !d.InTransit && !d.IsBroken;
@@ -54,6 +55,7 @@ namespace ThreeKingdom.Domain.ZoneBattle
                     {
                         if (d.General.Guile > guile) guile = d.General.Guile;
                         if (d.General.Command > discipline) discipline = d.General.Command;
+                        if (d.General.HasTag(GeneralTag.Cunning)) hasCunning = true;   // 诡谋之将善用奇谋（GDD_025）
                     }
                     if (d.Posture == Posture.Feint) hasFeint = true;
                 }
@@ -63,7 +65,7 @@ namespace ThreeKingdom.Domain.ZoneBattle
             FixedPoint cavShare = total > 0
                 ? FixedPoint.FromFraction((int)Math.Min(cavalry, int.MaxValue), (int)Math.Min(total, int.MaxValue))
                 : FixedPoint.Zero;
-            bool guileEnough = guile >= config.GuileMin;
+            bool guileEnough = guile >= config.GuileMin || hasCunning;   // 诡谋之将纵智略未达门亦善用奇谋（GDD_025 标签→条件）
             bool disciplined = discipline >= config.DisciplineMin;
 
             var formed = new HashSet<TacticCondition>(engagement.FormedConditions);

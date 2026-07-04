@@ -28,10 +28,22 @@ namespace ThreeKingdom.Domain.Conquest
         /// <summary>专长（降低对应路线条件门槛；展示 + 后续扩展）。</summary>
         public GeneralSpecialty Specialty { get; }
 
+        private readonly GeneralTag[] _tags;
+
+        /// <summary>气质标签（GDD_025）：随将带入战斗，在条件涌现中发作（如【诡谋】降智略门）。空=无标签。</summary>
+        public IReadOnlyList<GeneralTag> Tags => _tags;
+
+        /// <summary>是否带某气质标签（GDD_025）。</summary>
+        public bool HasTag(GeneralTag tag)
+        {
+            foreach (GeneralTag t in _tags) if (t == tag) return true;
+            return false;
+        }
+
         /// <summary>构造并校验三属性范围 [0,1]。越界即抛，无部分写入。</summary>
         public OffensiveGeneral(
             CharacterId character, FixedPoint command, FixedPoint valor, FixedPoint guile,
-            GeneralSpecialty specialty = GeneralSpecialty.None)
+            GeneralSpecialty specialty = GeneralSpecialty.None, IReadOnlyList<GeneralTag>? tags = null)
         {
             Require01(command, nameof(command));
             Require01(valor, nameof(valor));
@@ -41,6 +53,7 @@ namespace ThreeKingdom.Domain.Conquest
             Valor = valor;
             Guile = guile;
             Specialty = specialty;
+            _tags = tags != null ? new List<GeneralTag>(tags).ToArray() : Array.Empty<GeneralTag>();
         }
 
         private static void Require01(FixedPoint v, string name)
