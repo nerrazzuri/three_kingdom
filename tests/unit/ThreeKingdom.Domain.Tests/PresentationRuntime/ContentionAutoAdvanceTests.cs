@@ -38,6 +38,22 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         }
 
         [Test]
+        public void test_contention_state_round_trips_through_save()
+        {
+            var medium = new InMemorySaveMedium();
+            var a = new CampaignRuntime(medium);
+            a.NewGame();
+            for (int i = 0; i < 100; i++) a.Advance(1);   // 争霸自动推演改变领土格局
+            ContentionState before = a.Contention;
+            Assert.That(a.Save(), Is.True);
+
+            var b = new CampaignRuntime(medium);
+            Assert.That(b.Load(out _), Is.True);
+            Assert.That(b.Contention.Hash(), Is.EqualTo(before.Hash()), "争霸态存读档一致（不再重置，已纳入统一存档）。");
+            Assert.That(b.Contention.TotalCities, Is.EqualTo(before.TotalCities), "天下总城一致。");
+        }
+
+        [Test]
         public void test_endgame_status_is_queryable_during_play()
         {
             var runtime = new CampaignRuntime(new InMemorySaveMedium());

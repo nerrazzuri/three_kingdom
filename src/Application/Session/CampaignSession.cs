@@ -184,6 +184,16 @@ namespace ThreeKingdom.Application.Session
         /// <summary>标记某城施计暴露（反噬后；仅供服务编排）。</summary>
         internal void MarkSubversionExposed(CityId city) => _subversionExposed.Add(city);
 
+        // --- 君主争霸态（GDD_017）：群雄领城/存续。运行期由 CampaignRuntime 编排，纳入统一存档。null=未初始化（按场景初值懒建）。---
+
+        private ThreeKingdom.Domain.Contention.ContentionState? _contention;
+
+        /// <summary>当前争霸态（各势力领城）；null 表示尚未初始化（调用方按场景初值懒建）。</summary>
+        public ThreeKingdom.Domain.Contention.ContentionState? Contention => _contention;
+
+        /// <summary>写入争霸态（占城/对手兼并后；仅供运行期/服务编排）。</summary>
+        internal void SetContention(ThreeKingdom.Domain.Contention.ContentionState state) => _contention = state;
+
         /// <summary>会话军议装配配置（M04 / GDD_008）；启用军议时存在。</summary>
         internal SessionCouncilSetup? Council { get; }
 
@@ -327,7 +337,8 @@ namespace ThreeKingdom.Application.Session
             HistoricalEventCatalog? historyCatalog = null, PlayerReach? historyReach = null,
             DivergencePropagationConfig? divergenceConfig = null,
             IReadOnlyDictionary<CityId, SubversionEffect>? pendingSubversion = null,
-            IReadOnlyDictionary<CityId, int>? subversionAttempts = null)
+            IReadOnlyDictionary<CityId, int>? subversionAttempts = null,
+            ThreeKingdom.Domain.Contention.ContentionState? contention = null)
         {
             if (logisticsHolding < 0) throw new ArgumentOutOfRangeException(nameof(logisticsHolding), "后勤持有量不可为负。");
             if (cityEconomy != null && settlementConfig == null)
@@ -363,6 +374,7 @@ namespace ThreeKingdom.Application.Session
             RebellionLean = rebellionLean;
             if (pendingSubversion != null) foreach (KeyValuePair<CityId, SubversionEffect> kv in pendingSubversion) _pendingSubversion[kv.Key] = kv.Value;
             if (subversionAttempts != null) foreach (KeyValuePair<CityId, int> kv in subversionAttempts) _subversionAttempts[kv.Key] = kv.Value;
+            _contention = contention;
             Pool = pool;
             _draft = draft ?? (pool != null ? new PlanDraft() : null);
             PrepConfig = prepConfig;

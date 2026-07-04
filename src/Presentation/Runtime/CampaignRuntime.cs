@@ -438,11 +438,9 @@ namespace ThreeKingdom.Presentation.Runtime
                 if (conquest.Verdict == OwnershipVerdict.GrantToPlayer)   // 归玩家直辖 → 入多城战区（M12）
                 {
                     _theater = _theaterService.HoldConqueredCity(_theater, _offensiveTarget);
-                    // 争霸领土（M13）：玩家 +1，被夺方 −1。
+                    // 争霸领土（M13）：玩家 +1，被夺方 −1（经服务编排，持久化到会话）。
                     FactionId? loser = _scenario.DefendingFactionOf(_offensiveTarget);
-                    var c = Contend.WithCities(PlayableCampaign.Player, Contend.CitiesOf(PlayableCampaign.Player) + 1);
-                    if (loser != null) c = c.WithCities(loser.Value, Math.Max(0, c.CitiesOf(loser.Value) - 1));
-                    _contention = c;
+                    _service.RecordPlayerConquest(Session, Contend, PlayableCampaign.Player, loser);
                 }
                 view = OffensiveResultView.Victorious(conquest);
             }
@@ -526,11 +524,9 @@ namespace ThreeKingdom.Presentation.Runtime
 
         // --- 君主争霸 + 统一终局（GDD_017/018 / epic-026/027）：群雄争霸态 + 对手扩张 + 终局判定 ---
 
-        private readonly ThreeKingdom.Domain.Contention.RivalExpansionService _rivalExpansion = new ThreeKingdom.Domain.Contention.RivalExpansionService();
         private readonly ThreeKingdom.Domain.Contention.EndgameService _endgameService = new ThreeKingdom.Domain.Contention.EndgameService();
-        private ThreeKingdom.Domain.Contention.ContentionState? _contention;
-
-        private ThreeKingdom.Domain.Contention.ContentionState Contend => _contention ??= _scenario.InitialContention();
+        // 争霸态持久于会话（存读档一致）；未初始化则按场景初值。
+        private ThreeKingdom.Domain.Contention.ContentionState Contend => Session.Contention ?? _scenario.InitialContention();
 
         /// <summary>当前群雄争霸态（各势力领城/存续）。</summary>
         public ThreeKingdom.Domain.Contention.ContentionState Contention => Contend;
@@ -547,7 +543,7 @@ namespace ThreeKingdom.Presentation.Runtime
             ulong seed = new StateHasher()
                 .Append(_scenario.OffensiveSeed).Append(Session.CurrentTime.AbsoluteIndex).Append(_contentionSteps++)
                 .ToHash().Value;
-            _contention = _rivalExpansion.Step(Contend, PlayableCampaign.Player, seed, ThreeKingdom.Domain.Contention.ContentionConfig.Default);
+            _service.StepRivalContention(Session, Contend, PlayableCampaign.Player, seed, ThreeKingdom.Domain.Contention.ContentionConfig.Default);
         }
 
         // --- 战略外交（GDD M11 / epic-024）：外交立场约束战争；缔约；背约代价 ---

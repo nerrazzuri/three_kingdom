@@ -798,6 +798,32 @@ namespace ThreeKingdom.Application.Session
             return OffensiveResult.Won(force, conquest);
         }
 
+        private readonly ThreeKingdom.Domain.Contention.RivalExpansionService _rivalExpansion = new ThreeKingdom.Domain.Contention.RivalExpansionService();
+
+        /// <summary>争霸编排（GDD_017）：对手兼并一步（强吞弱），持久化到会话并返回新态。纳入统一存档。</summary>
+        public ThreeKingdom.Domain.Contention.ContentionState StepRivalContention(
+            CampaignSession session, ThreeKingdom.Domain.Contention.ContentionState current,
+            FactionId player, ulong seed, ThreeKingdom.Domain.Contention.ContentionConfig config)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (current is null) throw new ArgumentNullException(nameof(current));
+            ThreeKingdom.Domain.Contention.ContentionState next = _rivalExpansion.Step(current, player, seed, config);
+            session.SetContention(next);
+            return next;
+        }
+
+        /// <summary>争霸编排（GDD_017）：玩家占城 → 领土 +1、被夺方 −1，持久化到会话并返回新态。</summary>
+        public ThreeKingdom.Domain.Contention.ContentionState RecordPlayerConquest(
+            CampaignSession session, ThreeKingdom.Domain.Contention.ContentionState current, FactionId player, FactionId? loser)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (current is null) throw new ArgumentNullException(nameof(current));
+            ThreeKingdom.Domain.Contention.ContentionState c = current.WithCities(player, current.CitiesOf(player) + 1);
+            if (loser.HasValue) c = c.WithCities(loser.Value, Math.Max(0, c.CitiesOf(loser.Value) - 1));
+            session.SetContention(c);
+            return c;
+        }
+
         /// <summary>君主授权出征（GDD_019 R1）：设置可攻目标城集合（由君主政令按官阶组装）。</summary>
         public void AuthorizeOffensive(CampaignSession session, IReadOnlyCollection<CityId> targets)
         {
@@ -980,6 +1006,15 @@ namespace ThreeKingdom.Application.Session
                       + "\t" + session.SubversionAttemptsOn(cid) + "\n";
             }
 
+            // 君主争霸段（GDD_017）：各势力领城（按势力 id 稳定序）。运行期态纳入统一存档。
+            if (session.Contention != null)
+            {
+                var powers = new List<ThreeKingdom.Domain.Contention.PowerStanding>(session.Contention.Powers);
+                powers.Sort((a, b) => string.CompareOrdinal(a.Faction.Value, b.Faction.Value));
+                foreach (ThreeKingdom.Domain.Contention.PowerStanding p in powers)
+                    head += "power\t" + p.Faction.Value + "\t" + p.Cities + "\n";
+            }
+
             return head + BodyMarker + "\n" + body;
         }
 
@@ -1150,6 +1185,7 @@ namespace ThreeKingdom.Application.Session
             var authTargets = new List<CityId>();
             var pendingSubversion = new Dictionary<CityId, SubversionEffect>();
             var subversionAttempts = new Dictionary<CityId, int>();
+            var powers = new List<ThreeKingdom.Domain.Contention.PowerStanding>();
             if (idx < lines.Length && lines[idx].StartsWith("conquest\t", StringComparison.Ordinal))
             {
                 string[] cq = lines[idx].Split('\t');
@@ -1179,6 +1215,15 @@ namespace ThreeKingdom.Application.Session
                         if (attempts > 0) subversionAttempts[cid] = attempts;
                     }
                     catch (FormatException ex) { throw new SaveFormatException("人心杠杆段数值解析失败：" + ex.Message); }
+                    idx++;
+                }
+                // 君主争霸段（GDD_017）。
+                while (idx < lines.Length && lines[idx].StartsWith("power\t", StringComparison.Ordinal))
+                {
+                    string[] pw = lines[idx].Split('\t');
+                    if (pw.Length != 3) throw new SaveFormatException($"争霸段格式不符：「{lines[idx]}」。");
+                    try { powers.Add(new ThreeKingdom.Domain.Contention.PowerStanding(new FactionId(pw[1]), int.Parse(pw[2]))); }
+                    catch (FormatException ex) { throw new SaveFormatException("争霸段数值解析失败：" + ex.Message); }
                     idx++;
                 }
             }
@@ -1217,7 +1262,8 @@ namespace ThreeKingdom.Application.Session
                 battle: battle, battleConfig: battleConfig, battleSeed: battleSeed,
                 tacticChains: tacticChains, battleConditions: battleConditions,
                 lastOutcomeBranch: lastOutcomeBranch, lastOptions: lastOptions,
-                pendingSubversion: pendingSubversion, subversionAttempts: subversionAttempts);
+                pendingSubversion: pendingSubversion, subversionAttempts: subversionAttempts,
+                contention: powers.Count > 0 ? new ThreeKingdom.Domain.Contention.ContentionState(powers) : null);
         }
 
         /// <summary>解析战斗单位段：<c>battleunit\t{id}\t{faction}\t{region}\t{force}\t{morale.Raw}…{support.Raw}</c>。</summary>
