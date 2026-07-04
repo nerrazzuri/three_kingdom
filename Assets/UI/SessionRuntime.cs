@@ -92,5 +92,29 @@ namespace ThreeKingdom.Unity.UI
 
         /// <summary>结算战果，返回战后复盘展示模型。</summary>
         public static BattleReviewView ResolveOutcome() => _runtime.ResolveOutcome();
+
+        // --- 出征攻城入口（GDD_019 v2 / ADR-0010/0011）：选目标 + 授权门 + 六维组装 + 发起 + 占城归属。---
+
+        /// <summary>请君主授权出征（登记场景可攻目标）。</summary>
+        public static void RequestOffensiveAuthorization() => _runtime.RequestOffensiveAuthorization();
+
+        /// <summary>出征选目标视图（目标城 + 授权门状态）。</summary>
+        public static OffensiveTargetsView OffensiveTargets() => _runtime.OffensiveTargets();
+
+        /// <summary>以场景首个可攻目标开始组装出征草稿；返回可变草稿供 UI 修改六维。</summary>
+        public static OffensivePlan BeginOffensive() => _runtime.BeginOffensiveDefault();
+
+        /// <summary>当前出征草稿（null=未开始）。</summary>
+        public static OffensivePlan CurrentOffensivePlan => _runtime.CurrentOffensivePlan;
+
+        /// <summary>可选副将花名册。</summary>
+        public static System.Collections.Generic.IReadOnlyList<ThreeKingdom.Domain.Conquest.OffensiveGeneral> DeputyRoster
+            => _runtime.DeputyRoster;
+
+        /// <summary>当前草稿的计划预览（预计战力/士气/成型条件 + 缺失提示，无胜率）。</summary>
+        public static OffensivePlanView PreviewOffensive() => _runtime.PreviewOffensive();
+
+        /// <summary>发起出征，返回结果展示模型（被门拒/战败退兵/破城占城归属）。</summary>
+        public static OffensiveResultView LaunchOffensive() => _runtime.LaunchOffensive();
     }
 }

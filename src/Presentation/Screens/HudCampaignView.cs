@@ -65,10 +65,11 @@ namespace ThreeKingdom.Presentation.Screens
                 return new HudPhaseView(CampaignPhase.Preparing, actions);
             }
 
-            // 治理相位（默认）：城市日常 + 情报 + 起草备战。
+            // 治理相位（默认）：城市日常 + 情报 + 起草备战 + 出征。
             var govern = new List<string> { "推进时段", "征用军粮", "修工事", "安抚" };
             if (s.HasIntel) { govern.Add("侦察"); govern.Add("召开军议"); }
             if (s.HasPreparation) govern.Add("设伏备战");
+            govern.Add("出征");   // GDD_019：请缨受命 → 选目标 → 组装六维 → 发起攻城
             return new HudPhaseView(CampaignPhase.Governance, govern);
         }
 

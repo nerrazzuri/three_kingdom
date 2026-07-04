@@ -4,8 +4,11 @@ using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Session;
 using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.Career;
+using ThreeKingdom.Domain.City;
+using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
+using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.Preparation;
@@ -215,6 +218,92 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             new BattleOrder(0, PlayableCampaign.PlayerUnit, BattleOrderType.Engage, targetUnit: PlayableCampaign.EnemyUnit),
         };
+
+        // --- 出征攻城入口（GDD_019 v2 / ADR-0010/0011）：选目标 + 授权门 + 六维组装 + 发起 + 占城归属。---
+        // 出征准备草稿为发起前临时态（ADR-0011 D7），不入存档；UI 只经此接口，权威结算在 CampaignSessionService。
+
+        private readonly OffensiveSetupService _offensiveDerive = new OffensiveSetupService();
+
+        /// <summary>当前出征计划草稿（null=尚未选目标开始组装）。</summary>
+        public OffensivePlan? CurrentOffensivePlan => _offensivePlan;
+        private OffensivePlan? _offensivePlan;
+
+        /// <summary>可选副将花名册（GDD_014 僚属；供 UI 挑选加为副将）。</summary>
+        public IReadOnlyList<OffensiveGeneral> DeputyRoster => _scenario.DeputyRoster;
+
+        /// <summary>请君主授权出征（GDD_019 R1）：把场景可攻目标登记为授权集（受命后目标门转 Authorized）。</summary>
+        public void RequestOffensiveAuthorization()
+            => _service.AuthorizeOffensive(Session, _scenario.OffensiveTargetCities);
+
+        /// <summary>
+        /// 出征选目标视图（GDD_019 §7 / R1/R2）：列场景目标城 + 各自授权门（反全知只读控制权投影）。
+        /// 不可攻的也列出并说明原因（AC-5）。
+        /// </summary>
+        public OffensiveTargetsView OffensiveTargets()
+        {
+            var lines = new List<OffensiveTargetLine>();
+            bool authorized = false;
+            foreach (CityId city in _scenario.OffensiveTargetCities)
+            {
+                OffensiveGateResult gate = _service.CheckOffensiveTarget(Session, city, PlayableCampaign.Player);
+                if (gate != OffensiveGateResult.NotAuthorized) authorized = true;
+                lines.Add(new OffensiveTargetLine(city.Value, DisplayNames.Of(city.Value), gate));
+            }
+            // authorized 判据：授权集非空（任一目标不再是 NotAuthorized）。
+            authorized = Session.OffensiveAuthorization.AuthorizedTargets.Count > 0;
+            return new OffensiveTargetsView(lines, authorized);
+        }
+
+        /// <summary>开始组装出征计划（GDD_019 §4a）：以场景默认建草稿（主将=太守亲征、正面强攻、当前时段）。返回草稿供 UI 修改六维。</summary>
+        public OffensivePlan BeginOffensive(CityId target)
+        {
+            _offensivePlan = new OffensivePlan(
+                target, _scenario.LeadGeneral, defaultMuster: 400, defaultSupply: 200, segment: Session.CurrentTime.Segment);
+            return _offensivePlan;
+        }
+
+        /// <summary>以场景首个可攻目标开始组装（Unity 壳便捷入口，等价 BeginOffensive(首目标)）。</summary>
+        public OffensivePlan BeginOffensiveDefault() => BeginOffensive(_scenario.OffensiveTargetCities[0]);
+
+        /// <summary>当前草稿的计划预览（GDD_019 R3 闭合因果可见性）：dry-run 派生战力/士气/成型条件 + 缺失提示，无胜率。未开始则抛。</summary>
+        public OffensivePlanView PreviewOffensive()
+        {
+            if (_offensivePlan == null) throw new InvalidOperationException("尚未开始组装出征（先 BeginOffensive）。");
+            bool scouted = TargetScouted();
+            OffensivePreparation prep = _offensivePlan.Build(_scenario.TerrainOf(_offensivePlan.Target), scouted);
+            OffensiveForce preview = _offensiveDerive.Derive(prep, _scenario.OffensiveSetup);
+            return OffensivePlanView.FromPlan(_offensivePlan, preview, scouted);
+        }
+
+        /// <summary>
+        /// 发起出征（GDD_019 R3/R4/R5 端到端）：以当前草稿派生战力 → 攻城结算 → 胜则占城归属 C、败则退兵可继续。
+        /// 权威结算全在 <see cref="CampaignSessionService.LaunchOffensive"/>；本方法只组装参数并投影结果。未开始则抛。
+        /// </summary>
+        public OffensiveResultView LaunchOffensive()
+        {
+            if (_offensivePlan == null) throw new InvalidOperationException("尚未开始组装出征（先 BeginOffensive）。");
+            CityId target = _offensivePlan.Target;
+            bool scouted = TargetScouted();
+            OffensivePreparation prep = _offensivePlan.Build(_scenario.TerrainOf(target), scouted);
+
+            OffensiveResult result = _service.LaunchOffensive(
+                Session, target, prep, _scenario.OffensiveSetup,
+                _scenario.DefenseOf(target), _scenario.SiegeResolution,
+                PlayableCampaign.Player, PlayableCampaign.LordFaction, _scenario.ConqueredGarrison,
+                FixedPoint.Zero, FixedPoint.Zero, FixedPoint.Zero,
+                _scenario.OffensiveSeed, _scenario.Occupation, _scenario.Ladder);
+
+            return OffensiveResultView.FromResult(result);
+        }
+
+        /// <summary>目标是否已侦察（反全知：有非过时敌情估计 → 可得突袭类条件、免情报盲区折扣）。</summary>
+        private bool TargetScouted()
+        {
+            if (!Session.HasIntel) return false;
+            foreach (CampaignEnemyIntelView e in EnemyIntel().Entries)
+                if (!e.IsStale) return true;
+            return false;
+        }
 
         /// <summary>默认槽是否有存档（主菜单「继续」可用性）。</summary>
         public bool HasSave() => _medium.Exists(_slot);

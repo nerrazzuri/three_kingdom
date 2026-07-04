@@ -91,6 +91,30 @@
                         <ui:Button name="ambush" text="设伏诱敌" />
                         <ui:Label name="ambush-status" class="hud-note" />
                     </ui:VisualElement>
+                    <!-- 出征攻城（GDD_019 v2）：请缨受命 → 选目标 → 组装六维（兵/粮/将/兵种/布势/时机）→ 发起。
+                         准备决定胜负；兵法条件靠门涌现，非按钮。逻辑经 CampaignRuntime（dotnet 已单测）。 -->
+                    <ui:VisualElement name="offensive" class="card">
+                        <ui:Label text="出征攻城" class="card-title" />
+                        <ui:Button name="offensive-authorize" text="请缨受命（君主授权）" />
+                        <ui:Label name="offensive-targets" class="hud-note" />
+                        <ui:Button name="offensive-begin" text="组装出征（选目标）" />
+                        <ui:Label text="布势路线" class="hud-note" />
+                        <ui:Button name="offensive-frontal" text="正面强攻" />
+                        <ui:Button name="offensive-feint" text="假退诱敌" />
+                        <ui:Button name="offensive-siege" text="长围断粮" />
+                        <ui:Button name="offensive-nightraid" text="夜袭" />
+                        <ui:Button name="offensive-muster" text="增兵 +100" />
+                        <ui:Button name="offensive-supply" text="加粮 +50" />
+                        <ui:Button name="offensive-cavalry" text="配骑兵 +100" />
+                        <ui:Button name="offensive-advisor" text="军师随军：否" />
+                        <ui:Button name="offensive-deputy" text="加副将" />
+                        <ui:Label name="offensive-preview" class="hud-note" />
+                        <ui:VisualElement name="offensive-forming" />
+                        <ui:VisualElement name="offensive-missing" />
+                        <ui:Button name="offensive-launch" text="发起出征" />
+                        <ui:Label name="offensive-result" class="ledger-warning" />
+                        <ui:VisualElement name="offensive-result-notes" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:ScrollView>
         </ui:VisualElement>

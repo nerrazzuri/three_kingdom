@@ -25,7 +25,7 @@
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
 version: 5
-last_updated: "2026-07-04"   # 追加出征攻城 TR-offensive-001~005（/create-stories epic-029；GDD_019 未过 /architecture-review，参照 epic-028 TR-ux 补登惯例）
+last_updated: "2026-07-04"   # 追加出征攻城 TR-offensive-001~005（/create-stories epic-029）+ TR-offensive-006~010（GDD_019 v2 / ADR-0011 六维出征准备维度）
 
 requirements:
   # --- 时间 (GDD_001) ---
@@ -489,6 +489,43 @@ requirements:
     system: offensive
     gdd: design/gdd/gdd-019-offensive-campaign.md
     requirement: "出征回报联动 + 失败可继续 + 存档：胜→功绩/名望增→晋升门槛推进（GDD_014，功绩速率受反支柱护栏约束）；败→折损退兵且必生成 ≥1 合法可继续命令（失败不切死局）；出征会话态（授权/目标/conquestIndex/各城 OwnershipVerdict/rebellion_lean）经命名原子事务写回、纳入统一存档信封（ADR-0009/0005）round-trip 一致且确定性哈希"
+    created: 2026-07-04
+    revised: ""
+    status: active
+
+  # --- 出征准备维度扩展 (GDD_019 v2 / ADR-0011；六维闭合因果) ---
+  - id: TR-offensive-006
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "六维闭合因果确定性：出征准备（兵力/补给/将领编成/兵种编成/布势路线/时机-天气 + 侦察门）经 OffensiveSetupService.Derive 纯函数、无随机、整数/定点（ADR-0004）映射为进攻方战力/士气/携入兵法条件；同输入同输出可复现；改任一维可致不同胜负/识别（AC-3/3a）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-offensive-007
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "兵种=杠杆非克制（负向不变量）：兵种编成只提供匹配加成或 0，无兵种间克制减益；Derive 无 A>B>C 克制表（AC-3b，守 GDD_010 设计锁）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-offensive-008
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "布势=路线非坐标（负向不变量）：ApproachPlan 为有限路线枚举（复用 4 TacticTag），数据模型无 position/grid/facing 坐标字段（AC-3c，守设计锁不做自由摆阵 SLG）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-offensive-009
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "条件门成型：所选布势路线的目标兵法条件仅当其门（兵种份额/主将智略统率/军师随军/时段/天气/长围时段）全通过才携入开战态；门不齐则不成型、不打标签（AC-3d，延续 TR-battle-002 负向不变量）"
+    created: 2026-07-04
+    revised: ""
+    status: active
+  - id: TR-offensive-010
+    system: offensive
+    gdd: design/gdd/gdd-019-offensive-campaign.md
+    requirement: "反全知侦察门 + 情报盲区折扣：未侦察目标拿不到守方未察觉/伏兵突然性一类条件且承受战力折扣；守方守备的呈现只经玩家知识投影（军师/目标视图不显真值，AC-7）"
     created: 2026-07-04
     revised: ""
     status: active

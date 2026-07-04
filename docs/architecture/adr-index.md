@@ -12,6 +12,7 @@
 | [ADR-0008](adr-0008-city-control-ownership-contract.md) | 城池控制权跨系统所有权契约 | Accepted | 2026-06-24 |
 | [ADR-0009](adr-0009-campaign-session-assembly.md) | CampaignSession 装配边界（完整会话脊梁） | Accepted | 2026-06-28 |
 | [ADR-0010](adr-0010-conquest-occupation-ownership.md) | 占城归属契约（出征占城复用 004 控制权 + 归属方案 C 种子化判定） | Accepted | 2026-07-04 |
+| [ADR-0011](adr-0011-offensive-preparation-model.md) | 多维确定性出征准备模型（六维闭合因果 + 路线复用兵法链 + 兵种杠杆非克制 + 布势非坐标 + 反全知侦察门） | Accepted | 2026-07-04 |
 
 ## 规则
 

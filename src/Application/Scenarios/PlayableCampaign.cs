@@ -6,6 +6,7 @@ using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Configuration;
+using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Map;
@@ -83,6 +84,43 @@ namespace ThreeKingdom.Application.Scenarios
 
         /// <summary>自立后拟建的新势力 id（GDD_014）。</summary>
         public static readonly FactionId RebelFaction = new FactionId("faction-player-rebel");
+
+        /// <summary>太守效力的君主势力（占城 C 归君主直辖时的承接方，ADR-0010）。</summary>
+        public static readonly FactionId LordFaction = new FactionId("faction-lord");
+
+        // ---- 出征卫星配置（GDD_019 v2 / ADR-0011）：单一数据源，harness 与 Unity 壳共用，勿复制数值 ----
+
+        /// <summary>六维闭合因果映射配置。</summary>
+        public OffensiveSetupConfig OffensiveSetup => OffensiveSetupConfig.Default;
+
+        /// <summary>攻城胜负结算配置（每条兵法条件加成）。</summary>
+        public SiegeResolutionConfig SiegeResolution => SiegeResolutionConfig.Default;
+
+        /// <summary>占城归属 C 配置（ADR-0010）。</summary>
+        public OccupationConfig Occupation => OccupationConfig.Default;
+
+        /// <summary>出征占城归属判定固定种子（确定性）。</summary>
+        public ulong OffensiveSeed => 0xC0FFEEUL;
+
+        /// <summary>主将（太守亲征）：统率0.7/武勇0.7/智略0.6，善攻坚（战斗属性 ADR-0011 D5，与好感解耦）。</summary>
+        public OffensiveGeneral LeadGeneral
+            => new OffensiveGeneral(Lord, Frac(7, 10), Frac(7, 10), Frac(6, 10), GeneralSpecialty.Siege);
+
+        /// <summary>可选副将花名册（GDD_014 僚属；副将 Aide 智略高·善奇袭，利设伏路线）。</summary>
+        public IReadOnlyList<OffensiveGeneral> DeputyRoster
+            => new[] { new OffensiveGeneral(Aide, Frac(5, 10), Frac(6, 10), Frac(8, 10), GeneralSpecialty.Ambush) };
+
+        /// <summary>目标敌城的<b>真实</b>守备（结算用真值；玩家所见须经情报投影，反全知）。虎牢关：守军600 × 工事1.2。</summary>
+        public SiegeDefense DefenseOf(CityId city) => new SiegeDefense(600, Frac(12, 10));
+
+        /// <summary>目标进攻路线地形（虎牢关=隘口，利设伏；伏兵突然性条件门）。</summary>
+        public TerrainKind TerrainOf(CityId city) => TerrainKind.Pass;
+
+        /// <summary>可出征目标城清单（GDD_019 §7 选目标；授权门/敌控由运行期按会话控制权投影判定）。</summary>
+        public IReadOnlyList<CityId> OffensiveTargetCities => new[] { EnemyCity };
+
+        /// <summary>占城后进驻的守军（占城 C 控制权变更的新驻军）。</summary>
+        public Garrison ConqueredGarrison => new Garrison(600);
 
         /// <summary>开战固定种子（确定性）。</summary>
         public ulong BattleSeed => 42UL;

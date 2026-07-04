@@ -1,12 +1,16 @@
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Session;
 using ThreeKingdom.Domain.Battle;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Conquest;
+using ThreeKingdom.Domain.Environment;
 using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Numerics;
+using ThreeKingdom.Domain.Time;
 
 namespace ThreeKingdom.Domain.Tests.Session
 {
@@ -24,6 +28,12 @@ namespace ThreeKingdom.Domain.Tests.Session
 
         // p=0 配置（前2座仍归玩家，第3座起恒 LordKeeps）——便于验证归君主分支。
         private static OccupationConfig LordKeepsCfg() => new OccupationConfig(2, Zero, Zero, Zero, Zero, leanPerSeizure: 10);
+
+        // ---- 六维出征准备构造助手（GDD_019 v2 / ADR-0011）----
+        private static FixedPoint F(int n, int d) => FixedPoint.FromFraction(n, d);
+        private static OffensiveCommand Cmd(bool advisor = false)
+            => new OffensiveCommand(new OffensiveGeneral(new CharacterId("char-lead"), F(5, 10), F(5, 10), F(5, 10)), null, advisor);
+        private static OffensiveTiming DayClear() => new OffensiveTiming(DaySegment.Day, WeatherType.Clear);
 
         [Test]
         public void test_authorize_and_gate()
@@ -99,10 +109,13 @@ namespace ThreeKingdom.Domain.Tests.Session
             var occ = OccupationConfig.Default;
             var defense = new SiegeDefense(500, FixedPoint.FromFraction(12, 10));   // 守方战力 = 500 × 1.2 = 600
 
-            // 强准备：600 兵 + 300 粮 + 兵法条件 → 攻方战力远超守方 → 破城占城。
+            // 强准备：600 兵 + 300 粮 + 骑兵为主 + 军师随军 + 隘口设伏 + 已侦察 → 多兵法条件 → 攻方战力远超守方 → 破城占城。
             var strong = NewSession();
             _service.AuthorizeOffensive(strong, new[] { PlayableCampaign.EnemyCity });
-            var strongPrep = new OffensivePreparation(600, 300, new[] { TacticCondition.ControlledRetreatKeptFormation });
+            var strongPrep = new OffensivePreparation(
+                600, 300, Cmd(advisor: true),
+                new TroopComposition(new Dictionary<TroopType, int> { [TroopType.Cavalry] = 400, [TroopType.Infantry] = 200 }),
+                ApproachPlan.FeintLure, DayClear(), TerrainKind.Pass, scouted: true);
             OffensiveResult won = _service.LaunchOffensive(
                 strong, PlayableCampaign.EnemyCity, strongPrep, setup, defense, siegeCfg,
                 PlayableCampaign.Player, Lord, new Garrison(600), Zero, Zero, Zero, 1UL, occ);
@@ -111,10 +124,12 @@ namespace ThreeKingdom.Domain.Tests.Session
             Assert.That(won.Conquest, Is.Not.Null);
             Assert.That(won.Conquest!.ConquestCount, Is.EqualTo(1), "破城 → 占城计数 +1。");
 
-            // 裸战：0 兵 0 粮 → 攻方战力 100 << 守方 600 → 败，不占城，可继续。
+            // 裸战：0 兵 0 粮 + 正面强攻 + 未侦察 → 攻方战力 << 守方 600 → 败，不占城，可继续。
             var weak = NewSession();
             _service.AuthorizeOffensive(weak, new[] { PlayableCampaign.EnemyCity });
-            var weakPrep = new OffensivePreparation(0, 0, Array.Empty<TacticCondition>());
+            var weakPrep = new OffensivePreparation(
+                0, 0, Cmd(), TroopComposition.None, ApproachPlan.FrontalAssault, DayClear(),
+                TerrainKind.Fortified, scouted: false);
             OffensiveResult lost = _service.LaunchOffensive(
                 weak, PlayableCampaign.EnemyCity, weakPrep, setup, defense, siegeCfg,
                 PlayableCampaign.Player, Lord, new Garrison(600), Zero, Zero, Zero, 1UL, occ);
@@ -131,7 +146,7 @@ namespace ThreeKingdom.Domain.Tests.Session
             var s = NewSession();   // 未授权
             OffensiveResult r = _service.LaunchOffensive(
                 s, PlayableCampaign.EnemyCity,
-                new OffensivePreparation(600, 300, Array.Empty<TacticCondition>()),
+                new OffensivePreparation(600, 300, Cmd(), TroopComposition.None, ApproachPlan.FrontalAssault, DayClear()),
                 OffensiveSetupConfig.Default, new SiegeDefense(500, FixedPoint.FromFraction(12, 10)),
                 SiegeResolutionConfig.Default, PlayableCampaign.Player, Lord, new Garrison(600),
                 Zero, Zero, Zero, 1UL, OccupationConfig.Default);

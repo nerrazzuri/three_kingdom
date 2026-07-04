@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+using ThreeKingdom.Domain.Conquest;
+using ThreeKingdom.Domain.Time;
 using ThreeKingdom.Presentation.Screens;
 
 namespace ThreeKingdom.Unity.UI
@@ -113,6 +116,27 @@ namespace ThreeKingdom.Unity.UI
                 _review = SessionRuntime.ResolveOutcome();
                 RenderBattleReview(root);
                 RenderLoop(root);
+            });
+
+            // 出征攻城（GDD_019 v2 / ADR-0010/0011）：请缨受命 → 选目标 → 组装六维 → 发起。逻辑经 CampaignRuntime（dotnet 已单测）。
+            RenderOffensive(root);
+            Wire(root, "offensive-authorize", () => { SessionRuntime.RequestOffensiveAuthorization(); RenderOffensive(root); });
+            Wire(root, "offensive-begin", () => { SessionRuntime.BeginOffensive(); RenderOffensive(root); });
+            Wire(root, "offensive-frontal", () => SetApproach(root, ApproachPlan.FrontalAssault));
+            Wire(root, "offensive-feint", () => SetApproach(root, ApproachPlan.FeintLure));
+            Wire(root, "offensive-siege", () => SetApproach(root, ApproachPlan.ProtractedSiege));
+            Wire(root, "offensive-nightraid", () => SetApproach(root, ApproachPlan.NightRaid));
+            Wire(root, "offensive-muster", () => AdjustPlan(root, p => p.Muster += 100));
+            Wire(root, "offensive-supply", () => AdjustPlan(root, p => p.Supply += 50));
+            Wire(root, "offensive-cavalry", () => AdjustPlan(root, AddCavalry));
+            Wire(root, "offensive-advisor", () => AdjustPlan(root, p => p.Advisor = !p.Advisor));
+            Wire(root, "offensive-deputy", () => AdjustPlan(root, AddDeputy));
+            Wire(root, "offensive-launch", () =>
+            {
+                if (SessionRuntime.CurrentOffensivePlan == null) return;
+                _offensiveResult = SessionRuntime.LaunchOffensive();
+                RenderOffensive(root);
+                RenderLoop(root);   // 占城/记功可能改会话态 → 刷新循环
             });
 
             // 新手引导（story-005 / §3/§5/§7 Q2）：前 N 回合自动展开军议（配置驱动，可关闭）。
@@ -475,6 +499,109 @@ namespace ThreeKingdom.Unity.UI
             SetEnabled(root, "request-aid", false);
             SetEnabled(root, "raid", false);
             SetEnabled(root, "ambush", false);
+        }
+
+        /// <summary>当前出征结果展示模型（表现态，不入 Domain/存档；null=尚未发起）。</summary>
+        private OffensiveResultView _offensiveResult;
+
+        /// <summary>出征攻城面板（GDD_019 v2）：目标门 + 六维草稿控件可用性 + 计划预览 + 结果。纯读运行期投影。</summary>
+        private void RenderOffensive(VisualElement root)
+        {
+            OffensiveTargetsView targets = SessionRuntime.OffensiveTargets();
+            var lines = new List<string>();
+            foreach (OffensiveTargetLine t in targets.Targets) lines.Add($"{t.CityLabel}：{t.GateLabel}");
+            SetLabel(root, "offensive-targets", string.Join("　", lines));
+
+            SetEnabled(root, "offensive-authorize", !targets.Authorized);
+            SetEnabled(root, "offensive-begin", targets.AnyAttackable);
+
+            OffensivePlan plan = SessionRuntime.CurrentOffensivePlan;
+            bool hasPlan = plan != null;
+            foreach (string btn in OffensiveDimButtons) SetEnabled(root, btn, hasPlan);
+            SetEnabled(root, "offensive-launch", hasPlan && targets.AnyAttackable);
+
+            var advisorBtn = root.Q<Button>("offensive-advisor");
+            if (advisorBtn != null && hasPlan) advisorBtn.text = "军师随军：" + (plan.Advisor ? "是" : "否");
+
+            var forming = root.Q<VisualElement>("offensive-forming");
+            var missing = root.Q<VisualElement>("offensive-missing");
+            forming?.Clear();
+            missing?.Clear();
+
+            if (hasPlan)
+            {
+                OffensivePlanView view = SessionRuntime.PreviewOffensive();
+                SetLabel(root, "offensive-preview",
+                    $"目标{view.TargetLabel}｜路线{OffensiveText.Approach(plan.Approach)}｜预计战力 {view.ForcePreview}·士气 {view.MoraleLabel}｜{(view.Scouted ? "已侦察" : "未侦察")}");
+                if (forming != null)
+                    foreach (string c in view.FormingConditions) forming.Add(new Label("　✓ " + c));
+                if (missing != null)
+                    foreach (string c in view.MissingConditions) missing.Add(new Label("　✗ 尚缺：" + c));
+            }
+            else
+            {
+                SetLabel(root, "offensive-preview", targets.Authorized ? "已受命——点「组装出征」选目标布势。" : "先请缨受命（君主授权）。");
+            }
+
+            RenderOffensiveResult(root);
+        }
+
+        /// <summary>渲染出征结果（被门拒/战败退兵/破城占城归属；无胜率）。</summary>
+        private void RenderOffensiveResult(VisualElement root)
+        {
+            bool has = _offensiveResult != null;
+            SetLabel(root, "offensive-result", has
+                ? _offensiveResult.ConclusionLabel + (string.IsNullOrEmpty(_offensiveResult.OwnershipLabel) ? "" : "　" + _offensiveResult.OwnershipLabel)
+                : string.Empty);
+
+            var notes = root.Q<VisualElement>("offensive-result-notes");
+            if (notes == null) return;
+            notes.Clear();
+            if (!has) return;
+            foreach (string n in _offensiveResult.Notes) notes.Add(new Label("　· " + n));
+            foreach (string tactic in _offensiveResult.Tactics) notes.Add(new Label("　兵法：" + tactic));
+        }
+
+        /// <summary>出征六维草稿控件（须已开始组装才可用）。</summary>
+        private static readonly string[] OffensiveDimButtons =
+        {
+            "offensive-frontal", "offensive-feint", "offensive-siege", "offensive-nightraid",
+            "offensive-muster", "offensive-supply", "offensive-cavalry", "offensive-advisor", "offensive-deputy",
+        };
+
+        private void SetApproach(VisualElement root, ApproachPlan approach)
+        {
+            OffensivePlan plan = SessionRuntime.CurrentOffensivePlan;
+            if (plan == null) return;
+            plan.Approach = approach;
+            if (approach == ApproachPlan.ProtractedSiege && plan.SiegeSegments < 8) plan.SiegeSegments = 8;   // 承诺长围（时间成本）
+            if (approach == ApproachPlan.NightRaid) plan.Segment = DaySegment.Night;                          // 择夜（夜袭需夜）
+            RenderOffensive(root);
+        }
+
+        private void AdjustPlan(VisualElement root, Action<OffensivePlan> mutate)
+        {
+            OffensivePlan plan = SessionRuntime.CurrentOffensivePlan;
+            if (plan == null) return;
+            mutate(plan);
+            RenderOffensive(root);
+        }
+
+        /// <summary>配骑兵（不超过投入兵力，避免编成越界）。</summary>
+        private static void AddCavalry(OffensivePlan plan)
+        {
+            int assigned = 0;
+            foreach (int v in plan.Composition.Values) assigned += v;
+            if (assigned + 100 > plan.Muster) return;   // 编成不得超过投入兵力
+            plan.Composition[TroopType.Cavalry] = (plan.Composition.TryGetValue(TroopType.Cavalry, out int c) ? c : 0) + 100;
+        }
+
+        /// <summary>加一名副将（从花名册取首位，避免重复添加）。</summary>
+        private static void AddDeputy(OffensivePlan plan)
+        {
+            var roster = SessionRuntime.DeputyRoster;
+            if (roster.Count == 0 || plan.Deputies.Count > 0) return;
+            plan.Deputies.Add(roster[0]);
         }
 
         private static void SetDisplay(VisualElement root, string name, bool shown)

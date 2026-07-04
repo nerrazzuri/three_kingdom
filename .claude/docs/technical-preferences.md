@@ -88,6 +88,7 @@
 - [ADR-0008](../docs/architecture/adr-0008-city-control-ownership-contract.md): 城池控制权跨系统所有权契约（GDD_004 唯一权威 + 控制权变更事件；015 订阅/014 只读）— Accepted（2026-06-24）
 - [ADR-0009](../docs/architecture/adr-0009-campaign-session-assembly.md): CampaignSession 装配边界（Application 装配脊梁，只编排不拥规则；统一存档信封 + 日界全局序 + 命名原子写回；势力创建经 015）— Accepted（2026-06-28）
 - [ADR-0010](../docs/architecture/adr-0010-conquest-occupation-ownership.md): 占城归属契约（出征占城复用 ADR-0008 控制权变更；归属方案 C——前2默认归玩家、后续君主种子化确定性取舍；被夺战果累积自立倾向）— Accepted（2026-07-04）
+- [ADR-0011](../docs/architecture/adr-0011-offensive-preparation-model.md): 多维确定性出征准备模型（六维闭合因果：兵力/补给/将领/兵种/布势/时机；布势路线复用 4 兵法链非坐标、兵种杠杆非克制、其余维做条件成型门、反全知侦察门；纯函数整数/定点）— Accepted（2026-07-04）
 
 ## Engine Specialists
 
