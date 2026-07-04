@@ -1292,3 +1292,5 @@ ADR-0003（数据驱动配置的正式锁定）。
 - 修技术债（情报隔离）：StartCampaign 复用配置可变 FactionIntel → 多局串知识；改为 CloneInitialIntel 每局播种全新情报层。1 回归测。
 - 验证：dotnet 849/849 绿（-warnaserror 0）；3 DLL Release 已同步 Assets/Plugins/。Unity batchmode 未跑（用户开着 D 盘 Editor）——用户 Ctrl+R 重编译验证。
 - 用户已实玩确认 A、B 通。待提交这批修复。
+
+<!-- QA RUN: 2026-07-04 | Sprint: M15 epic-028 | Verdict: APPROVED WITH CONDITIONS | Report: production/qa/qa-signoff-m15-2026-07-04.md -->
