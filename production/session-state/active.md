@@ -1,5 +1,15 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## ✅ 完成（2026-07-05）— 谋略档 + #1 多剧本 + #2 武将目录 + #3 逐城地形战场（用户授权自主做完）
+
+> **谋略档→#1→#2/#3 三连，dotnet 1047→1059 绿（+12），3 DLL 每步同步，各自提交并 push tk。**
+> - **谋略档（7cab9c2）**：与战阵档对称的第二条隐秘量级档。StrategyTier（愚钝/寻常/机敏/智略/经天纬地）+ 系数区间 + 右偏抽取（k=2），乘进已成型兵法的战力加成（ConditionBonusEach×成型数）。攻方取在场最高谋略档为主谋，每回合种子化抽取计谋系数放大条件加成——诸葛之计比马谡狠，偶有"一计定乾坤"。与战阵档独立（吕布绝世武·愚钝谋）。48 将评定。RollStrategy 复用 CombatProwess 区间数学。RoundResolutionService.StrategyMultiplier 接入。
+> - **#1 多剧本/势力选择（364717e）**：CampaignRuntime 不再硬编码 PlayableCampaign.Player/Fanshui 静态身份，改读注入场景实例席位（PlayerFaction/PlayerCapital/PlayerLord/OffensiveTarget）。天下大盘抽为共享 World 表（17 席），玩家席位由 PlayableStart 指定 → 争霸/终局/出征目标随所选势力自然重定向。PlayableStartCatalog 3 开局（汜水关太守/刘备·小沛/孙策·江东）。默认剧本字节级不变。ScenarioChoiceView 选择屏投影。**注：与既有 Application.Session.ScenarioCatalog（服务级配置注册，另一层）区分，故命名 PlayableStartCatalog。**
+> - **#2 武将目录 infra（6f16516）**：GeneralDossiers.All 遍历全体档案（稳定序）；反全知 GeneralRosterView/GeneralCardView 只呈中文名 + 气质性情文字，绝不投影数值/隐藏档/隐秘心（GDD_025 R1）。DisplayNames 补全 30 名将中文名。GeneralTagText 17 标签→中文。
+> - **#3 逐城/地形战场（6f16516）**：BattleFieldCatalog.ForTerrain 按目标城地形选战场模板——正面区地形随之变（唯坚城得工事加成；隘口设伏/渡口水火/平原骑冲/高地夜袭皆无），侧翼/粮道/掩护/预备四区共用骨架（区 id 不变→引擎/planner 零改动）。BattleField 重构为 Compose+SideZones+StandardAdjacency（Default 输出不变）。PlayableStart.TargetTerrain 数据驱动，FromOffensive 按 prep.Terrain 选场。
+> - **残留**：T4 羁绊系统（GDD_025 设计但未实现）；谋略档/战阵档更深平衡打磨；武将录/势力选择/逐地形战场的 Unity 屏 veneer（★需编辑器验证）；roster 由 48 扩向 ~250。
+
+
 ## ✅ 完成（2026-07-04）— epic-031 战斗核心 + 战役接线(#1) + 敌AI深度(#2)（用户授权自主做完）
 
 > **续做 #1 接线 + #2 敌AI深度，dotnet 927/927 绿，DLL 同步。epic-031 → Complete。**
