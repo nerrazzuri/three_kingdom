@@ -42,9 +42,9 @@ namespace ThreeKingdom.Domain.Tests.Presentation
         [Test]
         public void test_roster_expanded_with_major_generals()
         {
-            Assert.That(GeneralDossiers.All.Count, Is.GreaterThanOrEqualTo(160), "名将谱已大幅扩充（≥160，两批）。");
-            // 抽查两扩充批：档案 + 中文名 + 生卒在世判定皆到位。
-            foreach (string id in new[] { "char-zhanghe", "char-dengai", "char-masu", "char-sunjian", "char-huatuo", "char-lukang", "char-menghuo" })
+            Assert.That(GeneralDossiers.All.Count, Is.GreaterThanOrEqualTo(200), "名将谱已大幅扩充（≥200，三批）。");
+            // 抽查三扩充批：档案 + 中文名 + 生卒在世判定皆到位。
+            foreach (string id in new[] { "char-zhanghe", "char-masu", "char-sunjian", "char-huatuo", "char-menghuo", "char-xushu", "char-diaochan", "char-wenyang" })
                 Assert.That(GeneralDossiers.Find(new CharacterId(id)), Is.Not.Null, $"{id} 已入谱。");
             var roster = GeneralRosterView.Build();
             GeneralCardView masu = null!;

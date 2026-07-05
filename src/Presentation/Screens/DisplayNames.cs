@@ -170,6 +170,22 @@ namespace ThreeKingdom.Presentation.Screens
             ["char-menghuo"] = "孟获", ["char-zhurong"] = "祝融", ["char-shamoke"] = "沙摩柯",
             ["char-zhangren"] = "张任", ["char-hanxuan"] = "韩玄", ["char-gongsunkang"] = "公孙康",
             ["char-tadun"] = "蹋顿", ["char-kebineng"] = "轲比能", ["char-yanbaihu"] = "严白虎",
+            // 扩充批 3。
+            ["char-xushu"] = "徐庶", ["char-xunyou"] = "荀攸", ["char-simahui"] = "司马徽",
+            ["char-cuizhouping"] = "崔州平", ["char-zhangsong"] = "张松", ["char-lihui"] = "李恢",
+            ["char-qiaozhou"] = "谯周", ["char-kuailiang"] = "蒯良", ["char-kuaiyue"] = "蒯越",
+            ["char-diaochan"] = "貂蝉", ["char-daqiao"] = "大乔", ["char-xiaoqiao"] = "小乔",
+            ["char-zhenji"] = "甄姬", ["char-caiwenji"] = "蔡文姬", ["char-huangyueying"] = "黄月英",
+            ["char-wangyuanji"] = "王元姬", ["char-zhangchunhua"] = "张春华",
+            ["char-wutugu"] = "兀突骨", ["char-mulu"] = "木鹿大王", ["char-duosi"] = "朵思大王",
+            ["char-dongtuna"] = "董荼那",
+            ["char-wenyang"] = "文鸯", ["char-wenqin"] = "文钦", ["char-zhugedan"] = "诸葛诞",
+            ["char-guanqiujian"] = "毌丘俭", ["char-wangling"] = "王凌", ["char-weiguan"] = "卫瓘",
+            ["char-dengzhong"] = "邓忠",
+            ["char-chengyi"] = "成宜", ["char-liangxing"] = "梁兴", ["char-houxuan"] = "侯选",
+            ["char-yangqiu"] = "杨秋", ["char-mawan"] = "马玩",
+            ["char-panfeng"] = "潘凤", ["char-wuanguo"] = "武安国", ["char-xingdaorong"] = "邢道荣",
+            ["char-leitong"] = "雷铜", ["char-wulan"] = "吴兰",
         };
 
         /// <summary>取某 id 的中文展示名；未登记则回退原文。</summary>

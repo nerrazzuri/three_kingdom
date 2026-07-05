@@ -33,6 +33,12 @@ namespace ThreeKingdom.Application.Scenarios
             B("char-guanyu", "char-guanping", BondType.Blood),
             B("char-guanyu", "char-guansuo", BondType.Blood),     // 关羽父子（演义）
             B("char-zhugeliang", "char-zhugezhan", BondType.Blood), // 诸葛父子
+            B("char-zhugeliang", "char-huangyueying", BondType.Kindred), // 诸葛夫妇
+            B("char-zhugeliang", "char-xushu", BondType.Kindred),   // 同窗知己
+            B("char-zhouyu", "char-xiaoqiao", BondType.Kindred),    // 周瑜小乔
+            B("char-sunce", "char-daqiao", BondType.Kindred),       // 孙策大乔
+            B("char-dengai", "char-dengzhong", BondType.Blood),     // 邓艾父子
+            B("char-wenqin", "char-wenyang", BondType.Blood),       // 文钦父子
             // 师徒·传承
             B("char-liubei", "char-zhugeliang", BondType.Mentor),   // 三顾·如鱼得水
             B("char-zhugeliang", "char-jiangwei", BondType.Mentor), // 衣钵

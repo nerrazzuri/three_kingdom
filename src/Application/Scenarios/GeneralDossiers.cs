@@ -105,6 +105,22 @@ namespace ThreeKingdom.Application.Scenarios
                 ["char-menghuo"] = (180, 250), ["char-zhurong"] = (185, 250), ["char-shamoke"] = (180, 222),
                 ["char-zhangren"] = (160, 213), ["char-hanxuan"] = (150, 209), ["char-gongsunkang"] = (180, 238),
                 ["char-tadun"] = (160, 207), ["char-kebineng"] = (170, 235), ["char-yanbaihu"] = (160, 196),
+                // 扩充批 3 — 名士/女性/南蛮/魏晋末/西凉/副将
+                ["char-xushu"] = (168, 234), ["char-xunyou"] = (157, 214), ["char-simahui"] = (145, 208),
+                ["char-cuizhouping"] = (160, 220), ["char-zhangsong"] = (160, 212), ["char-lihui"] = (170, 231),
+                ["char-qiaozhou"] = (201, 270), ["char-kuailiang"] = (150, 208), ["char-kuaiyue"] = (150, 214),
+                ["char-diaochan"] = (172, 200), ["char-daqiao"] = (175, 215), ["char-xiaoqiao"] = (177, 220),
+                ["char-zhenji"] = (183, 221), ["char-caiwenji"] = (177, 249), ["char-huangyueying"] = (190, 234),
+                ["char-wangyuanji"] = (217, 268), ["char-zhangchunhua"] = (189, 247),
+                ["char-wutugu"] = (180, 225), ["char-mulu"] = (180, 225), ["char-duosi"] = (180, 225),
+                ["char-dongtuna"] = (180, 225),
+                ["char-wenyang"] = (238, 291), ["char-wenqin"] = (200, 258), ["char-zhugedan"] = (200, 258),
+                ["char-guanqiujian"] = (190, 255), ["char-wangling"] = (172, 251), ["char-weiguan"] = (220, 291),
+                ["char-dengzhong"] = (235, 264),
+                ["char-chengyi"] = (160, 211), ["char-liangxing"] = (165, 211), ["char-houxuan"] = (165, 215),
+                ["char-yangqiu"] = (165, 215), ["char-mawan"] = (165, 211),
+                ["char-panfeng"] = (155, 191), ["char-wuanguo"] = (160, 195), ["char-xingdaorong"] = (170, 209),
+                ["char-leitong"] = (175, 218), ["char-wulan"] = (175, 218),
             };
 
         // ---- 190 讨董布防（GDD_026 D4）：部将 → 任职城（须属该城 190 归属势力）。君主不入（本身即势力之主）。----
@@ -361,6 +377,52 @@ namespace ThreeKingdom.Application.Scenarios
             D("char-tadun", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Cavalry);
             D("char-kebineng", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Cavalry);
             D("char-yanbaihu", CombatTier.Sturdy, StrategyTier.Dull, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Reckless);
+
+            // ==== 演义名将扩充批 3（2026-07-05）：名士谋臣/女性/南蛮/魏晋末/西凉/讨董副将 ====
+            // ---- 名士·谋臣 ----
+            D("char-xushu", CombatTier.Ordinary, StrategyTier.Master, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Strategist);   // 徐庶·走马荐诸葛
+            D("char-xunyou", CombatTier.Ordinary, StrategyTier.Master, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Strategist, GeneralTag.Cunning); // 荀攸·曹操谋主
+            D("char-simahui", CombatTier.Feeble, StrategyTier.Master, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Strategist, GeneralTag.Benevolent); // 水镜先生
+            D("char-cuizhouping", CombatTier.Feeble, StrategyTier.Adept, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Strategist);
+            D("char-zhangsong", CombatTier.Feeble, StrategyTier.Adept, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Cunning);   // 献益州图
+            D("char-lihui", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cunning);           // 说降马超
+            D("char-qiaozhou", CombatTier.Feeble, StrategyTier.Sharp, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Hesitant);      // 劝降
+            D("char-kuailiang", CombatTier.Feeble, StrategyTier.Adept, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Strategist);
+            D("char-kuaiyue", CombatTier.Feeble, StrategyTier.Adept, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Cunning);
+            // ---- 女性 ----
+            D("char-diaochan", CombatTier.Feeble, StrategyTier.Sharp, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Cunning);       // 连环计
+            D("char-daqiao", CombatTier.Feeble, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Benevolent);
+            D("char-xiaoqiao", CombatTier.Feeble, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Benevolent);
+            D("char-zhenji", CombatTier.Feeble, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Benevolent);
+            D("char-caiwenji", CombatTier.Feeble, StrategyTier.Adept, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Benevolent);     // 才女
+            D("char-huangyueying", CombatTier.Feeble, StrategyTier.Master, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Strategist);  // 善机巧
+            D("char-wangyuanji", CombatTier.Feeble, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Benevolent);
+            D("char-zhangchunhua", CombatTier.Feeble, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cunning);
+            // ---- 南蛮 / 异族 ----
+            D("char-wutugu", CombatTier.Peerless, StrategyTier.Dull, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.IronBones);      // 藤甲兵
+            D("char-mulu", CombatTier.Valiant, StrategyTier.Dull, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Reckless);          // 驱兽
+            D("char-duosi", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Cunning);          // 毒泉
+            D("char-dongtuna", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Cavalry);
+            // ---- 魏晋末 ----
+            D("char-wenyang", CombatTier.Peerless, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.LoneValor, GeneralTag.Reckless); // 单骑退雄兵
+            D("char-wenqin", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Reckless);
+            D("char-zhugedan", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Stubborn);
+            D("char-guanqiujian", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Defender);
+            D("char-wangling", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Cunning);
+            D("char-weiguan", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Wavering, Ambition.Wolfish, GeneralTag.Cunning, GeneralTag.Wolflook);
+            D("char-dengzhong", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cavalry);        // 邓艾子
+            // ---- 西凉（韩遂部）----
+            D("char-chengyi", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cavalry);
+            D("char-liangxing", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cavalry);
+            D("char-houxuan", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cavalry);
+            D("char-yangqiu", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cavalry);
+            D("char-mawan", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cavalry);
+            // ---- 讨董/群雄副将 ----
+            D("char-panfeng", CombatTier.Valiant, StrategyTier.Dull, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Reckless);          // 上将潘凤
+            D("char-wuanguo", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Reckless);
+            D("char-xingdaorong", CombatTier.Valiant, StrategyTier.Dull, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Reckless);
+            D("char-leitong", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Reckless);
+            D("char-wulan", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cavalry);
 
             var dict = new Dictionary<string, GeneralDossier>(StringComparer.Ordinal);
             foreach (GeneralDossier d in list) dict[d.Id.Value] = d;
