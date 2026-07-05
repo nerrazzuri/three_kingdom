@@ -160,13 +160,16 @@ namespace ThreeKingdom.Application.Scenarios
         private static IReadOnlyList<GeneralTag> TagsOf(CharacterId c)
             => GeneralDossiers.Find(c)?.Tags is { } t ? new List<GeneralTag>(t) : new List<GeneralTag>();
 
-        /// <summary>主将（太守亲征）：统率0.7/武勇0.7/智略0.6，善攻坚 + 携档案气质标签（GDD_025）。</summary>
+        /// <summary>取某武将的战阵档（GDD_025 档案）；无档案则 null（无加成）。</summary>
+        private static CombatTier? ProwessOf(CharacterId c) => GeneralDossiers.Find(c)?.Prowess;
+
+        /// <summary>主将（太守亲征）：统率0.7/武勇0.7/智略0.6，善攻坚 + 携档案气质标签 + 战阵档（GDD_025）。</summary>
         public OffensiveGeneral LeadGeneral
-            => new OffensiveGeneral(Lord, Frac(7, 10), Frac(7, 10), Frac(6, 10), GeneralSpecialty.Siege, TagsOf(Lord));
+            => new OffensiveGeneral(Lord, Frac(7, 10), Frac(7, 10), Frac(6, 10), GeneralSpecialty.Siege, TagsOf(Lord), ProwessOf(Lord));
 
         /// <summary>可选副将花名册（GDD_014 僚属；副将 Aide 智略高·善奇袭，利设伏路线）。</summary>
         public IReadOnlyList<OffensiveGeneral> DeputyRoster
-            => new[] { new OffensiveGeneral(Aide, Frac(5, 10), Frac(6, 10), Frac(8, 10), GeneralSpecialty.Ambush, TagsOf(Aide)) };
+            => new[] { new OffensiveGeneral(Aide, Frac(5, 10), Frac(6, 10), Frac(8, 10), GeneralSpecialty.Ambush, TagsOf(Aide), ProwessOf(Aide)) };
 
         /// <summary>目标敌城的<b>真实</b>守备（结算用真值；玩家所见须经情报投影，反全知）。虎牢关：守军600 × 工事1.2。</summary>
         public SiegeDefense DefenseOf(CityId city) => new SiegeDefense(600, Frac(12, 10));

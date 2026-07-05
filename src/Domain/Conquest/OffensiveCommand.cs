@@ -33,6 +33,9 @@ namespace ThreeKingdom.Domain.Conquest
         /// <summary>气质标签（GDD_025）：随将带入战斗，在条件涌现中发作（如【诡谋】降智略门）。空=无标签。</summary>
         public IReadOnlyList<GeneralTag> Tags => _tags;
 
+        /// <summary>战阵档（GDD_025，可空）：带兵杀伤强度粗档，驱动杀伤系数右偏抽取。null=无档（不加成，中性 1.0）。</summary>
+        public CombatTier? Prowess { get; }
+
         /// <summary>是否带某气质标签（GDD_025）。</summary>
         public bool HasTag(GeneralTag tag)
         {
@@ -43,7 +46,8 @@ namespace ThreeKingdom.Domain.Conquest
         /// <summary>构造并校验三属性范围 [0,1]。越界即抛，无部分写入。</summary>
         public OffensiveGeneral(
             CharacterId character, FixedPoint command, FixedPoint valor, FixedPoint guile,
-            GeneralSpecialty specialty = GeneralSpecialty.None, IReadOnlyList<GeneralTag>? tags = null)
+            GeneralSpecialty specialty = GeneralSpecialty.None, IReadOnlyList<GeneralTag>? tags = null,
+            CombatTier? prowess = null)
         {
             Require01(command, nameof(command));
             Require01(valor, nameof(valor));
@@ -54,6 +58,7 @@ namespace ThreeKingdom.Domain.Conquest
             Guile = guile;
             Specialty = specialty;
             _tags = tags != null ? new List<GeneralTag>(tags).ToArray() : Array.Empty<GeneralTag>();
+            Prowess = prowess;
         }
 
         private static void Require01(FixedPoint v, string name)

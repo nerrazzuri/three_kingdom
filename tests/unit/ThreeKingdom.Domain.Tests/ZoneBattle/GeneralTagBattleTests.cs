@@ -44,6 +44,39 @@ namespace ThreeKingdom.Domain.Tests.ZoneBattle
             return false;
         }
 
+        private static Detachment Led(CombatTier tier, ZoneId at)
+        {
+            var gen = new OffensiveGeneral(new CharacterId("g"), F(5, 10), F(5, 10), F(3, 10), GeneralSpecialty.None, null, tier);
+            return new Detachment(new DetachmentId("a"), BattleSide.Attacker, gen,
+                TroopComposition.AllInfantry(1000), 1000, F(7, 10), F(2, 10), Posture.Assault, at);
+        }
+
+        private static int DefLoss(CombatTier attackerTier, ulong seed)
+        {
+            // 守方略强（1200 兵坚守）→ 胶着战，攻方战阵档系数决定胜负 margin（不饱和于减员上限）。
+            var def = new Detachment(new DetachmentId("d"), BattleSide.Defender, null,
+                TroopComposition.AllInfantry(1200), 1200, F(7, 10), F(1, 10), Posture.Hold, BattleField.Reserve);
+            var s = new ZoneBattleState(BattleField.Default(),
+                new[] { Led(attackerTier, BattleField.Reserve), def },
+                Array.Empty<ZoneEngagementState>(), new ThreeKingdom.Domain.ZoneBattle.BattleClock(1, 6), BattleSide.Attacker, seed);
+            var svc = new RoundResolutionService();
+            ZoneBattleState after = svc.ResolveRound(s, ZoneBattleContext.Default, ZoneBattleConfig.Default).State;
+            return 1200 - after.TryGet(new DetachmentId("d"))!.Strength;
+        }
+
+        // ---- 战阵档：绝世之将 1000 兵杀伤 > 骁锐之将 1000 兵（同种子下绝世系数恒高，确定性）----
+        [Test]
+        public void test_peerless_general_kills_more_than_valiant_with_same_troops()
+        {
+            foreach (ulong seed in new ulong[] { 1UL, 7UL, 42UL, 100UL })
+            {
+                int peerless = DefLoss(CombatTier.Peerless, seed);
+                int valiant = DefLoss(CombatTier.Valiant, seed);
+                Assert.That(peerless, Is.GreaterThan(valiant),
+                    $"seed{seed}：绝世将 1000 兵每回合杀敌 > 骁锐将 1000 兵（战阵档→更强杀伤，关羽>周仓）。");
+            }
+        }
+
         [Test]
         public void test_cunning_tag_forms_fire_despite_low_guile()
         {

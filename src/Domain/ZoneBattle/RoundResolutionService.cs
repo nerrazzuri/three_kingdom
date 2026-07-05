@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ThreeKingdom.Domain.Battle;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Numerics;
 
@@ -68,8 +69,9 @@ namespace ThreeKingdom.Domain.ZoneBattle
                     if (!wasFormed) emergences.Add(zone.Id.Value + ":" + c);
                 }
 
-                // ③④ 交战结算（该区）。
-                ResolveZoneCombat(zone, working, eng, byId, attFormed, newlyFormed, config);
+                // ③④ 交战结算（该区）。种子=战斗种子⊕回合，供将领战阵档系数每回合右偏抽取（确定性、可复现）。
+                ulong roundSeed = working.Seed ^ ((ulong)working.Clock.Round * 2654435761UL);
+                ResolveZoneCombat(zone, working, eng, byId, attFormed, newlyFormed, config, roundSeed);
             }
 
             // ⑤ 回合钟推进 + 以新支队/交战写回。
@@ -81,7 +83,7 @@ namespace ThreeKingdom.Domain.ZoneBattle
         /// <summary>某区交战：攻/守战力比较 → 败方减员+掉士气，双方增疲劳；新涌现→守方额外士气冲击。写回 <paramref name="byId"/>。</summary>
         private static void ResolveZoneCombat(
             Zone zone, ZoneBattleState state, ZoneEngagementState eng, Dictionary<string, Detachment> byId,
-            int attackerFormedCount, bool newlyFormed, ZoneBattleConfig config)
+            int attackerFormedCount, bool newlyFormed, ZoneBattleConfig config, ulong roundSeed)
         {
             var attackers = new List<Detachment>();
             var defenders = new List<Detachment>();
@@ -94,12 +96,12 @@ namespace ThreeKingdom.Domain.ZoneBattle
             if (attackers.Count == 0 && defenders.Count == 0) return;
 
             FixedPoint condMul = FixedPoint.One + config.ConditionBonusEach * FixedPoint.FromInt(attackerFormedCount);
-            FixedPoint attPower = SidePower(attackers, config) * condMul;
+            FixedPoint attPower = SidePower(attackers, config, roundSeed) * condMul;
             // 城防之利：守方在坚固地形（城门正面）得工事加成——破坚城须真优势（W5），非均势可下。
             FixedPoint defMul = zone.Terrain == TerrainKind.Fortified
                 ? FixedPoint.One + config.FortifiedDefenseBonus
                 : FixedPoint.One;
-            FixedPoint defPower = SidePower(defenders, config) * defMul;
+            FixedPoint defPower = SidePower(defenders, config, roundSeed) * defMul;
 
             // 单方占据：无交战（占据推进目标，如断粮/破口），仅增疲劳。
             if (attackers.Count == 0 || defenders.Count == 0)
@@ -131,13 +133,29 @@ namespace ThreeKingdom.Domain.ZoneBattle
             }
         }
 
-        /// <summary>阵营有效战力：Σ 兵力×士气×姿态乘数×<b>疲劳侵蚀</b>（久战/猛攻的兵疲则战力衰减）。</summary>
-        private static FixedPoint SidePower(IReadOnlyList<Detachment> dets, ZoneBattleConfig config)
+        /// <summary>
+        /// 阵营有效战力：Σ 兵力×士气×姿态×<b>疲劳侵蚀</b>×<b>将领战阵档系数</b>（GDD_025：有档之将带兵杀伤更强，
+        /// 系数每回合右偏抽取——低端常见、高端罕见，故名将偶有神勇爆发。无档之将系数中性 1.0）。
+        /// </summary>
+        private static FixedPoint SidePower(IReadOnlyList<Detachment> dets, ZoneBattleConfig config, ulong roundSeed)
         {
             FixedPoint sum = FixedPoint.Zero;
             foreach (Detachment d in dets)
-                sum += FixedPoint.FromInt(d.Strength) * d.Morale * config.PostureMod(d.Posture) * config.FatiguePowerMul(d.Fatigue);
+            {
+                FixedPoint prowess = FixedPoint.One;
+                if (d.General?.Prowess is CombatTier tier)   // 有战阵档 → 种子化右偏抽取杀伤系数（同局可复现）
+                    prowess = CombatProwess.Roll(tier, new DeterministicRandom(roundSeed ^ FnvId(d.Id.Value)));
+                sum += FixedPoint.FromInt(d.Strength) * d.Morale * config.PostureMod(d.Posture) * config.FatiguePowerMul(d.Fatigue) * prowess;
+            }
             return sum;
+        }
+
+        /// <summary>支队 id 稳定散列（FNV-1a，供将领战阵档系数种子分派，确定性）。</summary>
+        private static ulong FnvId(string s)
+        {
+            ulong h = 1469598103934665603UL;
+            if (s != null) foreach (char c in s) { h ^= c; h *= 1099511628211UL; }
+            return h;
         }
 
         private static Detachment ApplyCombat(Detachment d, FixedPoint lossRate, FixedPoint moraleDelta, ZoneBattleConfig config)

@@ -18,14 +18,18 @@ namespace ThreeKingdom.Domain.Characters
         public LoyaltyLeaning Leaning { get; }
         public Ambition Ambition { get; }
         public EraStage Stage { get; }
+        /// <summary>战阵档（GDD_025）：带兵杀伤强度粗档，隐藏、不显示。驱动战斗杀伤系数右偏抽取。</summary>
+        public CombatTier Prowess { get; }
 
-        public GeneralDossier(CharacterId id, IReadOnlyList<GeneralTag> tags, LoyaltyLeaning leaning, Ambition ambition, EraStage stage = EraStage.Prime)
+        public GeneralDossier(CharacterId id, IReadOnlyList<GeneralTag> tags, LoyaltyLeaning leaning, Ambition ambition,
+            CombatTier prowess = CombatTier.Ordinary, EraStage stage = EraStage.Prime)
         {
             if (tags is null) throw new ArgumentNullException(nameof(tags));
             _tags = new HashSet<GeneralTag>(tags);
             Id = id;
             Leaning = leaning;
             Ambition = ambition;
+            Prowess = prowess;
             Stage = stage;
         }
 
