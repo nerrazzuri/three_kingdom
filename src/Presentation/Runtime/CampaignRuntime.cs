@@ -15,6 +15,7 @@ using ThreeKingdom.Domain.Diplomacy;
 using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Council;
 using ThreeKingdom.Domain.Intel;
+using ThreeKingdom.Domain.Life;
 using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Outcome;
 using ThreeKingdom.Domain.Persistence;
@@ -122,6 +123,23 @@ namespace ThreeKingdom.Presentation.Runtime
             WorldTime t = Session.CurrentTime;
             return new WorldStatusView(new WorldStatusProjection(t.Day, t.Segment, t.AbsoluteIndex, _daysCrossedLastAdvance));
         }
+
+        // --- 纪元与一生（GDD_026 / ADR-0015）：公元年由抽象日-段派生（纯函数）；空降者寿命由会话 id 确定性派生。皆无需新存档字段。---
+
+        /// <summary>本局纪元日历（锚点年 + 年折算；纯函数派生公元年）。</summary>
+        private EraCalendar Calendar => _calendar ??= new EraCalendar(_scenario.AnchorYear);
+        private EraCalendar? _calendar;
+
+        /// <summary>当前公元年（GDD_026：由 WorldTime 派生，存读档一致）。</summary>
+        public int CurrentYear => Calendar.YearOf(Session.CurrentTime);
+
+        /// <summary>本局空降者的一生（入场年龄/寿命；由会话 id 种子化确定性派生，重开新局才变）。</summary>
+        private ArrivalLife Life => _life ??= ArrivalLife.Roll(
+            PersonaSeed(Session.Id) ^ 0x11FE_5A1Dul, _scenario.AnchorYear, ArrivalLifeConfig.Default);
+        private ArrivalLife? _life;
+
+        /// <summary>空降者一生视图（当前公元年/年龄/人生阶段/是否寿终；定性档，不给精确倒计时）。</summary>
+        public ArrivalLifeView LifeView() => new ArrivalLifeView(CurrentYear, Life);
 
         // --- 主角人设（GDD_015：开局随机人设，给天下事件"心里话"着色）。由会话 id 确定性派生 → 存读档一致，无需新存档字段。---
 

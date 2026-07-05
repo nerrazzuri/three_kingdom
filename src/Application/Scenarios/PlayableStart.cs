@@ -16,6 +16,8 @@ namespace ThreeKingdom.Application.Scenarios
     {
         /// <summary>稳定开局 id（存档/选择键；如 "fanshui-governor"）。</summary>
         public string Id { get; }
+        /// <summary>锚点年（公元；GDD_026：世界快照与纪元起点。当前诸开局皆 190 讨董之世）。</summary>
+        public int AnchorYear { get; }
         /// <summary>中文开局名（选择屏显示，如「汜水关太守」）。</summary>
         public string DisplayName { get; }
         /// <summary>一句话开局情境（选择屏副文案）。</summary>
@@ -44,9 +46,11 @@ namespace ThreeKingdom.Application.Scenarios
         public PlayableStart(
             string id, string displayName, string blurb,
             FactionId playerFaction, CharacterId playerLord, CityId capital, int capitalGarrison,
-            CityId offensiveTarget, FactionId targetFaction, TerrainKind targetTerrain, bool includesBespokeSeat)
+            CityId offensiveTarget, FactionId targetFaction, TerrainKind targetTerrain, bool includesBespokeSeat,
+            int anchorYear = 190)
         {
             Id = id;
+            AnchorYear = anchorYear;
             DisplayName = displayName;
             Blurb = blurb;
             PlayerFaction = playerFaction;

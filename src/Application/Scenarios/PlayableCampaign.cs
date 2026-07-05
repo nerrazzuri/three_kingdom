@@ -312,6 +312,8 @@ namespace ThreeKingdom.Application.Scenarios
 
         /// <summary>本局开局描述（选择屏/HUD）。</summary>
         public PlayableStart Start => _start;
+        /// <summary>本局锚点年（公元；GDD_026 纪元起点，默认 190 讨董）。</summary>
+        public int AnchorYear => _start.AnchorYear;
         /// <summary>本局玩家所属势力（默认 faction-player）。</summary>
         public FactionId PlayerFaction => _start.PlayerFaction;
         /// <summary>本局玩家治所（默认汜水关）。</summary>
