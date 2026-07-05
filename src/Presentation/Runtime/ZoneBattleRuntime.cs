@@ -107,13 +107,47 @@ namespace ThreeKingdom.Presentation.Runtime
             return r;
         }
 
+        private readonly System.Collections.Generic.HashSet<string> _fallenRoused = new System.Collections.Generic.HashSet<string>();
+        private readonly ThreeKingdom.Domain.Characters.BondEffectService _bondSvc = new ThreeKingdom.Domain.Characters.BondEffectService();
+
+        /// <summary>
+        /// 羁绊崩解（GDD_025 R4）：本回合有血脉/知己之将阵亡（支队溃散）→ 同阵营与其生死之交的余将<b>狂怒死战</b>，
+        /// 士气骤升（BondConfig.CollapseRage）。每位阵亡者只触发一次。确定性纯数据变换。
+        /// </summary>
+        private ZoneBattleState ApplyBondCollapse(ZoneBattleState state)
+        {
+            var fallen = new System.Collections.Generic.List<(ThreeKingdom.Domain.Characters.CharacterId G, BattleSide Side)>();
+            foreach (Detachment d in state.Detachments)
+                if (d.IsBroken && d.General != null && d.General.Character.Value != null && _fallenRoused.Add(d.General.Character.Value))
+                    fallen.Add((d.General.Character, d.Side));
+            if (fallen.Count == 0) return state;
+
+            var bonds = ThreeKingdom.Application.Scenarios.GeneralBonds.All;
+            FixedPoint rage = ThreeKingdom.Domain.Characters.BondConfig.Default.CollapseRage;
+            var list = new System.Collections.Generic.List<Detachment>();
+            bool changed = false;
+            foreach (Detachment d in state.Detachments)
+            {
+                Detachment cur = d;
+                if (!d.IsBroken && d.General != null)
+                    foreach ((ThreeKingdom.Domain.Characters.CharacterId g, BattleSide side) in fallen)
+                        if (side == d.Side && _bondSvc.IsRousedByFall(d.General.Character, g, bonds))
+                        {
+                            cur = cur.WithCombat(cur.Strength, (cur.Morale + rage).Clamp(FixedPoint.Zero, FixedPoint.One), cur.Fatigue);
+                            changed = true;
+                        }
+                list.Add(cur);
+            }
+            return changed ? state.WithDetachments(list) : state;
+        }
+
         /// <summary>推进一回合（敌AI决策 → 同步结算 → 终局判定）；返回战后展示投影。已终局则原样返回。</summary>
         public ZoneBattleView ResolveRound()
         {
             if (!IsOver)
             {
                 ZoneBattleRoundResult r = _service.ResolveRound(_state, _context, _config, _aiConfig);
-                _state = r.State;
+                _state = ApplyBondCollapse(r.State);   // 羁绊崩解：血脉/知己同场阵亡 → 余者狂怒死战（GDD_025 R4）
                 _lastEmergences = new List<string>(r.Emergences);
                 _outcome = r.Outcome;
             }

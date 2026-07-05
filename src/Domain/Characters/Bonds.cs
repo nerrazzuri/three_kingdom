@@ -29,17 +29,21 @@ namespace ThreeKingdom.Domain.Characters
         public FixedPoint FeudPenalty { get; }
         /// <summary>士气增减上下限（防多羁绊叠加失衡）。</summary>
         public FixedPoint Cap { get; }
+        /// <summary>崩解·狂怒：血脉/知己在同场阵亡 → 余者悲愤死战，士气骤升幅度（GDD_025 R4）。</summary>
+        public FixedPoint CollapseRage { get; }
 
-        public BondConfig(FixedPoint synergyBonus, FixedPoint feudPenalty, FixedPoint cap)
+        public BondConfig(FixedPoint synergyBonus, FixedPoint feudPenalty, FixedPoint cap, FixedPoint collapseRage)
         {
             SynergyBonus = synergyBonus;
             FeudPenalty = feudPenalty;
             Cap = cap;
+            CollapseRage = collapseRage;
         }
 
-        /// <summary>默认：协同 +8%/对、仇怨 −12%/对、封顶 ±30%。</summary>
+        /// <summary>默认：协同 +8%/对、仇怨 −12%/对、封顶 ±30%、崩解狂怒 +18%。</summary>
         public static BondConfig Default { get; } = new BondConfig(
-            FixedPoint.FromFraction(8, 100), FixedPoint.FromFraction(12, 100), FixedPoint.FromFraction(30, 100));
+            FixedPoint.FromFraction(8, 100), FixedPoint.FromFraction(12, 100),
+            FixedPoint.FromFraction(30, 100), FixedPoint.FromFraction(18, 100));
     }
 
     /// <summary>
@@ -66,6 +70,19 @@ namespace ThreeKingdom.Domain.Characters
             }
             sum = sum.Clamp(-cfg.Cap, cfg.Cap);
             return FixedPoint.One + sum;
+        }
+
+        /// <summary>
+        /// 崩解·狂怒（GDD_025 R4）：<paramref name="survivor"/> 是否会因 <paramref name="fallen"/> 阵亡而悲愤死战——
+        /// 唯<b>血脉/知己</b>之交触发（生死与共者亡则余者狂怒）；师徒/仇怨不触发。
+        /// </summary>
+        public bool IsRousedByFall(CharacterId survivor, CharacterId fallen, IReadOnlyList<Bond> bonds)
+        {
+            if (bonds == null) return false;
+            foreach (Bond b in bonds)
+                if (b.Links(survivor, fallen) && (b.Type == BondType.Blood || b.Type == BondType.Kindred))
+                    return true;
+            return false;
         }
 
         private static bool BothPresent(IReadOnlyList<CharacterId> present, Bond b)

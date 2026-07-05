@@ -60,6 +60,17 @@ namespace ThreeKingdom.Domain.Tests.Characters
         }
 
         [Test]
+        public void test_collapse_rage_only_for_blood_or_kindred()
+        {
+            // 血脉/知己之交阵亡 → 余者狂怒；师徒/无关 → 不狂怒。
+            Assert.That(Svc.IsRousedByFall(C("char-liubei"), C("char-guanyu"), GeneralBonds.All), Is.True, "关羽亡→刘备狂怒（知己）。");
+            Assert.That(Svc.IsRousedByFall(C("char-zhangfei"), C("char-guanyu"), GeneralBonds.All), Is.True, "关羽亡→张飞狂怒。");
+            Assert.That(Svc.IsRousedByFall(C("char-jiangwei"), C("char-zhugeliang"), GeneralBonds.All), Is.False, "师徒不触发狂怒。");
+            Assert.That(Svc.IsRousedByFall(C("char-caocao"), C("char-guanyu"), GeneralBonds.All), Is.False, "无血脉知己→不狂怒。");
+            Assert.That(BondConfig.Default.CollapseRage, Is.GreaterThan(FixedPoint.Zero), "狂怒有士气加成。");
+        }
+
+        [Test]
         public void test_among_filters_to_both_present()
         {
             // 只在场一端 → 不计。
