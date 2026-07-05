@@ -1,5 +1,15 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## ✅ 完成（2026-07-05 续9）— UI 层接入审计 + 补齐（聚合HUD/人才录/外交视图）
+
+> **提交 fb929f6 + 7e3f61b。dotnet 1131/1131 绿。审计文档 Assets/UI/UI_STATUS.md。**
+> - 审计：核心全可玩(console)；纯 C# 视图基本齐备，Unity 屏多数已建但★需编辑器验证；补三个缺口视图。
+> - **GameHudView（聚合顶栏，UI 单一绑定）**：纪元/一生/生涯/君命/手令/争霸一次取全。CampaignRuntime.HudSummary。
+> - **TalentRecruitView（反全知无数值）**：修红线缺口——人才只呈名/专长/招揽难度定性，不露统率武勇智略之数。TalentView。
+> - **DiplomacyView**：各存续势力立场中文 + 可否径攻。至此**每个可玩系统都有干净纯 C# 视图**（多数已单测），UI 只需绑定。
+> - Unity（★需验证）：GameStatusPanel.uxml/Controller 把君命/生涯/手令/人才一次 surfaced。SessionRuntime 桥全补。
+> - **UI 层剩余（见 UI_STATUS.md）**：外交屏/多城屏(视图已备,缺屏)；君命结算·人才招揽·施计选城的交互屏(现 Unity 只显示、交互在 console)；战略地图场景+美术；所有★Unity 屏的编辑器验证(绑定/场景/uss/包)。
+
 ## ✅ 完成（2026-07-05 续8）— console 补全 + 行动容量节流（非体力点数）
 
 > **提交 45c5d19（console补全）+ 88c368e（容量节流）。dotnet 1128/1128 绿。**
