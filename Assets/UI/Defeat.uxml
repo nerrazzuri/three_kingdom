@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 被灭·被俘流程（GDD_026 R9）：判生死→归顺?→释放?→投奔他主；唯身死才终。★需 Unity 编辑器验证。 -->
+    <ui:VisualElement name="defeat-root" class="defeat-root">
+        <ui:Label name="defeat-title" text="城破被俘" class="defeat-title" />
+        <ui:Label name="defeat-status" text="末城已破，你为阶下之囚，生死系于胜者一念。" class="defeat-status" />
+        <ui:VisualElement name="defeat-actions" class="defeat-actions" />
+    </ui:VisualElement>
+</ui:UXML>

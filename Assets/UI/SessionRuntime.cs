@@ -15,7 +15,8 @@ namespace ThreeKingdom.Unity.UI
     /// </summary>
     public static class SessionRuntime
     {
-        private static readonly CampaignRuntime _runtime =
+        // 可换：选年/选城开局会以新场景重建（GDD_026）。默认汜水关太守。
+        private static CampaignRuntime _runtime =
             new CampaignRuntime(new PlayerPrefsSaveMedium());
 
         /// <summary>开新局（MainMenu「新游戏」）：以共享场景配置（汜水关太守）开局，返回初始世界状态视图。</summary>
@@ -189,5 +190,65 @@ namespace ThreeKingdom.Unity.UI
             ThreeKingdom.Domain.Talent.TalentId id, ThreeKingdom.Domain.Talent.RecruitmentOffer offer)
             => _runtime.RecruitTalent(id, offer);
         public static bool HasRecruited(ThreeKingdom.Domain.Talent.TalentId id) => _runtime.HasRecruited(id);
+
+        // --- GDD_026 空降者·纪元开局与一生：选年 → 选城/剧本 → 开局；纪元/寿命；被俘续局；武将录。---
+
+        /// <summary>可选锚点年（当前 190 讨董）。</summary>
+        public static System.Collections.Generic.IReadOnlyList<AnchorYearLine> AnchorYears() => GameLauncher.AnchorYears();
+        /// <summary>命名开局（汜水关太守 / 刘备·小沛 / 孙策·江东）。</summary>
+        public static ScenarioChoiceView NamedStarts() => GameLauncher.NamedStarts();
+        /// <summary>某锚点年可做太守的城（选城屏）。</summary>
+        public static GovernorCityChoiceView GovernorCities(int anchorYear = 190) => GameLauncher.GovernorCities(anchorYear);
+
+        /// <summary>以某命名剧本开新局（替换当前会话）。</summary>
+        public static void StartNamedGame(string startId)
+        {
+            var start = ThreeKingdom.Application.Scenarios.PlayableStartCatalog.ById(startId)
+                        ?? ThreeKingdom.Application.Scenarios.PlayableStartCatalog.Default;
+            _runtime = new CampaignRuntime(new PlayerPrefsSaveMedium(), ThreeKingdom.Application.Scenarios.PlayableCampaign.ForStart(start));
+            _runtime.NewGame();
+        }
+
+        /// <summary>空降为某城太守开新局（任选城；该年该城武将归你，替换当前会话）。</summary>
+        public static void StartGovernorGame(string cityId)
+        {
+            var start = ThreeKingdom.Application.Scenarios.PlayableCampaign.GovernorStartOf(new ThreeKingdom.Domain.City.CityId(cityId));
+            _runtime = new CampaignRuntime(new PlayerPrefsSaveMedium(), ThreeKingdom.Application.Scenarios.PlayableCampaign.ForStart(start));
+            _runtime.NewGame();
+        }
+
+        /// <summary>当前公元年。</summary>
+        public static int CurrentYear() => _runtime.CurrentYear;
+        /// <summary>当前季（春/夏/秋/冬）。</summary>
+        public static string Season() => _runtime.CurrentSeasonLabel;
+        /// <summary>空降者一生视图（公元年/年龄/人生阶段/是否寿终）。</summary>
+        public static ArrivalLifeView Life() => _runtime.LifeView();
+
+        /// <summary>推进一周（世界地图日常步）。</summary>
+        public static WorldStatusView AdvanceWeek() => _runtime.AdvanceWeek();
+        /// <summary>跳时·过一季。</summary>
+        public static WorldStatusView AdvanceSeason() => _runtime.AdvanceSeason();
+        /// <summary>跳时·过一年。</summary>
+        public static WorldStatusView AdvanceYear() => _runtime.AdvanceYear();
+
+        /// <summary>是否已寿终（一世自然落幕，可传承）。</summary>
+        public static bool IsLifeOver() => _runtime.IsLifeOver;
+        /// <summary>传承：寿终后子嗣续局（同世界同治所，新一世自当前年弱冠起）。</summary>
+        public static ArrivalLifeView SucceedHeir() => _runtime.SucceedHeir();
+
+        // 势力被灭走向（GDD_026 补：被俘→判生死→归顺?→释放?→投奔→活世界续局；唯身死才终）。
+        /// <summary>玩家势力是否已覆灭。</summary>
+        public static bool IsEliminated() => _runtime.IsPlayerEliminated;
+        /// <summary>进入被俘流程（UI 驱动判生死/归顺/不归顺/投奔）。</summary>
+        public static ThreeKingdom.Domain.Defeat.DefeatFlow BeginDefeat() => _runtime.BeginDefeat();
+        /// <summary>归顺/被收留后在活世界复位为新主太守（保当前年/一生）；返回是否复位。</summary>
+        public static bool ContinueUnderNewLord() => _runtime.ContinueUnderNewLord();
+        /// <summary>发起自立（红线：自立后若被灭必被俘处死，无退路）。</summary>
+        public static ThreeKingdom.Domain.Career.RebellionResult DeclareIndependence() => _runtime.DeclareIndependence();
+        /// <summary>是否已自立（叛主，无退路）。</summary>
+        public static bool HasRebelled => _runtime.HasRebelled;
+
+        /// <summary>武将录（反全知：中文名 + 气质性情，无数值）。</summary>
+        public static GeneralRosterView Roster() => GeneralRosterView.Build();
     }
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 空降者开局屏（GDD_026）：选锚点年 → 选命名剧本或任选城做太守 → 开局。★需 Unity 编辑器验证。 -->
+    <ui:VisualElement name="game-setup" class="setup-root">
+        <ui:Label name="setup-title" text="空降三国·择时择地" class="setup-title" />
+        <ui:Label name="year-line" text="公元190·讨董之世" class="setup-subtitle" />
+
+        <ui:VisualElement name="mode-tabs" class="mode-tabs">
+            <ui:Button name="tab-named" text="择主而事（命名开局）" class="tab-btn" />
+            <ui:Button name="tab-city" text="任选一城做太守" class="tab-btn" />
+        </ui:VisualElement>
+
+        <ui:Label name="mode-hint" text="选一位诸侯麾下起家，或任取一城为太守。" class="setup-hint" />
+
+        <ui:ScrollView name="choice-list" class="choice-list" />
+
+        <ui:VisualElement name="footer" class="setup-footer">
+            <ui:Label name="selection-label" text="未选择" class="selection-label" />
+            <ui:Button name="start-btn" text="就此起家" class="start-btn" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

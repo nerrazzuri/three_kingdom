@@ -66,11 +66,13 @@ namespace ThreeKingdom.Unity.UI
             if (advance != null)
                 advance.clicked += () =>
                 {
-                    RenderTime(root, SessionRuntime.Advance());  // 推进 + 跨日提示
+                    RenderTime(root, SessionRuntime.AdvanceWeek());  // 世界地图一步=一周（GDD_026）
                     RenderEnemyIntel(root);                      // 在途侦察可能返报 → 敌情更新
                     _council = SessionRuntime.CurrentCouncil();  // 知识若变 → 旧军议标过时
                     RenderCouncil(root);
                     RenderLoop(root);                            // 相位/治理/备战/战斗刷新
+                    // 势力覆灭 → 转被俘流程屏（GDD_026 R9：唯身死才终）。
+                    if (SessionRuntime.IsEliminated()) SceneManager.LoadScene("Defeat");
                 };
 
             // 存档（原子写，统一信封）+ 返回主菜单。
@@ -273,7 +275,12 @@ namespace ThreeKingdom.Unity.UI
         private void RenderTime(VisualElement root, WorldStatusView status)
         {
             var label = root.Q<Label>("time-bar-label");
-            if (label != null) label.text = status.TimeLabel;
+            if (label != null)
+            {
+                // 纪元 + 一生（GDD_026）：公元年·季　| 年龄·人生阶段（定性，不给精确寿数）。
+                ArrivalLifeView life = SessionRuntime.Life();
+                label.text = $"公元{SessionRuntime.CurrentYear()}·{SessionRuntime.Season()}　享年{life.Age}·{life.PhaseLabel}　{status.TimeLabel}";
+            }
 
             var note = root.Q<Label>("advance-note");
             if (note != null) note.text = status.CrossDayNotice;

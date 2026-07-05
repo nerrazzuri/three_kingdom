@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 武将录（GDD_026 #2 / GDD_025 R1）：反全知——只呈中文名 + 气质性情，无任何数值。★需 Unity 编辑器验证。 -->
+    <ui:VisualElement name="roster-root" class="roster-root">
+        <ui:Label name="roster-title" text="武将录·凭名声识人" class="roster-title" />
+        <ui:Label name="roster-note" text="不列统率武力之数——观其性情、听其名声，方知堪用与否。" class="roster-note" />
+        <ui:ScrollView name="roster-list" class="roster-list" />
+        <ui:Button name="roster-back" text="返回" class="roster-back" />
+    </ui:VisualElement>
+</ui:UXML>
