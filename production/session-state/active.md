@@ -6,7 +6,7 @@
 > - **#1 争霸放慢 + 涌现（13cc571）**：运行期兼并由"每季"改"每年至多一次" + 缓和权重 0.4（Domain 默认 0.8 仍供争霸单测）。(gap/sum) 自刹车 → 三/四国鼎立可久持，非必然收敛一家；走向 AI 涌现自掌、不照搬演义；大事件仍条件触发（ADR-0007）。测试锁：过 20 年天下仍未定 + ≥5 家。
 > - **#2 被灭走向（d1d2eca）**：势力覆灭（末城破）→ 太守被俘 → AI 判生死 →（不杀）归顺? →（不归顺）释放? →（获释）投奔他主（AI 判收不收，收则复为太守）；**唯身死才终**；收留/归顺一律太守（普通武将路线预留暂不做）。
 >   - Domain/Defeat：CaptivityService（种子化+名声调制：不轻杀名将/怕放虎归山/名过顶招功高之忌/小势力容不下太守）+ DefeatFlow 状态机。CampaignRuntime.BeginDefeat/IsPlayerEliminated 入口。GDD_026 R9。测试 +10。
->   - **留后续**：复位为新主太守的"活世界续局"（保当前公元年/一生接续，需 CampaignSession 支持中途改籍）——本次先给决策流程+结局，UI 可驱动。
+>   - **✅ 活世界续局已接通（3f2a498，dotnet 1094 绿）**：CampaignSessionService.ReseatGovernor（新主割城予玩家=控制权变更 HistoricalDivergence + 争霸态玩家+1/新主-1 + 城市治理重置于新城，世界/时钟不动）；CampaignRuntime.ContinueUnderNewLord（DefeatFlow.CanPlayOn→取新主非治所城复位；_capitalOverride 覆盖治所；CurrentSuzerain）。端到端测试:被灭→归顺→同世界同年(191)同龄复位、天下续推进、新主被割一城。**#2 全链闭合。**
 
 ## ✅ 完成（2026-07-05 续2）— 时间尺度定案 + ① 事件按公元年（用户定周/季/年）
 
