@@ -89,6 +89,24 @@ namespace ThreeKingdom.Domain.Tests.Defeat
         }
 
         [Test]
+        public void test_failed_rebellion_is_captured_and_executed_no_mercy()
+        {
+            // 自立叛主失败被灭 → 必被俘处死，无归顺/投奔活路（GDD_026 补）。
+            for (ulong s = 0; s < 50; s++)
+            {
+                var g = new DefeatFlow(Captor, 2000, s, CaptivityConfig.Default, rebelled: true);   // 名声再高亦不赦
+                g.ResolveCaptorFate();
+                Assert.That(g.Stage, Is.EqualTo(DefeatStage.Executed), "叛主必被杀。");
+                Assert.That(g.IsLifeEnded, Is.True);
+            }
+            // 归顺/不归顺对叛主者无效（无活路）。
+            var r = new DefeatFlow(Captor, 2000, 7UL, CaptivityConfig.Default, rebelled: true);
+            r.Submit();
+            Assert.That(r.CanPlayOn, Is.False, "叛主者不得归顺求活。");
+            Assert.That(r.Refuse(), Is.False, "叛主者无释放之理。");
+        }
+
+        [Test]
         public void test_flow_is_deterministic()
         {
             var a = Flow(500, 42UL); a.ResolveCaptorFate();

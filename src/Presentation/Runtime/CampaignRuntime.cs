@@ -84,6 +84,7 @@ namespace ThreeKingdom.Presentation.Runtime
             _calendar = null;
             _defeat = null;
             _capitalOverride = null;
+            _rebelled = false;
             return Status();
         }
 
@@ -609,9 +610,29 @@ namespace ThreeKingdom.Presentation.Runtime
         // --- 覆灭之后（GDD_026 补）：势力被灭≠game over。被俘→判生死→归顺?→释放?→投奔他主收留?；唯身死才终。 ---
 
         private DefeatFlow? _defeat;
+        private bool _rebelled;
 
         /// <summary>玩家势力是否已覆灭（领城归零）。</summary>
         public bool IsPlayerEliminated => Endgame() == ThreeKingdom.Domain.Contention.EndgameStatus.PlayerEliminated;
+
+        /// <summary>玩家是否已自立（叛主）——若为真，日后被灭则必被俘处死（无归顺/投奔活路，GDD_026 补）。</summary>
+        public bool HasRebelled => _rebelled;
+
+        /// <summary>
+        /// 发起自立（GDD_014）：资格达成则转独立新势力（叛主）。<b>红线：自立后若被灭，必被俘处死</b>——
+        /// 故此步一旦成功即锁死"无退路"（<see cref="_rebelled"/>）。资格不足则不切死局（稳定返回未发起）。
+        /// </summary>
+        public RebellionResult DeclareIndependence()
+        {
+            var ctx = new RebellionContext(
+                citiesOwned: Contend.CitiesOf(_scenario.PlayerFaction),
+                supplyReady: true, troopsReady: true,
+                lordOppression: Session.RebellionLean > 0,
+                newFactionId: PlayableCampaign.RebelFaction);
+            RebellionResult r = _service.LaunchRebellion(Session, _scenario.Rebellion, ctx);
+            if (r.Launched) _rebelled = true;
+            return r;
+        }
 
         /// <summary>
         /// 进入被灭处境流程（GDD_026 补）：以当下最强之敌为擒获者、以生涯名声为调制、会话种子确定性。
@@ -623,7 +644,7 @@ namespace ThreeKingdom.Presentation.Runtime
             if (!IsPlayerEliminated) throw new InvalidOperationException("尚未覆灭，无被俘流程。");
             return _defeat ??= new DefeatFlow(
                 StrongestRival(), Session.Career.Career.Renown,
-                PersonaSeed(Session.Id) ^ 0x0DEFEA7EUL, CaptivityConfig.Default);
+                PersonaSeed(Session.Id) ^ 0x0DEFEA7EUL, CaptivityConfig.Default, rebelled: _rebelled);
         }
 
         /// <summary>当下最强的存续对手（覆灭时的擒获者；无对手则回退第一个已知势力）。</summary>

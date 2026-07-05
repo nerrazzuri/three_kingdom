@@ -13,6 +13,7 @@ namespace ThreeKingdom.Domain.Defeat
         private readonly int _renown;
         private readonly ulong _seed;
         private readonly CaptivityConfig _cfg;
+        private readonly bool _rebelled;
         private readonly CaptivityService _svc = new CaptivityService();
 
         /// <summary>擒获者（覆灭时最强之敌）。</summary>
@@ -21,13 +22,17 @@ namespace ThreeKingdom.Domain.Defeat
         public DefeatStage Stage { get; private set; }
         /// <summary>若已复为太守，效力的新主（归顺=擒获者；投奔=收留者）。否则 null。</summary>
         public FactionId? NewLord { get; private set; }
+        /// <summary>是否为自立失败被擒（叛主不赦 → 必被杀，无归顺/投奔活路）。</summary>
+        public bool WasRebellion => _rebelled;
 
-        public DefeatFlow(FactionId captor, int renown, ulong seed, CaptivityConfig cfg)
+        /// <param name="rebelled">是否自立（叛主）后被灭：为真则<b>必被俘处死</b>，不给归顺/投奔的活路。</param>
+        public DefeatFlow(FactionId captor, int renown, ulong seed, CaptivityConfig cfg, bool rebelled = false)
         {
             Captor = captor;
             _renown = renown;
             _seed = seed;
             _cfg = cfg ?? CaptivityConfig.Default;
+            _rebelled = rebelled;
             Stage = DefeatStage.Captured;
         }
 
@@ -43,14 +48,15 @@ namespace ThreeKingdom.Domain.Defeat
         public void ResolveCaptorFate()
         {
             if (Stage != DefeatStage.Captured) return;
+            if (_rebelled) { Stage = DefeatStage.Executed; return; }   // 叛主不赦 → 必被杀
             bool spared = _svc.CaptorSpares(_renown, _seed ^ 0x5A17_0001UL, _cfg);
             if (!spared) Stage = DefeatStage.Executed;
         }
 
-        /// <summary>归顺擒获者（玩家选择）：复为其太守（<see cref="DefeatStage.Submitted"/>）。须在未处死的被俘阶段。</summary>
+        /// <summary>归顺擒获者（玩家选择）：复为其太守。须在未处死的被俘阶段；<b>自立叛主者无此活路</b>。</summary>
         public void Submit()
         {
-            if (Stage != DefeatStage.Captured) return;
+            if (Stage != DefeatStage.Captured || _rebelled) return;
             NewLord = Captor;
             Stage = DefeatStage.Submitted;
         }
@@ -61,7 +67,7 @@ namespace ThreeKingdom.Domain.Defeat
         /// </summary>
         public bool Refuse()
         {
-            if (Stage != DefeatStage.Captured) return false;
+            if (Stage != DefeatStage.Captured || _rebelled) return false;   // 叛主者无释放之理
             bool released = _svc.CaptorReleases(_renown, _seed ^ 0x5A17_0002UL, _cfg);
             Stage = released ? DefeatStage.Released : DefeatStage.Imprisoned;
             return released;
