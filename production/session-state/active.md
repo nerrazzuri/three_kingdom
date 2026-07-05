@@ -1,5 +1,15 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## ✅ 完成（2026-07-05 续12）— Codex 第2轮通过（可进 Play）+ 补齐屏间导航
+
+> **提交 8f48fc5（收纳 Codex 产物）+ ab23839（导航接线）。** Codex 第 2 轮：核心编译 0 error、可进 Play、
+> `MainMenu→GameSetup→Hud` 跑通；10 屏均渲染。Codex 3 处修复已收纳（TheaterScreen using / Defeat 未覆灭防御 / MainMenu→GameSetup）。
+> - **补导航**：Hud 头 hud-nav（武将录/外交/多城）；PauseMenu resume→Hud·settings→Accessibility·quit→MainMenu；
+>   Accessibility back→static ReturnScene（默认 MainMenu，Pause 设 PauseMenu）。★需编辑器再验一轮。
+> - **遗留非阻断**：Hud+状态面板灰盒布局重叠 → 归美术/USS 阶段；真实败亡 Defeat 流程未在编辑器触发验证；
+>   地图 scaffold 仍停泊 parked/（地图阶段再启用）。
+> - 核心 dotnet 1132/1132 不受影响。
+
 ## ✅ 完成（2026-07-05 续11）— Codex 首轮验证 → 停泊地图 scaffold 解阻 + 补全场景生成器
 
 > **提交 fc1bfb3。** Codex 在 Unity 6000.3.18f1 首轮验证：Safe Mode，68 编译错误**全部**在战略地图 scaffold
