@@ -834,6 +834,10 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>当前外交立场态。</summary>
         public DiplomaticStanceState Diplomacy => _diplomacy;
 
+        /// <summary>外交态一览视图（各存续势力立场中文 + 可否径攻）。</summary>
+        public DiplomacyView DiplomacyView()
+            => ThreeKingdom.Presentation.Screens.DiplomacyView.Build(_diplomacy, Contend, _scenario.PlayerFaction);
+
         /// <summary>攻打某势力的战略约束（盟约/互不侵犯须背约）。</summary>
         public WarConstraint CheckDiplomaticWarTarget(FactionId power)
             => _diplomacyService.CheckWarTarget(_diplomacy, power, StrategicDiplomacyConfig.Default);

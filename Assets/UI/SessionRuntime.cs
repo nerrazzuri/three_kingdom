@@ -263,6 +263,9 @@ namespace ThreeKingdom.Unity.UI
         /// <summary>可招人才录（反全知无数值：名/专长/难度定性）。</summary>
         public static TalentRecruitView TalentView() => _runtime.TalentView();
 
+        /// <summary>外交态一览（各势力立场中文 + 可否径攻）。</summary>
+        public static DiplomacyView DiplomacyView() => _runtime.DiplomacyView();
+
         /// <summary>行动容量（手令 已用/上限，随官阶）。</summary>
         public static int ActionCapacity => _runtime.ActionCapacity;
         public static int ActionsInFlight => _runtime.ActionsInFlight;

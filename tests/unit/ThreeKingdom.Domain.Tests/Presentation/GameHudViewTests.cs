@@ -48,5 +48,22 @@ namespace ThreeKingdom.Domain.Tests.Presentation
             Assert.That(line.SpecialtyLabel, Is.EqualTo("善攻坚"), "只呈专长文字。");
             Assert.That(new[] { "易招", "尚可", "难招" }, Does.Contain(line.DifficultyLabel), "招揽难度为定性档，非数字。");
         }
+
+        [Test]
+        public void test_diplomacy_view_lists_faction_stances()
+        {
+            var rt = new CampaignRuntime(new InMemorySaveMedium());
+            rt.NewGame();
+            DiplomacyView d = rt.DiplomacyView();
+            Assert.That(d.Factions.Count, Is.GreaterThanOrEqualTo(8), "对每一存续势力列立场。");
+
+            DiplomacyLine cao = null!;
+            foreach (DiplomacyLine l in d.Factions) if (l.FactionId == "faction-cao") cao = l;
+            Assert.That(cao, Is.Not.Null);
+            Assert.That(cao.FactionName, Is.EqualTo("曹操"));
+            Assert.That(new[] { "敌对", "中立", "互不侵犯", "盟约" }, Does.Contain(cao.StanceLabel));
+            Assert.That(cao.StanceLabel, Is.EqualTo("中立"), "开局默认中立。");
+            Assert.That(cao.CanAttackFreely, Is.True, "中立可径攻（无约）。");
+        }
     }
 }
