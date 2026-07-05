@@ -45,7 +45,7 @@ namespace ThreeKingdom.Presentation.Runtime
             OffensivePreparation prep, FixedPoint morale, int garrison, ulong seed, int maxRounds = 6,
             SubversionEffect? subversion = null)
         {
-            var field = BattleField.Default();
+            var field = BattleFieldCatalog.ForTerrain(prep.Terrain);   // #3 逐城/地形战场：按目标城地形选正面区
             var planner = new OffensiveDeploymentPlanner();
             var dets = new List<Detachment>();
             dets.AddRange(planner.PlanAttacker(prep, morale, field));

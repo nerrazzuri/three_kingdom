@@ -177,8 +177,9 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>目标敌城的<b>真实</b>守备（结算用真值；玩家所见须经情报投影，反全知）。虎牢关：守军600 × 工事1.2。</summary>
         public SiegeDefense DefenseOf(CityId city) => new SiegeDefense(600, Frac(12, 10));
 
-        /// <summary>目标进攻路线地形（虎牢关=隘口，利设伏；伏兵突然性条件门）。</summary>
-        public TerrainKind TerrainOf(CityId city) => TerrainKind.Pass;
+        /// <summary>目标进攻路线地形（#3 逐城/地形：由开局指定——虎牢关隘口/下邳坚城/江夏渡口；决定战场正面区与攻坚难度）。</summary>
+        public TerrainKind TerrainOf(CityId city)
+            => city == _start.OffensiveTarget ? _start.TargetTerrain : TerrainKind.Fortified;
 
         /// <summary>可出征目标城清单（GDD_019 §7 选目标；授权门/敌控由运行期按会话控制权投影判定）。取自开局首要目标。</summary>
         public IReadOnlyList<CityId> OffensiveTargetCities => new[] { _start.OffensiveTarget };

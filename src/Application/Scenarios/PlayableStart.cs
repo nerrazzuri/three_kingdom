@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
+using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Map;
 
 namespace ThreeKingdom.Application.Scenarios
@@ -34,13 +35,16 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>出征目标所属势力（外交立场/破城归属承接判定）。</summary>
         public FactionId TargetFaction { get; }
 
+        /// <summary>出征目标城地形（#3 逐城/地形战场：决定战场正面区——隘口设伏/渡口水火/坚城诈降/平原骑冲）。</summary>
+        public TerrainKind TargetTerrain { get; }
+
         /// <summary>是否含汜水关太守专属独立席（第 18 席）：仅默认剧本为真；扮演既有诸侯时为假（占其席为 Self）。</summary>
         public bool IncludesBespokeSeat { get; }
 
         public PlayableStart(
             string id, string displayName, string blurb,
             FactionId playerFaction, CharacterId playerLord, CityId capital, int capitalGarrison,
-            CityId offensiveTarget, FactionId targetFaction, bool includesBespokeSeat)
+            CityId offensiveTarget, FactionId targetFaction, TerrainKind targetTerrain, bool includesBespokeSeat)
         {
             Id = id;
             DisplayName = displayName;
@@ -51,6 +55,7 @@ namespace ThreeKingdom.Application.Scenarios
             CapitalGarrison = capitalGarrison;
             OffensiveTarget = offensiveTarget;
             TargetFaction = targetFaction;
+            TargetTerrain = targetTerrain;
             IncludesBespokeSeat = includesBespokeSeat;
         }
     }
@@ -69,7 +74,7 @@ namespace ThreeKingdom.Application.Scenarios
             playerFaction: PlayableCampaign.Player, playerLord: PlayableCampaign.Lord,
             capital: PlayableCampaign.Fanshui, capitalGarrison: 800,
             offensiveTarget: PlayableCampaign.EnemyCity, targetFaction: PlayableCampaign.Enemy,
-            includesBespokeSeat: true);
+            targetTerrain: TerrainKind.Pass, includesBespokeSeat: true);
 
         /// <summary>刘备·小沛：寄寓小城、志在天下，初锋芒指吕布下邳（宿敌）。</summary>
         public static readonly PlayableStart LiubeiXiaopei = new PlayableStart(
@@ -78,7 +83,7 @@ namespace ThreeKingdom.Application.Scenarios
             playerFaction: PlayableCampaign.LiuBei, playerLord: new CharacterId("char-liubei"),
             capital: PlayableCampaign.Xiaopei, capitalGarrison: 400,
             offensiveTarget: PlayableCampaign.Xiapi, targetFaction: PlayableCampaign.LuBu,
-            includesBespokeSeat: false);
+            targetTerrain: TerrainKind.Fortified, includesBespokeSeat: false);
 
         /// <summary>孙策·江东：借兵起于江东，锐意开疆，初锋芒指刘表江夏。</summary>
         public static readonly PlayableStart SunceJiangdong = new PlayableStart(
@@ -87,7 +92,7 @@ namespace ThreeKingdom.Application.Scenarios
             playerFaction: PlayableCampaign.Sun, playerLord: new CharacterId("char-sunce"),
             capital: PlayableCampaign.Jianye, capitalGarrison: 700,
             offensiveTarget: PlayableCampaign.Jiangxia, targetFaction: PlayableCampaign.LiuBiao,
-            includesBespokeSeat: false);
+            targetTerrain: TerrainKind.Ford, includesBespokeSeat: false);
 
         /// <summary>全部可选开局（选择屏遍历序）。</summary>
         public static IReadOnlyList<PlayableStart> All { get; } = new[]

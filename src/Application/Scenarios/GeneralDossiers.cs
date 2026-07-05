@@ -12,10 +12,21 @@ namespace ThreeKingdom.Application.Scenarios
     public static class GeneralDossiers
     {
         private static readonly IReadOnlyDictionary<string, GeneralDossier> ById = Build();
+        private static readonly IReadOnlyList<GeneralDossier> Roster = BuildRoster();
 
         /// <summary>查某武将档案；未登记则 null。</summary>
         public static GeneralDossier? Find(CharacterId id)
             => id.Value != null && ById.TryGetValue(id.Value, out GeneralDossier? d) ? d : null;
+
+        /// <summary>全体已登记武将档案（稳定序：按 id 规范序）——供武将目录（#2）遍历。</summary>
+        public static IReadOnlyList<GeneralDossier> All => Roster;
+
+        private static IReadOnlyList<GeneralDossier> BuildRoster()
+        {
+            var list = new List<GeneralDossier>(ById.Values);
+            list.Sort((a, b) => string.CompareOrdinal(a.Id.Value, b.Id.Value));
+            return list;
+        }
 
         private static IReadOnlyDictionary<string, GeneralDossier> Build()
         {

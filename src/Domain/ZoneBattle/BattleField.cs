@@ -92,45 +92,58 @@ namespace ThreeKingdom.Domain.ZoneBattle
         public static readonly ZoneId Reserve = new ZoneId("zone-reserve");
 
         /// <summary>
-        /// 默认战场（虎牢关攻/汜水关守通用模板）：5 区 + 邻接图。各区条件禀赋对应现有兵法链（复用，零新造）。
+        /// 默认战场（坚城模板；虎牢关攻/汜水关守通用）：5 区 + 邻接图。各区条件禀赋对应现有兵法链（复用，零新造）。
+        /// 逐城/地形战场（#3）经 <see cref="BattleFieldCatalog"/> 换正面区地形/禀赋，侧翼/粮道/掩护/预备四区共用。
         /// </summary>
-        public static BattleField Default()
+        public static BattleField Default() => Compose(FortifiedFront());
+
+        /// <summary>以给定正面区 + 通用四区（侧翼/粮道/掩护/预备）+ 标准邻接组装战场（#3 逐地形共用骨架）。</summary>
+        internal static BattleField Compose(Zone front)
         {
-            var zones = new[]
-            {
-                new Zone(Front, TerrainKind.Fortified, new[]
-                {
-                    // 城门正面可诈降赚城（黄盖诈降）：诈降禀赋。
-                    TacticCondition.SurrenderFeigned, TacticCondition.EnemyLuredOpen, TacticCondition.StrikeFromWithin,
-                }, softCapacity: 800),
-                new Zone(Flank, TerrainKind.Pass, new[]
-                {
-                    TacticCondition.ControlledRetreatKeptFormation, TacticCondition.EnemyPursued, TacticCondition.AmbushSurprise,
-                }, softCapacity: 400),
-                new Zone(Supply, TerrainKind.Plain, new[]
-                {
-                    TacticCondition.SupplyLineCut, TacticCondition.ShortageReachedGrace, TacticCondition.EnemyCohesionCrossedThreshold,
-                    // 粮营易燃（乌巢烧粮/赤壁烧船）：火攻禀赋。
-                    TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
-                    // 粮道近水低地（水淹七军）：水攻禀赋。
-                    TacticCondition.EnemyInLowGround, TacticCondition.WaterworksHeld, TacticCondition.FloodReleased,
-                }, softCapacity: 300),
-                new Zone(Cover, TerrainKind.Cover, new[]
-                {
-                    TacticCondition.IsNight, TacticCondition.StealthSuccess, TacticCondition.DefenderUnaware, TacticCondition.RaiderDisciplineMet,
-                    // 林莽/连营易燃（火烧连营）：火攻禀赋。
-                    TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
-                    // 掩护侧翼利机动伏援（围点打援）：禀赋。
-                    TacticCondition.PointBesieged, TacticCondition.ReliefIntercepted, TacticCondition.AmbushOnRoute,
-                }, softCapacity: 300),
-                new Zone(Reserve, TerrainKind.Plain, Array.Empty<TacticCondition>(), softCapacity: 500),
-            };
-            var adj = new[]
-            {
-                (Front, Flank), (Front, Cover), (Front, Reserve),
-                (Flank, Supply), (Cover, Supply), (Cover, Reserve),
-            };
-            return new BattleField(zones, adj);
+            var zones = new List<Zone> { front };
+            zones.AddRange(SideZones());
+            return new BattleField(zones, StandardAdjacency());
         }
+
+        /// <summary>坚城正面区（城门硬碰 + 诈降赚城禀赋；地形 Fortified → 守方得工事加成）。</summary>
+        internal static Zone FortifiedFront()
+            => new Zone(Front, TerrainKind.Fortified, new[]
+            {
+                // 城门正面可诈降赚城（黄盖诈降）：诈降禀赋。
+                TacticCondition.SurrenderFeigned, TacticCondition.EnemyLuredOpen, TacticCondition.StrikeFromWithin,
+            }, softCapacity: 800);
+
+        /// <summary>通用四区（侧翼隘口 / 敌粮道 / 遮蔽高地 / 预备后方）——逐地形战场共用，仅正面区随地形而异。</summary>
+        internal static Zone[] SideZones() => new[]
+        {
+            new Zone(Flank, TerrainKind.Pass, new[]
+            {
+                TacticCondition.ControlledRetreatKeptFormation, TacticCondition.EnemyPursued, TacticCondition.AmbushSurprise,
+            }, softCapacity: 400),
+            new Zone(Supply, TerrainKind.Plain, new[]
+            {
+                TacticCondition.SupplyLineCut, TacticCondition.ShortageReachedGrace, TacticCondition.EnemyCohesionCrossedThreshold,
+                // 粮营易燃（乌巢烧粮/赤壁烧船）：火攻禀赋。
+                TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
+                // 粮道近水低地（水淹七军）：水攻禀赋。
+                TacticCondition.EnemyInLowGround, TacticCondition.WaterworksHeld, TacticCondition.FloodReleased,
+            }, softCapacity: 300),
+            new Zone(Cover, TerrainKind.Cover, new[]
+            {
+                TacticCondition.IsNight, TacticCondition.StealthSuccess, TacticCondition.DefenderUnaware, TacticCondition.RaiderDisciplineMet,
+                // 林莽/连营易燃（火烧连营）：火攻禀赋。
+                TacticCondition.DryField, TacticCondition.EnemyExposedToFire, TacticCondition.FireIgnited,
+                // 掩护侧翼利机动伏援（围点打援）：禀赋。
+                TacticCondition.PointBesieged, TacticCondition.ReliefIntercepted, TacticCondition.AmbushOnRoute,
+            }, softCapacity: 300),
+            new Zone(Reserve, TerrainKind.Plain, Array.Empty<TacticCondition>(), softCapacity: 500),
+        };
+
+        /// <summary>标准邻接图（正面↔侧翼/掩护/预备；侧翼/掩护↔粮道；掩护↔预备）。</summary>
+        internal static (ZoneId, ZoneId)[] StandardAdjacency() => new[]
+        {
+            (Front, Flank), (Front, Cover), (Front, Reserve),
+            (Flank, Supply), (Cover, Supply), (Cover, Reserve),
+        };
     }
 }
