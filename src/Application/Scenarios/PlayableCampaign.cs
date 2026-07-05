@@ -398,17 +398,19 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>开战固定种子（确定性）。</summary>
         public ulong BattleSeed => 42UL;
 
-        /// <summary>侦察行程时段（GDD_007 派出→在途→返报；默认约 1 日返报，可调）。</summary>
-        public int ScoutLeadSegments => WorldTime.SegmentsPerDay;
+        // 行动时长以"周"计（GDD_026，2026-07-05：一周 = SegmentsPerDay 时段）。多条并行推进 → 每周可下令/调整/应变。
 
-        /// <summary>征用军粮办理时段（GDD_004 派人处理→需时见效；约 1 日，可调）。</summary>
-        public int RequisitionLeadSegments => WorldTime.SegmentsPerDay;
+        /// <summary>侦察行程（GDD_007 派出→在途→返报；约 2 周返报，可调）。</summary>
+        public int ScoutLeadSegments => WorldTime.SegmentsPerDay * 2;
 
-        /// <summary>修工事办理时段（工程较重；约 1 日，可调）。</summary>
-        public int RepairLeadSegments => WorldTime.SegmentsPerDay;
+        /// <summary>征用军粮办理（GDD_004；约 2 周见效，可调）。</summary>
+        public int RequisitionLeadSegments => WorldTime.SegmentsPerDay * 2;
 
-        /// <summary>安抚办理时段（派吏安民较快；约半日，可调）。</summary>
-        public int AppeaseLeadSegments => WorldTime.SegmentsPerDay / 2;
+        /// <summary>修工事办理（工程较重；约 3 周工期，可调）。</summary>
+        public int RepairLeadSegments => WorldTime.SegmentsPerDay * 3;
+
+        /// <summary>安抚办理（派吏安民较快；约 1 周，可调）。</summary>
+        public int AppeaseLeadSegments => WorldTime.SegmentsPerDay;
 
         // ---- 本局玩家席位（#1 运行期身份，取自开局 PlayableStart；默认=汜水关太守）。运行期一律读此，不再硬编码单一场景。----
         private readonly PlayableStart _start;
@@ -555,45 +557,51 @@ namespace ThreeKingdom.Application.Scenarios
 
         private static HistoricalEventCatalog BuildHistory()
         {
+            // 历史事件按<b>公元年</b>在一生里铺开（GDD_026 R2 / 2026-07-05）：窗口 = 该事件史年起 2 年，
+            // 折算为自锚点(190)起的周序（一年 52 周）。早于锚点者归拢到开局年。玩家沿季/年推进逐年遇之。
+            const int Anchor = 190, WPY = 52;
+            WTimeWindow Y(int year, int span = 2)
+            {
+                int from = System.Math.Max(0, year - Anchor) * WPY;
+                int to = System.Math.Max(0, year + span - Anchor) * WPY;
+                if (to <= from) to = from + WPY;
+                return new WTimeWindow(new WorldTime(from, DaySegment.Dawn), new WorldTime(to, DaySegment.Dawn));
+            }
+
             var chibi = new HistoricalEvent(
-                new EventId("evt-chibi"),
-                new WTimeWindow(new WorldTime(0, DaySegment.Dawn), new WorldTime(5, DaySegment.Dawn)),
+                new EventId("evt-chibi"), Y(208),                       // 赤壁 208
                 new[] { Precondition.FactionAliveOf(Sun) },
                 new HistoricalOutcome("historical-chibi"),
                 new HistoricalOutcome("sun-fell-early"),
                 new[] { new EventId("evt-yiling") });
             var yiling = new HistoricalEvent(
-                new EventId("evt-yiling"),
-                new WTimeWindow(new WorldTime(1, DaySegment.Dawn), new WorldTime(8, DaySegment.Dawn)),
+                new EventId("evt-yiling"), Y(222),                      // 夷陵 222
                 new[] { Precondition.FactionAliveOf(Sun) },
                 new HistoricalOutcome("historical-yiling"),
                 new HistoricalOutcome("yiling-diverged"),
                 Array.Empty<EventId>());
-            // 够不着的天下大事（袁术称帝）：玩家圈（触孙权）不及袁术 → 只作通报 + 主角心里话（GDD_015 事件分级）。
-            // 够不着的天下大事（袁术称帝）：玩家圈（触孙权）不及袁术 → 只作通报 + 主角心里话（GDD_015 事件分级）。
+            // 够不着的天下大事（袁术称帝 197）：玩家圈（触孙权）不及袁术 → 只作通报 + 主角心里话（GDD_015 事件分级）。
             var yuanshu = new HistoricalEvent(
-                new EventId("evt-yuanshu-emperor"),
-                new WTimeWindow(new WorldTime(0, DaySegment.Dawn), new WorldTime(4, DaySegment.Dawn)),
+                new EventId("evt-yuanshu-emperor"), Y(197),
                 new[] { Precondition.FactionAliveOf(new FactionId("faction-yuanshu")) },
                 new HistoricalOutcome("yuanshu-declares-emperor"),
                 new HistoricalOutcome("yuanshu-emperor-averted"),
                 Array.Empty<EventId>());
 
-            // 演义主线事件网（够不着→通报+心里话，随人设着色；前置势力皆不在玩家圈内）。
-            HistoricalEvent Notable(string id, int start, int end, FactionId precond, string outcome, string diverged)
-                => new HistoricalEvent(new EventId(id),
-                    new WTimeWindow(new WorldTime(start, DaySegment.Dawn), new WorldTime(end, DaySegment.Dawn)),
+            // 演义主线事件网（够不着→通报+心里话，随人设着色；按史年铺开）。
+            HistoricalEvent Notable(string id, int year, FactionId precond, string outcome, string diverged)
+                => new HistoricalEvent(new EventId(id), Y(year),
                     new[] { Precondition.FactionAliveOf(precond) },
                     new HistoricalOutcome(outcome), new HistoricalOutcome(diverged), Array.Empty<EventId>());
 
-            HistoricalEvent taoyuan = Notable("evt-taoyuan", 0, 3, LiuBei, "taoyuan-oath", "taoyuan-averted");
-            HistoricalEvent dongBurns = Notable("evt-dong-burns", 0, 3, new FactionId("faction-dong"), "dong-zhuo-burns-luoyang", "luoyang-spared");
-            HistoricalEvent wangyun = Notable("evt-wangyun-plot", 1, 4, LuBu, "wang-yun-chain-plot", "dong-zhuo-survives");
-            HistoricalEvent caoEmperor = Notable("evt-cao-emperor", 2, 6, Cao, "cao-cao-controls-emperor", "emperor-free");
-            HistoricalEvent guandu = Notable("evt-guandu", 3, 7, YuanShao, "guandu-cao-wins", "yuanshao-prevails");
-            HistoricalEvent lubuEnd = Notable("evt-lubu-executed", 3, 7, LuBu, "lubu-executed", "lubu-survives");
-            HistoricalEvent sangu = Notable("evt-sangu", 4, 9, LiuBei, "liu-bei-recruits-zhuge", "zhuge-declines");
-            HistoricalEvent guanyu = Notable("evt-guanyu-jingzhou", 6, 12, LiuBei, "guan-yu-loses-jingzhou", "jingzhou-held");
+            HistoricalEvent taoyuan = Notable("evt-taoyuan", 190, LiuBei, "taoyuan-oath", "taoyuan-averted");
+            HistoricalEvent dongBurns = Notable("evt-dong-burns", 190, new FactionId("faction-dong"), "dong-zhuo-burns-luoyang", "luoyang-spared");
+            HistoricalEvent wangyun = Notable("evt-wangyun-plot", 192, LuBu, "wang-yun-chain-plot", "dong-zhuo-survives");
+            HistoricalEvent caoEmperor = Notable("evt-cao-emperor", 196, Cao, "cao-cao-controls-emperor", "emperor-free");
+            HistoricalEvent guandu = Notable("evt-guandu", 200, YuanShao, "guandu-cao-wins", "yuanshao-prevails");
+            HistoricalEvent lubuEnd = Notable("evt-lubu-executed", 199, LuBu, "lubu-executed", "lubu-survives");
+            HistoricalEvent sangu = Notable("evt-sangu", 207, LiuBei, "liu-bei-recruits-zhuge", "zhuge-declines");
+            HistoricalEvent guanyu = Notable("evt-guanyu-jingzhou", 219, LiuBei, "guan-yu-loses-jingzhou", "jingzhou-held");
 
             return HistoricalEventCatalog.TryCreate(new[]
             {

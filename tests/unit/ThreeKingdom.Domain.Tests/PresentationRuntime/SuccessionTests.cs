@@ -30,8 +30,8 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
             var rt = new CampaignRuntime(new InMemorySaveMedium());
             rt.NewGame();
 
-            // 推进约 70 公元年 → 必越大限（寿命上限 55 年）。
-            rt.Advance(WorldTime.SegmentsPerDay * 12 * 70);
+            // 跳时·过 70 年 → 必越大限（寿命上限 55 年）。
+            for (int i = 0; i < 70; i++) rt.AdvanceYear();
             Assert.That(rt.IsLifeOver, Is.True, "数十年后空降者寿终。");
             int deathYear = rt.CurrentYear;
 

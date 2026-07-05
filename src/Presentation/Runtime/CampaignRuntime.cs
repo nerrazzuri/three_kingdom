@@ -89,18 +89,39 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             CampaignSession session = Session;
             int dayBefore = session.CurrentTime.Day;
+            int seasonBefore = Calendar.SeasonsElapsed(session.CurrentTime);
             _service.Advance(session, segments);
             _daysCrossedLastAdvance = session.CurrentTime.Day - dayBefore;
+            int seasonsCrossed = Calendar.SeasonsElapsed(session.CurrentTime) - seasonBefore;
 
             // 天下大势在轨推演（GDD_015）：触发到期历史事件 → 按可达性 + 主角人设产出通报流（含心里话）。
             RefreshEventNotices(session);
 
-            // 君主争霸自动推演（GDD_017/018）：每跨一日群雄兼并一步（强吞弱）；终局既定则止。玩家占城另经 ConcludeOffensive 增领土。
-            for (int d = 0; d < _daysCrossedLastAdvance
-                 && Endgame() == ThreeKingdom.Domain.Contention.EndgameStatus.Ongoing; d++)
+            // 君主争霸自动推演（GDD_017/018）：每跨一季群雄兼并一步（强吞弱，2026-07-05 由日改季）；终局既定则止。
+            for (int s = 0; s < seasonsCrossed
+                 && Endgame() == ThreeKingdom.Domain.Contention.EndgameStatus.Ongoing; s++)
                 AdvanceContention();
             return Status();
         }
+
+        // --- 时间尺度（GDD_026，2026-07-05）：世界地图一步=一周；跳时按季/年，供闲时快进（不必逐周点完一生）。---
+
+        /// <summary>一周折合的时段数（= 一"日"单元；世界步以此为原子）。</summary>
+        private static int WeekSegments => WorldTime.SegmentsPerDay;
+
+        /// <summary>推进一周（世界地图日常步）。</summary>
+        public WorldStatusView AdvanceWeek() => Advance(WeekSegments);
+        /// <summary>跳时·过一季（13 周；争霸推一步、大势按年落季）。</summary>
+        public WorldStatusView AdvanceSeason() => Advance(WeekSegments * Calendar.WeeksPerSeason);
+        /// <summary>跳时·过一年（52 周）。</summary>
+        public WorldStatusView AdvanceYear() => Advance(WeekSegments * Calendar.WeeksPerYear);
+
+        private static readonly string[] SeasonLabels = { "春", "夏", "秋", "冬" };
+
+        /// <summary>当前季序（0春/1夏/2秋/3冬）。</summary>
+        public int CurrentSeason => Calendar.SeasonOfYear(Session.CurrentTime);
+        /// <summary>当前季中文。</summary>
+        public string CurrentSeasonLabel => SeasonLabels[CurrentSeason];
 
         private readonly List<EventNoticeView> _lastNotices = new List<EventNoticeView>();
         private readonly EventReflectionService _reflection = new EventReflectionService();
