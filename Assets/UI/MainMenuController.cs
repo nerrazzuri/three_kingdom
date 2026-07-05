@@ -74,14 +74,13 @@ namespace ThreeKingdom.Unity.UI
         }
 
         /// <summary>
-        /// 「新游戏」端到端竖切：意图→命令载荷接缝演示 + 真实 Application 开局 + 进入 HUD 场景。
-        /// 进 HUD 后 <see cref="HudController"/> 读 <see cref="SessionRuntime"/> 的真实世界状态投影。
+        /// 「新游戏」端到端竖切：意图→命令载荷接缝演示 + 进入开局选择屏。
+        /// 真实 Application 开局由 <see cref="GameSetupController"/> 在选年/选城后发起。
         /// </summary>
         private void StartNewGame(VisualElement root)
         {
             SubmitAndRefresh(root, new NewGameIntent()); // 接缝：意图→StartNewGameCommand 载荷（IntentTranslator）
-            SessionRuntime.NewGame();                    // 真实 Application 用例：开局至第 0 日黎明
-            SceneManager.LoadScene("Hud");               // 进入 HUD（展示真实世界状态，可推进时段）
+            SceneManager.LoadScene("GameSetup");
         }
 
         private void SubmitAndRefresh(VisualElement root, IUiIntent intent)

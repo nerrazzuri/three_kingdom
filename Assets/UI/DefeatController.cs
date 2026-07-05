@@ -33,6 +33,14 @@ namespace ThreeKingdom.Unity.UI
         private void Render()
         {
             _actions.Clear();
+
+            if (!SessionRuntime.IsEliminated())
+            {
+                _status.text = "尚未覆灭，暂无被俘流程。";
+                AddButton("返回主菜单", () => SceneManager.LoadScene(_mainMenuScene));
+                return;
+            }
+
             DefeatFlow flow = SessionRuntime.BeginDefeat();
 
             switch (flow.Stage)

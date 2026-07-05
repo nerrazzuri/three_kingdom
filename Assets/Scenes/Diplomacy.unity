@@ -243,9 +243,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 443369621}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b67ec635684f01a4383ba011552ad186, type: 3}
+  m_Script: {fileID: 11500000, guid: cc4c1abdaf84e5746acfe0b348e69a42, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ThreeKingdom.Unity.UI.AccessibilitySettingsController
+  m_EditorClassIdentifier: Assembly-CSharp::ThreeKingdom.Unity.UI.DiplomacyScreenController
+  _backScene: Hud
 --- !u!114 &443369623
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,7 +261,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
   m_PanelSettings: {fileID: 11400000, guid: e8806f1c496313c4085765606945aaf9, type: 2}
   m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: bdead76c11d3cf14997b2ae4c77c48f8, type: 3}
+  sourceAsset: {fileID: 9197481963319205126, guid: a841b2ee8f44b0c42ae1de2cdbc34d86, type: 3}
   m_SortingOrder: 0
   m_Position: 0
   m_WorldSpaceSizeMode: 1
