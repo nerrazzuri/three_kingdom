@@ -89,17 +89,18 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             CampaignSession session = Session;
             int dayBefore = session.CurrentTime.Day;
-            int seasonBefore = Calendar.SeasonsElapsed(session.CurrentTime);
+            int yearBefore = Calendar.YearsElapsed(session.CurrentTime);
             _service.Advance(session, segments);
             _daysCrossedLastAdvance = session.CurrentTime.Day - dayBefore;
-            int seasonsCrossed = Calendar.SeasonsElapsed(session.CurrentTime) - seasonBefore;
+            int yearsCrossed = Calendar.YearsElapsed(session.CurrentTime) - yearBefore;
 
             // 天下大势在轨推演（GDD_015）：触发到期历史事件 → 按可达性 + 主角人设产出通报流（含心里话）。
             RefreshEventNotices(session);
 
-            // 君主争霸自动推演（GDD_017/018）：每跨一季群雄兼并一步（强吞弱，2026-07-05 由日改季）；终局既定则止。
-            for (int s = 0; s < seasonsCrossed
-                 && Endgame() == ThreeKingdom.Domain.Contention.EndgameStatus.Ongoing; s++)
+            // 君主争霸自动推演（GDD_017/018）：每跨一年至多一次种子化兼并（放慢，2026-07-05：由季改年 + 缓和权重）；
+            // 走向由 AI 涌现自掌、不照搬演义；强弱相当自刹车 → 三/四国鼎立可久持。终局既定则止。
+            for (int y = 0; y < yearsCrossed
+                 && Endgame() == ThreeKingdom.Domain.Contention.EndgameStatus.Ongoing; y++)
                 AdvanceContention();
             return Status();
         }
@@ -610,7 +611,7 @@ namespace ThreeKingdom.Presentation.Runtime
             ulong seed = new StateHasher()
                 .Append(_scenario.OffensiveSeed).Append(Session.CurrentTime.AbsoluteIndex).Append(_contentionSteps++)
                 .ToHash().Value;
-            _service.StepRivalContention(Session, Contend, _scenario.PlayerFaction, seed, ThreeKingdom.Domain.Contention.ContentionConfig.Default);
+            _service.StepRivalContention(Session, Contend, _scenario.PlayerFaction, seed, _scenario.ContentionConfig);
         }
 
         // --- 战略外交（GDD M11 / epic-024）：外交立场约束战争；缔约；背约代价 ---

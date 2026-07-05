@@ -54,6 +54,22 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         }
 
         [Test]
+        public void test_contention_stays_multipolar_for_decades()
+        {
+            // 放慢（GDD_026 2026-07-05：每年至多一次缓和兼并）：天下几十年才渐渐集中，非速统一 → 一生大多时候仍多国鼎立。
+            var runtime = new CampaignRuntime(new InMemorySaveMedium());
+            runtime.NewGame();
+            int rivals0 = AliveRivals(runtime.Contention);
+
+            for (int i = 0; i < 20; i++) runtime.AdvanceYear();   // 过 20 年
+
+            Assert.That(runtime.Endgame(), Is.EqualTo(EndgameStatus.Ongoing), "20 年后天下未定（放慢，走向 AI 自掌）。");
+            int rivals = AliveRivals(runtime.Contention);
+            Assert.That(rivals, Is.GreaterThanOrEqualTo(5), "20 年后仍多国鼎立（≥5 家对手），非速统一。");
+            Assert.That(rivals, Is.LessThanOrEqualTo(rivals0), "确有渐进兼并（对手数不增）。");
+        }
+
+        [Test]
         public void test_endgame_status_is_queryable_during_play()
         {
             var runtime = new CampaignRuntime(new InMemorySaveMedium());

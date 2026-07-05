@@ -156,6 +156,14 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>出征占城归属判定固定种子（确定性）。</summary>
         public ulong OffensiveSeed => 0xC0FFEEUL;
 
+        /// <summary>
+        /// 争霸兼并配置（GDD_026 2026-07-05 放慢）：每年至多一次种子化兼并、权重较缓 → 天下<b>几十年才渐渐集中</b>，
+        /// 非速统一；强弱相当时 (gap/sum) 自刹车 → 三/四国鼎立可久持。走向由 AI 涌现自掌，不照搬演义。
+        /// （Domain 默认 0.8 仍供争霸单测；此为运行期缓和值。）
+        /// </summary>
+        public ThreeKingdom.Domain.Contention.ContentionConfig ContentionConfig
+            => new ThreeKingdom.Domain.Contention.ContentionConfig(FixedPoint.FromFraction(4, 10));
+
         /// <summary>取某武将的气质标签（GDD_025 档案）；无档案则空——随将带入战斗发作。</summary>
         private static IReadOnlyList<GeneralTag> TagsOf(CharacterId c)
             => GeneralDossiers.Find(c)?.Tags is { } t ? new List<GeneralTag>(t) : new List<GeneralTag>();
