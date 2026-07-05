@@ -1,4 +1,5 @@
 using System;
+using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Numerics;
 
 namespace ThreeKingdom.Domain.ZoneBattle
@@ -50,6 +51,8 @@ namespace ThreeKingdom.Domain.ZoneBattle
         public FixedPoint EmergenceMoraleShock { get; }
         /// <summary>守方在坚固地形（城门/关隘正面）的城防战力加成（守城之利：破坚城须真优势而非均势，强化 W5）。</summary>
         public FixedPoint FortifiedDefenseBonus { get; }
+        /// <summary>兵种×地形战力杠杆幅度（W4 #11 / ADR-0011 杠杆非克制）：合地形之兵种按其份额增益、逆地形（如隘口之骑）受抑。</summary>
+        public FixedPoint TroopTerrainBonus { get; }
 
         public ZoneBattleConfig(
             FixedPoint cavalryMinShare, FixedPoint guileMin, FixedPoint disciplineMin,
@@ -57,7 +60,7 @@ namespace ThreeKingdom.Domain.ZoneBattle
             FixedPoint conditionBonusEach, FixedPoint attritionRate, FixedPoint attritionCap, FixedPoint moraleDropOnLoss,
             FixedPoint fatiguePerRound, FixedPoint assaultMod, FixedPoint holdMod, FixedPoint feintMod,
             FixedPoint fatiguePowerWeight, FixedPoint assaultFatigueMul, FixedPoint holdFatigueMul, FixedPoint feintFatigueMul,
-            FixedPoint emergenceMoraleShock, FixedPoint fortifiedDefenseBonus)
+            FixedPoint emergenceMoraleShock, FixedPoint fortifiedDefenseBonus, FixedPoint troopTerrainBonus)
         {
             if (ambushChargeRounds < 1) throw new ArgumentOutOfRangeException(nameof(ambushChargeRounds));
             if (starveRounds < 1) throw new ArgumentOutOfRangeException(nameof(starveRounds));
@@ -80,6 +83,33 @@ namespace ThreeKingdom.Domain.ZoneBattle
             FeintFatigueMul = feintFatigueMul;
             EmergenceMoraleShock = emergenceMoraleShock;
             FortifiedDefenseBonus = fortifiedDefenseBonus;
+            TroopTerrainBonus = troopTerrainBonus;
+        }
+
+        /// <summary>
+        /// 兵种×地形战力乘数（W4 #11 / ADR-0011 <b>杠杆非克制</b>）：合地形之兵种按其份额增益、逆地形之兵种受抑——
+        /// 平原利骑冲、渡口利水战、隘口/林莽骑不得展而利步、坚城步战守成。返回 [0.5,1.5] 附近的乘数（中性 1.0）。
+        /// </summary>
+        public FixedPoint TroopTerrainMul(TroopComposition comp, TerrainKind terrain)
+        {
+            if (comp == null || comp.Total <= 0) return FixedPoint.One;
+            FixedPoint Share(TroopType t) => FixedPoint.FromFraction(comp.Count(t), comp.Total);
+            FixedPoint cav = Share(TroopType.Cavalry);
+            FixedPoint marine = Share(TroopType.Marine);
+            FixedPoint inf = Share(TroopType.Infantry);
+            FixedPoint half = TroopTerrainBonus * FixedPoint.FromFraction(1, 2);
+
+            FixedPoint fav, pen;
+            switch (terrain)
+            {
+                case TerrainKind.Plain: fav = TroopTerrainBonus * cav; pen = FixedPoint.Zero; break;                // 平原利骑冲
+                case TerrainKind.Ford: fav = TroopTerrainBonus * marine; pen = TroopTerrainBonus * cav; break;      // 渡口利水·骑难渡
+                case TerrainKind.Pass: fav = TroopTerrainBonus * inf; pen = TroopTerrainBonus * cav; break;         // 隘口步战·骑不得展
+                case TerrainKind.Cover: fav = TroopTerrainBonus * inf; pen = TroopTerrainBonus * cav; break;        // 林莽步隐·骑受阻
+                case TerrainKind.Fortified: fav = TroopTerrainBonus * inf; pen = half * cav; break;                 // 坚城步战守成
+                default: fav = FixedPoint.Zero; pen = FixedPoint.Zero; break;
+            }
+            return FixedPoint.One + fav - pen;
         }
 
         /// <summary>某姿态战力乘数。</summary>
@@ -130,7 +160,8 @@ namespace ThreeKingdom.Domain.ZoneBattle
             holdFatigueMul: FixedPoint.FromFraction(1, 2),
             feintFatigueMul: FixedPoint.One,
             emergenceMoraleShock: FixedPoint.FromFraction(3, 10),
-            fortifiedDefenseBonus: FixedPoint.FromFraction(35, 100));
+            fortifiedDefenseBonus: FixedPoint.FromFraction(35, 100),
+            troopTerrainBonus: FixedPoint.FromFraction(15, 100));
     }
 
     /// <summary>

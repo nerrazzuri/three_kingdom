@@ -100,12 +100,12 @@ namespace ThreeKingdom.Domain.ZoneBattle
             FixedPoint stratMul = StrategyMultiplier(attackers, roundSeed);
             FixedPoint condBonus = config.ConditionBonusEach * FixedPoint.FromInt(attackerFormedCount) * stratMul;
             FixedPoint condMul = FixedPoint.One + condBonus;
-            FixedPoint attPower = SidePower(attackers, config, roundSeed) * condMul;
+            FixedPoint attPower = SidePower(attackers, config, roundSeed, zone.Terrain) * condMul;
             // 城防之利：守方在坚固地形（城门正面）得工事加成——破坚城须真优势（W5），非均势可下。
             FixedPoint defMul = zone.Terrain == TerrainKind.Fortified
                 ? FixedPoint.One + config.FortifiedDefenseBonus
                 : FixedPoint.One;
-            FixedPoint defPower = SidePower(defenders, config, roundSeed) * defMul;
+            FixedPoint defPower = SidePower(defenders, config, roundSeed, zone.Terrain) * defMul;
 
             // 单方占据：无交战（占据推进目标，如断粮/破口），仅增疲劳。
             if (attackers.Count == 0 || defenders.Count == 0)
@@ -141,7 +141,7 @@ namespace ThreeKingdom.Domain.ZoneBattle
         /// 阵营有效战力：Σ 兵力×士气×姿态×<b>疲劳侵蚀</b>×<b>将领战阵档系数</b>（GDD_025：有档之将带兵杀伤更强，
         /// 系数每回合右偏抽取——低端常见、高端罕见，故名将偶有神勇爆发。无档之将系数中性 1.0）。
         /// </summary>
-        private static FixedPoint SidePower(IReadOnlyList<Detachment> dets, ZoneBattleConfig config, ulong roundSeed)
+        private static FixedPoint SidePower(IReadOnlyList<Detachment> dets, ZoneBattleConfig config, ulong roundSeed, TerrainKind terrain)
         {
             FixedPoint sum = FixedPoint.Zero;
             foreach (Detachment d in dets)
@@ -149,7 +149,9 @@ namespace ThreeKingdom.Domain.ZoneBattle
                 FixedPoint prowess = FixedPoint.One;
                 if (d.General?.Prowess is CombatTier tier)   // 有战阵档 → 种子化右偏抽取杀伤系数（同局可复现）
                     prowess = CombatProwess.Roll(tier, new DeterministicRandom(roundSeed ^ FnvId(d.Id.Value)));
-                sum += FixedPoint.FromInt(d.Strength) * d.Morale * config.PostureMod(d.Posture) * config.FatiguePowerMul(d.Fatigue) * prowess;
+                // 兵种×地形杠杆（W4 #11）：合地形之兵种增益、逆地形受抑（骑利平原、水利渡口、步利隘口坚城）。
+                FixedPoint troopFit = config.TroopTerrainMul(d.Composition, terrain);
+                sum += FixedPoint.FromInt(d.Strength) * d.Morale * config.PostureMod(d.Posture) * config.FatiguePowerMul(d.Fatigue) * prowess * troopFit;
             }
             return sum;
         }
