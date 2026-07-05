@@ -2,6 +2,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <!-- 空降者开局屏（GDD_026）：选锚点年 → 选命名剧本或任选城做太守 → 开局。★需 Unity 编辑器验证。 -->
     <ui:VisualElement name="game-setup" class="setup-root">
+        <ui:Style src="GameSetup.uss" />
         <ui:Label name="setup-title" text="空降三国·择时择地" class="setup-title" />
         <ui:Label name="year-line" text="公元190·讨董之世" class="setup-subtitle" />
 

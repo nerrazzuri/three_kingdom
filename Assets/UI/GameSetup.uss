@@ -1,0 +1,79 @@
+/* 开局屏样式（GDD_026）。核心：整屏纵向弹性布局——标题/标签/提示固定高，城列表占余高内部滚动，
+   底部「就此起家」按钮恒钉底可见。修复：任选一城（36 城）时开局按钮被挤出可视区、外层不滚动的阻塞 bug。
+   色彩沿用 art-bible 占位锚（宣纸白/山水墨/朱批朱红），非最终美术。 */
+.setup-root {
+    flex-grow: 1;
+    height: 100%;
+    padding: 24px;
+    background-color: rgb(229, 226, 216); /* 宣纸白占位 */
+}
+
+.setup-title {
+    flex-shrink: 0;
+    font-size: 30px;
+    color: rgb(45, 42, 36);
+    margin-bottom: 4px;
+}
+
+.setup-subtitle {
+    flex-shrink: 0;
+    font-size: 15px;
+    color: rgb(90, 86, 78);
+    margin-bottom: 12px;
+}
+
+.mode-tabs {
+    flex-shrink: 0;
+    flex-direction: row;
+    margin-bottom: 8px;
+}
+
+.tab-btn {
+    height: 40px;
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.setup-hint {
+    flex-shrink: 0;
+    font-size: 14px;
+    color: rgb(90, 86, 78);
+    white-space: normal;
+    margin-bottom: 8px;
+}
+
+/* 关键：占据剩余高度、内部滚动（min-height:0 允许在弹性父容器内收缩，否则内容会撑高把底栏顶出屏幕）。 */
+.choice-list {
+    flex-grow: 1;
+    min-height: 0;
+    margin-bottom: 12px;
+    background-color: rgb(238, 235, 226);
+}
+
+.choice-row {
+    white-space: normal;
+    margin-bottom: 4px;
+    padding: 6px;
+}
+
+/* 底栏恒钉底可见，不随城列表长度被顶出。 */
+.setup-footer {
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.selection-label {
+    flex-shrink: 1;
+    font-size: 15px;
+    color: rgb(45, 42, 36);
+    white-space: normal;
+}
+
+.start-btn {
+    flex-shrink: 0;
+    height: 48px;
+    min-width: 140px;
+    font-size: 20px;
+}

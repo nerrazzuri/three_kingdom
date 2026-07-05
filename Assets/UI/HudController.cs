@@ -71,6 +71,7 @@ namespace ThreeKingdom.Unity.UI
                     _council = SessionRuntime.CurrentCouncil();  // 知识若变 → 旧军议标过时
                     RenderCouncil(root);
                     RenderLoop(root);                            // 相位/治理/备战/战斗刷新
+                    RenderCareerMission(root);                   // 官阶/手令/君命/人才随时段刷新
                     // 势力覆灭 → 转被俘流程屏（GDD_026 R9：唯身死才终）。
                     if (SessionRuntime.IsEliminated()) SceneManager.LoadScene("Defeat");
                 };
@@ -91,6 +92,12 @@ namespace ThreeKingdom.Unity.UI
             Wire(root, "nav-roster", () => SceneManager.LoadScene("Roster"));
             Wire(root, "nav-diplomacy", () => SceneManager.LoadScene("Diplomacy"));
             Wire(root, "nav-theater", () => SceneManager.LoadScene("Theater"));
+
+            // 生涯·君命·人才（原独立叠加层因遮挡 HUD 已并入本卡，单 UIDocument 无叠加）。
+            Wire(root, "btn-check-mission", () => { var p = SessionRuntime.ResolveMission(); SetLabel(root, "mission-feedback", "君命：" + p); RenderCareerMission(root); });
+            Wire(root, "btn-tribute", () => { bool ok = SessionRuntime.PayTribute(); SetLabel(root, "mission-feedback", ok ? "已上缴军粮" : "非献纳任务或库存不足"); RenderCareerMission(root); });
+            Wire(root, "btn-scout-talents", () => { foreach (string t in KnownTalents) SessionRuntime.RevealTalentScouting(t); RenderCareerMission(root); });
+            RenderCareerMission(root);
 
             // 军议/敌情屏（story-003 / TR-ux-002/003）：从战役会话只读投影渲染；反全知只经玩家知识投影。
             RenderEnemyIntel(root);
@@ -542,6 +549,39 @@ namespace ThreeKingdom.Unity.UI
         /// 未接线面板占位收敛（后续接入后移除）：不再刷屏「接入中」——顶栏给真实目标，未接按钮仅禁用、状态留空。
         /// 军议/敌情/侦察（003）、账本/治理/备战/战斗（004）已接入；残留：外交求援 + 袭扰/伏击（另属子系统）。
         /// </summary>
+        /// <summary>已知可探人才 id（GDD_020 场景登记）；打听后进入视野。</summary>
+        private static readonly string[] KnownTalents = { "talent-wolong", "talent-xiaojiang", "talent-nengli" };
+
+        /// <summary>
+        /// 生涯·君命·人才卡（原 GameStatusPanel 叠加层因遮挡 HUD、拦截点击已废弃，内容并入本 HUD 单一 UIDocument）。
+        /// 官阶/功名/手令容量/君命 取自 GameHudView；人才录反全知无数值。逻辑经 CampaignRuntime（dotnet 已测）。
+        /// </summary>
+        private void RenderCareerMission(VisualElement root)
+        {
+            GameHudView h = SessionRuntime.HudSummary();
+            SetLabel(root, "hud-career", $"{h.RankTitle}（功{h.Merit}/名望{h.Renown}）· 手令 {h.ActionsInFlight}/{h.ActionCapacity}");
+            SetLabel(root, "hud-mission", h.MissionOrder);
+
+            var list = root.Q<ScrollView>("talent-list");
+            if (list == null) return;
+            list.Clear();
+            var talents = SessionRuntime.TalentView().Talents;
+            foreach (TalentRecruitLine t in talents)
+            {
+                string tid = t.TalentId;
+                var b = new Button { text = $"{t.Name}〔{t.SpecialtyLabel}·{t.DifficultyLabel}〕 招揽" };
+                b.clicked += () =>
+                {
+                    bool ok = SessionRuntime.RecruitTalentSimple(tid);
+                    SetLabel(root, "mission-feedback", ok ? $"{t.Name} 出仕入伙！" : $"{t.Name} 未招得");
+                    RenderCareerMission(root);
+                };
+                list.Add(b);
+            }
+            if (talents.Count == 0)
+                list.Add(new Label("尚无可见人才——[打听人才] 或推进时段待其登场。"));
+        }
+
         private static void RenderPendingPanels(VisualElement root)
         {
             // 席位目标随所选开局真实投影（GDD_026；不再硬编码汜水关）。

@@ -36,9 +36,8 @@ namespace ThreeKingdom.Unity.EditorTools
             new ScreenDef { Name = "MainMenu", Uxml = "Assets/UI/MainMenu.uxml", Controller = typeof(MainMenuController) },
             // 开局屏（GDD_026）：选锚点年 + 任选非君主城做太守 → 进 HUD。
             new ScreenDef { Name = "GameSetup", Uxml = "Assets/UI/GameSetup.uxml", Controller = typeof(GameSetupController) },
-            // HUD + 顶栏聚合状态面板（君命/生涯/容量/人才）作叠加层，二者共处一场景。
-            new ScreenDef { Name = "Hud", Uxml = "Assets/UI/Hud.uxml", Controller = typeof(HudController),
-                OverlayUxml = "Assets/UI/GameStatusPanel.uxml", OverlayController = typeof(GameStatusPanelController) },
+            // HUD 单一 UIDocument（生涯/君命/容量/人才已并入 HUD 左列卡，不再用叠加层——叠加层曾遮挡 HUD 并拦截点击）。
+            new ScreenDef { Name = "Hud", Uxml = "Assets/UI/Hud.uxml", Controller = typeof(HudController) },
             // 武将录（反全知无数值）。
             new ScreenDef { Name = "Roster", Uxml = "Assets/UI/Roster.uxml", Controller = typeof(RosterController) },
             // 外交屏（立场 + 缔约/背约）。

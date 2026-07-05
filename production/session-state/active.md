@@ -1,5 +1,39 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## 🔄 进行中（2026-07-05 续13）— computer-use 第3轮验收 + 修两个阻断布局 bug【重启后从这里续】
+
+> **给下一会话：读完本段即可续。核心 dotnet 1135/1135 绿；工程可编译进 Play。**
+>
+> ### 本轮已确认（computer-use 实测）
+> - ★**顶栏 bug 修复 PASS**（续12 的 SeatObjective，提交 a238d31）：选「刘玄德·小沛」→ HUD 顶栏显小沛，非汜水关。
+> - 暂停菜单导航全 PASS；无障碍设置屏工整；出征未授权拒绝文案 PASS；Console 0 error（仅无害 InputManager 提示）。
+>
+> ### 本轮发现两个【阻断】布局 bug → 我已改代码，但 ★未经编辑器验证（提交见下）
+> 1. **HUD 顶部叠加层拦截点击**：GameStatusPanel 是全屏第二 UIDocument，盖住 HUD 顶栏且吃掉点击 →
+>    武将录/外交/多城/推进时段按钮点不到。**根治**：废叠加层，把 4 按钮（结算君命/献纳/打听人才/招揽）+ 官阶/手令/君命
+>    并入 **HUD 左列新卡 `career-mission`**（单 UIDocument）。改动文件：
+>    - `Assets/UI/HudController.cs`：+`RenderCareerMission()` +`KnownTalents` + OnEnable 里 3 个 Wire + advance-time 后刷新。
+>    - `Assets/UI/Hud.uxml`：左列顶部加 `career-mission` 卡（hud-career/hud-mission/btn-check-mission/btn-tribute/btn-scout-talents/mission-feedback/talent-list）。
+>    - `Assets/Editor/SliceSceneBuilder.cs`：Hud 的 ScreenDef 移除 OverlayUxml（不再挂 GameStatusPanel）。
+>    - GameStatusPanel.uxml/Controller 保留但 dormant（不再实例化）。
+> 2. **GameSetup 太守开局按钮够不到**：36 城列表撑高把「就此起家」顶出屏幕、外层不滚动。改：
+>    - 新增 `Assets/UI/GameSetup.uss`（纵向弹性：choice-list flex-grow:1/min-height:0 内部滚动，footer flex-shrink:0 钉底），
+>      `Assets/UI/GameSetup.uxml` 加 `<ui:Style src="GameSetup.uss" />`。
+>
+> ### ⚠️ 下一会话必须做的第一件事（给 computer-use / Codex 的复验指令）
+> **这两个修复只有重跑场景生成器才生效**（Hud.unity 里旧的 GameStatusPanel 叠加 GameObject 要被重建移除）：
+> 1. Unity 里 git pull（若这些提交已推）→ 等编译 → 菜单 **「三国 → 构建 Slice 场景」**重跑一次（关键！）。
+> 2. 复验：命名小沛开局进 HUD → 点 **武将录/外交/多城/推进时段** 应都能点到、无叠加遮挡；HUD 左列有「生涯·君命·人才」卡且 4 按钮可用。
+> 3. 复验：GameSetup「任选一城」选陈留 → **「就此起家」按钮应可见可点** → 进 HUD 顶栏显「陈留太守 · 奉曹操号令」（这张截图上轮没拿到，补上）。
+> 4. 若仍有遮挡/够不到，把整屏截图发来定位。
+>
+> ### 提交（本轮，均已 push tk）
+> - a238d31 顶栏 SeatObjective 修复（续12 尾）
+> - 【本段代码改动的提交哈希见 git log 最新一条：fix(epic-044) HUD 单UIDocument化 + GameSetup 滚动】
+>
+> ### 仍挂起（非阻断，重启后可择机）
+> - Defeat 真实败亡流程未在编辑器触发验证；HUD+布局的美术打磨；战略地图 scaffold 仍停泊 parked/；多锚点年/roster→250/传承谱系（大内容长线）。
+
 ## ✅ 完成（2026-07-05 续12）— Codex 第2轮通过（可进 Play）+ 补齐屏间导航
 
 > **提交 8f48fc5（收纳 Codex 产物）+ ab23839（导航接线）。** Codex 第 2 轮：核心编译 0 error、可进 Play、

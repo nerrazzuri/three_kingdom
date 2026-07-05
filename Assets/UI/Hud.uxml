@@ -41,6 +41,19 @@
         <ui:VisualElement name="hud-main" class="hud-main">
             <ui:ScrollView name="hud-left-scroll" class="hud-col">
                 <ui:VisualElement name="hud-left" class="hud-left">
+                    <!-- 生涯·君命·人才（原独立叠加层因遮挡 HUD 已并入此卡，单 UIDocument 无叠加/无拦截点击）。 -->
+                    <ui:VisualElement name="career-mission" class="card">
+                        <ui:Label text="生涯 · 君命 · 人才" class="card-title" />
+                        <ui:Label name="hud-career" class="hud-note" />
+                        <ui:Label name="hud-mission" text="君命：…" class="hud-note" />
+                        <ui:VisualElement name="mission-actions" class="hud-top">
+                            <ui:Button name="btn-check-mission" text="结算君命" />
+                            <ui:Button name="btn-tribute" text="献纳" />
+                            <ui:Button name="btn-scout-talents" text="打听人才" />
+                        </ui:VisualElement>
+                        <ui:Label name="mission-feedback" class="hud-note" />
+                        <ui:ScrollView name="talent-list" />
+                    </ui:VisualElement>
                     <ui:VisualElement name="own-ledger" class="card">
                         <ui:Label text="己方账本" class="card-title" />
                         <!-- 城市日界结算（GDD_004）多维分列（P6 不合并）。 -->
