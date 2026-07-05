@@ -77,6 +77,10 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             _session = StartNew();
             _daysCrossedLastAdvance = 0;
+            _generation = 0;
+            _lifeStartYearOverride = null;
+            _life = null;
+            _calendar = null;
             return Status();
         }
 
@@ -133,13 +137,37 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>当前公元年（GDD_026：由 WorldTime 派生，存读档一致）。</summary>
         public int CurrentYear => Calendar.YearOf(Session.CurrentTime);
 
-        /// <summary>本局空降者的一生（入场年龄/寿命；由会话 id 种子化确定性派生，重开新局才变）。</summary>
+        /// <summary>
+        /// 本局空降者的一生（入场年龄/寿命；种子化确定性派生）。传承后为子嗣一世——世代数扰动种子、起始年改当前年。
+        /// </summary>
         private ArrivalLife Life => _life ??= ArrivalLife.Roll(
-            PersonaSeed(Session.Id) ^ 0x11FE_5A1Dul, _scenario.AnchorYear, ArrivalLifeConfig.Default);
+            PersonaSeed(Session.Id) ^ 0x11FE_5A1Dul ^ (ulong)_generation,
+            _lifeStartYearOverride ?? _scenario.AnchorYear, ArrivalLifeConfig.Default);
         private ArrivalLife? _life;
+        private int _generation;
+        private int? _lifeStartYearOverride;
+
+        /// <summary>当前世代（0=开局空降者，1+=历代子嗣）。</summary>
+        public int Generation => _generation;
+
+        /// <summary>当前空降者是否已寿终（一世自然落幕，可传承续局）。</summary>
+        public bool IsLifeOver => Life.IsOver(CurrentYear);
 
         /// <summary>空降者一生视图（当前公元年/年龄/人生阶段/是否寿终；定性档，不给精确倒计时）。</summary>
         public ArrivalLifeView LifeView() => new ArrivalLifeView(CurrentYear, Life);
+
+        /// <summary>
+        /// 传承（GDD_026 R6）：寿终后由子嗣续局——同世界、同治所、生涯基业延续，新一世自<b>当前公元年</b>弱冠起、寿命另掷。
+        /// 尚未寿终则抛（寿终方可传）。返回新一世视图。世界/生涯态不重置——只是执掌者换了一代人。
+        /// </summary>
+        public ArrivalLifeView SucceedHeir()
+        {
+            if (!IsLifeOver) throw new InvalidOperationException("尚未寿终，不能传承。");
+            _generation++;
+            _lifeStartYearOverride = CurrentYear;
+            _life = null;   // 以新世代种子/起始年重掷一生
+            return LifeView();
+        }
 
         // --- 主角人设（GDD_015：开局随机人设，给天下事件"心里话"着色）。由会话 id 确定性派生 → 存读档一致，无需新存档字段。---
 
