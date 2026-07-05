@@ -164,6 +164,17 @@ namespace ThreeKingdom.Application.Scenarios
             return life.Value.Birth + serviceMinAge <= year && year <= life.Value.Death;
         }
 
+        /// <summary>某锚点年全部布防对（部将→任职城；未过滤在世，供地图投影自行按当前年过滤）。当前仅 190 有数据。</summary>
+        public static IReadOnlyList<(CharacterId General, CityId City)> AllPlacements(int anchorYear)
+        {
+            var result = new List<(CharacterId, CityId)>();
+            if (anchorYear != 190) return result;
+            foreach (KeyValuePair<string, string> kv in Placement190)
+                result.Add((new CharacterId(kv.Key), new CityId(kv.Value)));
+            result.Sort((a, b) => string.CompareOrdinal(a.Item1.Value, b.Item1.Value));
+            return result;
+        }
+
         /// <summary>某锚点年、某城在职的部将（GDD_026 R4；反全知外壳另投影）。当前仅 190 有布防数据，余年返回空。</summary>
         public static IReadOnlyList<CharacterId> GeneralsAt(CityId city, int anchorYear)
         {

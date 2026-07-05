@@ -94,10 +94,14 @@ namespace ThreeKingdom.Presentation.CampaignMap
                     IsPlayerControlled = f.IsPlayer,
                 });
 
+            var heroes = new List<HeroPositionViewModel>();
+            foreach (ScreenViews.MapHeroCell h in map.Heroes)
+                heroes.Add(ToHero(h));
+
             return new MapSnapshot
             {
                 Territories = territories,
-                HeroPositions = new List<HeroPositionViewModel>(),   // MVP：地图棋子后续
+                HeroPositions = heroes,   // 在场武将棋子（按城摆位，立绘经 Addressables 后续）
                 Factions = factions,
                 CurrentWeather = WeatherType.Clear,
                 CurrentTurn = map.Year,
@@ -113,7 +117,23 @@ namespace ThreeKingdom.Presentation.CampaignMap
             return null;
         }
 
-        public HeroTokenViewModel GetHero(string heroId) => null;   // MVP：地图英雄后续
+        public HeroTokenViewModel GetHero(string heroId)
+        {
+            foreach (ScreenViews.MapHeroCell h in SessionRuntime.MapView().Heroes)
+                if (h.HeroId == heroId) return ToHero(h).ToViewModel();
+            return null;
+        }
+
+        private static HeroPositionViewModel ToHero(ScreenViews.MapHeroCell h) => new HeroPositionViewModel
+        {
+            HeroId = h.HeroId,
+            HeroNameChinese = h.HeroName,
+            FactionId = h.FactionId,
+            TerritoryId = h.CityId,
+            MoveRange = 2,
+            PortraitSprite = null,   // 经 Addressables 按 HeroId 异步加载（美术后续）
+            InitialWorldPosition = GetWorldPosition(h.CityId),
+        };
 
         private static TerritoryViewModel ToTerritory(ScreenViews.MapCityCell c) => new TerritoryViewModel
         {

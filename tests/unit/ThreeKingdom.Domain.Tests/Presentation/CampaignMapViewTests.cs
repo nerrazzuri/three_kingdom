@@ -55,5 +55,31 @@ namespace ThreeKingdom.Domain.Tests.Presentation
             Assert.That(cao.FactionName, Is.EqualTo("曹操"));
             Assert.That(cao.CityCount, Is.EqualTo(4), "曹操 4 城。");
         }
+
+        [Test]
+        public void test_map_places_available_heroes_on_their_cities()
+        {
+            var rt = new CampaignRuntime(new InMemorySaveMedium());
+            rt.NewGame();
+            CampaignMapView map = rt.MapView();
+
+            Assert.That(map.Heroes.Count, Is.GreaterThan(0), "地图上有在场武将棋子。");
+            MapHeroCell guanyu = null!;
+            foreach (MapHeroCell h in map.Heroes) if (h.HeroId == "char-guanyu") guanyu = h;
+            Assert.That(guanyu, Is.Not.Null, "关羽 190 在场。");
+            Assert.That(guanyu.HeroName, Is.EqualTo("关羽"));
+            Assert.That(guanyu.CityId, Is.EqualTo("city-xiaopei"), "随刘备在小沛。");
+            Assert.That(guanyu.FactionId, Is.EqualTo(PlayableCampaign.LiuBei.Value), "效力随所在城归属（刘备）。");
+
+            // 董卓 190 在场（洛阳）；诸葛亮 190 尚幼 → 不在图。
+            bool hasDong = false, hasKongming = false;
+            foreach (MapHeroCell h in map.Heroes)
+            {
+                if (h.HeroId == "char-dongzhuo") hasDong = true;
+                if (h.HeroId == "char-zhugeliang") hasKongming = true;
+            }
+            Assert.That(hasDong, Is.True, "董卓 190 在场。");
+            Assert.That(hasKongming, Is.False, "孔明 190 尚幼未出仕 → 不在图（生卒驱动）。");
+        }
     }
 }

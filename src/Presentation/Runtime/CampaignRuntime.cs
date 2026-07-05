@@ -190,7 +190,7 @@ namespace ThreeKingdom.Presentation.Runtime
 
         /// <summary>战略大地图投影（城归属 + 势力 + 纪元；供 campaign map 表现层）。</summary>
         public CampaignMapView MapView()
-            => CampaignMapView.Build(Session.World, Contend, _scenario.PlayerFaction, CurrentYear, CurrentSeasonLabel);
+            => CampaignMapView.Build(Session.World, Contend, _scenario.PlayerFaction, CurrentYear, _scenario.AnchorYear, CurrentSeasonLabel);
 
         // --- 君主任务（GDD_014 / W5）：君主主动派讨伐/守土/献纳，完成累积功绩通往晋升。生成/评估确定性。---
 

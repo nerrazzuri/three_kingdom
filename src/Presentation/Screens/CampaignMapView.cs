@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ThreeKingdom.Application.Scenarios;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.City;
 using ThreeKingdom.Domain.Contention;
 using ThreeKingdom.Domain.Map;
@@ -23,6 +24,23 @@ namespace ThreeKingdom.Presentation.Screens
             OwnerFactionId = ownerFactionId;
             OwnerName = ownerName;
             IsCapital = isCapital;
+        }
+    }
+
+    /// <summary>战略地图·一员在场武将的投影：id + 中文名 + 所在城 + 效力势力（随城归属）。坐标/立绘由 Unity 侧补。</summary>
+    public sealed class MapHeroCell
+    {
+        public string HeroId { get; }
+        public string HeroName { get; }
+        public string CityId { get; }
+        public string FactionId { get; }
+
+        internal MapHeroCell(string heroId, string heroName, string cityId, string factionId)
+        {
+            HeroId = heroId;
+            HeroName = heroName;
+            CityId = cityId;
+            FactionId = factionId;
         }
     }
 
@@ -54,15 +72,19 @@ namespace ThreeKingdom.Presentation.Screens
         public IReadOnlyList<MapCityCell> Cities { get; }
         /// <summary>存续势力（按争霸态）。</summary>
         public IReadOnlyList<MapFactionCell> Factions { get; }
+        /// <summary>在场武将棋子（按当前年在世 + 布防城；效力势力随城归属）。</summary>
+        public IReadOnlyList<MapHeroCell> Heroes { get; }
         /// <summary>当前公元年。</summary>
         public int Year { get; }
         /// <summary>当前季（春/夏/秋/冬）。</summary>
         public string Season { get; }
 
-        private CampaignMapView(IReadOnlyList<MapCityCell> cities, IReadOnlyList<MapFactionCell> factions, int year, string season)
+        private CampaignMapView(IReadOnlyList<MapCityCell> cities, IReadOnlyList<MapFactionCell> factions,
+            IReadOnlyList<MapHeroCell> heroes, int year, string season)
         {
             Cities = cities;
             Factions = factions;
+            Heroes = heroes;
             Year = year;
             Season = season;
         }
@@ -71,7 +93,8 @@ namespace ThreeKingdom.Presentation.Screens
         /// 从世界态构造地图投影：城归属取 <paramref name="world"/>（当前控制权），势力领城数取 <paramref name="contention"/>，
         /// 玩家势力标记 <paramref name="playerFaction"/>。中文名经 DisplayNames。
         /// </summary>
-        public static CampaignMapView Build(WorldState world, ContentionState contention, FactionId playerFaction, int year, string season)
+        public static CampaignMapView Build(
+            WorldState world, ContentionState contention, FactionId playerFaction, int currentYear, int anchorYear, string season)
         {
             var cities = new List<MapCityCell>();
             foreach (CityId c in PlayableCampaign.AllWorldCities())
@@ -93,7 +116,16 @@ namespace ThreeKingdom.Presentation.Screens
                         p.Faction.Value, DisplayNames.Of(p.Faction.Value), p.Cities, p.Faction == playerFaction));
                 }
 
-            return new CampaignMapView(cities, factions, year, season);
+            // 在场武将棋子：该锚点年布防 ∩ 当前年在世；效力势力随其所在城当前归属（占城则易主）。
+            var heroes = new List<MapHeroCell>();
+            foreach ((CharacterId g, CityId city) in GeneralDossiers.AllPlacements(anchorYear))
+            {
+                if (!GeneralDossiers.AvailableAt(g, currentYear)) continue;   // 已故/未出仕 → 不在图
+                FactionId? owner = world?.OwnershipOf(city)?.Owner;
+                heroes.Add(new MapHeroCell(g.Value, DisplayNames.Of(g.Value), city.Value, owner?.Value ?? string.Empty));
+            }
+
+            return new CampaignMapView(cities, factions, heroes, currentYear, season);
         }
     }
 }
