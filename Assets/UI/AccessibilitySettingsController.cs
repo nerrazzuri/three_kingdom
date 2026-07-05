@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using ThreeKingdom.Presentation.Accessibility;
 using ThreeKingdom.Presentation.Screens;
@@ -15,6 +16,9 @@ namespace ThreeKingdom.Unity.UI
     [RequireComponent(typeof(UIDocument))]
     public sealed class AccessibilitySettingsController : MonoBehaviour
     {
+        /// <summary>「返回」目标场景（由打开本屏的场景设定；默认回主菜单）。镜像 ZoneBattleSession.ReturnScene。</summary>
+        public static string ReturnScene = "MainMenu";
+
         // 色盲模式中文显示。
         private static readonly System.Collections.Generic.Dictionary<ColorblindMode, string> ColorblindLabels =
             new System.Collections.Generic.Dictionary<ColorblindMode, string>
@@ -52,7 +56,7 @@ namespace ThreeKingdom.Unity.UI
             var reduce = _root.Q<Toggle>("reduce-motion-toggle");
             if (reduce != null) reduce.RegisterValueChangedCallback(_ => Mutate(_vm.ToggleReduceMotion()));
 
-            Wire("back", () => { /* slice 演示：返回由场景流处理 */ Debug.Log("[Settings] 返回"); });
+            Wire("back", () => SceneManager.LoadScene(ReturnScene));
 
             Render();
         }

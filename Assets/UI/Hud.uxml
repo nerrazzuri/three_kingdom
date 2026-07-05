@@ -29,6 +29,12 @@
                 <ui:Label name="advance-note" class="hud-note" />
                 <ui:Label name="save-status" class="hud-note" />
             </ui:VisualElement>
+            <!-- 屏间导航（到独立场景屏）：武将录 / 外交 / 多城战区。返回各屏回本 HUD。 -->
+            <ui:VisualElement name="hud-nav" class="hud-top">
+                <ui:Button name="nav-roster" text="武将录" />
+                <ui:Button name="nav-diplomacy" text="外交" />
+                <ui:Button name="nav-theater" text="多城战区" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- 主区：左右双列，各自可滚动，占满中部剩余空间 -->

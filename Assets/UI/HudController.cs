@@ -87,6 +87,11 @@ namespace ThreeKingdom.Unity.UI
             var toMenu = root.Q<Button>("to-menu");
             if (toMenu != null) toMenu.clicked += () => SceneManager.LoadScene("MainMenu");
 
+            // 屏间导航到独立场景屏（各屏 _backScene 默认回 "Hud"）。
+            Wire(root, "nav-roster", () => SceneManager.LoadScene("Roster"));
+            Wire(root, "nav-diplomacy", () => SceneManager.LoadScene("Diplomacy"));
+            Wire(root, "nav-theater", () => SceneManager.LoadScene("Theater"));
+
             // 军议/敌情屏（story-003 / TR-ux-002/003）：从战役会话只读投影渲染；反全知只经玩家知识投影。
             RenderEnemyIntel(root);
             RenderCouncil(root);

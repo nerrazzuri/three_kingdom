@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using ThreeKingdom.Presentation.Screens;
 
@@ -24,10 +25,20 @@ namespace ThreeKingdom.Unity.UI
             // 无障碍横切挂接（story-005）：文本缩放/色盲/减少动态。
             AccessibilityApplier.Apply(root, AccessibilityRuntime.Current);
 
+            // 继续游戏 / 设置：场景流导航（暂停菜单为独立场景）。
+            Wire(root, "resume", () => SceneManager.LoadScene("Hud"));
+            Wire(root, "settings", () =>
+            {
+                AccessibilitySettingsController.ReturnScene = "PauseMenu";  // 返回回到暂停菜单
+                SceneManager.LoadScene("AccessibilitySettings");
+            });
+
             Wire(root, "quit", () =>
             {
                 _vm = _vm.RequestExitOrLoad();
                 Render(root);
+                // 无草稿阻挡则退出到主菜单（有草稿时先由 draft-prompt 提示处置，不导航）。
+                if (!_vm.RequiresDraftDisposition) SceneManager.LoadScene("MainMenu");
             });
             Wire(root, "load", () =>
             {
