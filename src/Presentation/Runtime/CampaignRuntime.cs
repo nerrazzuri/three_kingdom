@@ -85,6 +85,8 @@ namespace ThreeKingdom.Presentation.Runtime
             _defeat = null;
             _capitalOverride = null;
             _rebelled = false;
+            _mission = null;
+            _missionCount = 0;
             return Status();
         }
 
@@ -184,6 +186,66 @@ namespace ThreeKingdom.Presentation.Runtime
 
         /// <summary>生涯视图（GDD_014 / W5）：官阶中文头衔 + 功绩/名望 + 是否在野。</summary>
         public CareerView CareerView() => new CareerView(Session.Career.Career);
+
+        // --- 君主任务（GDD_014 / W5）：君主主动派讨伐/守土/献纳，完成累积功绩通往晋升。生成/评估确定性。---
+
+        private readonly LordMissionService _missionService = new LordMissionService();
+        private LordMission? _mission;
+        private int _missionCount;
+
+        /// <summary>当前君主任务（无则种子化派发一道，按官阶+情势+当前年，确定性）。</summary>
+        public LordMission CurrentMission()
+        {
+            if (_mission == null)
+            {
+                ulong seed = PersonaSeed(Session.Id) ^ 0xA55127EDUL
+                    ^ ((ulong)(CurrentYear + 1) * 2654435761UL) ^ ((ulong)(_missionCount + 1) * 40503UL);
+                _mission = _missionService.Generate(
+                    Session.Career.Career.Rank, CurrentYear, _scenario.OffensiveTargetCities, EffectiveCapital,
+                    seed, LordMissionConfig.Default);
+            }
+            return _mission;
+        }
+
+        /// <summary>当前君主任务展示视图（中文类型/目标/期限）。</summary>
+        public LordMissionView CurrentMissionView() => new LordMissionView(CurrentMission(), CurrentYear);
+
+        /// <summary>
+        /// 评估当前任务进度并结算：完成 → 计生涯功绩（LordMissionComplete，通往晋升）并可接新任务；
+        /// 失败（逾期/失守）→ 撤任务（名望罚待后续）。返回进度。
+        /// </summary>
+        public MissionProgress CheckMission()
+        {
+            LordMission m = CurrentMission();
+            bool owns;
+            switch (m.Type)
+            {
+                case MissionType.Subjugate:
+                    owns = m.TargetCity.HasValue && Session.World.OwnershipOf(m.TargetCity.Value)?.Owner == _scenario.PlayerFaction;
+                    break;
+                case MissionType.Defend:
+                    owns = Session.World.OwnershipOf(EffectiveCapital)?.Owner == _scenario.PlayerFaction;
+                    break;
+                default:
+                    owns = false;
+                    break;
+            }
+            long grain = Session.CityEconomy?.Stock ?? 0;
+            MissionProgress p = _missionService.Evaluate(m, CurrentYear, new MissionContext(owns, grain));
+
+            if (p == MissionProgress.Completed)
+            {
+                _service.ApplyCareerGain(Session, _scenario.Ladder, CareerGainSource.LordMissionComplete);
+                _mission = null;
+                _missionCount++;
+            }
+            else if (p == MissionProgress.Failed)
+            {
+                _mission = null;
+                _missionCount++;
+            }
+            return p;
+        }
 
         /// <summary>
         /// 传承（GDD_026 R6）：寿终后由子嗣续局——同世界、同治所、生涯基业延续，新一世自<b>当前公元年</b>弱冠起、寿命另掷。

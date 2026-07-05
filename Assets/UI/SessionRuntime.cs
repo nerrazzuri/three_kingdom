@@ -253,5 +253,10 @@ namespace ThreeKingdom.Unity.UI
 
         /// <summary>生涯视图（官阶中文头衔 + 功绩/名望 + 是否在野）。</summary>
         public static CareerView Career() => _runtime.CareerView();
+
+        /// <summary>当前君主任务展示（讨伐/守土/献纳 + 目标 + 期限）。</summary>
+        public static LordMissionView Mission() => _runtime.CurrentMissionView();
+        /// <summary>评估并结算当前君主任务（完成计功绩、失败撤任务）；返回进度。</summary>
+        public static ThreeKingdom.Domain.Career.MissionProgress CheckMission() => _runtime.CheckMission();
     }
 }
