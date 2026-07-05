@@ -20,9 +20,11 @@ namespace ThreeKingdom.Domain.Characters
         public EraStage Stage { get; }
         /// <summary>战阵档（GDD_025）：带兵杀伤强度粗档，隐藏、不显示。驱动战斗杀伤系数右偏抽取。</summary>
         public CombatTier Prowess { get; }
+        /// <summary>谋略档（GDD_025）：计谋强度粗档，隐藏、不显示。乘进兵法条件加成（诸葛之计比马谡更狠）。</summary>
+        public StrategyTier Strategy { get; }
 
         public GeneralDossier(CharacterId id, IReadOnlyList<GeneralTag> tags, LoyaltyLeaning leaning, Ambition ambition,
-            CombatTier prowess = CombatTier.Ordinary, EraStage stage = EraStage.Prime)
+            CombatTier prowess = CombatTier.Ordinary, StrategyTier strategy = StrategyTier.Plain, EraStage stage = EraStage.Prime)
         {
             if (tags is null) throw new ArgumentNullException(nameof(tags));
             _tags = new HashSet<GeneralTag>(tags);
@@ -30,6 +32,7 @@ namespace ThreeKingdom.Domain.Characters
             Leaning = leaning;
             Ambition = ambition;
             Prowess = prowess;
+            Strategy = strategy;
             Stage = stage;
         }
 

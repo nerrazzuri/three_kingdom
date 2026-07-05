@@ -77,6 +77,42 @@ namespace ThreeKingdom.Domain.Tests.ZoneBattle
             }
         }
 
+        // ---- 谋略档：经天纬地之谋帅成型兵法威力 > 愚钝之将同兵法（计谋系数放大条件加成，诸葛>马谡）----
+        private static Detachment StratLed(StrategyTier strat, ZoneId at)
+        {
+            // 智略 0.7 ≥ 门 0.6 → 干燥天时下火攻成型；主谋谋略档决定该兵法加成的放大倍率。
+            var gen = new OffensiveGeneral(new CharacterId("g"), F(5, 10), F(5, 10), F(7, 10),
+                GeneralSpecialty.None, null, null, strat);
+            return new Detachment(new DetachmentId("a"), BattleSide.Attacker, gen,
+                TroopComposition.AllInfantry(1000), 1000, F(8, 10), F(2, 10), Posture.Assault, at);
+        }
+
+        private static int StratDefLoss(StrategyTier strat, ulong seed)
+        {
+            // 攻强守弱且不悬殊 → 攻方两案均胜、比值未饱和于减员上限；差异纯由计谋系数放大兵法加成而来。
+            var def = new Detachment(new DetachmentId("d"), BattleSide.Defender, null,
+                TroopComposition.AllInfantry(1000), 1000, F(65, 100), F(1, 10), Posture.Hold, BattleField.Supply);
+            var s = new ZoneBattleState(BattleField.Default(),
+                new[] { StratLed(strat, BattleField.Supply), def },
+                Array.Empty<ZoneEngagementState>(),
+                new ThreeKingdom.Domain.ZoneBattle.BattleClock(1, 6), BattleSide.Attacker, seed);
+            var svc = new RoundResolutionService();
+            ZoneBattleState after = svc.ResolveRound(s, Dry(), ZoneBattleConfig.Default).State;   // 干燥 → 火攻可成型
+            return 1000 - after.TryGet(new DetachmentId("d"))!.Strength;
+        }
+
+        [Test]
+        public void test_master_strategist_amplifies_tactics_more_than_dull()
+        {
+            foreach (ulong seed in new ulong[] { 1UL, 7UL, 42UL, 100UL })
+            {
+                int master = StratDefLoss(StrategyTier.Master, seed);
+                int dull = StratDefLoss(StrategyTier.Dull, seed);
+                Assert.That(master, Is.GreaterThan(dull),
+                    $"seed{seed}：经天纬地之谋帅成型兵法威力 > 愚钝之将同兵法（谋略档→放大条件加成，诸葛>马谡）。");
+            }
+        }
+
         [Test]
         public void test_cunning_tag_forms_fire_despite_low_guile()
         {

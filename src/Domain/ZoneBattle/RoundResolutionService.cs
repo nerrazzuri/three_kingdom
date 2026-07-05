@@ -95,7 +95,11 @@ namespace ThreeKingdom.Domain.ZoneBattle
             }
             if (attackers.Count == 0 && defenders.Count == 0) return;
 
-            FixedPoint condMul = FixedPoint.One + config.ConditionBonusEach * FixedPoint.FromInt(attackerFormedCount);
+            // 已成型兵法的战力加成，再乘攻方主谋的<b>计谋系数</b>（GDD_025 谋略档：诸葛之计比马谡同计更狠，
+            // 偶有"一计定乾坤"；无谋帅档则中性 1.0）。系数每回合右偏抽取，确定性可复现。
+            FixedPoint stratMul = StrategyMultiplier(attackers, roundSeed);
+            FixedPoint condBonus = config.ConditionBonusEach * FixedPoint.FromInt(attackerFormedCount) * stratMul;
+            FixedPoint condMul = FixedPoint.One + condBonus;
             FixedPoint attPower = SidePower(attackers, config, roundSeed) * condMul;
             // 城防之利：守方在坚固地形（城门正面）得工事加成——破坚城须真优势（W5），非均势可下。
             FixedPoint defMul = zone.Terrain == TerrainKind.Fortified
@@ -148,6 +152,28 @@ namespace ThreeKingdom.Domain.ZoneBattle
                 sum += FixedPoint.FromInt(d.Strength) * d.Morale * config.PostureMod(d.Posture) * config.FatiguePowerMul(d.Fatigue) * prowess;
             }
             return sum;
+        }
+
+        /// <summary>
+        /// 攻方计谋系数（GDD_025 谋略档）：取在场攻方将领<b>最高</b>谋略档为主谋，种子化右偏抽取一系数放大兵法加成。
+        /// 无一将带谋略档 → 中性 1.0（不放大不削减）。种子分流于战阵档（异或黄金比常量），同局可复现。
+        /// </summary>
+        private static FixedPoint StrategyMultiplier(IReadOnlyList<Detachment> attackers, ulong roundSeed)
+        {
+            bool has = false;
+            StrategyTier best = StrategyTier.Dull;
+            string bestId = "";
+            foreach (Detachment d in attackers)
+            {
+                if (d.General?.Strategy is StrategyTier t)
+                {
+                    if (!has || t > best) { best = t; bestId = d.Id.Value; }
+                    has = true;
+                }
+            }
+            if (!has) return FixedPoint.One;
+            ulong seed = roundSeed ^ FnvId(bestId) ^ 0x9E3779B97F4A7C15UL;
+            return CombatProwess.RollStrategy(best, new DeterministicRandom(seed));
         }
 
         /// <summary>支队 id 稳定散列（FNV-1a，供将领战阵档系数种子分派，确定性）。</summary>

@@ -36,6 +36,9 @@ namespace ThreeKingdom.Domain.Conquest
         /// <summary>战阵档（GDD_025，可空）：带兵杀伤强度粗档，驱动杀伤系数右偏抽取。null=无档（不加成，中性 1.0）。</summary>
         public CombatTier? Prowess { get; }
 
+        /// <summary>谋略档（GDD_025，可空）：计谋强度粗档，乘进已成型兵法的战力加成。null=无档（不放大，中性）。</summary>
+        public StrategyTier? Strategy { get; }
+
         /// <summary>是否带某气质标签（GDD_025）。</summary>
         public bool HasTag(GeneralTag tag)
         {
@@ -47,7 +50,7 @@ namespace ThreeKingdom.Domain.Conquest
         public OffensiveGeneral(
             CharacterId character, FixedPoint command, FixedPoint valor, FixedPoint guile,
             GeneralSpecialty specialty = GeneralSpecialty.None, IReadOnlyList<GeneralTag>? tags = null,
-            CombatTier? prowess = null)
+            CombatTier? prowess = null, StrategyTier? strategy = null)
         {
             Require01(command, nameof(command));
             Require01(valor, nameof(valor));
@@ -59,6 +62,7 @@ namespace ThreeKingdom.Domain.Conquest
             Specialty = specialty;
             _tags = tags != null ? new List<GeneralTag>(tags).ToArray() : Array.Empty<GeneralTag>();
             Prowess = prowess;
+            Strategy = strategy;
         }
 
         private static void Require01(FixedPoint v, string name)
