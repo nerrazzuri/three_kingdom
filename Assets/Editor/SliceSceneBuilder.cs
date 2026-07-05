@@ -26,14 +26,29 @@ namespace ThreeKingdom.Unity.EditorTools
             public string Name;
             public string Uxml;
             public Type Controller;
+            // 可选叠加层：同场景内第二个 UIDocument（如 HUD 顶栏聚合状态面板），其 UXML 应自锚顶部。
+            public string OverlayUxml;
+            public Type OverlayController;
         }
 
         private static readonly ScreenDef[] Screens =
         {
             new ScreenDef { Name = "MainMenu", Uxml = "Assets/UI/MainMenu.uxml", Controller = typeof(MainMenuController) },
-            new ScreenDef { Name = "Hud", Uxml = "Assets/UI/Hud.uxml", Controller = typeof(HudController) },
+            // 开局屏（GDD_026）：选锚点年 + 任选非君主城做太守 → 进 HUD。
+            new ScreenDef { Name = "GameSetup", Uxml = "Assets/UI/GameSetup.uxml", Controller = typeof(GameSetupController) },
+            // HUD + 顶栏聚合状态面板（君命/生涯/容量/人才）作叠加层，二者共处一场景。
+            new ScreenDef { Name = "Hud", Uxml = "Assets/UI/Hud.uxml", Controller = typeof(HudController),
+                OverlayUxml = "Assets/UI/GameStatusPanel.uxml", OverlayController = typeof(GameStatusPanelController) },
+            // 武将录（反全知无数值）。
+            new ScreenDef { Name = "Roster", Uxml = "Assets/UI/Roster.uxml", Controller = typeof(RosterController) },
+            // 外交屏（立场 + 缔约/背约）。
+            new ScreenDef { Name = "Diplomacy", Uxml = "Assets/UI/DiplomacyScreen.uxml", Controller = typeof(DiplomacyScreenController) },
+            // 多城战区屏（直辖/委任城）。
+            new ScreenDef { Name = "Theater", Uxml = "Assets/UI/TheaterScreen.uxml", Controller = typeof(TheaterScreenController) },
             // 独立区域战斗场景（GDD_021 / epic-031）：出征/守城从 HUD 进入此屏排兵布阵，结算后返回 HUD。
             new ScreenDef { Name = "ZoneBattle", Uxml = "Assets/UI/ZoneBattle.uxml", Controller = typeof(ZoneBattleController) },
+            // 被灭续局屏（被俘→判生死→归顺/投奔→复位续局 / 传承）。
+            new ScreenDef { Name = "Defeat", Uxml = "Assets/UI/Defeat.uxml", Controller = typeof(DefeatController) },
             new ScreenDef { Name = "PauseMenu", Uxml = "Assets/UI/PauseMenu.uxml", Controller = typeof(PauseMenuController) },
             // story-005 无障碍设置面板：自我演示屏（改设置即时应用文本缩放/色盲/减少动态到本屏）。
             new ScreenDef { Name = "AccessibilitySettings", Uxml = "Assets/UI/AccessibilitySettings.uxml", Controller = typeof(AccessibilitySettingsController) },
@@ -62,6 +77,17 @@ namespace ThreeKingdom.Unity.EditorTools
                 doc.panelSettings = panel;
                 doc.visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(screen.Uxml);
                 go.AddComponent(screen.Controller);
+
+                // 可选叠加层（第二 UIDocument，同场景）——如 HUD 顶栏状态面板。
+                if (!string.IsNullOrEmpty(screen.OverlayUxml))
+                {
+                    var overlay = new GameObject("UI-Overlay");
+                    var odoc = overlay.AddComponent<UIDocument>();
+                    odoc.panelSettings = panel;
+                    odoc.sortingOrder = 1; // 叠加在主屏之上
+                    odoc.visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(screen.OverlayUxml);
+                    if (screen.OverlayController != null) overlay.AddComponent(screen.OverlayController);
+                }
 
                 // UI Toolkit 运行时输入需要 EventSystem（旧 Input Manager → StandaloneInputModule）。
                 var es = new GameObject("EventSystem");

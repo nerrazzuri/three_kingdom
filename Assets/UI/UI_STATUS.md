@@ -31,8 +31,14 @@
 2. ~~多城战区屏~~ ✓ 已建（TheaterScreen：列直辖/委任城）。★待编辑器验证。
 3. ~~交互补全~~ ✓ 大部已补：GameStatusPanel 加 结算君命/献纳 + 打听人才/招揽 按钮（经 SessionRuntime 便捷桥）。
    仅剩**施计选城选计屏**（现 Hud 一键 stub）与**委任交互**（现只列，委任经 console）待做。
-4. **战略大地图**：场景层级 + 领土/棋子 prefab + 美术（数据/适配器/英雄棋子投影已就绪，见 ART_GUIDE.md）。
-5. **★所有 Unity 屏的编辑器验证**：绑定名、场景名、uss 样式、包依赖（Input System/URP/TMP/Addressables）——我无法无头编译，须你在编辑器过一遍。这是唯一"我做不了、只能你做"的一类。
+4. **战略大地图**：已**停泊**（移出 Assets → `parked/campaign-map-scaffold/`，Unity 看不到，不参与编译）——它依赖 4 包+缺类，会拖垮核心编译（Codex 首轮 68 errors 全源于此）。进地图/美术阶段再启用，turnkey 步骤见 `parked/campaign-map-scaffold/PARKED-REENABLE.md`。
+5. **★核心屏编辑器验证（第 2 轮）**：核心已可独立编译。跑菜单 `三国/构建 Slice 场景` 一键生成全部场景（MainMenu/GameSetup/Hud+状态叠加/Roster/Diplomacy/Theater/ZoneBattle/Defeat/PauseMenu/Accessibility）+ 写 Build Settings，然后进 Play 冒烟。
+6. **HUD 导航补全（待做）**：HUD 目前有到 ZoneBattle/Defeat/MainMenu 的跳转，尚**缺**到 Roster/Diplomacy/Theater 的按钮——各屏场景已可独立打开验证，游戏内可达性待补一组 HUD 按钮。
+
+## Codex 首轮验证结论（2026-07-05）
+- 核心 UI 屏绑定名静态检查**通过**；3 DLL 加载正常，**无** DLL 缺方法错误。→ 我的核心屏是干净的。
+- 68 编译错误**全部**在战略地图 scaffold（缺 Input System/URP/DOTween + 缺 4 stub 类 + `init` 缺 IsExternalInit）。
+- 处置：**停泊 scaffold**（去出编译）→ 核心独立可编译可 Play；**扩 SliceSceneBuilder** 覆盖全部核心屏。
 
 ## 给做 UI 的人的一句话
 每个系统都有一个**纯 C# 只读视图**（多数已单测），Unity 侧只需 `SessionRuntime.XxxView()` 取来绑定，
