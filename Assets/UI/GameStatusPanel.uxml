@@ -8,8 +8,16 @@
         <ui:Label name="status-agents" text="手令 0/2" class="status-line" />
         <ui:Label name="status-contention" text="据1城·群雄17家" class="status-line" />
         <ui:Label name="status-mission" text="君命：…" class="status-mission" />
+        <ui:VisualElement name="mission-actions" class="row">
+            <ui:Button name="btn-check-mission" text="结算君命" class="act-btn" />
+            <ui:Button name="btn-tribute" text="献纳" class="act-btn" />
+        </ui:VisualElement>
+        <ui:Label name="mission-feedback" text="" class="status-feedback" />
 
-        <ui:Label text="可招人才" class="status-subhead" />
+        <ui:VisualElement name="talent-head" class="row">
+            <ui:Label text="可招人才" class="status-subhead" />
+            <ui:Button name="btn-scout-talents" text="打听人才" class="act-btn" />
+        </ui:VisualElement>
         <ui:ScrollView name="talent-list" class="talent-list" />
     </ui:VisualElement>
 </ui:UXML>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 外交屏（GDD_023）：各势力立场 + 缔互不侵犯/背约。★需 Unity 编辑器验证。 -->
+    <ui:VisualElement name="diplo-root" class="diplo-root">
+        <ui:Label text="外交" class="diplo-title" />
+        <ui:Label name="diplo-hint" text="与盟/互不侵犯势力须先背约方可攻。" class="diplo-hint" />
+        <ui:ScrollView name="diplo-list" class="diplo-list" />
+        <ui:Button name="diplo-back" text="返回" class="diplo-back" />
+    </ui:VisualElement>
+</ui:UXML>

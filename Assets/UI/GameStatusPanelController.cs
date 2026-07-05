@@ -12,7 +12,23 @@ namespace ThreeKingdom.Unity.UI
     [RequireComponent(typeof(UIDocument))]
     public sealed class GameStatusPanelController : MonoBehaviour
     {
-        private void OnEnable() => Render();
+        // 已知可探人才 id（GDD_020 场景登记）；打听后进入视野。
+        private static readonly string[] KnownTalents = { "talent-wolong", "talent-xiaojiang", "talent-nengli" };
+
+        private void OnEnable()
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            Hook(root, "btn-check-mission", () => { var p = SessionRuntime.ResolveMission(); SetText(root, "mission-feedback", "君命：" + p); Render(); });
+            Hook(root, "btn-tribute", () => { bool ok = SessionRuntime.PayTribute(); SetText(root, "mission-feedback", ok ? "已上缴军粮" : "非献纳任务或库存不足"); Render(); });
+            Hook(root, "btn-scout-talents", () => { foreach (string t in KnownTalents) SessionRuntime.RevealTalentScouting(t); Render(); });
+            Render();
+        }
+
+        private static void Hook(VisualElement root, string name, System.Action onClick)
+        {
+            var b = root.Q<Button>(name);
+            if (b != null) b.clicked += onClick;
+        }
 
         /// <summary>外部（推进/命令后）调用以刷新。</summary>
         public void Render()
@@ -34,7 +50,19 @@ namespace ThreeKingdom.Unity.UI
             {
                 list.Clear();
                 foreach (TalentRecruitLine t in SessionRuntime.TalentView().Talents)
-                    list.Add(new Label($"{t.Name}〔{t.SpecialtyLabel}·{t.DifficultyLabel}〕"));
+                {
+                    string tid = t.TalentId;
+                    var b = new Button { text = $"{t.Name}〔{t.SpecialtyLabel}·{t.DifficultyLabel}〕 招揽" };
+                    b.clicked += () =>
+                    {
+                        bool ok = SessionRuntime.RecruitTalentSimple(tid);
+                        SetText(root, "mission-feedback", ok ? $"{t.Name} 出仕入伙！" : $"{t.Name} 未招得");
+                        Render();
+                    };
+                    list.Add(b);
+                }
+                if (SessionRuntime.TalentView().Talents.Count == 0)
+                    list.Add(new Label("尚无可见人才——[打听人才] 或推进时段待其登场。"));
             }
         }
 

@@ -266,6 +266,39 @@ namespace ThreeKingdom.Unity.UI
         /// <summary>外交态一览（各势力立场中文 + 可否径攻）。</summary>
         public static DiplomacyView DiplomacyView() => _runtime.DiplomacyView();
 
+        // --- UI 便捷动作桥（把复杂参数封在这里，Unity 控制器只传 id/简单值）。---
+
+        /// <summary>向某势力提议缔「互不侵犯」（因子取自当前名望）；返回是否达成。</summary>
+        public static bool ProposeNonAggression(string factionId)
+        {
+            var renownNorm = ThreeKingdom.Domain.Numerics.FixedPoint.FromFraction(System.Math.Min(_runtime.CareerView().Renown, 1000), 1000);
+            var factors = new ThreeKingdom.Domain.Diplomacy.PactFactors(renownNorm, ThreeKingdom.Domain.Numerics.FixedPoint.FromFraction(1, 2), ThreeKingdom.Domain.Numerics.FixedPoint.FromFraction(1, 2));
+            return _runtime.ProposePact(new ThreeKingdom.Domain.Map.FactionId(factionId), ThreeKingdom.Domain.Diplomacy.DiplomaticStance.NonAggression, factors).Accepted;
+        }
+
+        /// <summary>背约于某势力（损名望·转敌对）。</summary>
+        public static void Breach(string factionId) => _runtime.BreachPact(new ThreeKingdom.Domain.Map.FactionId(factionId));
+
+        /// <summary>经侦察知晓某人才（纳入视野）。</summary>
+        public static void RevealTalentScouting(string talentId)
+            => _runtime.RevealTalent(new ThreeKingdom.Domain.Talent.TalentId(talentId), ThreeKingdom.Domain.Talent.TalentChannel.Scouting);
+
+        /// <summary>招揽某人才（因子取自当前名望）；返回是否入伙。</summary>
+        public static bool RecruitTalentSimple(string talentId)
+        {
+            var n = ThreeKingdom.Domain.Numerics.FixedPoint.FromFraction(System.Math.Min(_runtime.CareerView().Renown, 1000), 1000);
+            var half = ThreeKingdom.Domain.Numerics.FixedPoint.FromFraction(1, 2);
+            _runtime.RecruitTalent(new ThreeKingdom.Domain.Talent.TalentId(talentId), new ThreeKingdom.Domain.Talent.RecruitmentOffer(n, half, half, half));
+            return _runtime.HasRecruited(new ThreeKingdom.Domain.Talent.TalentId(talentId));
+        }
+
+        /// <summary>结算当前君主任务（完成计功、失败撤任务并损名望）；返回进度。</summary>
+        public static ThreeKingdom.Domain.Career.MissionProgress ResolveMission() => _runtime.CheckMission();
+        /// <summary>献纳：从治所库存实扣所需军粮。</summary>
+        public static bool PayTribute() => _runtime.PayLordTribute();
+        /// <summary>多城战区态（直辖/委任）。</summary>
+        public static ThreeKingdom.Domain.Theater.TheaterState TheaterState => _runtime.Theater;
+
         /// <summary>行动容量（手令 已用/上限，随官阶）。</summary>
         public static int ActionCapacity => _runtime.ActionCapacity;
         public static int ActionsInFlight => _runtime.ActionsInFlight;

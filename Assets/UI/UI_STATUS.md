@@ -27,11 +27,12 @@
 
 ## 还没完成的（按优先级）
 
-1. ~~外交视图~~ ✓ 已补（DiplomacyView）。**外交屏**（列各势力立场 + 缔约/背约按钮）待做。
-2. **多城战区屏**（列直辖/委任城 + 委任下属按钮）。
-3. **交互补全**：君命结算/献纳、人才 reveal/recruit、施计选城选计——目前 Unity 只"显示"，交互命令只在 console。
-4. **战略大地图**：场景层级 + 领土/棋子 prefab + 美术（数据/适配器已就绪）。
-5. **所有 ★ Unity 屏的编辑器验证**：绑定名、场景名、uss 样式、包依赖（Input System/URP/TMP/Addressables）。
+1. ~~外交视图/屏~~ ✓ 已建（DiplomacyView + DiplomacyScreen：立场 + 缔约/背约按钮）。★待编辑器验证。
+2. ~~多城战区屏~~ ✓ 已建（TheaterScreen：列直辖/委任城）。★待编辑器验证。
+3. ~~交互补全~~ ✓ 大部已补：GameStatusPanel 加 结算君命/献纳 + 打听人才/招揽 按钮（经 SessionRuntime 便捷桥）。
+   仅剩**施计选城选计屏**（现 Hud 一键 stub）与**委任交互**（现只列，委任经 console）待做。
+4. **战略大地图**：场景层级 + 领土/棋子 prefab + 美术（数据/适配器/英雄棋子投影已就绪，见 ART_GUIDE.md）。
+5. **★所有 Unity 屏的编辑器验证**：绑定名、场景名、uss 样式、包依赖（Input System/URP/TMP/Addressables）——我无法无头编译，须你在编辑器过一遍。这是唯一"我做不了、只能你做"的一类。
 
 ## 给做 UI 的人的一句话
 每个系统都有一个**纯 C# 只读视图**（多数已单测），Unity 侧只需 `SessionRuntime.XxxView()` 取来绑定，
