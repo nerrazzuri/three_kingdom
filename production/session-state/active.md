@@ -1,5 +1,17 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## ✅ 完成（2026-07-05 续11）— Codex 首轮验证 → 停泊地图 scaffold 解阻 + 补全场景生成器
+
+> **提交 fc1bfb3。** Codex 在 Unity 6000.3.18f1 首轮验证：Safe Mode，68 编译错误**全部**在战略地图 scaffold
+> （缺 Input System/URP/DOTween + 缺 4 stub 类 + init 缺 IsExternalInit）；**核心屏干净**（绑定名过、3 DLL 正常、无缺方法）。
+> - **停泊 scaffold**：`Assets/Scripts/Presentation/CampaignMap` → `parked/campaign-map-scaffold`（移出 Assets，Unity 不编译，git 正常追踪；
+>   不用 `~` 以免撞 .gitignore `*~`）。核心不依赖它。重启用清单见 `parked/campaign-map-scaffold/PARKED-REENABLE.md`。
+> - **扩 SliceSceneBuilder**：5→10 屏（补 GameSetup/Roster/Diplomacy/Theater/Defeat）+ HUD 挂 GameStatusPanel 叠加层。
+>   菜单「三国/构建 Slice 场景」一键出全部场景 + Build Settings。
+> - **待第 2 轮 Codex**：拉取最新 → 确认核心编译通过 → 跑场景生成器 → 进 Play 冒烟导航。
+> - **已知待办**：HUD 缺到 Roster/Diplomacy/Theater 的按钮（各屏可独立开验，游戏内可达性待补按钮）。
+> - dotnet 1132/1132 不受影响（本次仅动 Assets/Editor + 停泊移动）。
+
 ## ✅ 完成（2026-07-05 续10）— 清 pending：羁绊崩解 + 外交/多城屏 + 交互补全
 
 > **提交 9005dd2 + 92204db。dotnet 1132/1132 绿。**
