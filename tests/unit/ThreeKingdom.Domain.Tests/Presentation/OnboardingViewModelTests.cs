@@ -16,6 +16,24 @@ namespace ThreeKingdom.Domain.Tests.Presentation
     [TestFixture]
     public class OnboardingViewModelTests
     {
+        [Test]
+        public void test_new_system_cues_have_original_text()
+        {
+            // W6 引导：GDD_026/羁绊/兵种地形/被灭续局等新系统均有原创 in-world 文案（非落空到枚举名）。
+            foreach (OnboardingCue cue in new[]
+            {
+                OnboardingCue.ArrivalLife, OnboardingCue.GovernorStart, OnboardingCue.TroopTerrain,
+                OnboardingCue.Bonds, OnboardingCue.DefeatCaptive, OnboardingCue.RebellionNoReturn,
+            })
+            {
+                string text = OnboardingHints.CueText(cue);
+                Assert.That(text, Is.Not.EqualTo(cue.ToString()), $"{cue} 应有原创文案。");
+                Assert.That(text.Length, Is.GreaterThan(10), $"{cue} 文案应为完整一句。");
+            }
+            // 自立无退路提示点出赌注红线。
+            Assert.That(OnboardingHints.CueText(OnboardingCue.RebellionNoReturn), Does.Contain("无退路"));
+        }
+
         // ---- AC-1：前 N 回合军议自动展开；之后需按键调出；N=0 关闭 ----
 
         [Test]

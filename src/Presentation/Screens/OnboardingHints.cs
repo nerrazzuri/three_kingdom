@@ -49,6 +49,18 @@ namespace ThreeKingdom.Presentation.Screens
         MindLever = 8,
         /// <summary>主角人设：开局性情各异，天下事件引出心里话（丰富代入，去留仍由你）。</summary>
         PersonaIntro = 9,
+        /// <summary>纪元一生（GDD_026）：空降者寿数有限，按季按年历经史事、老去、传承。</summary>
+        ArrivalLife = 10,
+        /// <summary>选城起家（GDD_026）：任取非治所城为太守，该城将佐归你。</summary>
+        GovernorStart = 11,
+        /// <summary>兵种地形（W4）：兵种须合地利，编成随目标城地形而配。</summary>
+        TroopTerrain = 12,
+        /// <summary>羁绊（GDD_025 R4）：并肩之将协同、宿敌互扣，用人须看其交谊与嫌隙。</summary>
+        Bonds = 13,
+        /// <summary>被灭续局（GDD_026 R9）：城破被俘可归顺/投奔东山再起，唯身死才终。</summary>
+        DefeatCaptive = 14,
+        /// <summary>自立无退路（GDD_026 R9.1）：叛主独立若败，必被俘处死，无归顺投奔之路。</summary>
+        RebellionNoReturn = 15,
     }
 
     /// <summary>
@@ -97,6 +109,12 @@ namespace ThreeKingdom.Presentation.Screens
             OnboardingCue.PreparationDecides => "出征胜负先在案头定——兵力、补给、将领、兵种、布势、时机六维备足，方能以势破城；裸战强攻，多半退兵。",
             OnboardingCue.MindLever => "攻城亦可攻心——先探明守将嫌隙，再离间、策反、散布流言，令其未战先乱。但攻心是撬动，非替代备战。",
             OnboardingCue.PersonaIntro => "你自有性情——或雄心、或忠义、或务实、或谨慎。天下风云入眼，心里话随你本心；何去何从，仍由你定。",
+            OnboardingCue.ArrivalLife => "你是空降此世之人，寿数有限——按周行事、按季按年推演；赤壁、官渡诸事将在你一生里逐年展开，待你老去，再由子嗣续写。",
+            OnboardingCue.GovernorStart => "任取一城为太守，该城将佐尽听调遣；君主亲镇的治所不可选。你名义奉其君主，安做臣属或伺机自立，皆在你。",
+            OnboardingCue.TroopTerrain => "兵种要合地利——骑利平原冲杀、水军利渡口、隘口与坚城则步战守成；出征前看目标城地形，配好编成。",
+            OnboardingCue.Bonds => "并肩之将各有羁绊——刘关张同场则士气相协，宿敌同列则貌合神离。用人须看他与谁生死之交、与谁有隙。",
+            OnboardingCue.DefeatCaptive => "势力覆灭并非死局——城破被俘，或归顺新主、或投奔他家东山再起（未必人人肯收）；唯身死才终这一世。",
+            OnboardingCue.RebellionNoReturn => "自立是无退路之赌——一旦叛主独立，他日若败，必被俘处死，再无归顺投奔之路。成则问鼎，败则族灭。",
             _ => cue.ToString(),
         };
     }
