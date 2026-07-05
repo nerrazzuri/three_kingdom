@@ -28,7 +28,11 @@ namespace ThreeKingdom.Application.Scenarios
             B("char-caocao", "char-caopi", BondType.Blood),
             B("char-caocao", "char-caozhi", BondType.Blood),
             B("char-sunce", "char-sunquan", BondType.Blood),
+            B("char-sunjian", "char-sunce", BondType.Blood),      // 孙坚父子
+            B("char-sunjian", "char-sunquan", BondType.Blood),
             B("char-guanyu", "char-guanping", BondType.Blood),
+            B("char-guanyu", "char-guansuo", BondType.Blood),     // 关羽父子（演义）
+            B("char-zhugeliang", "char-zhugezhan", BondType.Blood), // 诸葛父子
             // 师徒·传承
             B("char-liubei", "char-zhugeliang", BondType.Mentor),   // 三顾·如鱼得水
             B("char-zhugeliang", "char-jiangwei", BondType.Mentor), // 衣钵

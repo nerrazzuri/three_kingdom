@@ -149,6 +149,27 @@ namespace ThreeKingdom.Presentation.Screens
             ["char-jiling"] = "纪灵", ["char-tianfeng"] = "田丰", ["char-jushou"] = "沮授",
             ["char-shenpei"] = "审配", ["char-gaolan"] = "高览", ["char-caimao"] = "蔡瑁",
             ["char-huangzu"] = "黄祖", ["char-zangba"] = "臧霸",
+            // 扩充批 2。
+            ["char-sunqian"] = "孙乾", ["char-mizhu"] = "糜竺", ["char-mifang"] = "糜芳",
+            ["char-jianyong"] = "简雍", ["char-yiji"] = "伊籍", ["char-maliang"] = "马良",
+            ["char-dengzhi"] = "邓芝", ["char-zhangyi"] = "张翼", ["char-zhangni"] = "张嶷",
+            ["char-wuyi"] = "吴懿", ["char-huojun"] = "霍峻", ["char-mengda"] = "孟达",
+            ["char-guansuo"] = "关索", ["char-zhugezhan"] = "诸葛瞻", ["char-fuqian"] = "傅佥",
+            ["char-caoxiu"] = "曹休", ["char-caoshuang"] = "曹爽", ["char-wangshuang"] = "王双",
+            ["char-tianyu"] = "田豫", ["char-qianzhao"] = "牵招", ["char-chentai"] = "陈泰",
+            ["char-wangji"] = "王基", ["char-jiachong"] = "贾充", ["char-wangjun"] = "王濬",
+            ["char-yanghu"] = "羊祜", ["char-duyu"] = "杜预", ["char-jiangji"] = "蒋济",
+            ["char-liuye"] = "刘晔", ["char-chenqun"] = "陈群", ["char-zhongyao"] = "钟繇",
+            ["char-caorui"] = "曹叡",
+            ["char-sunjian"] = "孙坚", ["char-dongxi"] = "董袭", ["char-machongwu"] = "马忠",
+            ["char-zhuhuan"] = "朱桓", ["char-quancong"] = "全琮", ["char-buzhi"] = "步骘",
+            ["char-guyong"] = "顾雍", ["char-zhanghong"] = "张纮", ["char-kanze"] = "阚泽",
+            ["char-lukang"] = "陆抗",
+            ["char-huatuo"] = "华佗", ["char-zuoci"] = "左慈", ["char-yuji"] = "于吉",
+            ["char-zhangbao-turban"] = "张宝", ["char-zhangliang-turban"] = "张梁", ["char-hejin"] = "何进",
+            ["char-menghuo"] = "孟获", ["char-zhurong"] = "祝融", ["char-shamoke"] = "沙摩柯",
+            ["char-zhangren"] = "张任", ["char-hanxuan"] = "韩玄", ["char-gongsunkang"] = "公孙康",
+            ["char-tadun"] = "蹋顿", ["char-kebineng"] = "轲比能", ["char-yanbaihu"] = "严白虎",
         };
 
         /// <summary>取某 id 的中文展示名；未登记则回退原文。</summary>
