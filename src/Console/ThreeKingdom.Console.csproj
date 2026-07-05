@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Application\ThreeKingdom.Application.csproj" />
     <ProjectReference Include="..\Domain\ThreeKingdom.Domain.csproj" />
+    <ProjectReference Include="..\Presentation\ThreeKingdom.Presentation.csproj" />
   </ItemGroup>
 
 </Project>
