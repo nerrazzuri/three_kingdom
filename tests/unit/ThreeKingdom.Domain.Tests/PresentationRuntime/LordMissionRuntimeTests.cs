@@ -1,4 +1,6 @@
 using NUnit.Framework;
+using ThreeKingdom.Application.Scenarios;
+using ThreeKingdom.Application.Session;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.Tests.Persistence;
 using ThreeKingdom.Presentation.Runtime;
@@ -49,6 +51,41 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
             var rt = new CampaignRuntime(new InMemorySaveMedium());
             rt.NewGame();
             Assert.That(System.Enum.IsDefined(typeof(MissionProgress), rt.CheckMission()), Is.True);
+        }
+
+        // ---- 两处收尾：献纳实扣粮 + 失败损名望 ----
+
+        [Test]
+        public void test_levy_grain_deducts_stock_and_rejects_when_short()
+        {
+            var rt = new CampaignRuntime(new InMemorySaveMedium());
+            rt.NewGame();
+            var svc = new CampaignSessionService();
+            long stock0 = rt.Session.CityEconomy!.Stock;
+
+            Assert.That(svc.LevyGrain(rt.Session, 30), Is.True, "库存足 → 扣粮成功。");
+            Assert.That(rt.Session.CityEconomy!.Stock, Is.EqualTo(stock0 - 30), "实扣 30 石。");
+            Assert.That(svc.LevyGrain(rt.Session, 100000), Is.False, "库存不足 → 拒。");
+            Assert.That(rt.Session.CityEconomy!.Stock, Is.EqualTo(stock0 - 30), "失败不改库存（无部分写入）。");
+        }
+
+        [Test]
+        public void test_renown_penalty_reduces_renown_floored_at_zero()
+        {
+            var rt = new CampaignRuntime(new InMemorySaveMedium());
+            rt.NewGame();
+            var svc = new CampaignSessionService();
+            PromotionLadderConfig ladder = PlayableCampaign.Default().Ladder;
+
+            svc.ApplyCareerGain(rt.Session, ladder, CareerGainSource.MajorBattleVictory);   // 先得些名望
+            int r0 = rt.CareerView().Renown;
+            Assert.That(r0, Is.GreaterThan(0), "已积名望。");
+
+            svc.PenalizeRenown(rt.Session, 20);
+            Assert.That(rt.CareerView().Renown, Is.EqualTo(System.Math.Max(0, r0 - 20)), "名望减 20（下限 0）。");
+
+            svc.PenalizeRenown(rt.Session, 100000);
+            Assert.That(rt.CareerView().Renown, Is.EqualTo(0), "重罚亦不为负。");
         }
     }
 }

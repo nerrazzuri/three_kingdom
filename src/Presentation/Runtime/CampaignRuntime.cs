@@ -87,6 +87,7 @@ namespace ThreeKingdom.Presentation.Runtime
             _rebelled = false;
             _mission = null;
             _missionCount = 0;
+            _tributeDelivered = 0;
             return Status();
         }
 
@@ -192,6 +193,7 @@ namespace ThreeKingdom.Presentation.Runtime
         private readonly LordMissionService _missionService = new LordMissionService();
         private LordMission? _mission;
         private int _missionCount;
+        private long _tributeDelivered;
 
         /// <summary>当前君主任务（无则种子化派发一道，按官阶+情势+当前年，确定性）。</summary>
         public LordMission CurrentMission()
@@ -230,21 +232,41 @@ namespace ThreeKingdom.Presentation.Runtime
                     owns = false;
                     break;
             }
-            long grain = Session.CityEconomy?.Stock ?? 0;
-            MissionProgress p = _missionService.Evaluate(m, CurrentYear, new MissionContext(owns, grain));
+            MissionProgress p = _missionService.Evaluate(m, CurrentYear, new MissionContext(owns, _tributeDelivered));
 
             if (p == MissionProgress.Completed)
             {
                 _service.ApplyCareerGain(Session, _scenario.Ladder, CareerGainSource.LordMissionComplete);
-                _mission = null;
-                _missionCount++;
+                ClearMission();
             }
             else if (p == MissionProgress.Failed)
             {
-                _mission = null;
-                _missionCount++;
+                _service.PenalizeRenown(Session, m.PenaltyRenown);   // 逾期/失守 → 损名望
+                ClearMission();
             }
             return p;
+        }
+
+        private void ClearMission()
+        {
+            _mission = null;
+            _missionCount++;
+            _tributeDelivered = 0;
+        }
+
+        /// <summary>
+        /// 献纳上缴（GDD_014 / W5）：当前为"献纳"任务时，从治所库存实扣所需军粮并记为已缴。库存不足则返回 false（未扣）。
+        /// 缴足后 <see cref="CheckMission"/> 即判完成。非献纳任务返回 false。
+        /// </summary>
+        public bool PayLordTribute()
+        {
+            LordMission m = CurrentMission();
+            if (m.Type != MissionType.Tribute) return false;
+            long need = m.TributeGrain - _tributeDelivered;
+            if (need <= 0) return true;
+            if (!_service.LevyGrain(Session, need)) return false;   // 库存不足，未扣
+            _tributeDelivered += need;
+            return true;
         }
 
         /// <summary>

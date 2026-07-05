@@ -45,6 +45,18 @@ namespace ThreeKingdom.Domain.Career
             return meritResult;
         }
 
+        /// <summary>
+        /// 名望惩罚（GDD_014 / W5：君主任务失败/逾期损名望）：名望减 <paramref name="amount"/>（下限 0），
+        /// merit/standing/rank 不动。纯函数，返回新快照。
+        /// </summary>
+        public CareerSnapshot ApplyRenownPenalty(CareerSnapshot snapshot, int amount)
+        {
+            if (snapshot is null) throw new ArgumentNullException(nameof(snapshot));
+            if (amount <= 0) return snapshot;
+            CareerState c = snapshot.Career;
+            return new CareerSnapshot(c.With(renown: Math.Max(0, c.Renown - amount)), snapshot.Retinue);
+        }
+
         /// <summary>判定能否晋升（不改状态），供 UI「距下一阶差距」与申请前校验。</summary>
         public PromotionCheck Check(PromotionLadderConfig config, CareerSnapshot snapshot)
         {

@@ -256,7 +256,9 @@ namespace ThreeKingdom.Unity.UI
 
         /// <summary>当前君主任务展示（讨伐/守土/献纳 + 目标 + 期限）。</summary>
         public static LordMissionView Mission() => _runtime.CurrentMissionView();
-        /// <summary>评估并结算当前君主任务（完成计功绩、失败撤任务）；返回进度。</summary>
+        /// <summary>评估并结算当前君主任务（完成计功绩、失败撤任务并损名望）；返回进度。</summary>
         public static ThreeKingdom.Domain.Career.MissionProgress CheckMission() => _runtime.CheckMission();
+        /// <summary>献纳任务：从治所库存实扣所需军粮并记为已缴（库存不足返回 false）。</summary>
+        public static bool PayLordTribute() => _runtime.PayLordTribute();
     }
 }

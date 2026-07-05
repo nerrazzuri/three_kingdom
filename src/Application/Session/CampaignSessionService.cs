@@ -616,6 +616,23 @@ namespace ThreeKingdom.Application.Session
             return r;
         }
 
+        /// <summary>名望惩罚（GDD_014 / W5：君主任务失败/逾期）：生涯名望减 <paramref name="amount"/>（下限 0），写回会话。</summary>
+        public void PenalizeRenown(CampaignSession session, int amount)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            session.SetCareer(_careerProgression.ApplyRenownPenalty(session.Career, amount));
+        }
+
+        /// <summary>征粮上缴（GDD_014 / W5：君主任务·献纳；GDD_004 城库存扣减）：可支配库存足则扣 <paramref name="amount"/> 并写回，返回是否成功。</summary>
+        public bool LevyGrain(CampaignSession session, long amount)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            CityEconomyState? econ = session.CityEconomy;
+            if (econ == null || amount <= 0 || econ.Available < amount) return false;
+            session.SetCityEconomy(econ.With(stock: econ.Stock - amount));
+            return true;
+        }
+
         /// <summary>
         /// 申请晋升（GDD_014 / TR-career-001/005）：门槛达成则晋一阶并写回；未达
         /// <see cref="CareerErrorCode.PromotionThresholdNotMet"/> 稳定错误码、无写入。
