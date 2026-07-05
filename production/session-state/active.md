@@ -1,5 +1,13 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## ✅ 完成（2026-07-05 续6）— 君主任务两收尾 + 武将谱→203 + 战略大地图接入
+
+> **dotnet 1119→1121 绿。提交 463fb29 / 9a215ab / 6836cf8。**
+> - **君主任务两收尾（463fb29）**：失败名望罚（CareerProgressionService.ApplyRenownPenalty + 服务 PenalizeRenown，CheckMission 失败实扣）；献纳实扣粮（服务 LevyGrain + 运行期 PayLordTribute，Tribute 改判"已缴额"）。测 +2。
+> - **武将谱 165→203（9a215ab）**：批3 +39（名士:徐庶/荀攸/司马徽/张松/李恢…；女性:貂蝉/大乔小乔/甄姬/蔡文姬/黄月英…；南蛮:兀突骨/木鹿/朵思;魏晋末:文鸯/诸葛诞/毌丘俭/卫瓘/邓忠;西凉;讨董副将）。羁绊+6。主干名将/名士/女性/南蛮/魏晋末皆覆盖。
+> - **战略大地图接入（6836cf8）**：判定项目无大地图层→接入 scaffold。纯 C#（已测）：PlayableCampaign.AllWorldCities/IsCapitalCity + CampaignMapView（世界城归属+势力+纪元→地图单元）+ CampaignRuntime.MapView + SessionRuntime 桥（测 +2）。Unity 侧（★需编辑器验证）：scaffold 落 Assets/Scripts/Presentation/CampaignMap + Adapters（DataAdapter:ICampaignMapQueryService+ITerritoryPositionLookup·37城坐标邻接配色 / ActionAdapter / GameEventBus）+ INTEGRATION.md。
+> - **留后续**：地图英雄棋子(HeroPosition 现空)/领土美术/场景搭建/坐标微调(编辑器)；南蛮女性魏晋末更多武将可续批。
+
 ## ✅ 完成（2026-07-05 续5）— W5 君主任务系统（生涯脊梁）+ 武将谱 106→165
 
 > **dotnet 1108→1117 绿。提交 0e43af3（君主任务）+ 78ae59c（武将批2）。**
