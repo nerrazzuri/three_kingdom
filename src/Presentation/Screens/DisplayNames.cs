@@ -127,6 +127,28 @@ namespace ThreeKingdom.Presentation.Screens
             ["char-chengong"] = "陈宫",
             ["char-huaxiong"] = "华雄",
             ["char-haozhao"] = "郝昭",
+            // 扩充批 1（演义名将）。
+            ["char-xiahouyuan"] = "夏侯渊", ["char-zhanghe"] = "张郃", ["char-xuhuang"] = "徐晃",
+            ["char-yujin"] = "于禁", ["char-yuejin"] = "乐进", ["char-lidian"] = "李典",
+            ["char-caohong"] = "曹洪", ["char-caozhang"] = "曹彰", ["char-caopi"] = "曹丕",
+            ["char-caozhi"] = "曹植", ["char-dengai"] = "邓艾", ["char-zhonghui"] = "钟会",
+            ["char-guohuai"] = "郭淮", ["char-caozhen"] = "曹真", ["char-pangde"] = "庞德",
+            ["char-wenpin"] = "文聘", ["char-chengyu"] = "程昱", ["char-simashi"] = "司马师",
+            ["char-simazhao"] = "司马昭", ["char-huaxin"] = "华歆", ["char-manchong"] = "满宠",
+            ["char-guanping"] = "关平", ["char-zhoucang"] = "周仓", ["char-liaohua"] = "廖化",
+            ["char-madai"] = "马岱", ["char-wangping"] = "王平", ["char-guanxing"] = "关兴",
+            ["char-zhangbao"] = "张苞", ["char-yanyan"] = "严颜", ["char-fazheng"] = "法正",
+            ["char-masu"] = "马谡", ["char-jiangwan"] = "蒋琬", ["char-feiyi"] = "费祎",
+            ["char-liyan"] = "李严", ["char-liufeng"] = "刘封",
+            ["char-chengpu"] = "程普", ["char-handang"] = "韩当", ["char-zhoutai"] = "周泰",
+            ["char-jiangqin"] = "蒋钦", ["char-chenwu"] = "陈武", ["char-lingtong"] = "凌统",
+            ["char-xusheng"] = "徐盛", ["char-dingfeng"] = "丁奉", ["char-panzhang"] = "潘璋",
+            ["char-zhuran"] = "朱然", ["char-zhugejin"] = "诸葛瑾", ["char-zhangzhao"] = "张昭",
+            ["char-zhugeke"] = "诸葛恪", ["char-sunshangxiang"] = "孙尚香",
+            ["char-dongzhuo"] = "董卓", ["char-liru"] = "李儒", ["char-zhangjiao"] = "张角",
+            ["char-jiling"] = "纪灵", ["char-tianfeng"] = "田丰", ["char-jushou"] = "沮授",
+            ["char-shenpei"] = "审配", ["char-gaolan"] = "高览", ["char-caimao"] = "蔡瑁",
+            ["char-huangzu"] = "黄祖", ["char-zangba"] = "臧霸",
         };
 
         /// <summary>取某 id 的中文展示名；未登记则回退原文。</summary>

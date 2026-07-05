@@ -56,6 +56,31 @@ namespace ThreeKingdom.Application.Scenarios
                 // 群雄部将
                 ["char-yanliang"] = (160, 200), ["char-wenchou"] = (160, 200), ["char-gaoshun"] = (160, 198),
                 ["char-chengong"] = (160, 198), ["char-huaxiong"] = (160, 191), ["char-haozhao"] = (180, 229),
+                // 扩充批 1 — 魏
+                ["char-xiahouyuan"] = (160, 219), ["char-zhanghe"] = (167, 231), ["char-xuhuang"] = (169, 227),
+                ["char-yujin"] = (155, 221), ["char-yuejin"] = (160, 218), ["char-lidian"] = (174, 209),
+                ["char-caohong"] = (160, 232), ["char-caozhang"] = (189, 223), ["char-caopi"] = (187, 226),
+                ["char-caozhi"] = (192, 232), ["char-dengai"] = (197, 264), ["char-zhonghui"] = (225, 264),
+                ["char-guohuai"] = (170, 255), ["char-caozhen"] = (175, 231), ["char-pangde"] = (170, 219),
+                ["char-wenpin"] = (160, 228), ["char-chengyu"] = (141, 220), ["char-simashi"] = (208, 255),
+                ["char-simazhao"] = (211, 265), ["char-huaxin"] = (157, 232), ["char-manchong"] = (160, 242),
+                // 扩充批 1 — 蜀
+                ["char-guanping"] = (178, 220), ["char-zhoucang"] = (160, 220), ["char-liaohua"] = (170, 264),
+                ["char-madai"] = (170, 240), ["char-wangping"] = (180, 248), ["char-guanxing"] = (192, 234),
+                ["char-zhangbao"] = (196, 222), ["char-yanyan"] = (140, 220), ["char-fazheng"] = (176, 220),
+                ["char-masu"] = (190, 228), ["char-jiangwan"] = (175, 246), ["char-feiyi"] = (180, 253),
+                ["char-liyan"] = (170, 234), ["char-liufeng"] = (180, 220),
+                // 扩充批 1 — 吴
+                ["char-chengpu"] = (145, 215), ["char-handang"] = (155, 227), ["char-zhoutai"] = (165, 225),
+                ["char-jiangqin"] = (160, 220), ["char-chenwu"] = (178, 215), ["char-lingtong"] = (189, 237),
+                ["char-xusheng"] = (175, 228), ["char-dingfeng"] = (185, 271), ["char-panzhang"] = (165, 234),
+                ["char-zhuran"] = (182, 249), ["char-zhugejin"] = (174, 241), ["char-zhangzhao"] = (156, 236),
+                ["char-zhugeke"] = (203, 253), ["char-sunshangxiang"] = (185, 250),
+                // 扩充批 1 — 群雄/董卓/黄巾
+                ["char-dongzhuo"] = (139, 192), ["char-liru"] = (150, 192), ["char-zhangjiao"] = (140, 184),
+                ["char-jiling"] = (150, 199), ["char-tianfeng"] = (150, 200), ["char-jushou"] = (155, 200),
+                ["char-shenpei"] = (155, 204), ["char-gaolan"] = (160, 200), ["char-caimao"] = (155, 208),
+                ["char-huangzu"] = (150, 208), ["char-zangba"] = (160, 230),
             };
 
         // ---- 190 讨董布防（GDD_026 D4）：部将 → 任职城（须属该城 190 归属势力）。君主不入（本身即势力之主）。----
@@ -75,6 +100,16 @@ namespace ThreeKingdom.Application.Scenarios
                 ["char-huaxiong"] = "city-hulao",                                         // 袁术·虎牢关
                 ["char-taishici"] = "city-beihai",                                        // 孔融·北海
                 ["char-lusu"] = "city-jianye", ["char-huanggai"] = "city-jianye",        // 孙氏·建业
+                // 扩充批 1 布防
+                ["char-zhanghe"] = "city-ye", ["char-tianfeng"] = "city-ye",             // 袁绍·邺城
+                ["char-jushou"] = "city-ye", ["char-shenpei"] = "city-ye", ["char-gaolan"] = "city-ye",
+                ["char-dongzhuo"] = "city-luoyang", ["char-liru"] = "city-luoyang",       // 董卓系·洛阳
+                ["char-chengpu"] = "city-jianye", ["char-handang"] = "city-jianye", ["char-zhoutai"] = "city-jianye",
+                ["char-jiling"] = "city-runan",                                           // 袁术·汝南
+                ["char-yanyan"] = "city-jiangzhou",                                       // 刘璋·江州
+                ["char-huangzu"] = "city-jiangxia", ["char-caimao"] = "city-jiangling",   // 刘表
+                ["char-zangba"] = "city-xuzhou",                                          // 吕布·徐州
+                ["char-pangde"] = "city-xiliang", ["char-madai"] = "city-xiliang",        // 马腾·西凉
             };
 
         /// <summary>某武将生卒年（公元）；未登记则 null（不受生卒约束，视为常在）。</summary>
@@ -168,6 +203,75 @@ namespace ThreeKingdom.Application.Scenarios
             D("char-chengong", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cunning);
             D("char-huaxiong", CombatTier.Valiant, StrategyTier.Dull, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Reckless);
             D("char-haozhao", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);
+
+            // ==== 演义名将扩充批 1（2026-07-05）：公版人物 + 原创标签/档，无任何商业数值。====
+            // ---- 曹魏 ----
+            D("char-xiahouyuan", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cavalry, GeneralTag.Reckless);
+            D("char-zhanghe", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.Aspiring, GeneralTag.Cavalry, GeneralTag.Cunning);
+            D("char-xuhuang", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);
+            D("char-yujin", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Defender);
+            D("char-yuejin", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Reckless);
+            D("char-lidian", CombatTier.Sturdy, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);
+            D("char-caohong", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Reckless);
+            D("char-caozhang", CombatTier.Peerless, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.Aspiring, GeneralTag.Cavalry, GeneralTag.Reckless);
+            D("char-caopi", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Loyal, Ambition.Wolfish, GeneralTag.Cunning, GeneralTag.Wolflook);
+            D("char-caozhi", CombatTier.Feeble, StrategyTier.Adept, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Benevolent);
+            D("char-dengai", CombatTier.Valiant, StrategyTier.Master, LoyaltyLeaning.Loyal, Ambition.Grand, GeneralTag.Strategist, GeneralTag.Defender);
+            D("char-zhonghui", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Wavering, Ambition.Wolfish, GeneralTag.Cunning, GeneralTag.Wolflook);
+            D("char-guohuai", CombatTier.Sturdy, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);
+            D("char-caozhen", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);
+            D("char-pangde", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.LoneValor, GeneralTag.Cavalry);
+            D("char-wenpin", CombatTier.Sturdy, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender, GeneralTag.Naval);
+            D("char-chengyu", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cunning, GeneralTag.Strategist);
+            D("char-simashi", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Wavering, Ambition.Wolfish, GeneralTag.Strategist, GeneralTag.Wolflook);
+            D("char-simazhao", CombatTier.Ordinary, StrategyTier.Master, LoyaltyLeaning.Wavering, Ambition.Wolfish, GeneralTag.Strategist, GeneralTag.Wolflook);
+            D("char-huaxin", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Cunning);
+            D("char-manchong", CombatTier.Sturdy, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender, GeneralTag.Cunning);
+
+            // ---- 蜀汉 ----
+            D("char-guanping", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.IronBones);
+            D("char-zhoucang", CombatTier.Sturdy, StrategyTier.Dull, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.LoneValor);
+            D("char-liaohua", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);
+            D("char-madai", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cavalry);
+            D("char-wangping", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);
+            D("char-guanxing", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.IronBones);
+            D("char-zhangbao", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Reckless);
+            D("char-yanyan", CombatTier.Sturdy, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.None, GeneralTag.IronBones, GeneralTag.Defender);
+            D("char-fazheng", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cunning);
+            D("char-masu", CombatTier.Ordinary, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.Aspiring, GeneralTag.Strategist, GeneralTag.Arrogant);
+            D("char-jiangwan", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Strategist, GeneralTag.Benevolent);
+            D("char-feiyi", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Benevolent);
+            D("char-liyan", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Defender);
+            D("char-liufeng", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Reckless);
+
+            // ---- 孙吴 ----
+            D("char-chengpu", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Naval);
+            D("char-handang", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Naval);
+            D("char-zhoutai", CombatTier.Peerless, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.LoneValor, GeneralTag.IronBones);
+            D("char-jiangqin", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Naval);
+            D("char-chenwu", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.LoneValor);
+            D("char-lingtong", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.LoneValor, GeneralTag.Naval);
+            D("char-xusheng", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender, GeneralTag.Naval);
+            D("char-dingfeng", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.NightRaider);
+            D("char-panzhang", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Bloodthirsty);
+            D("char-zhuran", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender, GeneralTag.Naval);
+            D("char-zhugejin", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Benevolent);
+            D("char-zhangzhao", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Stubborn, GeneralTag.Strategist);
+            D("char-zhugeke", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Wavering, Ambition.Wolfish, GeneralTag.Cunning, GeneralTag.Arrogant);
+            D("char-sunshangxiang", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cavalry);
+
+            // ---- 群雄 / 董卓系 / 黄巾 ----
+            D("char-dongzhuo", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Disloyal, Ambition.Wolfish, GeneralTag.Bloodthirsty, GeneralTag.Arrogant);
+            D("char-liru", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cunning);
+            D("char-zhangjiao", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Disloyal, Ambition.Wolfish, GeneralTag.Cunning);
+            D("char-jiling", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.LoneValor);
+            D("char-tianfeng", CombatTier.Ordinary, StrategyTier.Master, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Strategist, GeneralTag.Stubborn);
+            D("char-jushou", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Strategist);
+            D("char-shenpei", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Stubborn, GeneralTag.Defender);
+            D("char-gaolan", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Cavalry);
+            D("char-caimao", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Naval, GeneralTag.Fickle);
+            D("char-huangzu", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Naval);
+            D("char-zangba", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cavalry);
 
             var dict = new Dictionary<string, GeneralDossier>(StringComparer.Ordinal);
             foreach (GeneralDossier d in list) dict[d.Id.Value] = d;

@@ -40,6 +40,25 @@ namespace ThreeKingdom.Domain.Tests.Presentation
         }
 
         [Test]
+        public void test_roster_expanded_with_major_generals()
+        {
+            Assert.That(GeneralDossiers.All.Count, Is.GreaterThanOrEqualTo(100), "名将谱已大幅扩充（≥100）。");
+            // 抽查扩充批：档案 + 中文名 + 生卒在世判定皆到位。
+            foreach (string id in new[] { "char-zhanghe", "char-dengai", "char-zhoutai", "char-masu", "char-dongzhuo", "char-zhangzhao" })
+                Assert.That(GeneralDossiers.Find(new CharacterId(id)), Is.Not.Null, $"{id} 已入谱。");
+            var roster = GeneralRosterView.Build();
+            GeneralCardView masu = null!;
+            foreach (GeneralCardView c in roster.Cards) if (c.Id == "char-masu") masu = c;
+            Assert.That(masu, Is.Not.Null);
+            Assert.That(masu.Name, Is.EqualTo("马谡"));
+            // 董卓 139–192：190 在世，200 已亡（生卒驱动登场/退场）。
+            Assert.That(GeneralDossiers.AvailableAt(new CharacterId("char-dongzhuo"), 190), Is.True);
+            Assert.That(GeneralDossiers.AvailableAt(new CharacterId("char-dongzhuo"), 200), Is.False);
+            // 邓艾 197 生：190 尚未出（后世名将）。
+            Assert.That(GeneralDossiers.AvailableAt(new CharacterId("char-dengai"), 190), Is.False);
+        }
+
+        [Test]
         public void test_tag_text_maps_every_tag_to_chinese()
         {
             // 每个气质标签都有中文短语（无落空到枚举名）。
