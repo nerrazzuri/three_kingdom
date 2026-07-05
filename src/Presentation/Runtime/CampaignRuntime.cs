@@ -82,6 +82,8 @@ namespace ThreeKingdom.Presentation.Runtime
             _lifeStartYearOverride = null;
             _life = null;
             _calendar = null;
+            _defeat = null;
+            _capitalOverride = null;
             return Status();
         }
 
@@ -365,7 +367,7 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             if (!Session.HasBattle) throw new InvalidOperationException("尚未开战，无战果可结算。");
             IReadOnlyList<RecognizedTactic> tactics = _service.RecognizeTactics(Session);
-            var context = new OutcomeContext(_scenario.PlayerFaction, _scenario.PlayerCapital);
+            var context = new OutcomeContext(_scenario.PlayerFaction, EffectiveCapital);
             OutcomeContinuation continuation = _service.ResolveBattleOutcome(
                 Session, OutcomeBranch.Victory, context, _scenario.OutcomeConfig);
             CareerGain? gain = _scenario.Ladder.GainFor(CareerGainSource.CombatVictory);
@@ -635,6 +637,43 @@ namespace ThreeKingdom.Presentation.Runtime
                 if (p.Cities > bestCities) { bestCities = p.Cities; best = p.Faction; }
             }
             return best ?? _scenario.PlayerTargetFaction;
+        }
+
+        // 复位后新治所（活世界续局）：覆盖场景静态治所，供出征战果 OutcomeContext 等取当前所治之城。
+        private CityId? _capitalOverride;
+        private CityId EffectiveCapital => _capitalOverride ?? _scenario.PlayerCapital;
+
+        /// <summary>复位后可效力的新主（归顺/投奔所定）；未复位则 null。</summary>
+        public FactionId? CurrentSuzerain => _defeat?.NewLord;
+
+        /// <summary>
+        /// 东山再起·活世界续局（GDD_026 补）：势力被灭后经 <see cref="BeginDefeat"/> 流程走到可续（归顺/被收留）→
+        /// 在<b>同一世界、当前公元年、这一生</b>里由新主割一城复位为太守。须先驱动流程至 <see cref="DefeatFlow.CanPlayOn"/>。
+        /// 新主已无城可授（罕见）→ 返回 false（保持流亡，可另投）。成功返回 true，覆灭解除、天下照旧流转。
+        /// </summary>
+        public bool ContinueUnderNewLord()
+        {
+            if (!IsPlayerEliminated) return false;
+            DefeatFlow flow = BeginDefeat();
+            if (!flow.CanPlayOn || flow.NewLord == null) return false;
+
+            FactionId lord = flow.NewLord.Value;
+            CityId? grant = PickGrantCity(lord);
+            if (grant == null) return false;   // 新主无城可授 → 复位失败（仍流亡）
+
+            var economy = new CityEconomyState(grant.Value, stock: 80, reserved: 0, civMorale: 55,
+                security: 45, fortificationCurrent: 15, fortificationMax: 100);
+            _service.ReseatGovernor(Session, Contend, _scenario.PlayerFaction, lord, grant.Value, new Garrison(400), economy);
+            _capitalOverride = grant;
+            return true;
+        }
+
+        /// <summary>取新主一座可授的城（非君主治所、当前确属该主）；无则 null。</summary>
+        private CityId? PickGrantCity(FactionId lord)
+        {
+            foreach (CityId c in PlayableCampaign.SelectableGovernorCities())
+                if (Session.World.OwnershipOf(c)?.Owner == lord) return c;
+            return null;
         }
 
         private int _contentionSteps;

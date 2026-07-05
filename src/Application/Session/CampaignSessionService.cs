@@ -824,6 +824,29 @@ namespace ThreeKingdom.Application.Session
             return c;
         }
 
+        /// <summary>
+        /// 复位为新主太守（GDD_026 补·东山再起）：势力被灭、归顺/投奔成功后，在<b>活世界</b>里授玩家一城续局——
+        /// 新主（<paramref name="newLord"/>）割一城（<paramref name="newCity"/>）予玩家（经 GDD_004 唯一权威控制权变更，
+        /// 叙事性 owner_change），争霸态玩家 +1/新主 −1，城市治理重置于新城。<b>世界时钟/生涯/一生皆不重置</b>——
+        /// 只是换了个落脚处接着活。返回更新后的争霸态。城须已在控制权权威登记（新主本据之，故已登记）。
+        /// </summary>
+        public ThreeKingdom.Domain.Contention.ContentionState ReseatGovernor(
+            CampaignSession session, ThreeKingdom.Domain.Contention.ContentionState contention,
+            FactionId playerFaction, FactionId newLord, CityId newCity, Garrison garrison, CityEconomyState economy)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (contention is null) throw new ArgumentNullException(nameof(contention));
+            if (economy is null) throw new ArgumentNullException(nameof(economy));
+
+            session.Control.RequestControlChange(newCity, playerFaction, garrison, ChangeCause.HistoricalDivergence);
+            ThreeKingdom.Domain.Contention.ContentionState c = contention
+                .WithCities(playerFaction, contention.CitiesOf(playerFaction) + 1)
+                .WithCities(newLord, Math.Max(0, contention.CitiesOf(newLord) - 1));
+            session.SetContention(c);
+            session.SetCityEconomy(economy);
+            return c;
+        }
+
         /// <summary>君主授权出征（GDD_019 R1）：设置可攻目标城集合（由君主政令按官阶组装）。</summary>
         public void AuthorizeOffensive(CampaignSession session, IReadOnlyCollection<CityId> targets)
         {
