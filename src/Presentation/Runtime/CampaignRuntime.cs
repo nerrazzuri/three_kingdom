@@ -14,6 +14,7 @@ using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Diplomacy;
 using ThreeKingdom.Domain.Map;
 using ThreeKingdom.Domain.Council;
+using ThreeKingdom.Domain.Defeat;
 using ThreeKingdom.Domain.Intel;
 using ThreeKingdom.Domain.Life;
 using ThreeKingdom.Domain.Numerics;
@@ -602,6 +603,39 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>当前终局状态（继续/统一/覆灭）。</summary>
         public ThreeKingdom.Domain.Contention.EndgameStatus Endgame()
             => _endgameService.Evaluate(Contend, _scenario.PlayerFaction, ThreeKingdom.Domain.Contention.EndgameConfig.Default);
+
+        // --- 覆灭之后（GDD_026 补）：势力被灭≠game over。被俘→判生死→归顺?→释放?→投奔他主收留?；唯身死才终。 ---
+
+        private DefeatFlow? _defeat;
+
+        /// <summary>玩家势力是否已覆灭（领城归零）。</summary>
+        public bool IsPlayerEliminated => Endgame() == ThreeKingdom.Domain.Contention.EndgameStatus.PlayerEliminated;
+
+        /// <summary>
+        /// 进入被灭处境流程（GDD_026 补）：以当下最强之敌为擒获者、以生涯名声为调制、会话种子确定性。
+        /// 返回状态机——由 UI 驱动 <see cref="DefeatFlow.ResolveCaptorFate"/> / 归顺 / 不归顺 / 投奔。尚未覆灭则抛。
+        /// 注：复位为新主太守的<b>活世界续局</b>（保当前公元年/一生接续）为后续接线，本入口先给出决策流程与结局。
+        /// </summary>
+        public DefeatFlow BeginDefeat()
+        {
+            if (!IsPlayerEliminated) throw new InvalidOperationException("尚未覆灭，无被俘流程。");
+            return _defeat ??= new DefeatFlow(
+                StrongestRival(), Session.Career.Career.Renown,
+                PersonaSeed(Session.Id) ^ 0x0DEFEA7EUL, CaptivityConfig.Default);
+        }
+
+        /// <summary>当下最强的存续对手（覆灭时的擒获者；无对手则回退第一个已知势力）。</summary>
+        private FactionId StrongestRival()
+        {
+            FactionId? best = null;
+            int bestCities = -1;
+            foreach (ThreeKingdom.Domain.Contention.PowerStanding p in Contend.Powers)
+            {
+                if (p.Faction == _scenario.PlayerFaction || !p.Alive) continue;
+                if (p.Cities > bestCities) { bestCities = p.Cities; best = p.Faction; }
+            }
+            return best ?? _scenario.PlayerTargetFaction;
+        }
 
         private int _contentionSteps;
 
