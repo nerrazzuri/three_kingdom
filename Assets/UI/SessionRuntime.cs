@@ -217,6 +217,9 @@ namespace ThreeKingdom.Unity.UI
             _runtime.NewGame();
         }
 
+        /// <summary>HUD 顶栏当前席位目标（真实反映所选开局的治所/宗主/锋芒，取代硬编码汜水关）。</summary>
+        public static string SeatObjective() => _runtime.SeatObjective;
+
         /// <summary>当前公元年。</summary>
         public static int CurrentYear() => _runtime.CurrentYear;
         /// <summary>当前季（春/夏/秋/冬）。</summary>

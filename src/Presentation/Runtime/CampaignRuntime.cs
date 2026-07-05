@@ -192,6 +192,24 @@ namespace ThreeKingdom.Presentation.Runtime
         public CampaignMapView MapView()
             => CampaignMapView.Build(Session.World, Contend, _scenario.PlayerFaction, CurrentYear, _scenario.AnchorYear, CurrentSeasonLabel);
 
+        /// <summary>
+        /// HUD 顶栏当前席位目标（真实反映所选开局，取代此前硬编码「汜水关太守」）：
+        /// 太守开局（有宗主）→「{城}太守 · 奉{宗主}号令」；命名诸侯开局（无宗主）→ 用开局中文名（如「刘玄德·小沛」）。
+        /// 一律附首要出征锋芒。城/宗主中文名经 <see cref="DisplayNames"/> 重标（Application 存的是稳定 id）。
+        /// </summary>
+        public string SeatObjective
+        {
+            get
+            {
+                var start = _scenario.Start;
+                string target = DisplayNames.Of(start.OffensiveTarget.Value);
+                string seat = start.Suzerain.HasValue
+                    ? $"{DisplayNames.Of(start.Capital.Value)}太守 · 奉{DisplayNames.Of(start.Suzerain.Value.Value)}号令"
+                    : start.DisplayName;   // 命名剧本 DisplayName 已是中文
+                return $"{seat} · 守土图强，锋指{target}";
+            }
+        }
+
         /// <summary>顶栏聚合视图（UI 单一绑定对象）：纪元/一生/生涯/君命/行动容量/争霸 一次取全。</summary>
         public GameHudView HudSummary()
         {

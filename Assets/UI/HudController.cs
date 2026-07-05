@@ -544,7 +544,8 @@ namespace ThreeKingdom.Unity.UI
         /// </summary>
         private static void RenderPendingPanels(VisualElement root)
         {
-            SetLabel(root, "hud-objective", "汜水关太守 · 守土拒敌，御曹魏前锋");
+            // 席位目标随所选开局真实投影（GDD_026；不再硬编码汜水关）。
+            SetLabel(root, "hud-objective", SessionRuntime.SeatObjective());
             SetLabel(root, "hud-banner", string.Empty);
             // 未接面板：状态留空（不刷「接入中」），按钮禁用即可。
             SetLabel(root, "diplo-status", string.Empty);
