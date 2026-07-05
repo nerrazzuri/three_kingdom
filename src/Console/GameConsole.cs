@@ -5,8 +5,13 @@ using ThreeKingdom.Application.Session;
 using ThreeKingdom.Domain.Career;
 using ThreeKingdom.Domain.Contention;
 using ThreeKingdom.Domain.Defeat;
+using ThreeKingdom.Domain.Diplomacy;
+using ThreeKingdom.Domain.Map;
+using ThreeKingdom.Domain.Numerics;
 using ThreeKingdom.Domain.Persistence;
 using ThreeKingdom.Domain.Subversion;
+using ThreeKingdom.Domain.Talent;
+using ThreeKingdom.Domain.ZoneBattle;
 using ThreeKingdom.Presentation.Runtime;
 using ThreeKingdom.Presentation.Screens;
 
@@ -103,9 +108,29 @@ namespace ThreeKingdom.Console
                     case "auto": if (_rt.HasOffensiveBattle) { _rt.OffensiveBattleAutoResolve(); return "⚔ AI 代打至终局。[conclude] 结算占城"; } return "× 无进行中的出征战斗";
                     case "conclude": return ConcludeOffensive();
 
+                    // 出征·战中微操（不代打，自己排兵布阵）
+                    case "bview": return _rt.HasOffensiveBattle || _rt.OffensiveBattleOver ? RenderBattle(_rt.OffensiveBattleView()) : "× 无进行中的出征战斗";
+                    case "round": return _rt.HasOffensiveBattle ? RenderBattle(_rt.OffensiveBattleResolveRound()) : "× 无进行中的出征战斗";
+                    case "move": return _rt.OffensiveBattleMove(a1, a2).Applied ? $"✓ {a1}→{ZoneBattleText.Zone(a2)}" : "× 调动失败（非相邻/无此支队）";
+                    case "posture": return _rt.OffensiveBattleSetPosture(a1, ParsePosture(a2)).Applied ? $"✓ {a1} 改姿态" : "× 改姿态失败";
+
                     // 守城
                     case "defend": _rt.StartDefenseBattle(); return "🛡 守城战开始。[defauto] AI代打";
                     case "defauto": return _rt.HasDefenseBattle ? (_rt.AutoResolveDefense() ? "🛡 守住了！退敌。" : "✗ 城破——势力受挫。") : "× 无守城战";
+
+                    // 外交
+                    case "pact": return Pact(a1);
+                    case "breach": { BreachResult br = _rt.BreachPact(new FactionId(a1)); return $"背约于 {Name(a1)}——名望受损、对方转敌对。"; }
+                    case "diplo": return RenderDiplomacy();
+
+                    // 多城战区
+                    case "theater": return RenderTheater();
+                    case "delegate": { var r = _rt.DelegateCity(new ThreeKingdom.Domain.City.CityId(a1), new ThreeKingdom.Domain.Characters.CharacterId(a2)); return r.Applied ? $"✓ 委任 {Name(a2)} 打理 {Name(a1)}" : "× 委任失败（未持有/超掌管范围）"; }
+
+                    // 人才招揽
+                    case "talents": return RenderTalents();
+                    case "reveal": _rt.RevealTalent(new TalentId(a1), TalentChannel.Scouting); return $"✓ 探得 {a1} 行踪，纳入视野";
+                    case "recruit": return Recruit(a1);
 
                     // 人心杠杆施计
                     case "subvert": return Subvert(a1, a2);
@@ -264,6 +289,59 @@ namespace ThreeKingdom.Console
             return sb.ToString();
         }
 
+        private string RenderBattle(ZoneBattleView v)
+        {
+            var sb = new StringBuilder($"【出征战·第{v.Round}/{v.MaxRounds}回合】{(_rt.OffensiveBattleOver ? "已分胜负（[conclude]结算）" : "鏖战中")}");
+            foreach (ZoneLineView z in v.Zones)
+            {
+                sb.Append($"\n  {z.ZoneLabel}：我 {z.OwnStrength} vs 敌 {z.EnemyStrength}");
+                if (z.IsObjective) sb.Append(" ★目标");
+                if (z.FormedConditions.Count > 0) sb.Append(" 〔成型：" + string.Join("·", z.FormedConditions) + "〕");
+                if (z.OwnDetachments.Count > 0) sb.Append(" 己方支队:" + string.Join(",", z.OwnDetachments));
+            }
+            sb.Append("\n  ([move <支队> <区>] 调动 · [posture <支队> <a攻|h守|f佯>] 改姿态 · [round] 推进一回合 · [auto] 代打)");
+            return sb.ToString();
+        }
+
+        private static Posture ParsePosture(string s) => s switch
+        {
+            "a" or "assault" => Posture.Assault,
+            "f" or "feint" => Posture.Feint,
+            _ => Posture.Hold,
+        };
+
+        private FixedPoint RenownNorm() => FixedPoint.FromFraction(System.Math.Min(_rt.CareerView().Renown, 1000), 1000);
+
+        private string Pact(string factionId)
+        {
+            var factors = new PactFactors(RenownNorm(), FixedPoint.FromFraction(1, 2), FixedPoint.FromFraction(1, 2));
+            PactResult r = _rt.ProposePact(new FactionId(factionId), DiplomaticStance.NonAggression, factors);
+            return r.Accepted ? $"✓ 与 {Name(factionId)} 缔「互不侵犯」之约" : $"× {Name(factionId)} 未允（名望/关系不足）";
+        }
+
+        private string RenderDiplomacy()
+            => "【外交】pact <势力id> 缔互不侵犯 · breach <势力id> 背约（损名望·转敌对）。与盟/互不侵犯势力须先背约方可攻。";
+
+        private string RenderTheater()
+            => "【多城战区】占城归你后入战区；delegate <城id> <将id> 委任下属打理（掌管范围随官阶）。占城越多、越需委任。";
+
+        private string RenderTalents()
+        {
+            var vis = _rt.VisibleTalents();
+            if (vis.Count == 0)
+                return "尚无可见人才（[reveal <id>] 探知；或推进时段待其登场）。可探：talent-wolong(卧龙) / talent-xiaojiang(骁将) / talent-nengli(能吏)";
+            var sb = new StringBuilder("【可见人才】(recruit <id> 招揽)：");
+            foreach (TalentProfile t in vis) sb.Append($"\n  {t.Id.Value} — {Name(t.Character.Value)}");
+            return sb.ToString();
+        }
+
+        private string Recruit(string id)
+        {
+            var offer = new RecruitmentOffer(RenownNorm(), FixedPoint.FromFraction(1, 2), FixedPoint.FromFraction(1, 2), FixedPoint.FromFraction(1, 2));
+            _rt.RecruitTalent(new TalentId(id), offer);
+            return _rt.HasRecruited(new TalentId(id)) ? $"✓ {id} 出仕入伙！" : "× 未能招得（未登场/未知晓/志向未动）";
+        }
+
         private static string Cmd(CampaignCommandResult r, string label)
             => r.Applied ? $"✓ {label}（已办，需时见效）" : $"× {label}失败：{r.Error}";
 
@@ -277,9 +355,10 @@ namespace ThreeKingdom.Console
             " 推进: w(周) season(季) year(年) · status · map · roster [页]\n" +
             " 治理: req <n> / repair / appease · 情报: scout / council\n" +
             " 君命: mission / checkmission / tribute\n" +
-            " 出征: authorize→targets→offensive→launch→auto→conclude\n" +
+            " 出征: authorize→targets→offensive→launch→(auto代打 或 bview/move/posture/round 微操)→conclude\n" +
             " 守城: defend / defauto · 施计: subvert <cityId> <1离间|2策反|3攻心>\n" +
-            " 生涯: rebel(自立·无退路)\n" +
+            " 外交: pact <势力id> / breach <势力id> / diplo · 多城: theater / delegate <城> <将>\n" +
+            " 人才: talents / reveal <id> / recruit <id> · 生涯: rebel(自立·无退路)\n" +
             " 被灭: fate / submit / refuse / refuge <势力id> / continue · 传承: heir\n" +
             " 存档: save / load · 帮助: ? · 退出: q";
     }
