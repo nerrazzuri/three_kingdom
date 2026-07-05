@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 顶栏聚合状态 + 君命 + 人才（把此前无屏的系统一次surfaced；GameHudView 单一绑定）。★需 Unity 编辑器验证。 -->
+    <ui:VisualElement name="game-status" class="status-root">
+        <ui:Label name="status-era" text="公元190·春" class="status-line" />
+        <ui:Label name="status-life" text="20岁·春秋鼎盛" class="status-line" />
+        <ui:Label name="status-career" text="太守（功0/名望0）" class="status-line" />
+        <ui:Label name="status-agents" text="手令 0/2" class="status-line" />
+        <ui:Label name="status-contention" text="据1城·群雄17家" class="status-line" />
+        <ui:Label name="status-mission" text="君命：…" class="status-mission" />
+
+        <ui:Label text="可招人才" class="status-subhead" />
+        <ui:ScrollView name="talent-list" class="talent-list" />
+    </ui:VisualElement>
+</ui:UXML>

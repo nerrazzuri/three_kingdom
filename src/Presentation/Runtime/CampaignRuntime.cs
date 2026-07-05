@@ -192,6 +192,18 @@ namespace ThreeKingdom.Presentation.Runtime
         public CampaignMapView MapView()
             => CampaignMapView.Build(Session.World, Contend, _scenario.PlayerFaction, CurrentYear, _scenario.AnchorYear, CurrentSeasonLabel);
 
+        /// <summary>顶栏聚合视图（UI 单一绑定对象）：纪元/一生/生涯/君命/行动容量/争霸 一次取全。</summary>
+        public GameHudView HudSummary()
+        {
+            int rivals = 0;
+            foreach (ThreeKingdom.Domain.Contention.PowerStanding p in Contend.Powers)
+                if (p.Alive && p.Faction != _scenario.PlayerFaction) rivals++;
+            return new GameHudView(
+                CurrentYear, CurrentSeasonLabel, LifeView(), CareerView(), HasRebelled,
+                CurrentMissionView().Order, ActionsInFlight, ActionCapacity,
+                Contend.CitiesOf(_scenario.PlayerFaction), rivals, IsPlayerEliminated);
+        }
+
         // --- 君主任务（GDD_014 / W5）：君主主动派讨伐/守土/献纳，完成累积功绩通往晋升。生成/评估确定性。---
 
         private readonly LordMissionService _missionService = new LordMissionService();
@@ -889,6 +901,9 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>玩家可见人才（已登场 ∩ 已知晓；反全知，未知晓者不入）。</summary>
         public IReadOnlyList<ThreeKingdom.Domain.Talent.TalentProfile> VisibleTalents()
             => _talentService.Visible(_scenario.TalentRoster, _talent, Session.CurrentTime);
+
+        /// <summary>可招人才录（反全知无数值：名/专长/招揽难度定性档）。</summary>
+        public TalentRecruitView TalentView() => TalentRecruitView.From(VisibleTalents());
 
         /// <summary>经渠道知晓某人才（侦察/军师/部曲人脉/历史事件）→ 进入视野。</summary>
         public void RevealTalent(ThreeKingdom.Domain.Talent.TalentId id, ThreeKingdom.Domain.Talent.TalentChannel channel)

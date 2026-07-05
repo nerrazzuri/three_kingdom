@@ -257,6 +257,16 @@ namespace ThreeKingdom.Unity.UI
         /// <summary>生涯视图（官阶中文头衔 + 功绩/名望 + 是否在野）。</summary>
         public static CareerView Career() => _runtime.CareerView();
 
+        /// <summary>顶栏聚合视图（UI 单一绑定：纪元/一生/生涯/君命/手令/争霸 一次取全）。</summary>
+        public static GameHudView HudSummary() => _runtime.HudSummary();
+
+        /// <summary>可招人才录（反全知无数值：名/专长/难度定性）。</summary>
+        public static TalentRecruitView TalentView() => _runtime.TalentView();
+
+        /// <summary>行动容量（手令 已用/上限，随官阶）。</summary>
+        public static int ActionCapacity => _runtime.ActionCapacity;
+        public static int ActionsInFlight => _runtime.ActionsInFlight;
+
         /// <summary>当前君主任务展示（讨伐/守土/献纳 + 目标 + 期限）。</summary>
         public static LordMissionView Mission() => _runtime.CurrentMissionView();
         /// <summary>评估并结算当前君主任务（完成计功绩、失败撤任务并损名望）；返回进度。</summary>
