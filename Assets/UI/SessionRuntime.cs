@@ -251,6 +251,9 @@ namespace ThreeKingdom.Unity.UI
         /// <summary>武将录（反全知：中文名 + 气质性情，无数值）。</summary>
         public static GeneralRosterView Roster() => GeneralRosterView.Build();
 
+        /// <summary>战略大地图投影（城归属 + 势力 + 纪元；供 campaign map 适配器映射到 scaffold ViewModel）。</summary>
+        public static CampaignMapView MapView() => _runtime.MapView();
+
         /// <summary>生涯视图（官阶中文头衔 + 功绩/名望 + 是否在野）。</summary>
         public static CareerView Career() => _runtime.CareerView();
 

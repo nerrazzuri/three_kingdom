@@ -328,6 +328,22 @@ namespace ThreeKingdom.Application.Scenarios
             return false;
         }
 
+        /// <summary>全部世界大盘城（含君主治所；稳定序）——供战略地图枚举。</summary>
+        public static IReadOnlyList<CityId> AllWorldCities()
+        {
+            var result = new List<CityId>();
+            foreach (SeedFaction w in World)
+            {
+                if (w.Bespoke) continue;
+                foreach ((CityId c, int _) in w.Cities) result.Add(c);
+            }
+            result.Sort((a, b) => string.CompareOrdinal(a.Value, b.Value));
+            return result;
+        }
+
+        /// <summary>某城在世界大盘是否为君主治所（首城）——供地图标注。</summary>
+        public static bool IsCapitalCity(CityId city) => IsRulerSeat(city);
+
         /// <summary>可选做太守的城（GDD_026 R3：世界大盘内、非君主治所的城；稳定序）。</summary>
         public static IReadOnlyList<CityId> SelectableGovernorCities()
         {

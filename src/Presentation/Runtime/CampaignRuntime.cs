@@ -188,6 +188,10 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>生涯视图（GDD_014 / W5）：官阶中文头衔 + 功绩/名望 + 是否在野。</summary>
         public CareerView CareerView() => new CareerView(Session.Career.Career);
 
+        /// <summary>战略大地图投影（城归属 + 势力 + 纪元；供 campaign map 表现层）。</summary>
+        public CampaignMapView MapView()
+            => CampaignMapView.Build(Session.World, Contend, _scenario.PlayerFaction, CurrentYear, CurrentSeasonLabel);
+
         // --- 君主任务（GDD_014 / W5）：君主主动派讨伐/守土/献纳，完成累积功绩通往晋升。生成/评估确定性。---
 
         private readonly LordMissionService _missionService = new LordMissionService();
