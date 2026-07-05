@@ -182,6 +182,9 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>空降者一生视图（当前公元年/年龄/人生阶段/是否寿终；定性档，不给精确倒计时）。</summary>
         public ArrivalLifeView LifeView() => new ArrivalLifeView(CurrentYear, Life);
 
+        /// <summary>生涯视图（GDD_014 / W5）：官阶中文头衔 + 功绩/名望 + 是否在野。</summary>
+        public CareerView CareerView() => new CareerView(Session.Career.Career);
+
         /// <summary>
         /// 传承（GDD_026 R6）：寿终后由子嗣续局——同世界、同治所、生涯基业延续，新一世自<b>当前公元年</b>弱冠起、寿命另掷。
         /// 尚未寿终则抛（寿终方可传）。返回新一世视图。世界/生涯态不重置——只是执掌者换了一代人。

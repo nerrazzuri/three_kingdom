@@ -250,5 +250,8 @@ namespace ThreeKingdom.Unity.UI
 
         /// <summary>武将录（反全知：中文名 + 气质性情，无数值）。</summary>
         public static GeneralRosterView Roster() => GeneralRosterView.Build();
+
+        /// <summary>生涯视图（官阶中文头衔 + 功绩/名望 + 是否在野）。</summary>
+        public static CareerView Career() => _runtime.CareerView();
     }
 }
