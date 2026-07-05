@@ -43,14 +43,22 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>是否含汜水关太守专属独立席（第 18 席）：仅默认剧本为真；扮演既有诸侯时为假（占其席为 Self）。</summary>
         public bool IncludesBespokeSeat { get; }
 
+        /// <summary>宗主势力（GDD_026：太守名义所属的君主势力；空=独立/无宗主）。任选城开局即为该城原属势力。</summary>
+        public FactionId? Suzerain { get; }
+
+        /// <summary>开局即归玩家调遣的部将（GDD_026 R4：该锚点年该城在职武将）。空=仅默认僚属。</summary>
+        public IReadOnlyList<CharacterId> SubordinateGenerals { get; }
+
         public PlayableStart(
             string id, string displayName, string blurb,
             FactionId playerFaction, CharacterId playerLord, CityId capital, int capitalGarrison,
             CityId offensiveTarget, FactionId targetFaction, TerrainKind targetTerrain, bool includesBespokeSeat,
-            int anchorYear = 190)
+            int anchorYear = 190, FactionId? suzerain = null, IReadOnlyList<CharacterId>? subordinateGenerals = null)
         {
             Id = id;
             AnchorYear = anchorYear;
+            Suzerain = suzerain;
+            SubordinateGenerals = subordinateGenerals ?? System.Array.Empty<CharacterId>();
             DisplayName = displayName;
             Blurb = blurb;
             PlayerFaction = playerFaction;

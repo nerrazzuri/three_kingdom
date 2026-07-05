@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ThreeKingdom.Domain.Characters;
+using ThreeKingdom.Domain.City;
 
 namespace ThreeKingdom.Application.Scenarios
 {
@@ -26,6 +27,81 @@ namespace ThreeKingdom.Application.Scenarios
             var list = new List<GeneralDossier>(ById.Values);
             list.Sort((a, b) => string.CompareOrdinal(a.Id.Value, b.Id.Value));
             return list;
+        }
+
+        // ---- 生卒年（GDD_026 / ADR-0015 D4）：史载近似，供在世/在职与 EraStage 判定。GeneralDossiers 仍为武将数据唯一权威。----
+        // 空降者（char-player-lord）非历史武将，不入此表（不受生卒约束）。
+        private static readonly IReadOnlyDictionary<string, (int Birth, int Death)> LifeYears =
+            new Dictionary<string, (int, int)>(StringComparer.Ordinal)
+            {
+                // 君主
+                ["char-caocao"] = (155, 220), ["char-liubei"] = (161, 223), ["char-sunce"] = (175, 200),
+                ["char-sunquan"] = (182, 252), ["char-yuanshao"] = (154, 202), ["char-yuan"] = (155, 199),
+                ["char-lubu"] = (161, 199), ["char-liubiao"] = (142, 208), ["char-liuzhang"] = (162, 219),
+                ["char-mateng"] = (156, 212), ["char-zhanglu"] = (160, 216), ["char-gongsun"] = (151, 199),
+                ["char-lijue"] = (150, 198), ["char-zhangxiu"] = (160, 207), ["char-kongrong"] = (153, 208),
+                ["char-hansui"] = (140, 215), ["char-shixie"] = (137, 226),
+                // 蜀
+                ["char-guanyu"] = (160, 220), ["char-zhangfei"] = (165, 221), ["char-zhaoyun"] = (168, 229),
+                ["char-zhugeliang"] = (181, 234), ["char-machao"] = (176, 222), ["char-huangzhong"] = (148, 220),
+                ["char-weiyan"] = (170, 234), ["char-pangtong"] = (179, 214), ["char-jiangwei"] = (202, 264),
+                // 魏
+                ["char-xiahoudun"] = (157, 220), ["char-zhangliao"] = (169, 222), ["char-xuchu"] = (170, 230),
+                ["char-dianwei"] = (160, 197), ["char-guojia"] = (170, 207), ["char-xunyu"] = (163, 212),
+                ["char-simayi"] = (179, 251), ["char-caoren"] = (168, 223), ["char-jiaxu"] = (147, 223),
+                // 吴
+                ["char-zhouyu"] = (175, 210), ["char-lusu"] = (172, 217), ["char-lvmeng"] = (178, 220),
+                ["char-luxun"] = (183, 245), ["char-taishici"] = (166, 206), ["char-ganning"] = (175, 215),
+                ["char-huanggai"] = (145, 215),
+                // 群雄部将
+                ["char-yanliang"] = (160, 200), ["char-wenchou"] = (160, 200), ["char-gaoshun"] = (160, 198),
+                ["char-chengong"] = (160, 198), ["char-huaxiong"] = (160, 191), ["char-haozhao"] = (180, 229),
+            };
+
+        // ---- 190 讨董布防（GDD_026 D4）：部将 → 任职城（须属该城 190 归属势力）。君主不入（本身即势力之主）。----
+        // 未及冠/未生者（machao/zhugeliang/simayi/luxun/lvmeng/jiangwei/pangtong/zhouyu/ganning…）此年不布防，留待后续锚点年。
+        private static readonly IReadOnlyDictionary<string, string> Placement190 =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["char-guanyu"] = "city-xiaopei", ["char-zhangfei"] = "city-xiaopei",   // 刘备·小沛
+                ["char-zhaoyun"] = "city-beiping",                                       // 公孙瓒·北平
+                ["char-huangzhong"] = "city-xiangyang", ["char-weiyan"] = "city-xiangyang", // 刘表·襄阳
+                ["char-xiahoudun"] = "city-chenliu", ["char-caoren"] = "city-chenliu",   // 曹操·陈留
+                ["char-dianwei"] = "city-chenliu", ["char-xunyu"] = "city-chenliu",
+                ["char-guojia"] = "city-chenliu", ["char-chengong"] = "city-chenliu",
+                ["char-zhangliao"] = "city-changan", ["char-jiaxu"] = "city-changan",     // 李傕·长安（董卓系）
+                ["char-yanliang"] = "city-ye", ["char-wenchou"] = "city-ye",             // 袁绍·邺城
+                ["char-gaoshun"] = "city-xiapi",                                          // 吕布·下邳
+                ["char-huaxiong"] = "city-hulao",                                         // 袁术·虎牢关
+                ["char-taishici"] = "city-beihai",                                        // 孔融·北海
+                ["char-lusu"] = "city-jianye", ["char-huanggai"] = "city-jianye",        // 孙氏·建业
+            };
+
+        /// <summary>某武将生卒年（公元）；未登记则 null（不受生卒约束，视为常在）。</summary>
+        public static (int Birth, int Death)? LifeOf(CharacterId id)
+            => id.Value != null && LifeYears.TryGetValue(id.Value, out (int, int) y) ? y : ((int, int)?)null;
+
+        /// <summary>某武将在某公元年是否在世且已及冠出仕（GDD_026 F4）；无生卒登记者视为常在。</summary>
+        public static bool AvailableAt(CharacterId id, int year, int serviceMinAge = 16)
+        {
+            (int Birth, int Death)? life = LifeOf(id);
+            if (life == null) return true;
+            return life.Value.Birth + serviceMinAge <= year && year <= life.Value.Death;
+        }
+
+        /// <summary>某锚点年、某城在职的部将（GDD_026 R4；反全知外壳另投影）。当前仅 190 有布防数据，余年返回空。</summary>
+        public static IReadOnlyList<CharacterId> GeneralsAt(CityId city, int anchorYear)
+        {
+            var result = new List<CharacterId>();
+            if (anchorYear != 190 || city.Value == null) return result;
+            foreach (KeyValuePair<string, string> kv in Placement190)
+            {
+                if (kv.Value != city.Value) continue;
+                var id = new CharacterId(kv.Key);
+                if (AvailableAt(id, anchorYear)) result.Add(id);
+            }
+            result.Sort((a, b) => string.CompareOrdinal(a.Value, b.Value));
+            return result;
         }
 
         private static IReadOnlyDictionary<string, GeneralDossier> Build()

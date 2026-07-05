@@ -170,9 +170,34 @@ namespace ThreeKingdom.Application.Scenarios
         public OffensiveGeneral LeadGeneral
             => new OffensiveGeneral(Lord, Frac(7, 10), Frac(7, 10), Frac(6, 10), GeneralSpecialty.Siege, TagsOf(Lord), ProwessOf(Lord), StrategyOf(Lord));
 
-        /// <summary>可选副将花名册（GDD_014 僚属；副将 Aide 智略高·善奇袭，利设伏路线）。</summary>
+        /// <summary>
+        /// 可选副将花名册（GDD_014 僚属）：任选城太守开局时=该年该城在职部将（GDD_026 R4，携各自档案气质/战阵/谋略档）；
+        /// 否则=默认僚属 Aide（智略高·善奇袭，利设伏路线）。
+        /// </summary>
         public IReadOnlyList<OffensiveGeneral> DeputyRoster
-            => new[] { new OffensiveGeneral(Aide, Frac(5, 10), Frac(6, 10), Frac(8, 10), GeneralSpecialty.Ambush, TagsOf(Aide), ProwessOf(Aide), StrategyOf(Aide)) };
+        {
+            get
+            {
+                if (_start.SubordinateGenerals.Count > 0)
+                {
+                    var list = new List<OffensiveGeneral>();
+                    foreach (CharacterId c in _start.SubordinateGenerals) list.Add(GeneralOf(c));
+                    return list;
+                }
+                return new[] { new OffensiveGeneral(Aide, Frac(5, 10), Frac(6, 10), Frac(8, 10), GeneralSpecialty.Ambush, TagsOf(Aide), ProwessOf(Aide), StrategyOf(Aide)) };
+            }
+        }
+
+        /// <summary>由武将 id 组装出征将领：智略门取自其气质（诡谋/远图者智略高），战力/士气取中庸默认；携档案战阵/谋略档。</summary>
+        private static OffensiveGeneral GeneralOf(CharacterId c)
+        {
+            IReadOnlyList<GeneralTag> tags = TagsOf(c);
+            bool wise = false;
+            foreach (GeneralTag t in tags) if (t == GeneralTag.Cunning || t == GeneralTag.Strategist) wise = true;
+            FixedPoint guile = wise ? FixedPoint.FromFraction(8, 10) : FixedPoint.FromFraction(5, 10);
+            return new OffensiveGeneral(c, FixedPoint.FromFraction(6, 10), FixedPoint.FromFraction(7, 10), guile,
+                GeneralSpecialty.None, tags, ProwessOf(c), StrategyOf(c));
+        }
 
         /// <summary>目标敌城的<b>真实</b>守备（结算用真值；玩家所见须经情报投影，反全知）。虎牢关：守军600 × 工事1.2。</summary>
         public SiegeDefense DefenseOf(CityId city) => new SiegeDefense(600, Frac(12, 10));
@@ -204,8 +229,15 @@ namespace ThreeKingdom.Application.Scenarios
             var standings = new List<Domain.Contention.PowerStanding>();
             foreach (SeedFaction w in World)
             {
-                if (w.Bespoke && !_start.IncludesBespokeSeat) continue;
-                standings.Add(new Domain.Contention.PowerStanding(w.Faction, w.Cities.Length));
+                if (w.Bespoke)
+                {
+                    if (!_start.IncludesBespokeSeat) continue;
+                    standings.Add(new Domain.Contention.PowerStanding(_start.PlayerFaction, 1));   // 太守持治所 1 城
+                    continue;
+                }
+                int count = w.Cities.Length;
+                if (_start.IncludesBespokeSeat && OwnsCity(w, _start.Capital)) count -= 1;   // 治所已划归玩家太守
+                standings.Add(new Domain.Contention.PowerStanding(w.Faction, count));
             }
             return new Domain.Contention.ContentionState(standings.ToArray());
         }
@@ -255,6 +287,77 @@ namespace ThreeKingdom.Application.Scenarios
             if (w.Faction == _start.PlayerFaction) return RelationToPlayer.Self;
             if (w.Faction == _start.TargetFaction) return RelationToPlayer.Hostile;
             return w.BaseRelation == RelationToPlayer.Self ? RelationToPlayer.Neutral : w.BaseRelation;
+        }
+
+        private static bool OwnsCity(SeedFaction w, CityId city)
+        {
+            foreach ((CityId c, int _) in w.Cities) if (c == city) return true;
+            return false;
+        }
+
+        // ---- 任选城太守开局（GDD_026 R3/R4）：查世界大盘 → "你为该城太守、该年该城武将归你"。程序化 PlayableStart。----
+
+        /// <summary>某城在世界大盘的归属势力；未登记则 null。</summary>
+        public static FactionId? OwnerOfCity(CityId city)
+        {
+            foreach (SeedFaction w in World)
+                if (!w.Bespoke && OwnsCity(w, city)) return w.Faction;
+            return null;
+        }
+
+        private static int GarrisonOfCity(CityId city, int fallback = 600)
+        {
+            foreach (SeedFaction w in World)
+                foreach ((CityId c, int g) in w.Cities) if (c == city) return g;
+            return fallback;
+        }
+
+        /// <summary>是否君主治所（GDD_026 R3：各势力首城即君主亲镇，太守不可选）。</summary>
+        public static bool IsRulerSeat(CityId city)
+        {
+            foreach (SeedFaction w in World)
+                if (!w.Bespoke && w.Cities.Length > 0 && w.Cities[0].City == city) return true;
+            return false;
+        }
+
+        /// <summary>可选做太守的城（GDD_026 R3：世界大盘内、非君主治所的城；稳定序）。</summary>
+        public static IReadOnlyList<CityId> SelectableGovernorCities()
+        {
+            var result = new List<CityId>();
+            foreach (SeedFaction w in World)
+            {
+                if (w.Bespoke) continue;
+                for (int i = 1; i < w.Cities.Length; i++) result.Add(w.Cities[i].City);   // 跳过首城（君主治所）
+            }
+            result.Sort((a, b) => string.CompareOrdinal(a.Value, b.Value));
+            return result;
+        }
+
+        /// <summary>
+        /// 任选城太守开局（GDD_026）：玩家空降为 <paramref name="city"/> 的太守（190 讨董之世），名义属该城原势力（宗主），
+        /// 该年该城在职武将尽归其调遣。非君主治所方可（IsRulerSeat 拒）。玩家为独立太守席（如汜水关模式），
+        /// 治所自宗主划出。首要出征目标取一敌对势力城（宗主即袁术则改指下邳/吕布）。
+        /// </summary>
+        public static PlayableStart GovernorStartOf(CityId city)
+        {
+            FactionId? owner = OwnerOfCity(city);
+            if (owner == null) throw new ArgumentException($"世界大盘无此城：{city.Value}", nameof(city));
+            if (IsRulerSeat(city)) throw new ArgumentException($"{city.Value} 为君主治所，不可为太守。", nameof(city));
+
+            bool suzerainIsEnemy = owner.Value == Enemy;
+            CityId target = suzerainIsEnemy ? Xiapi : EnemyCity;
+            FactionId targetFaction = suzerainIsEnemy ? LuBu : Enemy;
+            TerrainKind terrain = suzerainIsEnemy ? TerrainKind.Fortified : TerrainKind.Pass;
+
+            return new PlayableStart(
+                id: "governor-" + city.Value,
+                displayName: city.Value + "·太守",   // 中文名由表现层选城屏经 DisplayNames 重标（Application 不依赖 Presentation）
+                blurb: "空降为一城太守，名义奉宗主号令。该城将佐尽听调遣——是安做臣属，还是伺机自立？",
+                playerFaction: Player, playerLord: Lord,
+                capital: city, capitalGarrison: GarrisonOfCity(city),
+                offensiveTarget: target, targetFaction: targetFaction, targetTerrain: terrain,
+                includesBespokeSeat: true, anchorYear: 190,
+                suzerain: owner, subordinateGenerals: GeneralDossiers.GeneralsAt(city, 190));
         }
 
         /// <summary>守城区域防御战：玩家守军（汜水关；GDD_021 攻守统一，守方视角）。</summary>
@@ -374,10 +477,19 @@ namespace ThreeKingdom.Application.Scenarios
             var cities = new List<CityOwnership>();
             foreach (SeedFaction w in World)
             {
-                if (w.Bespoke && !_start.IncludesBespokeSeat) continue;
+                if (w.Bespoke)
+                {
+                    if (!_start.IncludesBespokeSeat) continue;
+                    // 玩家太守独立席：持治所城（任选城开局时自其原属势力划出，见下）。
+                    cities.Add(new CityOwnership(_start.Capital, _start.PlayerFaction, _start.CapitalGarrison));
+                    factions.Add(new FactionRecord(_start.PlayerFaction, _start.PlayerLord, SurvivalStatus.Active,
+                        RelationToPlayer.Self, new[] { _start.Capital }));
+                    continue;
+                }
                 var owned = new List<CityId>();
                 foreach ((CityId city, int garrison) in w.Cities)
                 {
+                    if (_start.IncludesBespokeSeat && city == _start.Capital) continue;   // 治所已划归玩家太守
                     owned.Add(city);
                     cities.Add(new CityOwnership(city, w.Faction, garrison));
                 }
