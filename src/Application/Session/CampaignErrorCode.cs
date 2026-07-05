@@ -38,5 +38,8 @@ namespace ThreeKingdom.Application.Session
 
         /// <summary>会话未启用战役准备，准备命令不适用。</summary>
         PreparationDisabled = 10,
+
+        /// <summary>手下人手已满——同时在办的差事达官阶上限，须待一事办完方可再遣（GDD_014 容量节流）。</summary>
+        NoFreeAgent = 11,
     }
 }

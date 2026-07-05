@@ -51,6 +51,7 @@ namespace ThreeKingdom.Console
             LordMissionView m = _rt.CurrentMissionView();
             sb.AppendLine($"  {m.Order}");
             sb.Append($"  争霸：存续 {AliveCount()} 家 · 你据 {_rt.Contention.CitiesOf(PlayableCampaign.Player)} 城");
+            sb.Append($" · 手令 {_rt.ActionsInFlight}/{_rt.ActionCapacity}");
             return sb.ToString();
         }
 

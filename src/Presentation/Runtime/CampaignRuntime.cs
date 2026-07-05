@@ -382,7 +382,7 @@ namespace ThreeKingdom.Presentation.Runtime
         /// 时段后返报——须「推进时段」到返报时刻，敌情数字才出现。返回命令结果（校验失败稳定错误码、零写入）。
         /// </summary>
         public CampaignCommandResult ScoutEnemy()
-            => _service.DispatchScout(Session, PlayableCampaign.EnemyArmy, IntelSource.Scouting, _scenario.ScoutLeadSegments);
+            => HasFreeAgent ? _service.DispatchScout(Session, PlayableCampaign.EnemyArmy, IntelSource.Scouting, _scenario.ScoutLeadSegments) : NoAgent();
 
         // --- 战役主循环（epic-028 story-004 / TR-ux-001/005 / ADR-0002/0009）。所有操作经服务命令，UI 只读投影。---
 
@@ -395,17 +395,32 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>治理面板（多维账本 + 三动作因果说明）。</summary>
         public GovernanceActionView Governance() => GovernanceActionView.FromSession(Session);
 
-        /// <summary>下令征用军粮（GDD_004 派人处理→需时见效）：校验后记为在办，约 1 日后见效；超可分配量稳定错误码。</summary>
+        // --- 行动容量节流（GDD_014 / 2026-07-05）：手下就那么几个人，同时能办的差事有限（随官阶增长）。---
+        // 与"时长制"(行动需数周办成)互补：时长管"多久见效"，容量管"同时能办几件"——非体力点数（避免双重节流）。
+
+        private const int BaseActionSlots = 2;
+        /// <summary>可同时在办的差事上限（基数 + 官阶——升官则手下更多，给往上爬的实在理由）。</summary>
+        public int ActionCapacity => BaseActionSlots + (int)Session.Career.Career.Rank;
+        /// <summary>当前在办差事数（在途侦察 + 在办治理）。</summary>
+        public int ActionsInFlight => Session.PendingScouts.Count + Session.PendingGovernance.Count;
+        /// <summary>是否还有空闲人手可遣（未满容量）。</summary>
+        public bool HasFreeAgent => ActionsInFlight < ActionCapacity;
+
+        private CampaignCommandResult NoAgent()
+            => CampaignCommandResult.Failure(CampaignErrorCode.NoFreeAgent,
+                $"手下都在办事——同时最多 {ActionCapacity} 件（随官阶增），须待一事办完再遣。");
+
+        /// <summary>下令征用军粮（GDD_004 派人处理→需时见效）：校验后记为在办，约 2 周后见效；超可分配量稳定错误码。占一名人手。</summary>
         public CampaignCommandResult Requisition(long amount)
-            => _service.DispatchRequisition(Session, amount, _scenario.RequisitionLeadSegments);
+            => HasFreeAgent ? _service.DispatchRequisition(Session, amount, _scenario.RequisitionLeadSegments) : NoAgent();
 
-        /// <summary>下令修工事（GDD_004）：工事已满稳定错误码，否则记为在办，约 1 日后见效。</summary>
+        /// <summary>下令修工事（GDD_004）：工事已满稳定错误码，否则记为在办，约 3 周后见效。占一名人手。</summary>
         public CampaignCommandResult Repair()
-            => _service.DispatchRepair(Session, _scenario.RepairLeadSegments);
+            => HasFreeAgent ? _service.DispatchRepair(Session, _scenario.RepairLeadSegments) : NoAgent();
 
-        /// <summary>下令安抚民心（GDD_004）：记为在办，约半日后见效。</summary>
+        /// <summary>下令安抚民心（GDD_004）：记为在办，约 1 周后见效。占一名人手。</summary>
         public CampaignCommandResult Appease()
-            => _service.DispatchAppease(Session, _scenario.AppeaseLeadSegments);
+            => HasFreeAgent ? _service.DispatchAppease(Session, _scenario.AppeaseLeadSegments) : NoAgent();
 
         /// <summary>备战面板（草稿 vs 已提交视觉区分）。</summary>
         public PrepPanelView Prep() => PrepPanelView.FromSession(Session);
