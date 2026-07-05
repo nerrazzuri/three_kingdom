@@ -1,5 +1,16 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## ✅ 完成（2026-07-05 续4）— 自立无退路 + Unity 壳 + T4羁绊 + W4兵种地形 + W6引导 + W5生涯头衔
+
+> **dotnet 1095→1108 绿。提交链 1a4b4ff→ca8ad21。**
+> - **自立无退路（1a4b4ff）**：DefeatFlow +rebelled → 叛主被灭必被俘处死，Submit/Refuse 皆拒；CampaignRuntime.DeclareIndependence（接 LaunchRebellion，成功锁 _rebelled）；GDD_026 R9.1。
+> - **Unity 可玩壳（7e67737，★需编辑器验证）**：SessionRuntime 扩桥（选年/选城/纪元寿命/被俘/武将录/自立）+ GameSetup/Roster/Defeat 三屏 uxml+controller + HUD 显示 公元年·季·年龄·阶段/推进改一周/覆灭转被俘屏。纯 C# DLL 不变。
+> - **T4 羁绊（1f31806）**：Bond+BondEffectService（同场协同/仇怨互扣，封顶）+ GeneralBonds 谱（桃园/曹夏侯/孙周/诸葛姜维/吕布董卓等）+ 接入 FromOffensive 攻方士气。崩解（阵亡狂怒）留后续。
+> - **W4 兵种×地形（8c445eb）**：ZoneBattleConfig.TroopTerrainMul（骑利平原/水利渡口/步利隘口坚城，杠杆非克制）接入 SidePower。（#9战场模板=#3、#10战法条件已有富集）
+> - **W6 引导（b68a176）**：OnboardingHints +6 新系统 cue（纪元一生/选城/兵种地形/羁绊/被灭续局/自立无退路）。DisplayNames/UI草稿已前批/Unity 壳承接。
+> - **W5 生涯（ca8ad21）**：CareerView 官阶八阶中文头衔（太守…大都督/继业之主）+功名+在野。外交/多城/治理系统前已实现接入；此补用户可见头衔层。
+> - **留后续**：羁绊崩解动态（阵亡狂怒）；W5 外交/多城/治理内容深度（系统已在，待具体内容方向）；Unity 壳编辑器验证 + uss 样式。
+
 ## ✅ 完成（2026-07-05 续3）— 争霸放慢（涌现非照史）+ 被灭走向（被俘→…→投奔，唯身死才终）
 
 > **用户定两事，全落地，dotnet 1081→1091 绿，push 13cc571 / d1d2eca。**
