@@ -1,5 +1,18 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## ✅ 完成（2026-07-05 续7）— 全游戏串联：文本控制台整个游戏可玩（无 UI）
+
+> **里程碑：整个游戏在无 UI 下从头玩到尾。提交 19c208d，dotnet 1125/1125 绿。**
+> - 盘点：各系统均实现+单测，但旧 CampaignDriver 只竖切；新系统全挂 CampaignRuntime，无统一驱动。
+> - 新建 **GameConsole**（src/Console，引 Presentation/CampaignRuntime + MemorySaveMedium）把全部系统串成一条文本循环：
+>   选年选城(starts/named/cities/gov) · 纪元推进(w/season/year) · 治理(req/repair/appease) · 情报军议(scout/council) ·
+>   君命(mission/checkmission/tribute) · 出征全流程(authorize→targets→offensive→launch→auto→conclude) · 守城(defend/defauto) ·
+>   施计(subvert) · 自立(rebel) · 被灭续局(fate/submit/refuse/refuge/continue) · 传承(heir) · 地图(map) · 武将录(roster) · save/load。
+> - **玩法**：`dotnet run --project src/Console`（交互）或 `--script "gov city-chenliu|year|..."`（竖线分隔回放）。
+> - 端到端实测通关：陈留太守→大势按年铺开(董卓焚都/桃园/连环计)→守土君命完成→出征→地图34在场武将→武将录203→施计→自立。
+> - 测试 +3（完整通关/数十年寿终传承/菜单）。**"整个游戏可玩，只差 UI" 达成。**
+> - **留后续**：外交/多城/人才的 console 命令（运行期已接，命令未列）；zone battle 战中微操(调动/姿态)console 未展开(现 auto代打)；美术/UI。
+
 ## ✅ 完成（2026-07-05 续6）— 君主任务两收尾 + 武将谱→203 + 战略大地图接入
 
 > **dotnet 1119→1121 绿。提交 463fb29 / 9a215ab / 6836cf8。**
