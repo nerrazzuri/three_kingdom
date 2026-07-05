@@ -42,6 +42,7 @@
 | GDD_023 | 战略外交约束 | [GDD_023_STRATEGIC_DIPLOMACY](gdd-023-strategic-diplomacy.md) | Implemented（epic-024；立场约束战争/缔约/背约代价） |
 | GDD_024 | 人心杠杆（离间/策反/攻心） | [GDD_024_MIND_LEVER_SUBVERSION](gdd-024-mind-lever-subversion.md) | Implemented（epic-032；施计→改变战斗条件：反全知门/种子化/可反噬/撬动非替代 W5） |
 | GDD_025 | 武将标签与羁绊体系 | [GDD_025_GENERAL_TAGS_BONDS](gdd-025-general-tags-bonds.md) | Draft（无数值面板；气质标签→条件涌现 / 隐秘心→人心杠杆 / 羁绊→关系触发 / 反全知识人） |
+| GDD_026 | 空降者·纪元开局与一生 | [GDD_026_ARRIVAL_ERA_LIFESPAN](gdd-026-arrival-era-and-lifespan.md) | Draft（广义184–280锚点年快照 / 任选非治所城起家·该年该城武将归你 / 空降者有寿命→一世→传承；拟 ADR-0015） |
 
 这三篇定义游戏三层结构的上两层（历史世界模型 + 太守生涯）与让“自由布阵”有深度的敌方 AI，锁定整体大方向（见 [game-concept.md](game-concept.md)），防止竖切与大规划脱节。GDD_016 关联 [ADR-0006](../../docs/architecture/adr-0006-deterministic-enemy-ai.md)。
 

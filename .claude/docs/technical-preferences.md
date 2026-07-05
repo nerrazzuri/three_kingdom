@@ -91,6 +91,7 @@
 - [ADR-0011](../docs/architecture/adr-0011-offensive-preparation-model.md): 多维确定性出征准备模型（六维闭合因果：兵力/补给/将领/兵种/布势/时机；布势路线复用 4 兵法链非坐标、兵种杠杆非克制、其余维做条件成型门、反全知侦察门；纯函数整数/定点）— Accepted（2026-07-04）
 - [ADR-0012](../docs/architecture/adr-0012-deterministic-zone-battle-engine.md): 确定性区域战斗引擎（命名区域图非坐标 + 回合纯函数状态机 + 部署/战中调整命令[相邻+在途] + 条件按区按回合涌现 + 结算确定性优先序 + 攻守统一 + 战中存档续战）— Accepted（2026-07-04）
 - [ADR-0013](../docs/architecture/adr-0013-enemy-zone-ai.md): 敌方区域AI效用模型（特化 ADR-0006：区域动作空间 + 反全知 AiWorldView 不接受真值 + 数据驱动效用 + 种子softmax + 渐进记忆 + 同规则不作弊 + LLM隔离；落地 GDD_016，架构一次到位、深度分期迭代）— Accepted（2026-07-04）
+- [ADR-0015](../docs/architecture/adr-0015-era-calendar-and-world-snapshot.md): 纪元与世界快照模型（公元纪年层叠加于日-段 + 锚点年离散快照 + PlayableStart 泛化选城 + 武将生卒/布防扩 GeneralDossiers + 空降者种子化寿命 + 纪元/一生入版本化存档；落地 GDD_026 空降者·纪元开局与一生）— Proposed（2026-07-05）
 - [ADR-0014](../docs/architecture/adr-0014-mind-lever-subversion.md): 人心杠杆·施计改变战斗条件契约（离间/策反/攻心产 SubversionEffect 在战斗接缝削弱守方；反全知门[画像投影自情报/关系]；种子化确定性；可反噬[暴露+守方士气反升]；撬动而非替代六维准备 W5；敌对称威胁；军纪并入有效稳定度；复用 0004/0006/0008/0010/0011/0012；落地 GDD_024 护城河）— Accepted（2026-07-04）
 
 ## Engine Specialists
