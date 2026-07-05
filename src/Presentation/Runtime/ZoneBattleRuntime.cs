@@ -48,7 +48,15 @@ namespace ThreeKingdom.Presentation.Runtime
             var field = BattleFieldCatalog.ForTerrain(prep.Terrain);   // #3 逐城/地形战场：按目标城地形选正面区
             var planner = new OffensiveDeploymentPlanner();
             var dets = new List<Detachment>();
-            dets.AddRange(planner.PlanAttacker(prep, morale, field));
+
+            // 羁绊同场（GDD_025 R4 / T4）：并肩之将（血脉/师徒/知己）协同增士气，仇怨同场则互扣。作用于攻方初始士气。
+            var present = new List<CharacterId> { prep.Command.Lead.Character };
+            foreach (OffensiveGeneral dep in prep.Command.Deputies) present.Add(dep.Character);
+            FixedPoint bondMul = new BondEffectService().SideBondMorale(
+                present, ThreeKingdom.Application.Scenarios.GeneralBonds.Among(present), BondConfig.Default);
+            FixedPoint attackerMorale = (morale * bondMul).Clamp(FixedPoint.Zero, FixedPoint.One);
+
+            dets.AddRange(planner.PlanAttacker(prep, attackerMorale, field));
             dets.AddRange(planner.PlanDefender(
                 new SiegeDefense(garrison, FixedPoint.FromFraction(12, 10)), FixedPoint.FromFraction(7, 10), field,
                 subversion ?? SubversionEffect.None));
