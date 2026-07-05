@@ -296,7 +296,7 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             if (!Session.HasBattle) throw new InvalidOperationException("尚未开战，无战果可结算。");
             IReadOnlyList<RecognizedTactic> tactics = _service.RecognizeTactics(Session);
-            var context = new OutcomeContext(PlayableCampaign.Player, PlayableCampaign.Fanshui);
+            var context = new OutcomeContext(_scenario.PlayerFaction, _scenario.PlayerCapital);
             OutcomeContinuation continuation = _service.ResolveBattleOutcome(
                 Session, OutcomeBranch.Victory, context, _scenario.OutcomeConfig);
             CareerGain? gain = _scenario.Ladder.GainFor(CareerGainSource.CombatVictory);
@@ -337,7 +337,7 @@ namespace ThreeKingdom.Presentation.Runtime
             bool authorized = false;
             foreach (CityId city in _scenario.OffensiveTargetCities)
             {
-                OffensiveGateResult gate = _service.CheckOffensiveTarget(Session, city, PlayableCampaign.Player);
+                OffensiveGateResult gate = _service.CheckOffensiveTarget(Session, city, _scenario.PlayerFaction);
                 if (gate != OffensiveGateResult.NotAuthorized) authorized = true;
                 lines.Add(new OffensiveTargetLine(city.Value, DisplayNames.Of(city.Value), gate));
             }
@@ -379,7 +379,7 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             if (_offensivePlan == null) throw new InvalidOperationException("尚未开始组装出征（先 BeginOffensive）。");
             CityId target = _offensivePlan.Target;
-            OffensiveGateResult gate = _service.CheckOffensiveTarget(Session, target, PlayableCampaign.Player);
+            OffensiveGateResult gate = _service.CheckOffensiveTarget(Session, target, _scenario.PlayerFaction);
             if (gate != OffensiveGateResult.Authorized)
                 return OffensiveResultView.FromResult(OffensiveResult.Rejected(gate));
 
@@ -432,7 +432,7 @@ namespace ThreeKingdom.Presentation.Runtime
             if (_offensiveBattle.Outcome == ZoneBattleOutcome.AttackerVictory)
             {
                 ConquestResult conquest = _service.ResolveConquest(
-                    Session, _offensiveTarget, _scenario.ConqueredGarrison, PlayableCampaign.Player, PlayableCampaign.LordFaction,
+                    Session, _offensiveTarget, _scenario.ConqueredGarrison, _scenario.PlayerFaction, PlayableCampaign.LordFaction,
                     FixedPoint.Zero, FixedPoint.Zero, FixedPoint.Zero,
                     _scenario.OffensiveSeed, _scenario.Occupation, _scenario.Ladder, CareerGainSource.MajorBattleVictory);
                 if (conquest.Verdict == OwnershipVerdict.GrantToPlayer)   // 归玩家直辖 → 入多城战区（M12）
@@ -440,7 +440,7 @@ namespace ThreeKingdom.Presentation.Runtime
                     _theater = _theaterService.HoldConqueredCity(_theater, _offensiveTarget);
                     // 争霸领土（M13）：玩家 +1，被夺方 −1（经服务编排，持久化到会话）。
                     FactionId? loser = _scenario.DefendingFactionOf(_offensiveTarget);
-                    _service.RecordPlayerConquest(Session, Contend, PlayableCampaign.Player, loser);
+                    _service.RecordPlayerConquest(Session, Contend, _scenario.PlayerFaction, loser);
                 }
                 view = OffensiveResultView.Victorious(conquest);
             }
@@ -533,7 +533,7 @@ namespace ThreeKingdom.Presentation.Runtime
 
         /// <summary>当前终局状态（继续/统一/覆灭）。</summary>
         public ThreeKingdom.Domain.Contention.EndgameStatus Endgame()
-            => _endgameService.Evaluate(Contend, PlayableCampaign.Player, ThreeKingdom.Domain.Contention.EndgameConfig.Default);
+            => _endgameService.Evaluate(Contend, _scenario.PlayerFaction, ThreeKingdom.Domain.Contention.EndgameConfig.Default);
 
         private int _contentionSteps;
 
@@ -543,7 +543,7 @@ namespace ThreeKingdom.Presentation.Runtime
             ulong seed = new StateHasher()
                 .Append(_scenario.OffensiveSeed).Append(Session.CurrentTime.AbsoluteIndex).Append(_contentionSteps++)
                 .ToHash().Value;
-            _service.StepRivalContention(Session, Contend, PlayableCampaign.Player, seed, ThreeKingdom.Domain.Contention.ContentionConfig.Default);
+            _service.StepRivalContention(Session, Contend, _scenario.PlayerFaction, seed, ThreeKingdom.Domain.Contention.ContentionConfig.Default);
         }
 
         // --- 战略外交（GDD M11 / epic-024）：外交立场约束战争；缔约；背约代价 ---
@@ -631,7 +631,7 @@ namespace ThreeKingdom.Presentation.Runtime
         {
             TalentRecruitAttempt r = _talentService.AttemptRecruit(
                 _scenario.TalentRoster, _talent, id, Session.CurrentTime, offer,
-                _scenario.TalentSeed, PlayableCampaign.Player, _scenario.TalentRecruit);
+                _scenario.TalentSeed, _scenario.PlayerFaction, _scenario.TalentRecruit);
             if (r.Valid) _talent = r.State;
             return r;
         }

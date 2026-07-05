@@ -180,14 +180,17 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>目标进攻路线地形（虎牢关=隘口，利设伏；伏兵突然性条件门）。</summary>
         public TerrainKind TerrainOf(CityId city) => TerrainKind.Pass;
 
-        /// <summary>可出征目标城清单（GDD_019 §7 选目标；授权门/敌控由运行期按会话控制权投影判定）。</summary>
-        public IReadOnlyList<CityId> OffensiveTargetCities => new[] { EnemyCity };
+        /// <summary>可出征目标城清单（GDD_019 §7 选目标；授权门/敌控由运行期按会话控制权投影判定）。取自开局首要目标。</summary>
+        public IReadOnlyList<CityId> OffensiveTargetCities => new[] { _start.OffensiveTarget };
 
-        /// <summary>某城的初始控制方（供外交战争约束按目标势力判立场；MVP 场景映射）。</summary>
+        /// <summary>某城的初始控制方（供外交战争约束按目标势力判立场）：目标城→目标势力，治所→玩家势力，余则查世界大盘。</summary>
         public FactionId? DefendingFactionOf(CityId city)
         {
-            if (city == EnemyCity) return Enemy;
-            if (city == Fanshui) return Player;
+            if (city == _start.OffensiveTarget) return _start.TargetFaction;
+            if (city == _start.Capital) return _start.PlayerFaction;
+            foreach (SeedFaction w in World)
+                foreach ((CityId c, int _) in w.Cities)
+                    if (c == city) return w.Faction;
             return null;
         }
 
@@ -196,26 +199,62 @@ namespace ThreeKingdom.Application.Scenarios
         /// 玩家支配度低（远未统一），争霸→终局成真正战略盘（修正竖切"一开局即统一"）。城数与世界模型城归属一致。
         /// </summary>
         public Domain.Contention.ContentionState InitialContention()
-            => new Domain.Contention.ContentionState(new[]
+        {
+            var standings = new List<Domain.Contention.PowerStanding>();
+            foreach (SeedFaction w in World)
             {
-                new Domain.Contention.PowerStanding(Player, 1),      // 汜水关（太守）
-                new Domain.Contention.PowerStanding(Cao, 4),         // 曹操：许昌/濮阳/陈留/鄄城
-                new Domain.Contention.PowerStanding(YuanShao, 4),    // 袁绍：邺城/南皮/平原/晋阳
-                new Domain.Contention.PowerStanding(Enemy, 3),       // 袁术：寿春/虎牢关/汝南
-                new Domain.Contention.PowerStanding(Sun, 4),         // 孙策：建业/吴郡/会稽/庐江
-                new Domain.Contention.PowerStanding(LiuBiao, 4),     // 刘表：襄阳/江陵/江夏/长沙
-                new Domain.Contention.PowerStanding(LiuZhang, 3),    // 刘璋：成都/江州/梓潼
-                new Domain.Contention.PowerStanding(LuBu, 2),        // 吕布：下邳/徐州
-                new Domain.Contention.PowerStanding(MaTeng, 2),      // 马腾：西凉/武威
-                new Domain.Contention.PowerStanding(GongSun, 2),     // 公孙瓒：北平/蓟城
-                new Domain.Contention.PowerStanding(LiJue, 2),       // 李傕：长安/洛阳
-                new Domain.Contention.PowerStanding(LiuBei, 1),      // 刘备：小沛
-                new Domain.Contention.PowerStanding(ZhangLu, 1),     // 张鲁：汉中
-                new Domain.Contention.PowerStanding(ZhangXiu, 1),    // 张绣：宛城
-                new Domain.Contention.PowerStanding(KongRong, 1),    // 孔融：北海
-                new Domain.Contention.PowerStanding(HanSui, 1),      // 韩遂：汉阳
-                new Domain.Contention.PowerStanding(ShiXie, 1),      // 士燮：交州
-            });
+                if (w.Bespoke && !_start.IncludesBespokeSeat) continue;
+                standings.Add(new Domain.Contention.PowerStanding(w.Faction, w.Cities.Length));
+            }
+            return new Domain.Contention.ContentionState(standings.ToArray());
+        }
+
+        // ---- 共享天下大盘（17 席世界骨架；#1 数据源，默认剧本与各势力开局共用）。玩家席位由 PlayableStart 指定，仅关系/治所随之重定向。----
+        private readonly struct SeedFaction
+        {
+            public readonly FactionId Faction;
+            public readonly CharacterId Lord;
+            public readonly RelationToPlayer BaseRelation;   // 相对"汜水关太守"默认剧本的基线立场
+            public readonly bool Bespoke;                    // 太守专属独立席（仅默认剧本含）
+            public readonly (CityId City, int Garrison)[] Cities;
+            public SeedFaction(FactionId faction, string lord, RelationToPlayer baseRelation, bool bespoke, (CityId, int)[] cities)
+            {
+                Faction = faction;
+                Lord = new CharacterId(lord);
+                BaseRelation = baseRelation;
+                Bespoke = bespoke;
+                Cities = cities;
+            }
+        }
+
+        private static readonly SeedFaction[] World =
+        {
+            new SeedFaction(Player, "char-player-lord", RelationToPlayer.Self, true, new[] { (Fanshui, 800) }),
+            new SeedFaction(Cao, "char-caocao", RelationToPlayer.Neutral, false, new[] { (Xuchang, 900), (Puyang, 600), (Chenliu, 600), (Juancheng, 500) }),
+            new SeedFaction(YuanShao, "char-yuanshao", RelationToPlayer.Neutral, false, new[] { (Ye, 900), (Nanpi, 700), (Pingyuan, 500), (Jinyang, 500) }),
+            new SeedFaction(Enemy, "char-yuan", RelationToPlayer.Hostile, false, new[] { (Shouchun, 700), (EnemyCity, 600), (Runan, 500) }),
+            new SeedFaction(Sun, "char-sunce", RelationToPlayer.Neutral, false, new[] { (Jianye, 700), (Wujun, 500), (Kuaiji, 500), (Lujiang, 400) }),
+            new SeedFaction(LiuBei, "char-liubei", RelationToPlayer.Neutral, false, new[] { (Xiaopei, 400) }),
+            new SeedFaction(LuBu, "char-lubu", RelationToPlayer.Hostile, false, new[] { (Xiapi, 700), (Xuzhou, 600) }),
+            new SeedFaction(LiuBiao, "char-liubiao", RelationToPlayer.Neutral, false, new[] { (Xiangyang, 800), (Jiangling, 600), (Jiangxia, 500), (Changsha, 500) }),
+            new SeedFaction(LiuZhang, "char-liuzhang", RelationToPlayer.Neutral, false, new[] { (Chengdu, 800), (Jiangzhou, 500), (Zitong, 400) }),
+            new SeedFaction(MaTeng, "char-mateng", RelationToPlayer.Neutral, false, new[] { (Xiliang, 700), (Wuwei, 500) }),
+            new SeedFaction(ZhangLu, "char-zhanglu", RelationToPlayer.Neutral, false, new[] { (Hanzhong, 600) }),
+            new SeedFaction(GongSun, "char-gongsun", RelationToPlayer.Neutral, false, new[] { (Beiping, 700), (Jicheng, 500) }),
+            new SeedFaction(LiJue, "char-lijue", RelationToPlayer.Hostile, false, new[] { (Changan, 700), (Luoyang, 600) }),
+            new SeedFaction(ZhangXiu, "char-zhangxiu", RelationToPlayer.Hostile, false, new[] { (Wancheng, 600) }),
+            new SeedFaction(KongRong, "char-kongrong", RelationToPlayer.Neutral, false, new[] { (Beihai, 400) }),
+            new SeedFaction(HanSui, "char-hansui", RelationToPlayer.Neutral, false, new[] { (Hanyang, 500) }),
+            new SeedFaction(ShiXie, "char-shixie", RelationToPlayer.Neutral, false, new[] { (Jiaozhou, 400) }),
+        };
+
+        /// <summary>某势力相对本局玩家的立场：玩家席=Self，首要目标=Hostile，其余保基线（非玩家的专属席退为中立）。</summary>
+        private RelationToPlayer RelationOf(SeedFaction w)
+        {
+            if (w.Faction == _start.PlayerFaction) return RelationToPlayer.Self;
+            if (w.Faction == _start.TargetFaction) return RelationToPlayer.Hostile;
+            return w.BaseRelation == RelationToPlayer.Self ? RelationToPlayer.Neutral : w.BaseRelation;
+        }
 
         /// <summary>守城区域防御战：玩家守军（汜水关；GDD_021 攻守统一，守方视角）。</summary>
         public int DefenseGarrison => 700;
@@ -267,8 +306,25 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>安抚办理时段（派吏安民较快；约半日，可调）。</summary>
         public int AppeaseLeadSegments => WorldTime.SegmentsPerDay / 2;
 
-        private PlayableCampaign()
+        // ---- 本局玩家席位（#1 运行期身份，取自开局 PlayableStart；默认=汜水关太守）。运行期一律读此，不再硬编码单一场景。----
+        private readonly PlayableStart _start;
+
+        /// <summary>本局开局描述（选择屏/HUD）。</summary>
+        public PlayableStart Start => _start;
+        /// <summary>本局玩家所属势力（默认 faction-player）。</summary>
+        public FactionId PlayerFaction => _start.PlayerFaction;
+        /// <summary>本局玩家治所（默认汜水关）。</summary>
+        public CityId PlayerCapital => _start.Capital;
+        /// <summary>本局玩家君主/本人（默认 char-player-lord）。</summary>
+        public CharacterId PlayerLord => _start.PlayerLord;
+        /// <summary>本局首要出征目标城（默认虎牢关）。</summary>
+        public CityId PlayerOffensiveTarget => _start.OffensiveTarget;
+        /// <summary>本局首要目标所属势力（默认袁术）。</summary>
+        public FactionId PlayerTargetFaction => _start.TargetFaction;
+
+        private PlayableCampaign(PlayableStart start)
         {
+            _start = start ?? throw new ArgumentNullException(nameof(start));
             StartConfig = BuildStartConfig();
             Ladder = BuildLadder();
             Rebellion = new RebellionConfig(
@@ -282,8 +338,11 @@ namespace ThreeKingdom.Application.Scenarios
                 civMoraleLoss: 15, securityLoss: 20, fortificationDamage: 25, forceAttrition: 600);
         }
 
-        /// <summary>构造默认可玩场景。</summary>
-        public static PlayableCampaign Default() => new PlayableCampaign();
+        /// <summary>构造默认可玩场景（汜水关太守）。</summary>
+        public static PlayableCampaign Default() => new PlayableCampaign(PlayableStartCatalog.Default);
+
+        /// <summary>按所选开局构造可玩场景（#1 势力选择；共享天下大盘，仅玩家席位不同）。</summary>
+        public static PlayableCampaign ForStart(PlayableStart start) => new PlayableCampaign(start);
 
         /// <summary>开战玩家+敌方单位（确定性预设；敌弱于守方，留给玩家用杠杆扩大优势）。</summary>
         public IReadOnlyList<BattleUnitState> Units(int playerForce = 1000, int enemyForce = 800)
@@ -305,54 +364,32 @@ namespace ThreeKingdom.Application.Scenarios
 
         // ---- 配置组装（各段取自对应循环的已验证夹具）----
 
-        private static CampaignStartConfig BuildStartConfig()
-            => new CampaignStartConfig(
-                scenarioConfigId: "scenario-fanshui-playable",
+        private CampaignStartConfig BuildStartConfig()
+        {
+            // 由共享天下大盘按本局玩家席位生成势力/城归属（#1）：玩家席=Self、目标=Hostile；扮演既有诸侯时不含太守专属席。
+            var factions = new List<FactionRecord>();
+            var cities = new List<CityOwnership>();
+            foreach (SeedFaction w in World)
+            {
+                if (w.Bespoke && !_start.IncludesBespokeSeat) continue;
+                var owned = new List<CityId>();
+                foreach ((CityId city, int garrison) in w.Cities)
+                {
+                    owned.Add(city);
+                    cities.Add(new CityOwnership(city, w.Faction, garrison));
+                }
+                factions.Add(new FactionRecord(w.Faction, w.Lord, SurvivalStatus.Active, RelationOf(w), owned.ToArray()));
+            }
+
+            return new CampaignStartConfig(
+                scenarioConfigId: _start.Id,
                 fingerprint: Fp,
-                governorSeed: new CitySeed(Player, Fanshui, 800, 60, 20, new[] { new RetinueMember(Aide, Frac(6, 10)) }),
+                governorSeed: new CitySeed(_start.PlayerFaction, _start.Capital, _start.CapitalGarrison, 60, 20, new[] { new RetinueMember(Aide, Frac(6, 10)) }),
                 startTime: new WorldTime(0, DaySegment.Dawn),
-                initialFactions: new[]
-                {
-                    new FactionRecord(Player, Lord, SurvivalStatus.Active, RelationToPlayer.Self, new[] { Fanshui }),
-                    new FactionRecord(Cao, new CharacterId("char-caocao"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xuchang, Puyang, Chenliu, Juancheng }),
-                    new FactionRecord(YuanShao, new CharacterId("char-yuanshao"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Ye, Nanpi, Pingyuan, Jinyang }),
-                    new FactionRecord(Enemy, new CharacterId("char-yuan"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { Shouchun, EnemyCity, Runan }),
-                    new FactionRecord(Sun, new CharacterId("char-sunce"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Jianye, Wujun, Kuaiji, Lujiang }),
-                    new FactionRecord(LiuBei, new CharacterId("char-liubei"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xiaopei }),
-                    new FactionRecord(LuBu, new CharacterId("char-lubu"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { Xiapi, Xuzhou }),
-                    new FactionRecord(LiuBiao, new CharacterId("char-liubiao"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xiangyang, Jiangling, Jiangxia, Changsha }),
-                    new FactionRecord(LiuZhang, new CharacterId("char-liuzhang"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Chengdu, Jiangzhou, Zitong }),
-                    new FactionRecord(MaTeng, new CharacterId("char-mateng"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Xiliang, Wuwei }),
-                    new FactionRecord(ZhangLu, new CharacterId("char-zhanglu"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Hanzhong }),
-                    new FactionRecord(GongSun, new CharacterId("char-gongsun"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Beiping, Jicheng }),
-                    new FactionRecord(LiJue, new CharacterId("char-lijue"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { Changan, Luoyang }),
-                    new FactionRecord(ZhangXiu, new CharacterId("char-zhangxiu"), SurvivalStatus.Active, RelationToPlayer.Hostile, new[] { Wancheng }),
-                    new FactionRecord(KongRong, new CharacterId("char-kongrong"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Beihai }),
-                    new FactionRecord(HanSui, new CharacterId("char-hansui"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Hanyang }),
-                    new FactionRecord(ShiXie, new CharacterId("char-shixie"), SurvivalStatus.Active, RelationToPlayer.Neutral, new[] { Jiaozhou }),
-                },
-                initialCities: new[]
-                {
-                    new CityOwnership(Fanshui, Player, 800),
-                    new CityOwnership(Xuchang, Cao, 900), new CityOwnership(Puyang, Cao, 600), new CityOwnership(Chenliu, Cao, 600), new CityOwnership(Juancheng, Cao, 500),
-                    new CityOwnership(Ye, YuanShao, 900), new CityOwnership(Nanpi, YuanShao, 700), new CityOwnership(Pingyuan, YuanShao, 500), new CityOwnership(Jinyang, YuanShao, 500),
-                    new CityOwnership(Shouchun, Enemy, 700), new CityOwnership(EnemyCity, Enemy, 600), new CityOwnership(Runan, Enemy, 500),
-                    new CityOwnership(Jianye, Sun, 700), new CityOwnership(Wujun, Sun, 500), new CityOwnership(Kuaiji, Sun, 500), new CityOwnership(Lujiang, Sun, 400),
-                    new CityOwnership(Xiaopei, LiuBei, 400),
-                    new CityOwnership(Xiapi, LuBu, 700), new CityOwnership(Xuzhou, LuBu, 600),
-                    new CityOwnership(Xiangyang, LiuBiao, 800), new CityOwnership(Jiangling, LiuBiao, 600), new CityOwnership(Jiangxia, LiuBiao, 500), new CityOwnership(Changsha, LiuBiao, 500),
-                    new CityOwnership(Chengdu, LiuZhang, 800), new CityOwnership(Jiangzhou, LiuZhang, 500), new CityOwnership(Zitong, LiuZhang, 400),
-                    new CityOwnership(Xiliang, MaTeng, 700), new CityOwnership(Wuwei, MaTeng, 500),
-                    new CityOwnership(Hanzhong, ZhangLu, 600),
-                    new CityOwnership(Beiping, GongSun, 700), new CityOwnership(Jicheng, GongSun, 500),
-                    new CityOwnership(Changan, LiJue, 700), new CityOwnership(Luoyang, LiJue, 600),
-                    new CityOwnership(Wancheng, ZhangXiu, 600),
-                    new CityOwnership(Beihai, KongRong, 400),
-                    new CityOwnership(Hanyang, HanSui, 500),
-                    new CityOwnership(Jiaozhou, ShiXie, 400),
-                },
+                initialFactions: factions.ToArray(),
+                initialCities: cities.ToArray(),
                 // 城市治理（M03）：库存100 / 民心60 / 城防20。
-                cityEconomy: new CityEconomyState(Fanshui, stock: 100, reserved: 0, civMorale: 60, security: 50, fortificationCurrent: 20, fortificationMax: 100),
+                cityEconomy: new CityEconomyState(_start.Capital, stock: 100, reserved: 0, civMorale: 60, security: 50, fortificationCurrent: 20, fortificationMax: 100),
                 settlementConfig: new CitySettlementConfig(
                     baseYield: 20, baseCivConsume: 30, baseMaintenance: 10, stockFloor: 0,
                     civMoraleMax: 100, shortageMoralePenalty: Frac(1, 2), unrestShortageThreshold: 50, fortRepairRate: 15),
@@ -361,7 +398,7 @@ namespace ThreeKingdom.Application.Scenarios
                 governanceConfig: new CityGovernanceConfig(Frac(1, 2), 10, 10),
                 // 情报（M04）：敌军主力真值（玩家初始未知，须侦察）。
                 worldTruth: BuildTruth(),
-                playerIntel: new FactionIntel(Player),
+                playerIntel: new FactionIntel(_start.PlayerFaction),
                 intelConfig: BuildIntelConfig(),
                 councilSetup: BuildCouncilSetup(),
                 // 战役准备（M05）：军粮池 + 隘口可达 + 设伏授权。
@@ -373,6 +410,7 @@ namespace ThreeKingdom.Application.Scenarios
                 historyCatalog: BuildHistory(),
                 playerReach: new PlayerReach(new[] { Sun }, Array.Empty<CityId>()),
                 divergenceConfig: new DivergencePropagationConfig(2));
+        }
 
         private static WorldTruthLedger BuildTruth()
         {
