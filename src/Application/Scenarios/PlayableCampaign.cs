@@ -402,6 +402,22 @@ namespace ThreeKingdom.Application.Scenarios
             new SeedFaction(Sun, "char-sunquan", RelationToPlayer.Neutral, false, new[] { (Jianye, 1000), (Wujun, 600), (Kuaiji, 500), (Lujiang, 500), (Jiangxia, 600), (Jiaozhou, 400) }),
         };
 
+        /// <summary>某势力在某纪元盘是否存续（持城）——供武将归属派生（GDD_027/ADR-0016）。</summary>
+        public static bool FactionExistsAt(FactionId faction, int anchorYear)
+        {
+            foreach (SeedFaction w in WorldAt(anchorYear))
+                if (!w.Bespoke && w.Faction == faction) return true;
+            return false;
+        }
+
+        /// <summary>某势力在某纪元盘的治所（首城）；不存续则 null——供在职武将无布防时归于治所。</summary>
+        public static CityId? FactionCapitalAt(FactionId faction, int anchorYear)
+        {
+            foreach (SeedFaction w in WorldAt(anchorYear))
+                if (!w.Bespoke && w.Faction == faction && w.Cities.Length > 0) return w.Cities[0].City;
+            return null;
+        }
+
         /// <summary>某锚点年的世界大盘（ADR-0015 离散快照）。190=默认 <see cref="World"/>；未登记年回退 190。</summary>
         private static SeedFaction[] WorldAt(int anchorYear) => anchorYear switch
         {

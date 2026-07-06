@@ -1,5 +1,17 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## 🔄 进行中（2026-07-07 续20）— 武将全局融入：GDD-027/ADR-0016 + P1 地基【已开工，P2-P8 待续】
+
+> **用户裁定：P1-P8 全做；一城≤20 武将由太守调拨；要系统事件引擎但先招牌事件试水。dotnet 1151 绿。**
+> - **设计文档**：`design/gdd/gdd-027-general-affiliation-appointment.md`（武将归属·任用·全局融入，8 消费方）+ `docs/architecture/adr-0016-general-affiliation-integration.md`（归属派生 + 城册≤20 + 依赖倒置解耦契约）。
+> - **P1 地基（完成，纯 C# 无场景依赖）**：
+>   - `PlayableCampaign.FactionExistsAt/FactionCapitalAt`（纪元势力存续/治所查询）。
+>   - `GeneralDossiers.StationOf`（某将某纪元布防城）。
+>   - `GeneralAffiliations`：baseFaction 数据（~350 员按势力分组，蜀魏吴袁吕表璋腾遂公孙董袁术单城诸侯汉庭黄巾；名士/女性/方士/异族/散雄默认在野）+ `AffiliationOf(将,年)→在职/在野/不存` + `RoleOf`（标签派生守将/先锋/谋士/内政/斥候/水军）+ `RosterOf(城,年)→城册≤20`（按档降序稳定裁剪）。
+>   - 测试 GeneralAffiliationTests +4（关羽190在职·小沛·先锋 / 姜维190不存 / 司马徽在野 / 臧霸200势力灭转在野 / 角色派生 / 城册≤20确定性 / 纪元势力治所）。
+> - **待续 P2-P8**：P2 招揽统一（在野池全谱）· P3 任用（太守调拨≤20）· P4 内政接入 · P5 军师接入 · P6 派系关系 · P7 战斗接入（主将+副将,多军）· P8 历史事件（先招牌事件试水）· P9 表现层（★编辑器）。
+> - **未提交/未推**：gdd-027 + adr-0016 + PlayableCampaign/GeneralDossiers + GeneralAffiliations + 测试 + 3 DLL + active.md。
+
 ## ✅ 完成（2026-07-06 续19）— 战略图屏启用 + 发觉入存档【已提交+编辑器验证通过】
 
 > **提交 a0d6620 已 push tk；s19 编辑器验证全 PASS（证据 production/qa/evidence/s19-map-verify-2026-07-06.md + s19-screens 4图）。**

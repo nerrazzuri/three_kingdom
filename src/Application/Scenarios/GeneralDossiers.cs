@@ -453,6 +453,14 @@ namespace ThreeKingdom.Application.Scenarios
             return result;
         }
 
+        /// <summary>某将在某纪元的布防驻城（GDD_027）；未布防则 null（归属派生回退到势力治所）。</summary>
+        public static CityId? StationOf(CharacterId general, int anchorYear)
+        {
+            IReadOnlyDictionary<string, string>? table = PlacementFor(anchorYear);
+            if (table == null || general.Value == null) return null;
+            return table.TryGetValue(general.Value, out string? city) ? new CityId(city) : (CityId?)null;
+        }
+
         /// <summary>某锚点年、某城在职的部将（GDD_026 R4；反全知外壳另投影）。190/200/208/220 有布防数据，余年返回空。</summary>
         public static IReadOnlyList<CharacterId> GeneralsAt(CityId city, int anchorYear)
         {
