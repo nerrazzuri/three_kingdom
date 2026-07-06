@@ -1,6 +1,21 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
-## 🔄 进行中（2026-07-07 续20）— 武将全局融入：GDD-027/ADR-0016 + P1 地基【已开工，P2-P8 待续】
+## 🔄 进行中（2026-07-07 续21）— 武将全局融入 P2-P8 全落地 + console 验证命令【待 computer-use 复验】
+
+> **用户授权一口气做到 P8。dotnet 1158 绿；3 DLL 同步；console 端到端实测八系统全跑通。**
+> - **P2 招揽统一**（`GeneralRecruitment`）：在野在世将=可招池（全谱，非3原型）；难度自野心/傲物/仁德+名望→易招/尚可/难招。console 实测小沛开局在野池 78 员。
+> - **P3 任用**（`Domain/Appointment/AppointmentBook`，不可变）：太守调拨入城册（≤20）；满员拒/一将只在一城/调他城自动移出；round-trip 就绪。
+> - **P4 内政**（`GovernanceContribution`）：城册点内政官（仁德/谋略），属性→民心/征粮/城防加成。console：董和 民心+30%。
+> - **P5 军师**（`CouncilCapability`）：点军师（谋略最高），档→可提策深度+质量（庸言…神算）。
+> - **P6 派系**（`RetinueCohesion`）：麾下羁绊/忠诚→凝聚度+离心风险（桃园知己>吕布董卓仇怨）。
+> - **P7 战斗**（`ArmyFormation`）：一军主将+可选副将（≤2），多军并进（exclude 防重复用人）；档→战力贡献。console：主将关羽·副将张飞。
+> - **P8 演义事件试水**（`LoreEvents`，改名避让 GDD_015 的 Domain.World.HistoricalEvent）：事件引擎 + 招牌「桃园结义」（锚定刘关张·刘备·≤190 触发）。console 实测触发。
+> - **console 命令**：affil/croster/pool/lore 四命令展示全部八系统（供 computer-use 真实驱动复验）。
+> - **测试 +11**：GeneralAffiliationTests(4) + GeneralIntegrationTests(7)。
+> - **诚实边界**：`baseFaction` 静态简化 → 190 小沛册含黄权/杨仪/董和等（史实此年未归刘备/在他处）；机制正确、史准需纪元覆盖细化（ADR-0016 已注，属数据refinement非引擎）。任用态未入存档（会话内，同发觉门待接存档）。**P9 表现层（Unity 屏）未做**——本轮全后端，验证走 console。
+> - **未提交/未推**：见 git（新增 6 服务/值对象 + 2 测试 + console + 3 DLL + active.md）。
+
+## ✅ 完成（2026-07-07 续20）— 武将全局融入：GDD-027/ADR-0016 + P1 地基【已开工，P2-P8 已续完】
 
 > **用户裁定：P1-P8 全做；一城≤20 武将由太守调拨；要系统事件引擎但先招牌事件试水。dotnet 1151 绿。**
 > - **设计文档**：`design/gdd/gdd-027-general-affiliation-appointment.md`（武将归属·任用·全局融入，8 消费方）+ `docs/architecture/adr-0016-general-affiliation-integration.md`（归属派生 + 城册≤20 + 依赖倒置解耦契约）。

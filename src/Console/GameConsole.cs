@@ -133,6 +133,12 @@ namespace ThreeKingdom.Console
                     case "reveal": _rt.RevealTalent(new TalentId(a1), TalentChannel.Scouting); return $"✓ 探得 {a1} 行踪，纳入视野";
                     case "recruit": return Recruit(a1);
 
+                    // 武将全局融入（GDD_027 P1-P8）
+                    case "affil": return RenderAffiliation(a1);
+                    case "croster": return RenderCityRoster(a1);
+                    case "pool": return RenderRecruitPool();
+                    case "lore": return RenderLoreEvents();
+
                     // 人心杠杆施计
                     case "subvert": return Subvert(a1, a2);
 
@@ -347,6 +353,70 @@ namespace ThreeKingdom.Console
             => r.Applied ? $"✓ {label}（已办，需时见效）" : $"× {label}失败：{r.Error}";
 
         private static string Name(string id) => DisplayNames.Of(id);
+
+        // ---- 武将全局融入（GDD_027 P1-P8）console 视图 ----
+        private static readonly string[] RoleText = { "内政", "守将", "先锋", "谋士", "斥候", "水军" };
+
+        private string RenderAffiliation(string generalId)
+        {
+            int y = _rt.Scenario.AnchorYear;
+            Affiliation a = GeneralAffiliations.AffiliationOf(new ThreeKingdom.Domain.Characters.CharacterId(generalId), y);
+            switch (a.Status)
+            {
+                case AffiliationStatus.Absent: return $"{Name(generalId)}：公元{y} 尚未及冠或已故——不在世间。";
+                case AffiliationStatus.Wandering: return $"{Name(generalId)}：在野（未仕，可招揽 · 难度 {GeneralRecruitment.DifficultyOf(new ThreeKingdom.Domain.Characters.CharacterId(generalId))}）。";
+                default: return $"{Name(generalId)}：事奉 {Name(a.Faction.Value)}，驻 {Name(a.City.Value)}，任 {RoleText[(int)a.Role]}。";
+            }
+        }
+
+        private string RenderCityRoster(string cityId)
+        {
+            int y = _rt.Scenario.AnchorYear;
+            var city = new ThreeKingdom.Domain.City.CityId(cityId);
+            var roster = GeneralAffiliations.RosterOf(city, y);
+            if (roster.Count == 0) return $"{Name(cityId)}：此纪元无在职武将。";
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"【{Name(cityId)}·武将册】公元{y} · 在职 {roster.Count} 员（上限 {GeneralAffiliations.RosterCap}）：");
+            var names = new System.Collections.Generic.List<string>();
+            foreach (var g in roster) names.Add(Name(g.Value));
+            sb.AppendLine("  " + string.Join("、", names));
+            var admin = GovernanceContribution.AdministratorOf(roster);
+            var advisor = CouncilCapability.AdvisorOf(roster);
+            var army = ArmyFormation.Form(roster);
+            sb.AppendLine($"  内政官：{(admin.HasValue ? Name(admin.Value.Value) : "无")}" +
+                          (admin.HasValue ? $"（民心{GovernanceContribution.ModifierOf(admin.Value).MoralePercent:+0;-0;0}% 征粮{GovernanceContribution.ModifierOf(admin.Value).GrainPercent:+0;-0;0}%）" : ""));
+            sb.AppendLine($"  军师：{(advisor.HasValue ? Name(advisor.Value.Value) : "无")}（{CouncilCapability.QualityLabel(advisor)}）");
+            if (army.HasValue)
+                sb.AppendLine($"  成军：主将 {Name(army.Value.LeaderId)}" + (army.Value.HasDeputy ? $" · 副将 {Name(army.Value.DeputyId!)}" : "（无副将）") + $"（战力贡献 {ArmyFormation.PowerContribution(army.Value)}）");
+            sb.Append($"  凝聚：{RetinueCohesion.CohesionOf(roster)}（{RetinueCohesion.DefectionRiskLabel(roster)}）");
+            return sb.ToString();
+        }
+
+        private string RenderRecruitPool()
+        {
+            int y = _rt.Scenario.AnchorYear;
+            var pool = GeneralRecruitment.PoolAt(y);
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"【在野可招池】公元{y} · 共 {pool.Count} 员（在野在世·可发觉可招）。例：");
+            int n = 0;
+            foreach (RecruitCandidate c in pool)
+            {
+                if (n++ >= 12) break;
+                sb.Append($"  {Name(c.GeneralId)}〔{c.DifficultyLabel}〕");
+                if (n % 4 == 0) sb.AppendLine();
+            }
+            return sb.ToString().TrimEnd();
+        }
+
+        private string RenderLoreEvents()
+        {
+            var ctx = new LoreContext(_rt.Scenario.AnchorYear, _rt.CurrentYear, _rt.Scenario.PlayerFaction);
+            var fired = LoreEvents.FiredAt(ctx);
+            if (fired.Count == 0) return $"公元{_rt.CurrentYear}：当下无演义事件触发（事件锚定具名武将，按在世/归属/纪元触发）。";
+            var sb = new System.Text.StringBuilder();
+            foreach (LoreEvent e in fired) sb.AppendLine($"〔{e.Name}〕{e.Narrative}");
+            return sb.ToString().TrimEnd();
+        }
         private static long ParseLong(string s, long def) => long.TryParse(s, out long v) ? v : def;
         private static int ParseInt(string s, int def) => int.TryParse(s, out int v) ? v : def;
 
