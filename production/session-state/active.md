@@ -25,8 +25,16 @@
 > - **console**：`lore` 展示当轮触发事件+效果(▸行) + 「演义已改写天下」累积陨落/移籍/登场汇总。实测：234盘→关羽/诸葛亮陨落；190盘→桃园叙事+华雄陨落。
 > - **测试 +8**（`LoreEventsTests`：触发门/斩杀→Absent/白门楼多效果/许攸移籍真delta/确定性重放/空覆盖/机制单测）；改 1 旧测试（P8桃园「200总数=0」→「桃园缺席」，因新增世事类200触发）。
 > - **文档**：ADR-0016 +D6 覆盖层契约 + 更新试水措辞；GDD-027 事件条目+AC7 升完整。
-> - **诚实边界（非引擎缺口，属集成/表现线，★需运行期验证）**：运行期各消费方(croster/gov/council/army)尚未透传 `LoreOverrides`（故 234盘 croster 仍列诸葛亮，与 lore 的「诸葛亮陨落」不一致）；且「锚点年当轮 vs 推进后」触发时机待调优（234盘开局即殒诸葛，需定夺）。引擎/效果/覆盖层/测试/console 演示已完整。
-> - **未提交/未推**：LoreEvents/GeneralAffiliations/GameConsole + LoreEventsTests + GeneralIntegrationTests + adr-0016 + gdd-027 + 3 DLL + active.md。
+> - **提交**：df9e862（引擎完整体）已 push tk。
+
+## ✅ 完成（2026-07-07 续22b）— 演义事件运行期透传 + 触发时机
+
+> **第2件（运行期透传 + 时机）落地。dotnet 1167 绿（+1 时机测试）；3 DLL 同步；console 实测前后一致。**
+> - **触发时机改「推进过锚点年后生效」**（`OverridesAt` 扫描 (Anchor, Current]；`FiredAt` 有效果事件需 CurrentYear>AnchorYear，无效果flavor如桃园可开局播）：开局快照干净，残局不在第一回合殒星。锁 test `test_lore_effects_not_applied_at_anchor_year`。
+> - **console 运行期透传**：`RenderCityRoster`/`RenderAffiliation` 经 `CurrentOverrides()` 把覆盖层喂给 `RosterOf`/`AffiliationOf`——下游内政/军师/成军/凝聚随城册自动跟随。
+> - **实测前后一致**：234盘开局 汉中册6员含诸葛亮（军师诸葛亮）；推进到235 → 册5员诸葛亮消失、军师自动改姜维、lore报五丈原殒诸葛。两界面不再各说各话（修复续22诚实边界）。
+> - **未透传**：`GeneralRecruitment.PoolAt`（在野池）——分析下效果不致池不一致（移籍者本 InService、斩杀者多已bio出局），故不接，避免扩面。Unity 侧无 roster 视图消费方（P9未做），故运行期可验证面=console，已闭环。
+> - **未提交/未推**：LoreEvents(时机)/GameConsole(透传) + LoreEventsTests(调ctx+1新) + 3 DLL + active.md。
 
 ## ✅ 完成（2026-07-07 续21）— 武将全局融入 P2-P8 全落地 + console 验证命令【✅ computer-use 复验通过】
 

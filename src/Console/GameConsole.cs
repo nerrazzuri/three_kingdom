@@ -358,10 +358,14 @@ namespace ThreeKingdom.Console
         // ---- 武将全局融入（GDD_027 P1-P8）console 视图 ----
         private static readonly string[] RoleText = { "内政", "守将", "先锋", "谋士", "斥候", "水军" };
 
+        /// <summary>当前战局累积的演义覆盖态（GDD_027 R6）：由纪元盘→当前年确定性重放，透传给归属/城册使事件效果全局一致。</summary>
+        private LoreOverrides CurrentOverrides()
+            => LoreEvents.OverridesAt(new LoreContext(_rt.Scenario.AnchorYear, _rt.CurrentYear, _rt.Scenario.PlayerFaction));
+
         private string RenderAffiliation(string generalId)
         {
             int y = _rt.Scenario.AnchorYear;
-            Affiliation a = GeneralAffiliations.AffiliationOf(new ThreeKingdom.Domain.Characters.CharacterId(generalId), y);
+            Affiliation a = GeneralAffiliations.AffiliationOf(new ThreeKingdom.Domain.Characters.CharacterId(generalId), y, CurrentOverrides());
             switch (a.Status)
             {
                 case AffiliationStatus.Absent: return $"{Name(generalId)}：公元{y} 尚未及冠或已故——不在世间。";
@@ -374,7 +378,7 @@ namespace ThreeKingdom.Console
         {
             int y = _rt.Scenario.AnchorYear;
             var city = new ThreeKingdom.Domain.City.CityId(cityId);
-            var roster = GeneralAffiliations.RosterOf(city, y);
+            var roster = GeneralAffiliations.RosterOf(city, y, CurrentOverrides());
             if (roster.Count == 0) return $"{Name(cityId)}：此纪元无在职武将。";
             var sb = new System.Text.StringBuilder();
             sb.AppendLine($"【{Name(cityId)}·武将册】公元{y} · 在职 {roster.Count} 员（上限 {GeneralAffiliations.RosterCap}）：");

@@ -228,23 +228,29 @@ namespace ThreeKingdom.Application.Scenarios
                 effects: FX(LoreEffect.Slay(C("char-zhugeliang")))),
         };
 
-        /// <summary>某上下文当轮（在 <see cref="LoreContext.CurrentYear"/>）触发的招牌事件（稳定序，供叙事播报）。</summary>
+        /// <summary>
+        /// 某上下文当轮（在 <see cref="LoreContext.CurrentYear"/>）触发、可供叙事播报的招牌事件（稳定序）。
+        /// 触发时机：<b>有效果的事件</b>（斩杀/移籍/登场）仅在推进过纪元锚点年后（CurrentYear &gt; AnchorYear）播报，
+        /// 以免late开局的残局事件（如234盘·五丈原）在第一回合就上演；<b>无效果的flavor事件</b>（桃园/三英/赤壁）可于开局当年播报。
+        /// </summary>
         public static IReadOnlyList<LoreEvent> FiredAt(LoreContext ctx)
         {
+            bool afterAnchor = ctx.CurrentYear > ctx.AnchorYear;
             var fired = new List<LoreEvent>();
-            foreach (LoreEvent e in All) if (e.Fires(ctx)) fired.Add(e);
+            foreach (LoreEvent e in All)
+                if (e.Fires(ctx) && (e.Effects.Count == 0 || afterAnchor)) fired.Add(e);
             return fired;
         }
 
         /// <summary>
-        /// 从纪元盘开局至当前年，确定性重放所有已触发事件累积成的归属覆盖态（GDD_027 R6 / ADR-0016）。
-        /// 逐年扫描 [AnchorYear, CurrentYear]，凡触发即累积其效果；纯函数、幂等，读档重算即复原，<b>不入存档</b>。
+        /// 从纪元盘开局<b>之后</b>至当前年，确定性重放所有已触发事件累积成的归属覆盖态（GDD_027 R6 / ADR-0016）。
+        /// 逐年扫描 (AnchorYear, CurrentYear]——严格晚于锚点年，使开局快照保持纯 baseFaction/生卒派生，事件效果随推进涌现（残局不在第一回合殒星）。
+        /// 纯函数、幂等，读档重算即复原，<b>不入存档</b>。
         /// </summary>
         public static LoreOverrides OverridesAt(LoreContext ctx)
         {
             var ov = new LoreOverrides();
-            int from = Math.Min(ctx.AnchorYear, ctx.CurrentYear);
-            for (int y = from; y <= ctx.CurrentYear; y++)
+            for (int y = ctx.AnchorYear + 1; y <= ctx.CurrentYear; y++)
             {
                 var stepped = new LoreContext(ctx.AnchorYear, y, ctx.PlayerFaction);
                 foreach (LoreEvent e in All)

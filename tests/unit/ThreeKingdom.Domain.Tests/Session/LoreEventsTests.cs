@@ -30,12 +30,12 @@ namespace ThreeKingdom.Domain.Tests.Session
         [Test]
         public void test_lore_sangu_introduces_zhugeliang_for_liubei_after_207()
         {
-            // Arrange
+            // Arrange：190 盘推进至 208（推进过锚点，效果类事件方生效）。
             var ctx = new LoreContext(200, 208, PlayableCampaign.LiuBei);
             // Act
             LoreOverrides ov = LoreEvents.OverridesAt(ctx);
             // Assert
-            Assert.That(FiresId(new LoreContext(208, 208, PlayableCampaign.LiuBei), "event-sangu"), Is.True, "刘备·隆中对之世 → 三顾茅庐触发。");
+            Assert.That(FiresId(ctx, "event-sangu"), Is.True, "刘备·隆中对之世·已推进过锚点 → 三顾茅庐触发。");
             Assert.That(ov.IsIntroduced(C("char-zhugeliang")), Is.True, "三顾后卧龙登场（可发觉·可招）。");
             Assert.That(LoreEvents.OverridesAt(new LoreContext(200, 208, PlayableCampaign.Cao)).IsIntroduced(C("char-zhugeliang")), Is.False, "非刘备不触发三顾。");
         }
@@ -44,8 +44,8 @@ namespace ThreeKingdom.Domain.Tests.Session
         [Test]
         public void test_lore_slay_removes_general_from_affiliation()
         {
-            // Arrange：温酒斩华雄（刘备·190）→ 华雄陨落。
-            var ctx = new LoreContext(190, 190, PlayableCampaign.LiuBei);
+            // Arrange：温酒斩华雄（刘备·190开局推进至191）→ 华雄陨落。
+            var ctx = new LoreContext(190, 191, PlayableCampaign.LiuBei);
             // Act
             LoreOverrides ov = LoreEvents.OverridesAt(ctx);
             Affiliation before = GeneralAffiliations.AffiliationOf(C("char-huaxiong"), 190);
@@ -75,8 +75,8 @@ namespace ThreeKingdom.Domain.Tests.Session
         [Test]
         public void test_lore_reassign_changes_faction_from_base()
         {
-            // Arrange：许攸夜奔（世事·≥200）。许攸本属袁绍。
-            var ctx = new LoreContext(200, 200, PlayableCampaign.Cao);
+            // Arrange：许攸夜奔（世事·≥200，200盘推进至201）。许攸本属袁绍。
+            var ctx = new LoreContext(200, 201, PlayableCampaign.Cao);
             Affiliation baseline = GeneralAffiliations.AffiliationOf(C("char-xuyou"), 200);
             // Act
             LoreOverrides ov = LoreEvents.OverridesAt(ctx);
@@ -114,6 +114,22 @@ namespace ThreeKingdom.Domain.Tests.Session
             LoreOverrides ov = LoreEvents.OverridesAt(ctx);
             // Assert
             Assert.That(ov.IsEmpty, Is.True, "无触发 → 覆盖态空。");
+        }
+
+        [Test]
+        public void test_lore_effects_not_applied_at_anchor_year()
+        {
+            // Arrange：234 盘开局当年（五丈原=234），残局不应在第一回合殒诸葛。
+            var atAnchor = new LoreContext(234, 234, PlayableCampaign.LiuBei);
+            var advanced = new LoreContext(234, 235, PlayableCampaign.LiuBei);
+            // Act
+            LoreOverrides ov0 = LoreEvents.OverridesAt(atAnchor);
+            LoreOverrides ov1 = LoreEvents.OverridesAt(advanced);
+            // Assert
+            Assert.That(ov0.IsSlain(C("char-zhugeliang")), Is.False, "开局当年诸葛亮尚在（快照干净）。");
+            Assert.That(GeneralAffiliations.AffiliationOf(C("char-zhugeliang"), 234, ov0).Status,
+                Is.Not.EqualTo(AffiliationStatus.Absent), "锚点年当轮归属不受事件覆盖。");
+            Assert.That(ov1.IsSlain(C("char-zhugeliang")), Is.True, "推进过锚点年 → 五丈原殒诸葛。");
         }
 
         // ---- 覆盖层机制单测 ----
