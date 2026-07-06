@@ -240,6 +240,91 @@ namespace ThreeKingdom.Presentation.Screens
             // 扩充批 5 — 汉臣/荆州/巾帼。
             ["char-yangbiao"] = "杨彪", ["char-liuqi"] = "刘琦", ["char-liucong"] = "刘琮",
             ["char-xiahoushi"] = "夏侯氏", ["char-fuhou"] = "伏寿",
+            // 扩充批 6 — 魏晋近臣/宿将。
+            ["char-niujin"] = "牛金", ["char-shihuan"] = "史涣", ["char-wangbi"] = "王必",
+            ["char-zhaoyan"] = "赵俨", ["char-dumu"] = "杜袭", ["char-zhangji-wei"] = "张既",
+            ["char-suze"] = "苏则", ["char-hanji"] = "韩暨", ["char-gaotanglong"] = "高堂隆",
+            ["char-liufang"] = "刘放", ["char-sunzi"] = "孙资", ["char-zhongyu"] = "钟毓",
+            ["char-xunyi"] = "荀顗", ["char-wangsu"] = "王肃", ["char-dingmi"] = "丁谧",
+            ["char-biyang"] = "毕轨", ["char-lisheng"] = "李胜", ["char-wangguan"] = "王观",
+            ["char-chenjiao"] = "陈矫", ["char-dianman"] = "典满", ["char-xuyi"] = "许仪",
+            ["char-panghui"] = "庞会",
+            // 扩充批 6 — 蜀汉文武。
+            ["char-huangquan"] = "黄权", ["char-liuba"] = "刘巴", ["char-zongyu"] = "宗预",
+            ["char-xujing"] = "许靖", ["char-mengguang"] = "孟光", ["char-yinmo"] = "尹默",
+            ["char-laijiang"] = "来敏", ["char-yangxi"] = "杨戏", ["char-liuyong"] = "刘永",
+            ["char-liuli"] = "刘理", ["char-chenshi"] = "陈式",
+            // 扩充批 6 — 东吴宗室/文武。
+            ["char-zhangwen"] = "张温", ["char-yanjun"] = "严畯", ["char-zhaozi"] = "赵咨",
+            ["char-lukai"] = "陆凯", ["char-zhuzhi"] = "朱治", ["char-shiji"] = "施绩",
+            ["char-sunben"] = "孙贲", ["char-sunjiao"] = "孙皎", ["char-sunyu"] = "孙瑜",
+            ["char-sundeng"] = "孙登", ["char-sunhe"] = "孙和", ["char-xuegong"] = "薛综",
+            ["char-zhouchu"] = "周处",
+            // 扩充批 6 — 巾帼。
+            ["char-bufuren"] = "步夫人", ["char-panshu"] = "潘夫人",
+            // 扩充批 6 — 董卓/吕布残部。
+            ["char-niufu"] = "牛辅", ["char-dongmin"] = "董旻", ["char-songxian"] = "宋宪",
+            ["char-weixu"] = "魏续", ["char-houcheng"] = "侯成", ["char-caoxing"] = "曹性",
+            ["char-haomeng"] = "郝萌", ["char-yanxing"] = "阎行",
+            // 扩充批 6 — 袁绍集团。
+            ["char-chunyuqiong"] = "淳于琼", ["char-guotu"] = "郭图", ["char-fengji"] = "逢纪",
+            ["char-xinping"] = "辛评", ["char-gaogan"] = "高干", ["char-yuanxi"] = "袁熙",
+            ["char-lvkuang"] = "吕旷", ["char-lvxiang"] = "吕翔",
+            // 扩充批 6 — 刘表/刘璋部将。
+            ["char-liupan"] = "刘磐", ["char-zhangyun"] = "张允", ["char-songzhong"] = "宋忠",
+            ["char-wangwei"] = "王威", ["char-lengbao"] = "泠苞", ["char-dengxian"] = "邓贤",
+            ["char-gaopei"] = "高沛", ["char-yanghuai"] = "杨怀", ["char-zhengdu"] = "郑度",
+            ["char-wanglei"] = "王累", ["char-liugui"] = "刘璝",
+            // 扩充批 6 — 黄巾/异族/辽东。
+            ["char-liupi"] = "刘辟", ["char-gongdu"] = "龚都", ["char-peiyuanshao"] = "裴元绍",
+            ["char-budugen"] = "步度根", ["char-gongsunyuan"] = "公孙渊", ["char-maxiu"] = "马休",
+            ["char-machie"] = "马铁",
+            // 扩充批 6 — 汉末名士/方外。
+            ["char-zhengxuan"] = "郑玄", ["char-zhangzhongjing"] = "张仲景", ["char-pangdegong"] = "庞德公",
+            ["char-xushao"] = "许劭", ["char-huangwan"] = "黄琬", ["char-fuwan"] = "伏完",
+            ["char-zhaoqi"] = "赵岐", ["char-liuyao"] = "刘繇", ["char-wangkuang"] = "王匡",
+            ["char-huzhao"] = "胡昭", ["char-guanlu"] = "管辂",
+            // 扩充批 7 — 魏晋。
+            ["char-xiahouhui"] = "夏侯惠", ["char-xiahourong"] = "夏侯荣", ["char-xiahouwei"] = "夏侯威",
+            ["char-caoxi"] = "曹羲", ["char-linghuyu"] = "令狐愚", ["char-changdiao"] = "常雕",
+            ["char-simawang"] = "司马望", ["char-simazhou"] = "司马伷", ["char-simagan"] = "司马干",
+            ["char-wangchen"] = "王沈", ["char-caofang"] = "曹芳", ["char-caomao"] = "曹髦",
+            ["char-caohuan"] = "曹奂", ["char-wangjing"] = "王经", ["char-hufen"] = "胡奋",
+            ["char-simayan"] = "司马炎", ["char-xunxu"] = "荀勖", ["char-caochun"] = "曹纯",
+            ["char-hulie"] = "胡烈", ["char-qianhong"] = "牵弘",
+            // 扩充批 7 — 蜀。
+            ["char-zhugeshang"] = "诸葛尚", ["char-huangchengyan"] = "黄承彦", ["char-pengyang"] = "彭羕",
+            ["char-xianglang"] = "向朗", ["char-donghe"] = "董和", ["char-huanghao"] = "黄皓",
+            ["char-chenzhi"] = "陈祗", ["char-zhangshao"] = "张绍", ["char-yanghong"] = "杨洪",
+            ["char-lvyi"] = "吕乂", ["char-duqiong"] = "杜琼", ["char-huji"] = "胡济",
+            // 扩充批 7 — 吴。
+            ["char-lvdai"] = "吕岱", ["char-quanji"] = "全纪", ["char-hulzong"] = "胡综",
+            ["char-shiyi"] = "是仪", ["char-luyi"] = "陆胤", ["char-luji"] = "陆绩",
+            ["char-sunkuang"] = "孙匡", ["char-sunshao"] = "孙韶", ["char-wufan"] = "吴范",
+            ["char-liulve"] = "留略", ["char-buchan"] = "步阐", ["char-quanshang"] = "全尚",
+            ["char-sunlang"] = "孙朗", ["char-weizhao"] = "韦昭", ["char-huagai"] = "华覈",
+            // 扩充批 7 — 群雄/凉州。
+            ["char-quyi"] = "麴义", ["char-caobao"] = "曹豹", ["char-hanmeng"] = "韩猛",
+            ["char-jiangyiqu"] = "蒋义渠", ["char-hujzhen"] = "胡轸", ["char-yangding"] = "杨定",
+            ["char-duanwei"] = "段煨", ["char-liyue"] = "李乐", ["char-hucai"] = "胡才",
+            ["char-guanjing"] = "关靖", ["char-zoudan"] = "邹丹", ["char-jiaochu"] = "焦触",
+            ["char-yuanyao"] = "袁遗", ["char-liuxun"] = "刘勋", ["char-leibo"] = "雷薄",
+            ["char-chenlan"] = "陈兰", ["char-songjian"] = "宋建",
+            // 扩充批 7 — 过五关六将/吕布八健将。
+            ["char-kongxiu"] = "孔秀", ["char-hanfuluo"] = "韩福", ["char-mengtan"] = "孟坦",
+            ["char-bianxi"] = "卞喜", ["char-wangzhi"] = "王植", ["char-qinqi"] = "秦琪",
+            ["char-chenglian"] = "成廉",
+            // 扩充批 7 — 巾帼。
+            ["char-guozhao"] = "郭女王", ["char-xinxianying"] = "辛宪英", ["char-caojie"] = "曹节",
+            ["char-wangyi"] = "王异",
+            // 扩充批 7 — 羌蛮/南中。
+            ["char-yueji"] = "越吉", ["char-cheliji"] = "彻里吉", ["char-ahuinan"] = "阿会喃",
+            ["char-jinhuansanjie"] = "金环三结", ["char-mangyachang"] = "忙牙长", ["char-yongkai"] = "雍闿",
+            ["char-gaoding"] = "高定", ["char-zhubao"] = "朱褒",
+            // 扩充批 7 — 建安七子/荆南太守/谋士。
+            ["char-wangcan"] = "王粲", ["char-ruanyu"] = "阮瑀", ["char-liuzhen"] = "刘桢",
+            ["char-liudu"] = "刘度", ["char-zhaofan"] = "赵范", ["char-jinxuan"] = "金旋",
+            ["char-fushiren"] = "士仁", ["char-xunchen"] = "荀谌", ["char-xuyou"] = "许攸",
             // 人才招揽原型（GDD_020 场景；console 同名 卧龙/骁将/能吏）。
             ["char-wolong"] = "卧龙", ["char-xiaojiang"] = "骁将", ["char-nengli"] = "能吏",
         };

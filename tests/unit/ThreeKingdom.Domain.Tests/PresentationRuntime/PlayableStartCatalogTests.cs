@@ -93,11 +93,23 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         {
             // 每个纪元盘同 36 城骨架，归属随纪元重绘（ADR-0015 离散快照）。
             foreach (PlayableStart s in new[] { PlayableStartCatalog.CaocaoGuandu, PlayableStartCatalog.SunquanChibi, PlayableStartCatalog.LiubeiShu,
-                                                PlayableStartCatalog.HejinHuangjin, PlayableStartCatalog.ZhangjiaoUprising, PlayableStartCatalog.ZhugeliangWuzhang })
+                                                PlayableStartCatalog.HejinHuangjin, PlayableStartCatalog.ZhangjiaoUprising, PlayableStartCatalog.ZhugeliangWuzhang,
+                                                PlayableStartCatalog.CaocaoYanzhou, PlayableStartCatalog.GuanyuXiangfan })
             {
                 ContentionState c = PlayableCampaign.ForStart(s).InitialContention();
                 Assert.That(c.TotalCities, Is.EqualTo(36), $"{s.Id} 纪元盘 36 城（无太守专属席）。");
             }
+
+            // 194 濮阳：曹操困守鄄城两城，吕布据兖州两城。
+            ContentionState yanzhou = PlayableCampaign.ForStart(PlayableStartCatalog.CaocaoYanzhou).InitialContention();
+            Assert.That(yanzhou.CitiesOf(PlayableCampaign.Cao), Is.EqualTo(2), "194 曹操困守二城。");
+            Assert.That(yanzhou.CitiesOf(PlayableCampaign.LuBu), Is.EqualTo(2), "194 吕布据兖州二城。");
+            // 219 襄樊：曹操据北独大，蜀（关羽）跨荆益汉中。
+            ContentionState xiangfan = PlayableCampaign.ForStart(PlayableStartCatalog.GuanyuXiangfan).InitialContention();
+            Assert.That(xiangfan.CitiesOf(PlayableCampaign.Cao), Is.GreaterThanOrEqualTo(20), "219 曹操据北独大。");
+            Assert.That(xiangfan.CitiesOf(PlayableCampaign.LiuBei), Is.EqualTo(6), "219 季汉跨荆益汉中 6 城。");
+            Assert.That(PlayableCampaign.ForStart(PlayableStartCatalog.GuanyuXiangfan).DefendingFactionOf(PlayableCampaign.Xiangyang),
+                Is.EqualTo(PlayableCampaign.Cao), "襄阳守方为曹。");
 
             // 184 黄巾：汉庭据中原（13城），黄巾起河北（5城），二势力并存。
             ContentionState huangjin = PlayableCampaign.ForStart(PlayableStartCatalog.HejinHuangjin).InitialContention();

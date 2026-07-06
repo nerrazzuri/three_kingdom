@@ -80,6 +80,14 @@ namespace ThreeKingdom.Domain.Tests.Session
             Assert.That(GeneralDossiers.GeneralsAt(City("city-changan"), 234), Does.Contain(C("char-simayi")), "234 司马懿拒关中。");
             Assert.That(GeneralDossiers.AvailableAt(C("char-zhugeliang"), 234), Is.True, "孔明卒于 234（year<=death 视为在）。");
             Assert.That(GeneralDossiers.AvailableAt(C("char-zhugeliang"), 235), Is.False, "235 孔明已殁。");
+
+            // 194 濮阳：吕布陈宫据濮阳，曹操谋士守鄄城。
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-puyang"), 194), Does.Contain(C("char-lubu")), "194 吕布据濮阳。");
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-juancheng"), 194), Does.Contain(C("char-guojia")), "194 郭嘉守鄄城。");
+            // 219 襄樊：关羽据江陵北伐，曹仁守樊（襄阳），吕蒙陆逊在建业图荆。
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-jiangling"), 219), Does.Contain(C("char-guanyu")), "219 关羽据江陵。");
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-xiangyang"), 219), Does.Contain(C("char-caoren")), "219 曹仁守樊。");
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-jianye"), 219), Does.Contain(C("char-lvmeng")), "219 吕蒙图荆。");
         }
     }
 }

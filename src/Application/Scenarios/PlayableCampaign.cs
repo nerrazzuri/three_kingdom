@@ -370,12 +370,46 @@ namespace ThreeKingdom.Application.Scenarios
                 (Jianye, 1100), (Wujun, 600), (Kuaiji, 500), (Lujiang, 500), (Jiangxia, 600), (Jiangling, 700), (Changsha, 600), (Jiaozhou, 400) }),
         };
 
+        /// <summary>194 兖州之战：吕布袭据兖州，曹操困守三城；陶谦让徐州于刘备，李傕挟天子，群雄割据。</summary>
+        private static readonly SeedFaction[] World194 =
+        {
+            new SeedFaction(Cao, "char-caocao", RelationToPlayer.Neutral, false, new[] { (Juancheng, 700), (Xuchang, 600) }),  // 困守鄄城
+            new SeedFaction(LuBu, "char-lubu", RelationToPlayer.Hostile, false, new[] { (Puyang, 700), (Chenliu, 600) }),      // 袭据兖州
+            new SeedFaction(LiuBei, "char-liubei", RelationToPlayer.Neutral, false, new[] { (Xuzhou, 700), (Xiapi, 600), (Xiaopei, 400) }), // 陶谦让徐州
+            new SeedFaction(Enemy, "char-yuan", RelationToPlayer.Hostile, false, new[] { (Shouchun, 700), (EnemyCity, 500), (Runan, 500), (Lujiang, 400) }),
+            new SeedFaction(YuanShao, "char-yuanshao", RelationToPlayer.Neutral, false, new[] { (Ye, 900), (Nanpi, 700), (Pingyuan, 500), (Jinyang, 500) }),
+            new SeedFaction(Sun, "char-sunce", RelationToPlayer.Neutral, false, new[] { (Jianye, 600), (Wujun, 500), (Kuaiji, 400) }),
+            new SeedFaction(GongSun, "char-gongsun", RelationToPlayer.Neutral, false, new[] { (Beiping, 600), (Jicheng, 400) }),
+            new SeedFaction(LiJue, "char-lijue", RelationToPlayer.Hostile, false, new[] { (Changan, 700), (Luoyang, 500) }),   // 挟天子
+            new SeedFaction(LiuBiao, "char-liubiao", RelationToPlayer.Neutral, false, new[] { (Xiangyang, 800), (Jiangling, 600), (Jiangxia, 500), (Changsha, 500) }),
+            new SeedFaction(LiuZhang, "char-liuzhang", RelationToPlayer.Neutral, false, new[] { (Chengdu, 800), (Jiangzhou, 500), (Zitong, 400) }),
+            new SeedFaction(MaTeng, "char-mateng", RelationToPlayer.Neutral, false, new[] { (Xiliang, 700), (Wuwei, 500), (Hanyang, 400) }),
+            new SeedFaction(ZhangLu, "char-zhanglu", RelationToPlayer.Neutral, false, new[] { (Hanzhong, 600) }),
+            new SeedFaction(ShiXie, "char-shixie", RelationToPlayer.Neutral, false, new[] { (Jiaozhou, 400) }),
+            new SeedFaction(KongRong, "char-kongrong", RelationToPlayer.Neutral, false, new[] { (Beihai, 400) }),
+            new SeedFaction(ZhangXiu, "char-zhangxiu", RelationToPlayer.Neutral, false, new[] { (Wancheng, 500) }),
+        };
+
+        /// <summary>219 襄樊之世：刘备取汉中进位汉中王、关羽北伐水淹七军威震华夏；曹操据北、孙权据江东（图袭荆州）。</summary>
+        private static readonly SeedFaction[] World219 =
+        {
+            new SeedFaction(Cao, "char-caocao", RelationToPlayer.Hostile, false, new[] {
+                (Xuchang, 1400), (Puyang, 700), (Chenliu, 700), (Juancheng, 600), (Ye, 1000), (Nanpi, 700), (Pingyuan, 600), (Jinyang, 600),
+                (Beiping, 600), (Jicheng, 500), (Xiapi, 700), (Xuzhou, 700), (Shouchun, 600), (Runan, 500), (Changan, 800), (Luoyang, 700),
+                (EnemyCity, 500), (Wancheng, 600), (Xiangyang, 900), (Beihai, 400), (Xiaopei, 400), (Xiliang, 600), (Wuwei, 500), (Hanyang, 500) }),
+            new SeedFaction(LiuBei, "char-liubei", RelationToPlayer.Neutral, false, new[] {
+                (Chengdu, 1000), (Jiangzhou, 600), (Zitong, 500), (Hanzhong, 800), (Jiangling, 800), (Changsha, 600) }),
+            new SeedFaction(Sun, "char-sunquan", RelationToPlayer.Neutral, false, new[] { (Jianye, 1000), (Wujun, 600), (Kuaiji, 500), (Lujiang, 500), (Jiangxia, 600), (Jiaozhou, 400) }),
+        };
+
         /// <summary>某锚点年的世界大盘（ADR-0015 离散快照）。190=默认 <see cref="World"/>；未登记年回退 190。</summary>
         private static SeedFaction[] WorldAt(int anchorYear) => anchorYear switch
         {
             184 => World184,
+            194 => World194,
             200 => World200,
             208 => World208,
+            219 => World219,
             220 => World220,
             234 => World234,
             _ => World,

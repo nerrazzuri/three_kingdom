@@ -160,12 +160,31 @@ namespace ThreeKingdom.Application.Scenarios
             offensiveTarget: PlayableCampaign.Changan, targetFaction: PlayableCampaign.Cao,
             targetTerrain: TerrainKind.Pass, includesBespokeSeat: false, anchorYear: 234);
 
+        /// <summary>濮阳之战·曹操（194 锚点年）：吕布乘虚袭据兖州，你困守鄄城三县——背水反攻、复夺基业。</summary>
+        public static readonly PlayableStart CaocaoYanzhou = new PlayableStart(
+            id: "caocao-yanzhou", displayName: "曹孟德·濮阳",
+            blurb: "东征徐州未还，陈宫张邈叛迎吕布，兖州诸城望风皆应，唯余鄄城三县。粮尽兵疲、存亡一线——背水一战，复夺兖州。",
+            playerFaction: PlayableCampaign.Cao, playerLord: new CharacterId("char-caocao"),
+            capital: PlayableCampaign.Juancheng, capitalGarrison: 700,
+            offensiveTarget: PlayableCampaign.Puyang, targetFaction: PlayableCampaign.LuBu,
+            targetTerrain: TerrainKind.Fortified, includesBespokeSeat: false, anchorYear: 194);
+
+        /// <summary>襄樊之战·关羽（219 锚点年）：进位前将军、假节钺，率荆州之众北伐——水淹七军、威震华夏，兵锋直指许都。</summary>
+        public static readonly PlayableStart GuanyuXiangfan = new PlayableStart(
+            id: "guanyu-xiangfan", displayName: "关云长·襄樊",
+            blurb: "假节钺、董督荆州。曹仁困守樊城，于禁七军来援。天时地利在我——水淹七军、威震华夏，还是提防东吴白衣渡江、背后一刀？",
+            playerFaction: PlayableCampaign.LiuBei, playerLord: new CharacterId("char-guanyu"),
+            capital: PlayableCampaign.Jiangling, capitalGarrison: 800,
+            offensiveTarget: PlayableCampaign.Xiangyang, targetFaction: PlayableCampaign.Cao,
+            targetTerrain: TerrainKind.Ford, includesBespokeSeat: false, anchorYear: 219);
+
         /// <summary>全部可选开局（选择屏遍历序）。</summary>
         public static IReadOnlyList<PlayableStart> All { get; } = new[]
         {
             FanshuiGovernor, LiubeiXiaopei, SunceJiangdong,
             CaocaoGuandu, SunquanChibi, LiubeiShu,
             HejinHuangjin, ZhangjiaoUprising, ZhugeliangWuzhang,
+            CaocaoYanzhou, GuanyuXiangfan,
         };
 
         /// <summary>默认开局（未选择时/harness 缺省）。</summary>
