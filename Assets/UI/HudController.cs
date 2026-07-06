@@ -89,6 +89,7 @@ namespace ThreeKingdom.Unity.UI
             if (toMenu != null) toMenu.clicked += () => SceneManager.LoadScene("MainMenu");
 
             // 屏间导航到独立场景屏（各屏 _backScene 默认回 "Hud"）。
+            Wire(root, "nav-map", () => SceneManager.LoadScene("CampaignMap"));
             Wire(root, "nav-roster", () => SceneManager.LoadScene("Roster"));
             Wire(root, "nav-diplomacy", () => SceneManager.LoadScene("Diplomacy"));
             Wire(root, "nav-theater", () => SceneManager.LoadScene("Theater"));

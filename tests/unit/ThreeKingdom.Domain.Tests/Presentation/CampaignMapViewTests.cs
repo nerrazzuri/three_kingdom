@@ -117,6 +117,22 @@ namespace ThreeKingdom.Domain.Tests.Presentation
             Assert.That(Named(rt.MapView(), "char-gaoshun"), Is.True, "派探后发觉高顺据下邳。");
         }
 
+        [Test]
+        public void test_scouted_reveal_survives_save_load()
+        {
+            // 「发觉」派生自持久化侦察态（在途/已得敌情）→ 存读档后仍识得目标之将（非会话内易失）。
+            var medium = new InMemorySaveMedium();
+            var rt = new CampaignRuntime(medium, PlayableCampaign.ForStart(PlayableStartCatalog.LiubeiXiaopei));
+            rt.NewGame();
+            rt.ScoutEnemy();
+            Assert.That(Named(rt.MapView(), "char-gaoshun"), Is.True, "派探后发觉。");
+            Assert.That(rt.Save(), Is.True);
+
+            var reloaded = new CampaignRuntime(medium, PlayableCampaign.ForStart(PlayableStartCatalog.LiubeiXiaopei));
+            Assert.That(reloaded.Load(out _), Is.True);
+            Assert.That(Named(reloaded.MapView(), "char-gaoshun"), Is.True, "读档后仍识得高顺（发觉入存档）。");
+        }
+
         private static bool Named(CampaignMapView map, string heroId)
         {
             foreach (MapHeroCell h in map.Heroes) if (h.HeroId == heroId) return true;

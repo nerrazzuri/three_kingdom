@@ -44,6 +44,7 @@ namespace ThreeKingdom.Unity.EditorTools
             new ScreenDef { Name = "Diplomacy", Uxml = "Assets/UI/DiplomacyScreen.uxml", Controller = typeof(DiplomacyScreenController) },
             // 多城战区屏（直辖/委任城）。
             new ScreenDef { Name = "Theater", Uxml = "Assets/UI/TheaterScreen.uxml", Controller = typeof(TheaterScreenController) },
+            new ScreenDef { Name = "CampaignMap", Uxml = "Assets/UI/CampaignMap.uxml", Controller = typeof(CampaignMapController) },
             // 独立区域战斗场景（GDD_021 / epic-031）：出征/守城从 HUD 进入此屏排兵布阵，结算后返回 HUD。
             new ScreenDef { Name = "ZoneBattle", Uxml = "Assets/UI/ZoneBattle.uxml", Controller = typeof(ZoneBattleController) },
             // 被灭续局屏（被俘→判生死→归顺/投奔→复位续局 / 传承）。

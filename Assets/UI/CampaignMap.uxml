@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 战略图（GDD_026 #地图 / ADR-0015）：天下大势——各势力领城 + 在场武将棋子（反全知：己方/名将露真名，敌境无名将「未探明」）。★需 Unity 编辑器验证。 -->
+    <ui:VisualElement name="map-root" class="roster-root">
+        <ui:Label name="map-title" text="战略图·天下大势" class="roster-title" />
+        <ui:Label name="map-era" text="" class="roster-note" />
+        <ui:Label name="map-note" text="棋子行反全知——己方城之将与传世名将露真名，敌境无名之将仅显「未探明」；占城或派探目标势力可发觉。" class="roster-note" />
+        <ui:Label name="map-factions-h" text="〖群雄割据〗" class="roster-title" />
+        <ui:ScrollView name="map-factions" class="roster-list" />
+        <ui:Label name="map-heroes-h" text="〖在场武将〗" class="roster-title" />
+        <ui:ScrollView name="map-heroes" class="roster-list" />
+        <ui:Button name="map-back" text="返回" class="roster-back" />
+    </ui:VisualElement>
+</ui:UXML>

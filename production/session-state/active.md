@@ -1,6 +1,18 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
-## 🔄 进行中（2026-07-06 续18）— 武将登场机制验证 + 地图反全知雾 + 布防再加密【已提交待推】
+## 🔄 进行中（2026-07-06 续19）— 战略图屏启用 + 发觉入存档【待编辑器验证战略图屏】
+
+> **dotnet 1147 绿；3 DLL 同步。发觉持久化已闭环；战略图屏 C# 侧完成，★需编辑器生成场景验证。**
+> - **发觉入存档（Point 2 完成）**：把「已探知目标」从会话内标记改为**派生自持久化侦察态**（`Session.PendingScouts` / `PlayerKnowledge.Entries`，二者已在存档 head）→ 存读档天然一致，无需新字段/迁移。CampaignMapViewTests +1（scout→save→load 仍识得高顺）。
+> - **战略图屏启用（Point 1，UI Toolkit 版，不碰停泊的 DOTween scaffold）**：
+>   - 新增 `Assets/UI/CampaignMap.uxml` + `CampaignMapController.cs`（读 SessionRuntime.MapView：各势力领城降序 + 在场武将棋子，反全知「未探明」/名将露真名，底部提示未探明数）。
+>   - HUD 加 `nav-map`「战略图」按钮 + HudController 接线 LoadScene("CampaignMap")。
+>   - SliceSceneBuilder 10→11 屏（+CampaignMap）。
+> - **★下一会话须做**：Unity 里聚焦编译 → 菜单「三国→构建 Slice 场景」重跑（生成 CampaignMap.unity）→ 进 Play：HUD 点「战略图」应进屏，见势力领城 + 武将棋子（己方/名将露名、敌境「未探明」）；派探目标势力后其将现形。
+> - **仍 parked**：DOTween 立绘动画版大地图 scaffold（本 UI Toolkit 版为轻量可玩替代，非美术版）。
+> - **未提交/未推**：Assets（uxml/controller/hud/builder/3DLL）+ src CampaignRuntime + test。
+
+## ✅ 完成（2026-07-06 续18）— 武将登场机制验证 + 地图反全知雾 + 布防再加密【已提交】
 
 > **回应用户「武将出现三规则」需求。dotnet 1146 绿；3 DLL 同步；console 实测雾+加密。**
 > - **验证（新增 GeneralAppearanceAcrossErasTests，5 测试全绿）**：

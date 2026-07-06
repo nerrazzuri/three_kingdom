@@ -191,7 +191,7 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>战略大地图投影（城归属 + 势力 + 纪元；供 campaign map 表现层）。反全知：己方/名将/已探知势力露真名，余者未探明。</summary>
         public CampaignMapView MapView()
             => CampaignMapView.Build(Session.World, Contend, _scenario.PlayerFaction, CurrentYear, _scenario.AnchorYear, CurrentSeasonLabel,
-                factionRevealed: f => _scoutedTarget && f == _scenario.PlayerTargetFaction);   // 派探敌情 → 发觉目标势力之将（GDD_026 R6）
+                factionRevealed: f => HasScoutedEnemy && f == _scenario.PlayerTargetFaction);   // 派探敌情 → 发觉目标势力之将（GDD_026 R6，存读档一致）
 
         /// <summary>
         /// HUD 顶栏当前席位目标（真实反映所选开局，取代此前硬编码「汜水关太守」）：
@@ -412,16 +412,15 @@ namespace ThreeKingdom.Presentation.Runtime
         /// 派出侦察（GDD_007 派出→在途→返报，<b>非即时</b>）：记一支在途侦察兵，约 <see cref="PlayableCampaign.ScoutLeadSegments"/>
         /// 时段后返报——须「推进时段」到返报时刻，敌情数字才出现。返回命令结果（校验失败稳定错误码、零写入）。
         /// </summary>
-        /// <summary>是否已向目标势力派探（会话内，非存档）——供战略图反全知发觉目标之将。</summary>
-        private bool _scoutedTarget;
-
         public CampaignCommandResult ScoutEnemy()
-        {
-            if (!HasFreeAgent) return NoAgent();
-            CampaignCommandResult r = _service.DispatchScout(Session, PlayableCampaign.EnemyArmy, IntelSource.Scouting, _scenario.ScoutLeadSegments);
-            if (r.Applied) _scoutedTarget = true;   // 派探即识得当面之敌的将佐部署（GDD_026 R6 发觉门）
-            return r;
-        }
+            => HasFreeAgent ? _service.DispatchScout(Session, PlayableCampaign.EnemyArmy, IntelSource.Scouting, _scenario.ScoutLeadSegments) : NoAgent();
+
+        /// <summary>
+        /// 是否已向当面之敌派探（在途侦察或已得敌情皆算）——<b>派生自持久化侦察态</b>，故存读档一致（GDD_026 R6 发觉门）。
+        /// 供战略图反全知发觉目标势力之将。
+        /// </summary>
+        private bool HasScoutedEnemy
+            => Session.PendingScouts.Count > 0 || (Session.PlayerKnowledge != null && Session.PlayerKnowledge.Entries.Count > 0);
 
         // --- 战役主循环（epic-028 story-004 / TR-ux-001/005 / ADR-0002/0009）。所有操作经服务命令，UI 只读投影。---
 
