@@ -50,6 +50,30 @@ namespace ThreeKingdom.Domain.Tests.Presentation
         }
 
         [Test]
+        public void test_talent_view_name_resolves_chinese_not_raw_id()
+        {
+            // Arrange：开局并探知三名原型人才（回归——修「招揽结果露 char-nengli 原始 id」）。
+            var rt = new CampaignRuntime(new InMemorySaveMedium());
+            rt.NewGame();
+            rt.RevealTalent(new ThreeKingdom.Domain.Talent.TalentId("talent-xiaojiang"), ThreeKingdom.Domain.Talent.TalentChannel.Scouting);
+            rt.RevealTalent(new ThreeKingdom.Domain.Talent.TalentId("talent-nengli"), ThreeKingdom.Domain.Talent.TalentChannel.Scouting);
+
+            // Act：推进到能吏登场（appearFrom 内部第 1 日 = 4 段/日）后取录。
+            rt.Advance(4);
+            TalentRecruitView v = rt.TalentView();
+
+            // Assert：每条展示名为中文，绝不回退成 char-* 原始 id。
+            Assert.That(v.Talents.Count, Is.GreaterThanOrEqualTo(2), "骁将/能吏均已登场且知晓。");
+            foreach (TalentRecruitLine l in v.Talents)
+                Assert.That(l.Name, Does.Not.StartWith("char-"), $"人才名不得漏原始 id：{l.TalentId}");
+
+            TalentRecruitLine nengli = null!;
+            foreach (TalentRecruitLine l in v.Talents) if (l.TalentId == "talent-nengli") nengli = l;
+            Assert.That(nengli, Is.Not.Null);
+            Assert.That(nengli.Name, Is.EqualTo("能吏"), "char-nengli → 能吏。");
+        }
+
+        [Test]
         public void test_diplomacy_view_lists_faction_stances()
         {
             var rt = new CampaignRuntime(new InMemorySaveMedium());

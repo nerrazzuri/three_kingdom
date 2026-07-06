@@ -1,6 +1,15 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
-## 🔄 进行中（2026-07-05 续13）— computer-use 第3轮验收 + 修两个阻断布局 bug【重启后从这里续】
+## ✅ 完成（2026-07-06 续14）— 续13 两阻断布局 bug 编辑器验证通过 + 修 char-nengli ID 泄露
+
+> **computer-use 无人值守实测 + Claude 逐张核对截图。证据：`production/qa/evidence/s13-layout-verify-2026-07-06.md`（+ `s13-screens/` 5 图）。**
+> - **续13 两阻断 bug 均 PASS**：① HUD 叠加层拦截点击已解（单 UIDocument，4 导航 + career 卡按钮全可点）；② GameSetup「就此起家」够不到已解（功能性进入陈留太守 HUD 证明可达）。顺带印证续12 顶栏 SeatObjective（小沛→下邳，非汜水关）。Console 仅 1 条 info Debug.Log，0 error。
+> - **修 char-nengli ID 泄露（本轮代码改动）**：招揽结果原显示「char-nengli 未招得」。根因 `DisplayNames` 未登记三名原型人才 → 补 char-wolong=卧龙 / char-xiaojiang=骁将 / char-nengli=能吏（`src/Presentation/Screens/DisplayNames.cs`）+ 回归测试 `test_talent_view_name_resolves_chinese_not_raw_id`。**dotnet 1135→1136 绿；3 DLL 已同步 Assets/Plugins。**
+> - **证据整理**：computer-use 报告 md 因写长 CJK 路径 IO 截断（文件名丢尾 + 内容止于 B 标题）→ 规整重写为 ASCII 名完整报告，截图目录改 `s13-screens`，清 DONE.flag。
+> - **仍待你在编辑器验证**（下方续13 复验清单仍有效）：char-nengli 修复须重跑场景生成器 + 进 Play 复看招揽结果显中文「能吏」；Defeat 真实败亡流程未触发验证；HUD/布局美术打磨。
+> - **未提交**：本轮改动（DisplayNames + 测试 + 3 DLL + 证据）尚未 commit，待你指示。
+
+## ✅ 完成（2026-07-05 续13）— computer-use 第3轮验收 + 修两个阻断布局 bug（已验证通过，见续14）
 
 > **给下一会话：读完本段即可续。核心 dotnet 1135/1135 绿；工程可编译进 Play。**
 >

@@ -186,6 +186,8 @@ namespace ThreeKingdom.Presentation.Screens
             ["char-yangqiu"] = "杨秋", ["char-mawan"] = "马玩",
             ["char-panfeng"] = "潘凤", ["char-wuanguo"] = "武安国", ["char-xingdaorong"] = "邢道荣",
             ["char-leitong"] = "雷铜", ["char-wulan"] = "吴兰",
+            // 人才招揽原型（GDD_020 场景；console 同名 卧龙/骁将/能吏）。
+            ["char-wolong"] = "卧龙", ["char-xiaojiang"] = "骁将", ["char-nengli"] = "能吏",
         };
 
         /// <summary>取某 id 的中文展示名；未登记则回退原文。</summary>
