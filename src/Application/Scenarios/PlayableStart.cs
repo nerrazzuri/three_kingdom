@@ -133,11 +133,39 @@ namespace ThreeKingdom.Application.Scenarios
             offensiveTarget: PlayableCampaign.Changan, targetFaction: PlayableCampaign.Cao,
             targetTerrain: TerrainKind.Pass, includesBespokeSeat: false, anchorYear: 220);
 
+        /// <summary>黄巾之乱·汉庭（184 锚点年）：黄巾蜂起八州，你为大将军总统京师——扫平妖乱，还是拥兵自重。</summary>
+        public static readonly PlayableStart HejinHuangjin = new PlayableStart(
+            id: "hejin-huangjin", displayName: "何大将军·讨黄巾",
+            blurb: "苍天已死，黄天当立。黄巾蜂起八州，汉室倾危。你为大将军总统京师兵马——是扫平妖乱、匡扶社稷，还是拥兵自重、伺隙而动？",
+            playerFaction: PlayableCampaign.Han, playerLord: new CharacterId("char-hejin"),
+            capital: PlayableCampaign.Luoyang, capitalGarrison: 1200,
+            offensiveTarget: PlayableCampaign.Ye, targetFaction: PlayableCampaign.Huangjin,
+            targetTerrain: TerrainKind.Fortified, includesBespokeSeat: false, anchorYear: 184);
+
+        /// <summary>黄巾之乱·太平道（184 锚点年）：你为大贤良师揭竿冀州，率黄巾荡涤汉廷、开太平之世。</summary>
+        public static readonly PlayableStart ZhangjiaoUprising = new PlayableStart(
+            id: "zhangjiao-uprising", displayName: "张角·黄巾起义",
+            blurb: "苍天已死，黄天当立，岁在甲子，天下大吉！你为大贤良师，揭竿于冀州，众逾百万——率黄巾直捣洛阳，倾覆汉廷、开万世太平。",
+            playerFaction: PlayableCampaign.Huangjin, playerLord: new CharacterId("char-zhangjiao"),
+            capital: PlayableCampaign.Ye, capitalGarrison: 900,
+            offensiveTarget: PlayableCampaign.Luoyang, targetFaction: PlayableCampaign.Han,
+            targetTerrain: TerrainKind.Fortified, includesBespokeSeat: false, anchorYear: 184);
+
+        /// <summary>五丈原·诸葛亮（234 锚点年）：丞相驻军汉中六出祁山，北面司马懿据关中坚壁——毕功一役、还于旧都。</summary>
+        public static readonly PlayableStart ZhugeliangWuzhang = new PlayableStart(
+            id: "zhugeliang-wuzhang", displayName: "诸葛孔明·五丈原",
+            blurb: "汉贼不两立，王业不偏安。丞相驻军汉中、六出祁山，北面司马懿据关中坚壁拒守——是毕其功于此役、还于旧都，还是徐图缓进？",
+            playerFaction: PlayableCampaign.LiuBei, playerLord: new CharacterId("char-zhugeliang"),
+            capital: PlayableCampaign.Hanzhong, capitalGarrison: 800,
+            offensiveTarget: PlayableCampaign.Changan, targetFaction: PlayableCampaign.Cao,
+            targetTerrain: TerrainKind.Pass, includesBespokeSeat: false, anchorYear: 234);
+
         /// <summary>全部可选开局（选择屏遍历序）。</summary>
         public static IReadOnlyList<PlayableStart> All { get; } = new[]
         {
             FanshuiGovernor, LiubeiXiaopei, SunceJiangdong,
             CaocaoGuandu, SunquanChibi, LiubeiShu,
+            HejinHuangjin, ZhangjiaoUprising, ZhugeliangWuzhang,
         };
 
         /// <summary>默认开局（未选择时/harness 缺省）。</summary>

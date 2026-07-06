@@ -66,6 +66,9 @@ namespace ThreeKingdom.Application.Scenarios
         public static readonly FactionId KongRong = new FactionId("faction-kongrong");
         public static readonly FactionId HanSui = new FactionId("faction-hansui");
         public static readonly FactionId ShiXie = new FactionId("faction-shixie");
+        // 纪元专属势力（184 黄巾之乱）。
+        public static readonly FactionId Han = new FactionId("faction-han");
+        public static readonly FactionId Huangjin = new FactionId("faction-huangjin");
 
         public static readonly CityId Xuchang = new CityId("city-xuchang");
         public static readonly CityId Puyang = new CityId("city-puyang");
@@ -339,12 +342,42 @@ namespace ThreeKingdom.Application.Scenarios
                 (Jianye, 1100), (Wujun, 600), (Kuaiji, 500), (Lujiang, 500), (Jiangxia, 600), (Jiangling, 700), (Changsha, 600), (Jiaozhou, 400) }),
         };
 
+        /// <summary>184 黄巾之乱：苍天已死。汉庭据中原命三将平乱，黄巾席卷河北，凉州复叛，群雄未起而州牧各据。</summary>
+        private static readonly SeedFaction[] World184 =
+        {
+            new SeedFaction(Han, "char-hejin", RelationToPlayer.Neutral, false, new[] {
+                (Luoyang, 1200), (Changan, 700), (Xuchang, 600), (Chenliu, 500), (Puyang, 500), (Juancheng, 400),
+                (Wancheng, 500), (Xuzhou, 600), (Xiapi, 500), (Xiaopei, 300), (Shouchun, 500), (EnemyCity, 400), (Jinyang, 500) }),
+            new SeedFaction(Huangjin, "char-zhangjiao", RelationToPlayer.Hostile, false, new[] { (Ye, 900), (Nanpi, 600), (Pingyuan, 500), (Runan, 600), (Beihai, 400) }),
+            new SeedFaction(GongSun, "char-gongsun", RelationToPlayer.Neutral, false, new[] { (Beiping, 600), (Jicheng, 400) }),
+            new SeedFaction(LiuBiao, "char-liubiao", RelationToPlayer.Neutral, false, new[] { (Xiangyang, 600), (Jiangling, 500), (Jiangxia, 400), (Changsha, 400) }),
+            new SeedFaction(LiuZhang, "char-liuyan", RelationToPlayer.Neutral, false, new[] { (Chengdu, 700), (Jiangzhou, 400), (Zitong, 300) }),
+            new SeedFaction(Sun, "char-sunjian", RelationToPlayer.Neutral, false, new[] { (Jianye, 600), (Wujun, 400), (Kuaiji, 400), (Lujiang, 300) }),
+            new SeedFaction(HanSui, "char-hansui", RelationToPlayer.Neutral, false, new[] { (Xiliang, 600), (Wuwei, 400), (Hanyang, 400) }),
+            new SeedFaction(ZhangLu, "char-zhanglu", RelationToPlayer.Neutral, false, new[] { (Hanzhong, 500) }),
+            new SeedFaction(ShiXie, "char-shixie", RelationToPlayer.Neutral, false, new[] { (Jiaozhou, 400) }),
+        };
+
+        /// <summary>234 五丈原：三国鼎立之末。魏（曹叡）据中原凉土，蜀（后主·丞相北伐）跨益汉中，吴（孙权）有江东荆南。</summary>
+        private static readonly SeedFaction[] World234 =
+        {
+            new SeedFaction(Cao, "char-caorui", RelationToPlayer.Neutral, false, new[] {
+                (Xuchang, 1600), (Puyang, 700), (Chenliu, 700), (Juancheng, 600), (Ye, 1100), (Nanpi, 700), (Pingyuan, 600), (Jinyang, 600),
+                (Beiping, 600), (Jicheng, 500), (Xiapi, 700), (Xuzhou, 700), (Shouchun, 700), (Runan, 500), (Changan, 900), (Luoyang, 800),
+                (EnemyCity, 500), (Wancheng, 600), (Xiangyang, 900), (Beihai, 400), (Xiaopei, 400), (Xiliang, 600), (Wuwei, 500), (Hanyang, 500) }),
+            new SeedFaction(LiuBei, "char-liushan", RelationToPlayer.Neutral, false, new[] { (Chengdu, 1100), (Jiangzhou, 600), (Zitong, 500), (Hanzhong, 800) }),
+            new SeedFaction(Sun, "char-sunquan", RelationToPlayer.Neutral, false, new[] {
+                (Jianye, 1100), (Wujun, 600), (Kuaiji, 500), (Lujiang, 500), (Jiangxia, 600), (Jiangling, 700), (Changsha, 600), (Jiaozhou, 400) }),
+        };
+
         /// <summary>某锚点年的世界大盘（ADR-0015 离散快照）。190=默认 <see cref="World"/>；未登记年回退 190。</summary>
         private static SeedFaction[] WorldAt(int anchorYear) => anchorYear switch
         {
+            184 => World184,
             200 => World200,
             208 => World208,
             220 => World220,
+            234 => World234,
             _ => World,
         };
 

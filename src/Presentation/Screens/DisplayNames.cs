@@ -214,6 +214,32 @@ namespace ThreeKingdom.Presentation.Screens
             // 扩充批 4 — 巾帼。
             ["char-bianfuren"] = "卞夫人", ["char-ganfuren"] = "甘夫人", ["char-mifuren"] = "糜夫人",
             ["char-wuguotai"] = "吴国太",
+            // 扩充批 5 — 势力（184 纪元）。
+            ["faction-han"] = "汉庭", ["faction-huangjin"] = "黄巾",
+            // 扩充批 5 — 汉末群雄/凉州/黄巾/李郭。
+            ["char-liuyan"] = "刘焉", ["char-liuyu"] = "刘虞", ["char-taoqian"] = "陶谦",
+            ["char-gongsundu"] = "公孙度", ["char-qiaorui"] = "桥瑁", ["char-kongzhou"] = "孔伷",
+            ["char-zhangchao"] = "张超", ["char-bocai"] = "波才", ["char-zhangmancheng"] = "张曼成",
+            ["char-biansang"] = "边章", ["char-lisu"] = "李肃", ["char-yangfeng"] = "杨奉",
+            ["char-hanxian"] = "韩暹", ["char-zhangji"] = "张济", ["char-fanchou"] = "樊稠",
+            ["char-guosi"] = "郭汜", ["char-huchier"] = "胡车儿",
+            // 扩充批 5 — 魏（后期）。
+            ["char-jiakui"] = "贾逵", ["char-tianchou"] = "田畴", ["char-liangxi"] = "梁习",
+            ["char-gaorou"] = "高柔", ["char-xinpi"] = "辛毗", ["char-luyu"] = "卢毓",
+            ["char-xiahouba"] = "夏侯霸", ["char-wangchang"] = "王昶", ["char-shiba"] = "石苞",
+            ["char-zhugexu"] = "诸葛绪", ["char-hujun"] = "胡遵", ["char-caoyu"] = "曹宇",
+            // 扩充批 5 — 蜀（后期）。
+            ["char-liushan"] = "刘禅", ["char-mazhong"] = "马忠", ["char-huoyi"] = "霍弋",
+            ["char-luoxian"] = "罗宪", ["char-zhaotong"] = "赵统", ["char-zhaoguang"] = "赵广",
+            ["char-dongjue"] = "董厥", ["char-fanjian"] = "樊建", ["char-jiangshu"] = "蒋舒",
+            ["char-liuchen"] = "刘谌",
+            // 扩充批 5 — 吴（后期）。
+            ["char-sunhao"] = "孙皓", ["char-sunxiu"] = "孙休", ["char-sunliang"] = "孙亮",
+            ["char-zhuju"] = "朱据", ["char-lvju"] = "吕据", ["char-liuzan"] = "留赞",
+            ["char-tengyin"] = "滕胤", ["char-tangzi"] = "唐咨",
+            // 扩充批 5 — 汉臣/荆州/巾帼。
+            ["char-yangbiao"] = "杨彪", ["char-liuqi"] = "刘琦", ["char-liucong"] = "刘琮",
+            ["char-xiahoushi"] = "夏侯氏", ["char-fuhou"] = "伏寿",
             // 人才招揽原型（GDD_020 场景；console 同名 卧龙/骁将/能吏）。
             ["char-wolong"] = "卧龙", ["char-xiaojiang"] = "骁将", ["char-nengli"] = "能吏",
         };

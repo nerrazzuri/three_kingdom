@@ -149,6 +149,30 @@ namespace ThreeKingdom.Application.Scenarios
                 // 扩充批 4 — 巾帼
                 ["char-bianfuren"] = (159, 230), ["char-ganfuren"] = (168, 209), ["char-mifuren"] = (170, 208),
                 ["char-wuguotai"] = (150, 210),
+                // 扩充批 5 — 汉末群雄/凉州/黄巾/李郭
+                ["char-liuyan"] = (152, 194), ["char-liuyu"] = (142, 193), ["char-taoqian"] = (132, 194),
+                ["char-gongsundu"] = (150, 204), ["char-qiaorui"] = (150, 190), ["char-kongzhou"] = (150, 190),
+                ["char-zhangchao"] = (155, 195), ["char-bocai"] = (150, 184), ["char-zhangmancheng"] = (150, 184),
+                ["char-biansang"] = (140, 185), ["char-lisu"] = (155, 192), ["char-yangfeng"] = (155, 197),
+                ["char-hanxian"] = (155, 197), ["char-zhangji"] = (150, 196), ["char-fanchou"] = (155, 195),
+                ["char-guosi"] = (155, 197), ["char-huchier"] = (165, 210),
+                // 扩充批 5 — 魏
+                ["char-jiakui"] = (174, 228), ["char-tianchou"] = (169, 214), ["char-liangxi"] = (160, 230),
+                ["char-gaorou"] = (174, 263), ["char-xinpi"] = (165, 235), ["char-luyu"] = (183, 257),
+                ["char-xiahouba"] = (180, 259), ["char-wangchang"] = (185, 259), ["char-shiba"] = (190, 273),
+                ["char-zhugexu"] = (190, 260), ["char-hujun"] = (180, 256), ["char-caoyu"] = (190, 278),
+                // 扩充批 5 — 蜀
+                ["char-liushan"] = (207, 271), ["char-mazhong"] = (185, 249), ["char-huoyi"] = (190, 264),
+                ["char-luoxian"] = (218, 270), ["char-zhaotong"] = (195, 255), ["char-zhaoguang"] = (198, 263),
+                ["char-dongjue"] = (190, 265), ["char-fanjian"] = (195, 270), ["char-jiangshu"] = (210, 270),
+                ["char-liuchen"] = (240, 263),
+                // 扩充批 5 — 吴
+                ["char-sunhao"] = (242, 284), ["char-sunxiu"] = (235, 264), ["char-sunliang"] = (243, 260),
+                ["char-zhuju"] = (194, 250), ["char-lvju"] = (200, 256), ["char-liuzan"] = (183, 255),
+                ["char-tengyin"] = (190, 256), ["char-tangzi"] = (200, 260),
+                // 扩充批 5 — 汉臣/荆州/巾帼
+                ["char-yangbiao"] = (142, 225), ["char-liuqi"] = (170, 209), ["char-liucong"] = (185, 209),
+                ["char-xiahoushi"] = (180, 240), ["char-fuhou"] = (180, 214),
             };
 
         // ---- 190 讨董布防（GDD_026 D4）：部将 → 任职城（须属该城 190 归属势力）。君主不入（本身即势力之主）。----
@@ -218,13 +242,43 @@ namespace ThreeKingdom.Application.Scenarios
                 ["char-handang"] = "city-jiangling", ["char-panzhang"] = "city-jiangling",                             // 吴·江陵（219 夺荆）
             };
 
+        // ---- 184 黄巾之乱布防（ADR-0015）：汉庭三将平乱，黄巾据河北，孙坚讨贼。----
+        private static readonly IReadOnlyDictionary<string, string> Placement184 =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["char-huangfusong"] = "city-luoyang", ["char-luzhi"] = "city-luoyang", ["char-caocao"] = "city-luoyang", // 汉庭·讨黄巾三将
+                ["char-zhujun"] = "city-luoyang",
+                ["char-dongzhuo"] = "city-changan", ["char-jiaxu"] = "city-changan",                                    // 凉州董卓系
+                ["char-zhangjiao"] = "city-ye", ["char-zhangbao-turban"] = "city-ye", ["char-zhangliang-turban"] = "city-ye", // 黄巾·冀州
+                ["char-bocai"] = "city-runan", ["char-zhangmancheng"] = "city-nanpi",                                   // 黄巾渠帅
+                ["char-gongsun"] = "city-beiping",                                                                      // 幽州公孙瓒
+                ["char-sunjian"] = "city-jianye", ["char-chengpu"] = "city-jianye", ["char-huanggai"] = "city-jianye",  // 孙坚讨贼
+                ["char-hansui"] = "city-xiliang", ["char-biansang"] = "city-xiliang", ["char-mateng"] = "city-xiliang", // 凉州之乱
+                ["char-liuyan"] = "city-chengdu", ["char-zhangren"] = "city-chengdu",                                   // 益州刘焉
+            };
+
+        // ---- 234 五丈原布防（ADR-0015）：诸葛北伐驻汉中，司马拒关中，陆逊镇江东。----
+        private static readonly IReadOnlyDictionary<string, string> Placement234 =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["char-zhugeliang"] = "city-hanzhong", ["char-weiyan"] = "city-hanzhong", ["char-wangping"] = "city-hanzhong", // 蜀·北伐前线
+                ["char-jiangwei"] = "city-hanzhong",
+                ["char-liushan"] = "city-chengdu", ["char-jiangwan"] = "city-chengdu", ["char-feiyi"] = "city-chengdu",   // 蜀·成都
+                ["char-mazhong"] = "city-chengdu",
+                ["char-simayi"] = "city-changan", ["char-guohuai"] = "city-changan", ["char-xiahouba"] = "city-changan", // 魏·拒关中
+                ["char-caorui"] = "city-xuchang", ["char-manchong"] = "city-xuchang", ["char-jiangji"] = "city-xuchang", // 魏·许昌
+                ["char-luxun"] = "city-jianye", ["char-zhuran"] = "city-jianye", ["char-quancong"] = "city-jianye",     // 吴·建业
+            };
+
         /// <summary>某锚点年的布防表（ADR-0015 离散快照）；未登记年返回 null。</summary>
         private static IReadOnlyDictionary<string, string>? PlacementFor(int anchorYear) => anchorYear switch
         {
+            184 => Placement184,
             190 => Placement190,
             200 => Placement200,
             208 => Placement208,
             220 => Placement220,
+            234 => Placement234,
             _ => null,
         };
 
@@ -584,6 +638,68 @@ namespace ThreeKingdom.Application.Scenarios
             D("char-ganfuren", CombatTier.Feeble, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None);                               // 刘备夫人·阿斗生母
             D("char-mifuren", CombatTier.Feeble, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None);                                // 长坂投井
             D("char-wuguotai", CombatTier.Feeble, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Benevolent);      // 甘露寺相婿
+
+            // ---- 扩充批 5 · 汉末群雄/凉州/黄巾/李郭 ----
+            D("char-liuyan", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.Grand, GeneralTag.Cunning);        // 益州牧·图自立
+            D("char-liuyu", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Benevolent);         // 幽州牧·仁政
+            D("char-taoqian", CombatTier.Ordinary, StrategyTier.Plain, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Hesitant);       // 徐州牧·三让
+            D("char-gongsundu", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Content, Ambition.Grand, GeneralTag.Defender);      // 辽东自守
+            D("char-qiaorui", CombatTier.Ordinary, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring);                       // 讨董诸侯
+            D("char-kongzhou", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.None);
+            D("char-zhangchao", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring);                       // 张邈弟
+            D("char-bocai", CombatTier.Valiant, StrategyTier.Dull, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Reckless);      // 黄巾渠帅
+            D("char-zhangmancheng", CombatTier.Valiant, StrategyTier.Dull, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Reckless);
+            D("char-biansang", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Cavalry);    // 凉州之乱
+            D("char-lisu", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cunning);      // 说吕布杀丁原
+            D("char-yangfeng", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Fickle);
+            D("char-hanxian", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Fickle);
+            D("char-zhangji", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cavalry);     // 张绣叔
+            D("char-fanchou", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Cavalry);     // 李郭同党
+            D("char-guosi", CombatTier.Sturdy, StrategyTier.Dull, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Bloodthirsty, GeneralTag.Fickle); // 李郭之乱
+            D("char-huchier", CombatTier.Valiant, StrategyTier.Dull, LoyaltyLeaning.Wavering, Ambition.None, GeneralTag.Reckless);        // 盗典韦戟
+
+            // ---- 扩充批 5 · 魏（后期） ----
+            D("char-jiakui", CombatTier.Sturdy, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);           // 魏之良史
+            D("char-tianchou", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Benevolent);     // 义士·导曹破乌桓
+            D("char-liangxi", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None);                             // 治并州
+            D("char-gaorou", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None);                              // 执法平恕
+            D("char-xinpi", CombatTier.Ordinary, StrategyTier.Adept, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Cunning);           // 持节制司马
+            D("char-luyu", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None);
+            D("char-xiahouba", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring, GeneralTag.Cavalry);  // 后降蜀
+            D("char-wangchang", CombatTier.Sturdy, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);
+            D("char-shiba", CombatTier.Sturdy, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.Aspiring);                           // 晋室开国
+            D("char-zhugexu", CombatTier.Ordinary, StrategyTier.Plain, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Hesitant);      // 阴平失机
+            D("char-hujun", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);
+            D("char-caoyu", CombatTier.Ordinary, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None);                               // 曹操子·燕王
+
+            // ---- 扩充批 5 · 蜀（后期） ----
+            D("char-liushan", CombatTier.Ordinary, StrategyTier.Plain, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Hesitant);      // 后主·乐不思蜀
+            D("char-mazhong", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);         // 蜀·平南名将
+            D("char-huoyi", CombatTier.Sturdy, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);            // 守南中
+            D("char-luoxian", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Defender);         // 孤守永安拒吴
+            D("char-zhaotong", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None);                             // 赵云长子
+            D("char-zhaoguang", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.LoneValor);      // 赵云次子·沓中战殁
+            D("char-dongjue", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None);
+            D("char-fanjian", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None);
+            D("char-jiangshu", CombatTier.Ordinary, StrategyTier.Plain, LoyaltyLeaning.Disloyal, Ambition.Aspiring, GeneralTag.Fickle);  // 开关降魏
+            D("char-liuchen", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.LoneValor);        // 北地王·哭庙殉国
+
+            // ---- 扩充批 5 · 吴（后期） ----
+            D("char-sunhao", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Disloyal, Ambition.Wolfish, GeneralTag.Bloodthirsty, GeneralTag.Arrogant); // 吴末暴君
+            D("char-sunxiu", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.Aspiring);                        // 诛孙綝
+            D("char-sunliang", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Content, Ambition.None);
+            D("char-zhuju", CombatTier.Valiant, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None);
+            D("char-lvju", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None);
+            D("char-liuzan", CombatTier.Valiant, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Reckless);
+            D("char-tengyin", CombatTier.Ordinary, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None);
+            D("char-tangzi", CombatTier.Sturdy, StrategyTier.Plain, LoyaltyLeaning.Wavering, Ambition.Aspiring);                         // 降魏叛将
+
+            // ---- 扩充批 5 · 汉臣/荆州/巾帼 ----
+            D("char-yangbiao", CombatTier.Feeble, StrategyTier.Sharp, LoyaltyLeaning.Loyal, Ambition.None, GeneralTag.Benevolent);       // 汉太尉·守节
+            D("char-liuqi", CombatTier.Ordinary, StrategyTier.Plain, LoyaltyLeaning.Content, Ambition.Aspiring, GeneralTag.Hesitant);    // 刘表长子
+            D("char-liucong", CombatTier.Ordinary, StrategyTier.Dull, LoyaltyLeaning.Content, Ambition.None, GeneralTag.Hesitant);       // 刘表幼子·举州降曹
+            D("char-xiahoushi", CombatTier.Feeble, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None);                             // 张飞妻·夏侯氏
+            D("char-fuhou", CombatTier.Feeble, StrategyTier.Plain, LoyaltyLeaning.Loyal, Ambition.None);                                 // 伏皇后·殁于曹
 
             var dict = new Dictionary<string, GeneralDossier>(StringComparer.Ordinal);
             foreach (GeneralDossier d in list) dict[d.Id.Value] = d;

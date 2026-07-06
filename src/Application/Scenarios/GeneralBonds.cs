@@ -64,6 +64,23 @@ namespace ThreeKingdom.Application.Scenarios
             B("char-luzhi", "char-gongsun", BondType.Mentor),
             // 扩充批 4 · 仇怨
             B("char-yuantan", "char-yuanshang", BondType.Feud),  // 兄弟阋墙·自相图
+            // 扩充批 5 · 血脉
+            B("char-zhaoyun", "char-zhaotong", BondType.Blood),  // 赵云二子
+            B("char-zhaoyun", "char-zhaoguang", BondType.Blood),
+            B("char-liubiao", "char-liuqi", BondType.Blood),     // 刘表二子
+            B("char-liubiao", "char-liucong", BondType.Blood),
+            B("char-liubei", "char-liushan", BondType.Blood),    // 昭烈父子
+            B("char-liushan", "char-liuchen", BondType.Blood),   // 后主·北地王
+            B("char-zhangjiao", "char-zhangbao-turban", BondType.Blood), // 黄巾三兄弟
+            B("char-zhangjiao", "char-zhangliang-turban", BondType.Blood),
+            B("char-zhangji", "char-zhangxiu", BondType.Blood),  // 张济张绣叔侄
+            B("char-sunquan", "char-sunliang", BondType.Blood),  // 大帝诸子
+            B("char-sunquan", "char-sunxiu", BondType.Blood),
+            // 扩充批 5 · 眷属
+            B("char-zhangfei", "char-xiahoushi", BondType.Kindred), // 张飞妻·夏侯氏
+            // 扩充批 5 · 仇怨/同党
+            B("char-lijue", "char-guosi", BondType.Feud),        // 李郭内讧·祸乱长安
+            B("char-liuqi", "char-liucong", BondType.Feud),      // 荆州争嗣
         };
 
         /// <summary>取只涉及给定在场武将集的羁绊（两端皆在场）。</summary>

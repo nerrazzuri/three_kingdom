@@ -70,6 +70,16 @@ namespace ThreeKingdom.Domain.Tests.Session
             Assert.That(GeneralDossiers.GeneralsAt(City("city-chengdu"), 220), Does.Contain(C("char-zhugeliang")));
             Assert.That(GeneralDossiers.GeneralsAt(City("city-hanzhong"), 220), Does.Contain(C("char-weiyan")));
             Assert.That(GeneralDossiers.GeneralsAt(City("city-jianye"), 220), Does.Contain(C("char-luxun")));
+
+            // 184 黄巾：张角据邺城（冀州）、皇甫嵩率汉军镇洛阳。
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-ye"), 184), Does.Contain(C("char-zhangjiao")), "184 张角起于冀州。");
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-luoyang"), 184), Does.Contain(C("char-huangfusong")), "184 皇甫嵩镇洛阳。");
+
+            // 234 五丈原：丞相驻汉中、司马懿拒关中。张郃 231 已亡，不入 234 布防（生卒过滤）。
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-hanzhong"), 234), Does.Contain(C("char-zhugeliang")), "234 孔明驻汉中北伐。");
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-changan"), 234), Does.Contain(C("char-simayi")), "234 司马懿拒关中。");
+            Assert.That(GeneralDossiers.AvailableAt(C("char-zhugeliang"), 234), Is.True, "孔明卒于 234（year<=death 视为在）。");
+            Assert.That(GeneralDossiers.AvailableAt(C("char-zhugeliang"), 235), Is.False, "235 孔明已殁。");
         }
     }
 }

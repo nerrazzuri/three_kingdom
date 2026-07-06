@@ -42,13 +42,15 @@ namespace ThreeKingdom.Domain.Tests.Presentation
         [Test]
         public void test_roster_expanded_with_major_generals()
         {
-            Assert.That(GeneralDossiers.All.Count, Is.GreaterThanOrEqualTo(250), "名将谱已大幅扩充（≥250，四批）。");
-            // 抽查四扩充批：档案 + 中文名 + 生卒在世判定皆到位。
+            Assert.That(GeneralDossiers.All.Count, Is.GreaterThanOrEqualTo(300), "名将谱已大幅扩充（≥300，五批）。");
+            // 抽查五扩充批：档案 + 中文名 + 生卒在世判定皆到位。
             foreach (string id in new[] { "char-zhanghe", "char-masu", "char-sunjian", "char-huatuo", "char-menghuo", "char-xushu", "char-diaochan", "char-wenyang",
-                                          "char-wangyun", "char-yangyi", "char-zhoufang", "char-chendeng", "char-yuantan", "char-bianfuren" })
+                                          "char-wangyun", "char-yangyi", "char-zhoufang", "char-chendeng", "char-yuantan", "char-bianfuren",
+                                          "char-liushan", "char-xiahouba", "char-sunhao", "char-taoqian", "char-guosi", "char-liuqi" })
                 Assert.That(GeneralDossiers.Find(new CharacterId(id)), Is.Not.Null, $"{id} 已入谱。");
-            // 批 4 中文名经 DisplayNames（不漏原始 id）。
-            foreach (var (id, name) in new[] { ("char-wangyun", "王允"), ("char-yangyi", "杨仪"), ("char-yuantan", "袁谭") })
+            // 批 4/5 中文名经 DisplayNames（不漏原始 id）。
+            foreach (var (id, name) in new[] { ("char-wangyun", "王允"), ("char-yangyi", "杨仪"), ("char-yuantan", "袁谭"),
+                                               ("char-liushan", "刘禅"), ("char-xiahouba", "夏侯霸"), ("char-guosi", "郭汜") })
                 Assert.That(DisplayNames.Of(id), Is.EqualTo(name), $"{id} → {name}。");
             var roster = GeneralRosterView.Build();
             GeneralCardView masu = null!;

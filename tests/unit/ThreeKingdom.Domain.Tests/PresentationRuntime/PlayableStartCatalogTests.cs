@@ -92,11 +92,22 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         public void test_multi_anchor_starts_assemble_their_era_board()
         {
             // 每个纪元盘同 36 城骨架，归属随纪元重绘（ADR-0015 离散快照）。
-            foreach (PlayableStart s in new[] { PlayableStartCatalog.CaocaoGuandu, PlayableStartCatalog.SunquanChibi, PlayableStartCatalog.LiubeiShu })
+            foreach (PlayableStart s in new[] { PlayableStartCatalog.CaocaoGuandu, PlayableStartCatalog.SunquanChibi, PlayableStartCatalog.LiubeiShu,
+                                                PlayableStartCatalog.HejinHuangjin, PlayableStartCatalog.ZhangjiaoUprising, PlayableStartCatalog.ZhugeliangWuzhang })
             {
                 ContentionState c = PlayableCampaign.ForStart(s).InitialContention();
                 Assert.That(c.TotalCities, Is.EqualTo(36), $"{s.Id} 纪元盘 36 城（无太守专属席）。");
             }
+
+            // 184 黄巾：汉庭据中原（13城），黄巾起河北（5城），二势力并存。
+            ContentionState huangjin = PlayableCampaign.ForStart(PlayableStartCatalog.HejinHuangjin).InitialContention();
+            Assert.That(huangjin.CitiesOf(PlayableCampaign.Han), Is.EqualTo(13), "184 汉庭据中原 13 城。");
+            Assert.That(huangjin.CitiesOf(PlayableCampaign.Huangjin), Is.EqualTo(5), "184 黄巾据河北 5 城。");
+
+            // 234 五丈原：仍是魏蜀吴三分（同 220 归属，异纪元/君主）。
+            ContentionState wuzhang = PlayableCampaign.ForStart(PlayableStartCatalog.ZhugeliangWuzhang).InitialContention();
+            Assert.That(wuzhang.AlivePowers().Count, Is.EqualTo(3), "234 天下三分。");
+            Assert.That(wuzhang.CitiesOf(PlayableCampaign.LiuBei), Is.EqualTo(4), "季汉据益州汉中 4 城。");
 
             // 208 赤壁：曹操并北取荆 → 独大（≥20 城）；孙权据江东联刘抗曹。
             ContentionState chibi = PlayableCampaign.ForStart(PlayableStartCatalog.SunquanChibi).InitialContention();
@@ -119,6 +130,16 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
             var runtime = new CampaignRuntime(new InMemorySaveMedium(), camp);
             runtime.NewGame();
             Assert.That(runtime.HudSummary().Year, Is.EqualTo(208), "纪元起点随锚点年 = 公元 208。");
+
+            // 184 黄巾起义与 234 五丈原纪元年份亦正确投影。
+            var r184 = new CampaignRuntime(new InMemorySaveMedium(), PlayableCampaign.ForStart(PlayableStartCatalog.ZhangjiaoUprising));
+            r184.NewGame();
+            Assert.That(r184.HudSummary().Year, Is.EqualTo(184), "黄巾起义 = 公元 184。");
+
+            var r234 = new CampaignRuntime(new InMemorySaveMedium(), PlayableCampaign.ForStart(PlayableStartCatalog.ZhugeliangWuzhang));
+            r234.NewGame();
+            Assert.That(r234.HudSummary().Year, Is.EqualTo(234), "五丈原北伐 = 公元 234。");
+            Assert.That(r234.Scenario.DefendingFactionOf(PlayableCampaign.Changan), Is.EqualTo(PlayableCampaign.Cao), "长安守方为魏。");
         }
     }
 }
