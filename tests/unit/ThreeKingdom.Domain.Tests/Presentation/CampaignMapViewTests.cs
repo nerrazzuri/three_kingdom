@@ -71,15 +71,56 @@ namespace ThreeKingdom.Domain.Tests.Presentation
             Assert.That(guanyu.CityId, Is.EqualTo("city-xiaopei"), "随刘备在小沛。");
             Assert.That(guanyu.FactionId, Is.EqualTo(PlayableCampaign.LiuBei.Value), "效力随所在城归属（刘备）。");
 
-            // 董卓 190 在场（洛阳）；诸葛亮 190 尚幼 → 不在图。
-            bool hasDong = false, hasKongming = false;
+            // 反全知：董卓（非名将、在敌境洛阳）身份不泄，只显「未探明」；孔明 190 尚幼 → 不在图。
+            bool dongLeaked = false, hasKongming = false, luoyangHidden = false;
             foreach (MapHeroCell h in map.Heroes)
             {
-                if (h.HeroId == "char-dongzhuo") hasDong = true;
+                if (h.HeroId == "char-dongzhuo" || h.HeroName == "董卓") dongLeaked = true;
                 if (h.HeroId == "char-zhugeliang") hasKongming = true;
+                if (!h.Known && h.CityId == "city-luoyang") luoyangHidden = true;
             }
-            Assert.That(hasDong, Is.True, "董卓 190 在场。");
+            Assert.That(dongLeaked, Is.False, "董卓在敌境·非名将 → 未探明，身份不泄（反全知）。");
+            Assert.That(luoyangHidden, Is.True, "洛阳有一员未探明之敌将。");
             Assert.That(hasKongming, Is.False, "孔明 190 尚幼未出仕 → 不在图（生卒驱动）。");
+        }
+
+        [Test]
+        public void test_map_fog_reveals_own_and_legends_hides_obscure_enemy()
+        {
+            // 反全知棋子（GDD_026 R6）：己方城之将、传世名将露真名；敌境无名之将「未探明」。
+            var rt = new CampaignRuntime(new InMemorySaveMedium(), PlayableCampaign.ForStart(PlayableStartCatalog.LiubeiXiaopei));
+            rt.NewGame();
+            CampaignMapView map = rt.MapView();
+
+            MapHeroCell guanyu = null!, gaoshun = null!;
+            foreach (MapHeroCell h in map.Heroes)
+            {
+                if (h.HeroId == "char-guanyu") guanyu = h;                       // 己方·小沛
+                if (h.CityId == "city-xiapi" && !h.Known) gaoshun = h;           // 敌境下邳·未探明（高顺）
+            }
+            Assert.That(guanyu, Is.Not.Null, "己方名将关羽露真名。");
+            Assert.That(guanyu.Known, Is.True);
+            Assert.That(gaoshun, Is.Not.Null, "下邳吕布之将未探明。");
+            Assert.That(gaoshun.HeroName, Is.EqualTo("未探明"));
+            Assert.That(gaoshun.HeroId, Is.Empty, "未探明者不泄 id。");
+        }
+
+        [Test]
+        public void test_scouting_target_faction_reveals_its_generals()
+        {
+            // 「可被发觉」：派探敌情后，目标势力（吕布）之将由未探明转露真名——高顺现形于下邳。
+            var rt = new CampaignRuntime(new InMemorySaveMedium(), PlayableCampaign.ForStart(PlayableStartCatalog.LiubeiXiaopei));
+            rt.NewGame();
+            Assert.That(Named(rt.MapView(), "char-gaoshun"), Is.False, "探知前高顺未探明。");
+
+            rt.ScoutEnemy();
+            Assert.That(Named(rt.MapView(), "char-gaoshun"), Is.True, "派探后发觉高顺据下邳。");
+        }
+
+        private static bool Named(CampaignMapView map, string heroId)
+        {
+            foreach (MapHeroCell h in map.Heroes) if (h.HeroId == heroId) return true;
+            return false;
         }
     }
 }

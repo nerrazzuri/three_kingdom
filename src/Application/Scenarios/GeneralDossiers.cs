@@ -307,6 +307,11 @@ namespace ThreeKingdom.Application.Scenarios
                 ["char-jushou"] = "city-ye", ["char-shenpei"] = "city-ye", ["char-zhanghe"] = "city-ye", ["char-gaolan"] = "city-ye",
                 ["char-guanyu"] = "city-runan", ["char-zhangfei"] = "city-runan", ["char-zhaoyun"] = "city-runan",  // 刘备·汝南
                 ["char-zhouyu"] = "city-jianye", ["char-taishici"] = "city-jianye", ["char-huanggai"] = "city-jianye", // 孙氏·建业
+                // 加密
+                ["char-xuyou"] = "city-ye", ["char-guotu"] = "city-ye", ["char-chunyuqiong"] = "city-ye",           // 袁绍·官渡谋臣
+                ["char-yujin"] = "city-xuchang", ["char-yuejin"] = "city-xuchang",                                  // 曹操·许昌
+                ["char-zhangren"] = "city-chengdu",                                                                 // 刘璋
+                ["char-pangde"] = "city-xiliang", ["char-madai"] = "city-xiliang",                                  // 马腾·西凉
             };
 
         // ---- 208 赤壁布防（ADR-0015）：曹操并北取荆，孙权据江东联刘，孔明关张随刘备据荆南。----
@@ -369,6 +374,11 @@ namespace ThreeKingdom.Application.Scenarios
                 ["char-simayi"] = "city-changan", ["char-guohuai"] = "city-changan", ["char-xiahouba"] = "city-changan", // 魏·拒关中
                 ["char-caorui"] = "city-xuchang", ["char-manchong"] = "city-xuchang", ["char-jiangji"] = "city-xuchang", // 魏·许昌
                 ["char-luxun"] = "city-jianye", ["char-zhuran"] = "city-jianye", ["char-quancong"] = "city-jianye",     // 吴·建业
+                // 加密
+                ["char-guanxing"] = "city-hanzhong", ["char-liaohua"] = "city-hanzhong",                               // 蜀·北伐诸将
+                ["char-zhangyi"] = "city-chengdu",                                                                     // 蜀·成都
+                ["char-dengai"] = "city-changan",                                                                      // 魏·关中新锐
+                ["char-zhugejin"] = "city-jianye", ["char-buzhi"] = "city-jianye",                                     // 吴·建业
             };
 
         // ---- 194 兖州之战布防（ADR-0015）：曹操困守鄄城，吕布陈宫据濮阳，刘备保徐州。----
@@ -399,6 +409,10 @@ namespace ThreeKingdom.Application.Scenarios
                 ["char-caoren"] = "city-xiangyang", ["char-manchong"] = "city-xiangyang",                                       // 曹操·樊城
                 ["char-xuhuang"] = "city-xuchang", ["char-simayi"] = "city-xuchang", ["char-zhangliao"] = "city-xuchang",       // 曹操·许都（徐晃救樊）
                 ["char-lvmeng"] = "city-jianye", ["char-luxun"] = "city-jianye", ["char-lusu"] = "city-jianye",                // 孙权·白衣渡江
+                // 加密
+                ["char-huangquan"] = "city-hanzhong", ["char-wangping"] = "city-hanzhong",                                    // 蜀·汉中
+                ["char-wangfu"] = "city-jiangling",                                                                          // 关羽主簿
+                ["char-yujin"] = "city-xiangyang",                                                                           // 于禁援樊（后被擒）
             };
 
         /// <summary>某锚点年的布防表（ADR-0015 离散快照）；未登记年返回 null。</summary>
