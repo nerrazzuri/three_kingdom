@@ -1,5 +1,31 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## 🔄 进行中（2026-07-06 续15）— 武将谱 203→263 + 多锚点年世界盘（200/208/220）【未提交，待批准】
+
+> **纯 C# 内容长线，dotnet 1136→1139 绿；3 DLL 已同步；console 端到端实测三纪元开局可玩。改动未 commit，等用户批准。**
+>
+> ### Part A — 武将谱 203 → 263（扩充批 4：+61 员）
+> - 三处数据同源补齐：`GeneralDossiers.cs`（LifeYears 生卒 + Build() 档案）+ `DisplayNames.cs`（中文名）+ `GeneralBonds.cs`（+15 羁绊）。
+> - 覆盖：汉末朝堂（王允/卢植/皇甫嵩/蔡邕/董承）、魏晋文武（曹昂/杨修/崔琰/董昭/司马孚/桓范/管宁）、蜀汉后进（陈到/董允/杨仪/向宠/廖立/傅彤/吕凯）、东吴中生代（吕范/虞翻/周鲂/贺齐/孙桓/孙翊/潘濬/孙峻/孙綝）、群雄诸侯（陈登/陈珪/韩馥/张邈/鲍信/袁谭/袁尚/张燕/管亥）、巾帼（卞夫人/甘夫人/糜夫人/吴国太）。
+> - 羁绊：袁绍父子/曹操长子/陈珪陈登/孙坚三子/蔡邕文姬/卢植师徒（→刘备·公孙瓒）/王允貂蝉连环计/袁氏兄弟阋墙。
+> - 测试：GeneralRosterTests 下限 ≥200→≥250 + 批4 抽查 + 中文名解析。
+>
+> ### Part B — 多锚点年世界盘（ADR-0015 离散快照，190 零改动隔离风险）
+> - `PlayableCampaign`：加 `World200/208/220` 三张 36 城大盘（同骨架、归属随纪元重绘）+ `WorldAt(year)` 选择器（190=原 World）；`BuildStartConfig` 与 `InitialContention` 改按 `_start.AnchorYear` 取盘。
+> - `PlayableStart`：加 3 预设开局——**曹孟德·官渡(200)**/**孙仲谋·赤壁(208)**/**刘玄德·季汉(220)**，入 Catalog.All（共 6 开局）。
+> - `GeneralDossiers`：加 `Placement200/208/220` 按年布防 + `PlacementFor(year)`；`AllPlacements/GeneralsAt` 泛化按年。
+> - 测试：GeneralPlacementTests（多锚点布防随纪元）+ PlayableStartCatalogTests（三纪元盘 36 城/归属/守方/公元年投影）。
+> - **console 顺手修**：状态行「你据 X 城」原硬编码汜水关席 → 改读实际玩家势力（`_rt.Scenario.PlayerFaction`）；Unity HudSummary 本就正确无需改。
+> - **端到端实测**（console）：`named caocao-guandu`→公元200·曹操★12·存续11家·关羽@汝南；`named liubei-shu`→公元220·刘备★4·曹操24/孙吴8·陆逊@建业；武将录 263 员。
+>
+> ### 待用户在编辑器验证（非阻断）
+> - Unity GameSetup 选择屏应列出 6 个开局（新增官渡/赤壁/季汉）；进纪元开局 HUD 顶栏应显对应公元年（200/208/220）。★需编辑器验证（无头做不了）。
+>
+> ### 未提交文件（本轮）
+> - src：GeneralDossiers.cs / GeneralBonds.cs / PlayableCampaign.cs / PlayableStart.cs / DisplayNames.cs / Console/GameConsole.cs
+> - tests：GeneralRosterTests.cs / GeneralPlacementTests.cs / PlayableStartCatalogTests.cs
+> - Assets/Plugins：3 DLL 同步（Application/Presentation 变，Domain 未变）
+
 ## ✅ 完成（2026-07-06 续14）— 续13 两阻断布局 bug 编辑器验证通过 + 修 char-nengli ID 泄露
 
 > **computer-use 无人值守实测 + Claude 逐张核对截图。证据：`production/qa/evidence/s13-layout-verify-2026-07-06.md`（+ `s13-screens/` 5 图）。**

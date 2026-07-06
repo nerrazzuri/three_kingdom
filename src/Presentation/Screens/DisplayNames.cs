@@ -186,6 +186,34 @@ namespace ThreeKingdom.Presentation.Screens
             ["char-yangqiu"] = "杨秋", ["char-mawan"] = "马玩",
             ["char-panfeng"] = "潘凤", ["char-wuanguo"] = "武安国", ["char-xingdaorong"] = "邢道荣",
             ["char-leitong"] = "雷铜", ["char-wulan"] = "吴兰",
+            // 扩充批 4 — 汉末朝堂/讨董名臣。
+            ["char-wangyun"] = "王允", ["char-luzhi"] = "卢植", ["char-huangfusong"] = "皇甫嵩",
+            ["char-zhujun"] = "朱儁", ["char-caiyong"] = "蔡邕", ["char-dongcheng"] = "董承",
+            // 扩充批 4 — 魏晋文武。
+            ["char-caoang"] = "曹昂", ["char-yangxiu"] = "杨修", ["char-cuiyan"] = "崔琰",
+            ["char-maojie"] = "毛玠", ["char-dongzhao"] = "董昭", ["char-wanglang"] = "王朗",
+            ["char-chenlin"] = "陈琳", ["char-miheng"] = "祢衡", ["char-lvqian"] = "吕虔",
+            ["char-hanhao"] = "韩浩", ["char-simafu"] = "司马孚", ["char-huanfan"] = "桓范",
+            ["char-jianggan"] = "蒋干", ["char-qinlang"] = "秦朗", ["char-guanning"] = "管宁",
+            // 扩充批 4 — 蜀汉后进。
+            ["char-chendao"] = "陈到", ["char-dongyun"] = "董允", ["char-yangyi"] = "杨仪",
+            ["char-xiangchong"] = "向宠", ["char-liaoli"] = "廖立", ["char-fengxi"] = "冯习",
+            ["char-futong"] = "傅彤", ["char-wuban"] = "吴班", ["char-gaoxiang"] = "高翔",
+            ["char-lvkai"] = "吕凯", ["char-wangfu"] = "王甫",
+            // 扩充批 4 — 东吴中生代。
+            ["char-lvfan"] = "吕范", ["char-yufan"] = "虞翻", ["char-zhoufang"] = "周鲂",
+            ["char-heqi"] = "贺齐", ["char-luotong"] = "骆统", ["char-zhuyi"] = "朱异",
+            ["char-sunhuan"] = "孙桓", ["char-sunyi"] = "孙翊", ["char-panjun"] = "潘濬",
+            ["char-sunjun"] = "孙峻", ["char-sunchen"] = "孙綝",
+            // 扩充批 4 — 群雄/汉末诸侯。
+            ["char-chendeng"] = "陈登", ["char-chengui"] = "陈珪", ["char-hanfu"] = "韩馥",
+            ["char-zhangmiao"] = "张邈", ["char-zhangyang"] = "张杨", ["char-baoxin"] = "鲍信",
+            ["char-liudai"] = "刘岱", ["char-yuantan"] = "袁谭", ["char-yuanshang"] = "袁尚",
+            ["char-zhangyan"] = "张燕", ["char-guanhai"] = "管亥", ["char-caiyang"] = "蔡阳",
+            ["char-chezhou"] = "车胄",
+            // 扩充批 4 — 巾帼。
+            ["char-bianfuren"] = "卞夫人", ["char-ganfuren"] = "甘夫人", ["char-mifuren"] = "糜夫人",
+            ["char-wuguotai"] = "吴国太",
             // 人才招揽原型（GDD_020 场景；console 同名 卧龙/骁将/能吏）。
             ["char-wolong"] = "卧龙", ["char-xiaojiang"] = "骁将", ["char-nengli"] = "能吏",
         };

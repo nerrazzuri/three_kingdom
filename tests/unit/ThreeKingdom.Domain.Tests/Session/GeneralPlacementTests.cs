@@ -46,8 +46,30 @@ namespace ThreeKingdom.Domain.Tests.Session
         [Test]
         public void test_no_placement_data_for_other_years_or_empty_cities()
         {
-            Assert.That(GeneralDossiers.GeneralsAt(City("city-xiaopei"), 208), Is.Empty, "208 布防数据留待后续锚点年。");
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-xiaopei"), 208), Is.Empty, "208 小沛无具名布防。");
             Assert.That(GeneralDossiers.GeneralsAt(City("city-jiaozhou"), 190), Is.Empty, "该城 190 无具名部将布防。");
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-xiaopei"), 234), Is.Empty, "未登记锚点年（234）返回空。");
+        }
+
+        [Test]
+        public void test_multi_anchor_placements_follow_era_shifts()
+        {
+            // 200 官渡：颜良文丑随袁绍据邺城；关张随刘备寄汝南（非 190 之小沛）。
+            var ye200 = GeneralDossiers.GeneralsAt(City("city-ye"), 200);
+            Assert.That(ye200, Does.Contain(C("char-yanliang")), "200 颜良在邺城。");
+            var runan200 = GeneralDossiers.GeneralsAt(City("city-runan"), 200);
+            Assert.That(runan200, Does.Contain(C("char-guanyu")), "200 关羽随刘备在汝南。");
+
+            // 208 赤壁：周瑜鲁肃在建业；孔明关张据荆南长沙。
+            var jianye208 = GeneralDossiers.GeneralsAt(City("city-jianye"), 208);
+            Assert.That(jianye208, Does.Contain(C("char-zhouyu")), "208 周瑜在建业。");
+            var changsha208 = GeneralDossiers.GeneralsAt(City("city-changsha"), 208);
+            Assert.That(changsha208, Does.Contain(C("char-zhugeliang")), "208 孔明已出、随刘备据荆南。");
+
+            // 220 三分：孔明镇成都、魏延守汉中、陆逊在建业。
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-chengdu"), 220), Does.Contain(C("char-zhugeliang")));
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-hanzhong"), 220), Does.Contain(C("char-weiyan")));
+            Assert.That(GeneralDossiers.GeneralsAt(City("city-jianye"), 220), Does.Contain(C("char-luxun")));
         }
     }
 }

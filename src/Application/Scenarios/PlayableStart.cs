@@ -106,10 +106,38 @@ namespace ThreeKingdom.Application.Scenarios
             offensiveTarget: PlayableCampaign.Jiangxia, targetFaction: PlayableCampaign.LiuBiao,
             targetTerrain: TerrainKind.Ford, includesBespokeSeat: false);
 
+        /// <summary>官渡·曹操（200 锚点年）：并吞中原、南结孙刘，北面袁绍据邺城拥四州——一战定河北。</summary>
+        public static readonly PlayableStart CaocaoGuandu = new PlayableStart(
+            id: "caocao-guandu", displayName: "曹孟德·官渡",
+            blurb: "挟天子据许昌，中原初定。北面袁绍带甲十万、据邺城虎踞河北——此战不胜，则霸业倾覆。",
+            playerFaction: PlayableCampaign.Cao, playerLord: new CharacterId("char-caocao"),
+            capital: PlayableCampaign.Xuchang, capitalGarrison: 1200,
+            offensiveTarget: PlayableCampaign.Ye, targetFaction: PlayableCampaign.YuanShao,
+            targetTerrain: TerrainKind.Fortified, includesBespokeSeat: false, anchorYear: 200);
+
+        /// <summary>赤壁·孙权（208 锚点年）：曹操并北取荆、投鞭江上，江东决意抗曹——联刘破之于赤壁。</summary>
+        public static readonly PlayableStart SunquanChibi = new PlayableStart(
+            id: "sunquan-chibi", displayName: "孙仲谋·赤壁",
+            blurb: "曹操新并荆州、水陆并进，号称八十万下江东。战和之议未决——是俯首称臣，还是联刘背水一战？",
+            playerFaction: PlayableCampaign.Sun, playerLord: new CharacterId("char-sunquan"),
+            capital: PlayableCampaign.Jianye, capitalGarrison: 1000,
+            offensiveTarget: PlayableCampaign.Jiangling, targetFaction: PlayableCampaign.Cao,
+            targetTerrain: TerrainKind.Ford, includesBespokeSeat: false, anchorYear: 208);
+
+        /// <summary>季汉·刘备（220 锚点年）：三分既成，据益州汉中，北面曹魏扼关中——出师北伐、还于旧都。</summary>
+        public static readonly PlayableStart LiubeiShu = new PlayableStart(
+            id: "liubei-shu", displayName: "刘玄德·季汉",
+            blurb: "曹丕篡汉，天下三分。据益州、拥汉中，北面曹魏扼关中门户——是北伐中原、兴复汉室，还是先东向复仇？",
+            playerFaction: PlayableCampaign.LiuBei, playerLord: new CharacterId("char-liubei"),
+            capital: PlayableCampaign.Chengdu, capitalGarrison: 1100,
+            offensiveTarget: PlayableCampaign.Changan, targetFaction: PlayableCampaign.Cao,
+            targetTerrain: TerrainKind.Pass, includesBespokeSeat: false, anchorYear: 220);
+
         /// <summary>全部可选开局（选择屏遍历序）。</summary>
         public static IReadOnlyList<PlayableStart> All { get; } = new[]
         {
             FanshuiGovernor, LiubeiXiaopei, SunceJiangdong,
+            CaocaoGuandu, SunquanChibi, LiubeiShu,
         };
 
         /// <summary>默认开局（未选择时/harness 缺省）。</summary>

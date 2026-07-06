@@ -235,7 +235,7 @@ namespace ThreeKingdom.Application.Scenarios
         public Domain.Contention.ContentionState InitialContention()
         {
             var standings = new List<Domain.Contention.PowerStanding>();
-            foreach (SeedFaction w in World)
+            foreach (SeedFaction w in WorldAt(_start.AnchorYear))
             {
                 if (w.Bespoke)
                 {
@@ -287,6 +287,65 @@ namespace ThreeKingdom.Application.Scenarios
             new SeedFaction(KongRong, "char-kongrong", RelationToPlayer.Neutral, false, new[] { (Beihai, 400) }),
             new SeedFaction(HanSui, "char-hansui", RelationToPlayer.Neutral, false, new[] { (Hanyang, 500) }),
             new SeedFaction(ShiXie, "char-shixie", RelationToPlayer.Neutral, false, new[] { (Jiaozhou, 400) }),
+        };
+
+        // ---- 锚点年世界盘（ADR-0015：纪元离散快照）。同 36 城骨架，归属随纪元推移重绘；190 盘见上 World。----
+        // 各盘首城=君主治所。无太守专属席（新纪元开局皆扮既有势力，IncludesBespokeSeat=false）。
+
+        /// <summary>200 官渡之世：袁术/吕布/公孙瓒/李傕已亡，曹袁两强对峙，刘备寄寓汝南。</summary>
+        private static readonly SeedFaction[] World200 =
+        {
+            new SeedFaction(Cao, "char-caocao", RelationToPlayer.Neutral, false, new[] {
+                (Xuchang, 1200), (Puyang, 700), (Chenliu, 700), (Juancheng, 600), (Xiapi, 700), (Xuzhou, 700),
+                (Shouchun, 600), (Changan, 600), (Luoyang, 600), (EnemyCity, 500), (Wancheng, 600), (Xiaopei, 400) }),
+            new SeedFaction(YuanShao, "char-yuanshao", RelationToPlayer.Hostile, false, new[] {
+                (Ye, 1200), (Nanpi, 800), (Pingyuan, 600), (Jinyang, 600), (Beiping, 600), (Jicheng, 500) }),
+            new SeedFaction(LiuBei, "char-liubei", RelationToPlayer.Neutral, false, new[] { (Runan, 500) }),
+            new SeedFaction(Sun, "char-sunce", RelationToPlayer.Neutral, false, new[] { (Jianye, 800), (Wujun, 500), (Kuaiji, 500), (Lujiang, 400) }),
+            new SeedFaction(LiuBiao, "char-liubiao", RelationToPlayer.Neutral, false, new[] { (Xiangyang, 900), (Jiangling, 600), (Jiangxia, 600), (Changsha, 500) }),
+            new SeedFaction(LiuZhang, "char-liuzhang", RelationToPlayer.Neutral, false, new[] { (Chengdu, 800), (Jiangzhou, 500), (Zitong, 400) }),
+            new SeedFaction(MaTeng, "char-mateng", RelationToPlayer.Neutral, false, new[] { (Xiliang, 700), (Wuwei, 500) }),
+            new SeedFaction(ZhangLu, "char-zhanglu", RelationToPlayer.Neutral, false, new[] { (Hanzhong, 600) }),
+            new SeedFaction(KongRong, "char-kongrong", RelationToPlayer.Neutral, false, new[] { (Beihai, 400) }),
+            new SeedFaction(HanSui, "char-hansui", RelationToPlayer.Neutral, false, new[] { (Hanyang, 500) }),
+            new SeedFaction(ShiXie, "char-shixie", RelationToPlayer.Neutral, false, new[] { (Jiaozhou, 400) }),
+        };
+
+        /// <summary>208 赤壁之世：曹操并北取荆，孙权据江东，刘备南据一隅——三分先声。</summary>
+        private static readonly SeedFaction[] World208 =
+        {
+            new SeedFaction(Cao, "char-caocao", RelationToPlayer.Hostile, false, new[] {
+                (Xuchang, 1400), (Puyang, 700), (Chenliu, 700), (Juancheng, 600), (Ye, 1000), (Nanpi, 700), (Pingyuan, 600), (Jinyang, 600),
+                (Beiping, 600), (Jicheng, 500), (Xiapi, 700), (Xuzhou, 700), (Shouchun, 600), (Runan, 500), (Changan, 700), (Luoyang, 600),
+                (EnemyCity, 500), (Wancheng, 600), (Xiangyang, 900), (Jiangling, 700), (Beihai, 400), (Xiaopei, 400) }),
+            new SeedFaction(Sun, "char-sunquan", RelationToPlayer.Neutral, false, new[] { (Jianye, 1000), (Wujun, 600), (Kuaiji, 500), (Lujiang, 500), (Jiangxia, 600) }),
+            new SeedFaction(LiuBei, "char-liubei", RelationToPlayer.Neutral, false, new[] { (Changsha, 500) }),
+            new SeedFaction(LiuZhang, "char-liuzhang", RelationToPlayer.Neutral, false, new[] { (Chengdu, 800), (Jiangzhou, 500), (Zitong, 400) }),
+            new SeedFaction(MaTeng, "char-mateng", RelationToPlayer.Neutral, false, new[] { (Xiliang, 700), (Wuwei, 500) }),
+            new SeedFaction(HanSui, "char-hansui", RelationToPlayer.Neutral, false, new[] { (Hanyang, 500) }),
+            new SeedFaction(ZhangLu, "char-zhanglu", RelationToPlayer.Neutral, false, new[] { (Hanzhong, 600) }),
+            new SeedFaction(ShiXie, "char-shixie", RelationToPlayer.Neutral, false, new[] { (Jiaozhou, 400) }),
+        };
+
+        /// <summary>220 三国鼎立：魏（曹丕）据中原凉土，蜀（刘备）跨益汉中，吴（孙权）有江东荆南。</summary>
+        private static readonly SeedFaction[] World220 =
+        {
+            new SeedFaction(Cao, "char-caopi", RelationToPlayer.Neutral, false, new[] {
+                (Xuchang, 1500), (Puyang, 700), (Chenliu, 700), (Juancheng, 600), (Ye, 1100), (Nanpi, 700), (Pingyuan, 600), (Jinyang, 600),
+                (Beiping, 600), (Jicheng, 500), (Xiapi, 700), (Xuzhou, 700), (Shouchun, 700), (Runan, 500), (Changan, 800), (Luoyang, 800),
+                (EnemyCity, 500), (Wancheng, 600), (Xiangyang, 900), (Beihai, 400), (Xiaopei, 400), (Xiliang, 600), (Wuwei, 500), (Hanyang, 500) }),
+            new SeedFaction(LiuBei, "char-liubei", RelationToPlayer.Neutral, false, new[] { (Chengdu, 1100), (Jiangzhou, 600), (Zitong, 500), (Hanzhong, 700) }),
+            new SeedFaction(Sun, "char-sunquan", RelationToPlayer.Neutral, false, new[] {
+                (Jianye, 1100), (Wujun, 600), (Kuaiji, 500), (Lujiang, 500), (Jiangxia, 600), (Jiangling, 700), (Changsha, 600), (Jiaozhou, 400) }),
+        };
+
+        /// <summary>某锚点年的世界大盘（ADR-0015 离散快照）。190=默认 <see cref="World"/>；未登记年回退 190。</summary>
+        private static SeedFaction[] WorldAt(int anchorYear) => anchorYear switch
+        {
+            200 => World200,
+            208 => World208,
+            220 => World220,
+            _ => World,
         };
 
         /// <summary>某势力相对本局玩家的立场：玩家席=Self，首要目标=Hostile，其余保基线（非玩家的专属席退为中立）。</summary>
@@ -501,7 +560,7 @@ namespace ThreeKingdom.Application.Scenarios
             // 由共享天下大盘按本局玩家席位生成势力/城归属（#1）：玩家席=Self、目标=Hostile；扮演既有诸侯时不含太守专属席。
             var factions = new List<FactionRecord>();
             var cities = new List<CityOwnership>();
-            foreach (SeedFaction w in World)
+            foreach (SeedFaction w in WorldAt(_start.AnchorYear))
             {
                 if (w.Bespoke)
                 {

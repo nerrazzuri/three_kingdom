@@ -46,6 +46,24 @@ namespace ThreeKingdom.Application.Scenarios
             B("char-lubu", "char-dongzhuo", BondType.Feud),      // 反复弑主
             B("char-guanyu", "char-lvmeng", BondType.Feud),      // 白衣渡江
             B("char-machao", "char-caocao", BondType.Feud),      // 潼关灭族之恨
+            // 扩充批 4 · 血脉
+            B("char-yuanshao", "char-yuantan", BondType.Blood),  // 袁绍父子
+            B("char-yuanshao", "char-yuanshang", BondType.Blood),
+            B("char-caocao", "char-caoang", BondType.Blood),     // 曹操长子
+            B("char-chengui", "char-chendeng", BondType.Blood),  // 陈珪陈登父子
+            B("char-sunjian", "char-sunyi", BondType.Blood),     // 孙坚三子
+            B("char-sunce", "char-sunyi", BondType.Blood),
+            B("char-caiyong", "char-caiwenji", BondType.Blood),  // 蔡邕蔡文姬父女
+            B("char-sunjun", "char-sunchen", BondType.Blood),    // 孙峻孙綝从兄弟
+            // 扩充批 4 · 知己/眷属
+            B("char-caocao", "char-bianfuren", BondType.Kindred),// 曹操继室
+            B("char-liubei", "char-ganfuren", BondType.Kindred), // 刘备夫人
+            B("char-wangyun", "char-diaochan", BondType.Kindred),// 王允义女·连环计
+            // 扩充批 4 · 师徒
+            B("char-luzhi", "char-liubei", BondType.Mentor),     // 卢植门下
+            B("char-luzhi", "char-gongsun", BondType.Mentor),
+            // 扩充批 4 · 仇怨
+            B("char-yuantan", "char-yuanshang", BondType.Feud),  // 兄弟阋墙·自相图
         };
 
         /// <summary>取只涉及给定在场武将集的羁绊（两端皆在场）。</summary>

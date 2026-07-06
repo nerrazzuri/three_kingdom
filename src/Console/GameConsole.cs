@@ -50,7 +50,7 @@ namespace ThreeKingdom.Console
             sb.AppendLine();
             LordMissionView m = _rt.CurrentMissionView();
             sb.AppendLine($"  {m.Order}");
-            sb.Append($"  争霸：存续 {AliveCount()} 家 · 你据 {_rt.Contention.CitiesOf(PlayableCampaign.Player)} 城");
+            sb.Append($"  争霸：存续 {AliveCount()} 家 · 你据 {_rt.Contention.CitiesOf(_rt.Scenario.PlayerFaction)} 城");
             sb.Append($" · 手令 {_rt.ActionsInFlight}/{_rt.ActionCapacity}");
             return sb.ToString();
         }
@@ -182,9 +182,9 @@ namespace ThreeKingdom.Console
         private string ConcludeOffensive()
         {
             if (!_rt.OffensiveBattleOver && !_rt.HasOffensiveBattle) return "× 无待结算的出征";
-            int before = _rt.Contention.CitiesOf(PlayableCampaign.Player);
+            int before = _rt.Contention.CitiesOf(_rt.Scenario.PlayerFaction);
             _rt.ConcludeOffensive();
-            int after = _rt.Contention.CitiesOf(PlayableCampaign.Player);
+            int after = _rt.Contention.CitiesOf(_rt.Scenario.PlayerFaction);
             return after > before ? "✓ 破城！占为己有，领土 +1。" : "退兵——未下城，战役可继续。";
         }
 

@@ -87,5 +87,38 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
             Assert.That(liubei.CapitalName, Is.EqualTo("小沛"), "治所中文名经 DisplayNames。");
             Assert.That(liubei.TargetName, Is.EqualTo("下邳"), "目标城中文名经 DisplayNames。");
         }
+
+        [Test]
+        public void test_multi_anchor_starts_assemble_their_era_board()
+        {
+            // 每个纪元盘同 36 城骨架，归属随纪元重绘（ADR-0015 离散快照）。
+            foreach (PlayableStart s in new[] { PlayableStartCatalog.CaocaoGuandu, PlayableStartCatalog.SunquanChibi, PlayableStartCatalog.LiubeiShu })
+            {
+                ContentionState c = PlayableCampaign.ForStart(s).InitialContention();
+                Assert.That(c.TotalCities, Is.EqualTo(36), $"{s.Id} 纪元盘 36 城（无太守专属席）。");
+            }
+
+            // 208 赤壁：曹操并北取荆 → 独大（≥20 城）；孙权据江东联刘抗曹。
+            ContentionState chibi = PlayableCampaign.ForStart(PlayableStartCatalog.SunquanChibi).InitialContention();
+            Assert.That(chibi.CitiesOf(PlayableCampaign.Cao), Is.GreaterThanOrEqualTo(20), "208 曹操独大。");
+            Assert.That(chibi.CitiesOf(PlayableCampaign.Sun), Is.GreaterThanOrEqualTo(4), "208 孙权据江东。");
+
+            // 220 三分：魏蜀吴三家分 36 城，别无他势力存续。
+            ContentionState sanfen = PlayableCampaign.ForStart(PlayableStartCatalog.LiubeiShu).InitialContention();
+            Assert.That(sanfen.AlivePowers().Count, Is.EqualTo(3), "220 天下三分。");
+            Assert.That(sanfen.CitiesOf(PlayableCampaign.LiuBei), Is.EqualTo(4), "季汉据益州汉中 4 城。");
+        }
+
+        [Test]
+        public void test_era_start_projects_its_anchor_year_and_target_defender()
+        {
+            // 208 孙权开局：纪元起点公元 208；目标江陵守方为曹操（据显式 TargetFaction，非 190 归属）。
+            PlayableCampaign camp = PlayableCampaign.ForStart(PlayableStartCatalog.SunquanChibi);
+            Assert.That(camp.DefendingFactionOf(PlayableCampaign.Jiangling), Is.EqualTo(PlayableCampaign.Cao));
+
+            var runtime = new CampaignRuntime(new InMemorySaveMedium(), camp);
+            runtime.NewGame();
+            Assert.That(runtime.HudSummary().Year, Is.EqualTo(208), "纪元起点随锚点年 = 公元 208。");
+        }
     }
 }

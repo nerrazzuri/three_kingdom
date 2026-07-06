@@ -42,10 +42,14 @@ namespace ThreeKingdom.Domain.Tests.Presentation
         [Test]
         public void test_roster_expanded_with_major_generals()
         {
-            Assert.That(GeneralDossiers.All.Count, Is.GreaterThanOrEqualTo(200), "名将谱已大幅扩充（≥200，三批）。");
-            // 抽查三扩充批：档案 + 中文名 + 生卒在世判定皆到位。
-            foreach (string id in new[] { "char-zhanghe", "char-masu", "char-sunjian", "char-huatuo", "char-menghuo", "char-xushu", "char-diaochan", "char-wenyang" })
+            Assert.That(GeneralDossiers.All.Count, Is.GreaterThanOrEqualTo(250), "名将谱已大幅扩充（≥250，四批）。");
+            // 抽查四扩充批：档案 + 中文名 + 生卒在世判定皆到位。
+            foreach (string id in new[] { "char-zhanghe", "char-masu", "char-sunjian", "char-huatuo", "char-menghuo", "char-xushu", "char-diaochan", "char-wenyang",
+                                          "char-wangyun", "char-yangyi", "char-zhoufang", "char-chendeng", "char-yuantan", "char-bianfuren" })
                 Assert.That(GeneralDossiers.Find(new CharacterId(id)), Is.Not.Null, $"{id} 已入谱。");
+            // 批 4 中文名经 DisplayNames（不漏原始 id）。
+            foreach (var (id, name) in new[] { ("char-wangyun", "王允"), ("char-yangyi", "杨仪"), ("char-yuantan", "袁谭") })
+                Assert.That(DisplayNames.Of(id), Is.EqualTo(name), $"{id} → {name}。");
             var roster = GeneralRosterView.Build();
             GeneralCardView masu = null!;
             foreach (GeneralCardView c in roster.Cards) if (c.Id == "char-masu") masu = c;
