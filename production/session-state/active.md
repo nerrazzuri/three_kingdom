@@ -1,5 +1,20 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
+## 📍 下一会话从这里续（2026-07-07 交接）
+
+> **当前工作：武将全局融入（GDD-027 / ADR-0016）。P1-P8 八个系统全部落地 + 单测 + console 实测通过。最新提交 8557c7a 已 push tk。dotnet 1158 绿。**
+>
+> **续做前先检查**：
+> 1. **s21 computer-use 复验结果**：上一会话末发了 console 验证 prompt（跑 `dotnet run --project src/Console -- --script "…croster/affil/pool/lore"`）。查 `production/qa/evidence/s21-console-verify-2026-07-07.md` + `s21-screens/` 是否已生成；若在，读它 + 看截图确认 A-F 全 PASS，然后把 s21 证据 commit + 标 active.md 续21 为「验证通过」（照 s19 收尾套路）。若没生成，说明 computer-use 没跑或没跑完。
+> 2. **两个待用户拍板的方向**（上一会话末已抛给用户，未答）：
+>    - **① baseFaction 纪元覆盖细化**：现静态简化 → 190 小沛册混进黄权/杨仪/董和等史实此年未归刘备者。要史准需给归属加「(将,纪元)→势力」覆盖数据（数据活，非引擎改）。
+>    - **② P9 表现层**：P2-P8 目前只在 console/数据层跑，玩家要在 Unity 里点用（招揽屏列在野池、城册任用屏、内政/军师显武将加成）还需接屏（★编辑器，仿 CampaignMap 那样 UI Toolkit 建屏 + SliceSceneBuilder + computer-use 验）。
+> 3. **P3 任用态未入存档**（会话内）——若要持久化需接 CampaignSession 存档 head（同「发觉门」那类），是 P9 之外一条小线。
+>
+> **不要重复做**：武将 500 员 / 8 纪元 / 反全知战略图雾 / 战略图屏 / 发觉入存档 均已完成并验证（见下续13-续20 各段）。
+
+
+
 ## 🔄 进行中（2026-07-07 续21）— 武将全局融入 P2-P8 全落地 + console 验证命令【待 computer-use 复验】
 
 > **用户授权一口气做到 P8。dotnet 1158 绿；3 DLL 同步；console 端到端实测八系统全跑通。**
