@@ -5,7 +5,7 @@
 > **当前工作：武将全局融入（GDD-027 / ADR-0016）。P1-P8 八个系统全部落地 + 单测 + console 实测通过。最新提交 8557c7a 已 push tk。dotnet 1158 绿。**
 >
 > **续做前先检查**：
-> 1. **s21 computer-use 复验结果**：上一会话末发了 console 验证 prompt（跑 `dotnet run --project src/Console -- --script "…croster/affil/pool/lore"`）。查 `production/qa/evidence/s21-console-verify-2026-07-07.md` + `s21-screens/` 是否已生成；若在，读它 + 看截图确认 A-F 全 PASS，然后把 s21 证据 commit + 标 active.md 续21 为「验证通过」（照 s19 收尾套路）。若没生成，说明 computer-use 没跑或没跑完。
+> 1. ✅ **s21 computer-use 复验——已通过并提交**（2026-07-07）。A–F 全 PASS，Claude 逐条对回 raw 输出核实。详见下「续21」段。
 > 2. **两个待用户拍板的方向**（上一会话末已抛给用户，未答）：
 >    - **① baseFaction 纪元覆盖细化**：现静态简化 → 190 小沛册混进黄权/杨仪/董和等史实此年未归刘备者。要史准需给归属加「(将,纪元)→势力」覆盖数据（数据活，非引擎改）。
 >    - **② P9 表现层**：P2-P8 目前只在 console/数据层跑，玩家要在 Unity 里点用（招揽屏列在野池、城册任用屏、内政/军师显武将加成）还需接屏（★编辑器，仿 CampaignMap 那样 UI Toolkit 建屏 + SliceSceneBuilder + computer-use 验）。
@@ -15,9 +15,10 @@
 
 
 
-## 🔄 进行中（2026-07-07 续21）— 武将全局融入 P2-P8 全落地 + console 验证命令【待 computer-use 复验】
+## ✅ 完成（2026-07-07 续21）— 武将全局融入 P2-P8 全落地 + console 验证命令【✅ computer-use 复验通过】
 
 > **用户授权一口气做到 P8。dotnet 1158 绿；3 DLL 同步；console 端到端实测八系统全跑通。**
+> **✅ s21 复验通过（2026-07-07）**：computer-use 跑 run1(刘备·小沛190)+run2(诸葛亮·五丈原234)，输出重定向到 `s21-run1/2-raw.txt`；Claude 逐条对回原始输出核验 A–F 全 PASS（A 城册≤20 / B 内政军师成军凝聚四行 / C 生卒在野门 / D 在野池78员带难度 / E 桃园结义190触发·234不触发 / F 无报错）。证据 `s21-console-verify-2026-07-07.md` + 2 raw + 2 png。诚实边界：两张 png 实为 File Explorer 窗口（PowerShell 点击层不可键入，改重定向），证据以 raw txt 为准、已独立核实。
 > - **P2 招揽统一**（`GeneralRecruitment`）：在野在世将=可招池（全谱，非3原型）；难度自野心/傲物/仁德+名望→易招/尚可/难招。console 实测小沛开局在野池 78 员。
 > - **P3 任用**（`Domain/Appointment/AppointmentBook`，不可变）：太守调拨入城册（≤20）；满员拒/一将只在一城/调他城自动移出；round-trip 就绪。
 > - **P4 内政**（`GovernanceContribution`）：城册点内政官（仁德/谋略），属性→民心/征粮/城防加成。console：董和 民心+30%。
