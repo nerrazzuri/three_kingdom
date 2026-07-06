@@ -2,7 +2,7 @@
 
 ## 📍 下一会话从这里续（2026-07-07 交接）
 
-> **当前工作：武将全局融入（GDD-027 / ADR-0016）。P1-P8 八个系统全部落地 + 单测 + console 实测通过。最新提交 8557c7a 已 push tk。dotnet 1158 绿。**
+> **当前工作：武将全局融入（GDD-027 / ADR-0016）。P1-P8 八系统落地 + s21 复验通过 + 演义事件引擎已「全做完」（试水→完整：10 桩关目 + 登场/移籍/斩杀效果 + 确定性重放覆盖层）。dotnet 1166 绿；3 DLL 同步。见「续22」。**
 >
 > **续做前先检查**：
 > 1. ✅ **s21 computer-use 复验——已通过并提交**（2026-07-07）。A–F 全 PASS，Claude 逐条对回 raw 输出核实。详见下「续21」段。
@@ -14,6 +14,19 @@
 > **不要重复做**：武将 500 员 / 8 纪元 / 反全知战略图雾 / 战略图屏 / 发觉入存档 均已完成并验证（见下续13-续20 各段）。
 
 
+
+## ✅ 完成（2026-07-07 续22）— 演义事件引擎「全做完」（试水→完整）
+
+> **用户裁定：效果层做「完整·可推演不入档」。dotnet 1166 绿（1158→1166，+8）；3 DLL 同步；console 端到端实测效果可见。**
+> - **引擎升级**（`src/Application/Scenarios/LoreEvents.cs` 重写）：`LoreEvent` 加 `Effects`；新增 `LoreEffect`（Introduce/Reassign/Slay，typed 值）+ `LoreOverrides`（覆盖态：斩杀集/移籍表/登场集，`Apply` public 可测）+ `OverridesAt(ctx)`（逐年扫描 [Anchor,Current] 确定性重放累积）。
+> - **事件表 1→10 桩**：桃园结义 / 温酒斩华雄(斩华雄) / 三英战吕布 / 三顾茅庐(登场诸葛亮) / 许攸夜奔(移籍→曹) / 白门楼(斩吕布·高顺·陈宫 + 张辽移籍曹) / 赤壁鏖兵 / 水淹七军(于禁移籍→刘) / 败走麦城(斩关羽) / 秋风五丈原(斩诸葛亮)。世事类(白门楼/官渡/走麦城/五丈原)不限玩家势力，主角亲历类限对应势力。
+> - **覆盖层接入归属核**（`GeneralAffiliations`）：`AffiliationOf`/`RosterOf` 加可选 `LoreOverrides? overrides=null`（默认 null=原行为，零破坏面）；斩杀→Absent、移籍→换势力，优先序高于 baseFaction。
+> - **可推演不入档**：触发只依赖已持久化态（纪元/年/玩家势力/在世门）→ 读档 `OverridesAt` 重算即复原，无新存档字段/迁移（沿用 ADR-0015 发觉门范式）。
+> - **console**：`lore` 展示当轮触发事件+效果(▸行) + 「演义已改写天下」累积陨落/移籍/登场汇总。实测：234盘→关羽/诸葛亮陨落；190盘→桃园叙事+华雄陨落。
+> - **测试 +8**（`LoreEventsTests`：触发门/斩杀→Absent/白门楼多效果/许攸移籍真delta/确定性重放/空覆盖/机制单测）；改 1 旧测试（P8桃园「200总数=0」→「桃园缺席」，因新增世事类200触发）。
+> - **文档**：ADR-0016 +D6 覆盖层契约 + 更新试水措辞；GDD-027 事件条目+AC7 升完整。
+> - **诚实边界（非引擎缺口，属集成/表现线，★需运行期验证）**：运行期各消费方(croster/gov/council/army)尚未透传 `LoreOverrides`（故 234盘 croster 仍列诸葛亮，与 lore 的「诸葛亮陨落」不一致）；且「锚点年当轮 vs 推进后」触发时机待调优（234盘开局即殒诸葛，需定夺）。引擎/效果/覆盖层/测试/console 演示已完整。
+> - **未提交/未推**：LoreEvents/GeneralAffiliations/GameConsole + LoreEventsTests + GeneralIntegrationTests + adr-0016 + gdd-027 + 3 DLL + active.md。
 
 ## ✅ 完成（2026-07-07 续21）— 武将全局融入 P2-P8 全落地 + console 验证命令【✅ computer-use 复验通过】
 

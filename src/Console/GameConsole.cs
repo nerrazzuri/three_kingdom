@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using ThreeKingdom.Application.Scenarios;
 using ThreeKingdom.Application.Session;
@@ -412,10 +413,38 @@ namespace ThreeKingdom.Console
         {
             var ctx = new LoreContext(_rt.Scenario.AnchorYear, _rt.CurrentYear, _rt.Scenario.PlayerFaction);
             var fired = LoreEvents.FiredAt(ctx);
-            if (fired.Count == 0) return $"公元{_rt.CurrentYear}：当下无演义事件触发（事件锚定具名武将，按在世/归属/纪元触发）。";
+            var ov = LoreEvents.OverridesAt(ctx);
             var sb = new System.Text.StringBuilder();
-            foreach (LoreEvent e in fired) sb.AppendLine($"〔{e.Name}〕{e.Narrative}");
+
+            // 当轮触发的招牌事件（叙事 + 效果）。
+            if (fired.Count == 0)
+                sb.AppendLine($"公元{_rt.CurrentYear}：当下无演义事件触发（事件锚定具名武将，按在世/归属/纪元触发）。");
+            else
+                foreach (LoreEvent e in fired)
+                {
+                    sb.AppendLine($"〔{e.Name}〕{e.Narrative}");
+                    foreach (LoreEffect eff in e.Effects) sb.AppendLine($"    ▸ {eff.Describe(g => Name(g.Value))}");
+                }
+
+            // 开局至今累积的世界变更（演义覆盖层，可推演不入档）。
+            if (!ov.IsEmpty)
+            {
+                sb.AppendLine($"【演义已改写天下】公元{ctx.AnchorYear}→{_rt.CurrentYear}：");
+                if (ov.Slain.Count > 0) sb.AppendLine("  陨落：" + string.Join("、", NamesOf(ov.Slain)));
+                if (ov.Reassigned.Count > 0)
+                {
+                    var moves = new List<string>();
+                    foreach (var kv in ov.Reassigned) moves.Add($"{Name(kv.Key)}→{(kv.Value == null ? "在野" : kv.Value.Value.Value)}");
+                    sb.AppendLine("  移籍：" + string.Join("、", moves));
+                }
+                if (ov.Introduced.Count > 0) sb.AppendLine("  登场：" + string.Join("、", NamesOf(ov.Introduced)));
+            }
             return sb.ToString().TrimEnd();
+        }
+
+        private static IEnumerable<string> NamesOf(IEnumerable<string> ids)
+        {
+            foreach (string id in ids) yield return Name(id);
         }
         private static long ParseLong(string s, long def) => long.TryParse(s, out long v) ? v : def;
         private static int ParseInt(string s, int def) => int.TryParse(s, out int v) ? v : def;

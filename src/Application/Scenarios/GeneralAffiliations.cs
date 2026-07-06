@@ -66,10 +66,13 @@ namespace ThreeKingdom.Application.Scenarios
         /// 某将在某纪元的归属（GDD_027 R1）：生卒门 → 本属势力存续则在职（驻布防城，无则治所；角色派生），否则在野。
         /// 城/势力键于纪元盘（anchorYear）；在世与否由调用方按当前年 <see cref="GeneralDossiers.AvailableAt"/> 另门（地图已如此）。
         /// </summary>
-        public static Affiliation AffiliationOf(CharacterId general, int anchorYear)
+        public static Affiliation AffiliationOf(CharacterId general, int anchorYear, LoreOverrides? overrides = null)
         {
+            // 演义事件覆盖层（GDD_027 R6 / ADR-0016）优先于 baseFaction 派生：斩杀 → Absent；移籍 → 换势力。
+            if (overrides != null && overrides.IsSlain(general)) return Affiliation.Absent;
             if (!GeneralDossiers.AvailableAt(general, anchorYear)) return Affiliation.Absent;
             FactionId? bf = BaseFactionOf(general);
+            if (overrides != null && overrides.TryReassigned(general, out FactionId? moved)) bf = moved;
             if (bf == null || !PlayableCampaign.FactionExistsAt(bf.Value, anchorYear)) return Affiliation.Wandering;
             CityId? station = GeneralDossiers.StationOf(general, anchorYear) ?? PlayableCampaign.FactionCapitalAt(bf.Value, anchorYear);
             if (station == null) return Affiliation.Wandering;
@@ -94,13 +97,13 @@ namespace ThreeKingdom.Application.Scenarios
         /// 某城某纪元的武将册（GDD_027 R2，≤ <see cref="RosterCap"/>）：全体在职于该城之将，按 max(战阵档,谋略档) 降序 + id 稳定序裁剪。
         /// NPC 城由此派生；玩家城由太守调拨（任用态另存，P3）。
         /// </summary>
-        public static IReadOnlyList<CharacterId> RosterOf(CityId city, int anchorYear)
+        public static IReadOnlyList<CharacterId> RosterOf(CityId city, int anchorYear, LoreOverrides? overrides = null)
         {
             var members = new List<CharacterId>();
             if (city.Value == null) return members;
             foreach (GeneralDossier d in GeneralDossiers.All)
             {
-                Affiliation a = AffiliationOf(d.Id, anchorYear);
+                Affiliation a = AffiliationOf(d.Id, anchorYear, overrides);
                 if (a.Status == AffiliationStatus.InService && a.City.Value == city.Value) members.Add(d.Id);
             }
             members.Sort((x, y) =>

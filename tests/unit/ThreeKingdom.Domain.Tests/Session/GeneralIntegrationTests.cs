@@ -121,8 +121,10 @@ namespace ThreeKingdom.Domain.Tests.Session
 
             // 非刘备不触发。
             Assert.That(LoreEvents.FiredAt(new LoreContext(190, 190, PlayableCampaign.Cao)).Count, Is.EqualTo(0), "非刘备无桃园。");
-            // 迟世不触发（≤190 条件）。
-            Assert.That(LoreEvents.FiredAt(new LoreContext(200, 200, PlayableCampaign.LiuBei)).Count, Is.EqualTo(0), "200 已非结义之时。");
+            // 迟世桃园不触发（≤190 条件）——注：200 年可有他事（如世事类许攸夜奔），故只断言桃园缺席，不断言总数。
+            bool taoyuan200 = false;
+            foreach (LoreEvent e in LoreEvents.FiredAt(new LoreContext(200, 200, PlayableCampaign.LiuBei))) if (e.Id == "event-taoyuan") taoyuan200 = true;
+            Assert.That(taoyuan200, Is.False, "200 已非结义之时，桃园不触发。");
         }
     }
 }
