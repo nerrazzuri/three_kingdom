@@ -24,6 +24,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Theater.unity
     guid: 9c2682d56d7e37c428ab87b45c09bc37
   - enabled: 1
+    path: Assets/Scenes/CampaignMap.unity
+    guid: ec5f426299e7b0f4a84a8fcf88a766b7
+  - enabled: 1
     path: Assets/Scenes/ZoneBattle.unity
     guid: 821e5921605357f4abdc53781070cec6
   - enabled: 1

@@ -1,6 +1,11 @@
 # 会话状态 — 大方向锁定（游戏整体定位）
 
-## 🔄 进行中（2026-07-06 续19）— 战略图屏启用 + 发觉入存档【待编辑器验证战略图屏】
+## ✅ 完成（2026-07-06 续19）— 战略图屏启用 + 发觉入存档【已提交+编辑器验证通过】
+
+> **提交 a0d6620 已 push tk；s19 编辑器验证全 PASS（证据 production/qa/evidence/s19-map-verify-2026-07-06.md + s19-screens 4图）。**
+> - **编辑器实测（computer-use + Claude 核图）**：重跑场景生成器出 11 场景（含 CampaignMap.unity）；HUD 顶部新增「战略图」按钮 → 进战略图屏；标题/纪元行「公元190·春 天下36城·16家逐鹿」；势力领城列表（★玩家标记）；**反全知雾正确**——己方关羽/名将郭嘉露真名、41 员敌将「未探明」；返回 HUD 正常；Console 0 error。
+> - 非阻断：战略图屏背景透天空盒（面板非不透明底，同 Roster），归美术打磨。
+> - **发觉入存档**：派生自持久化侦察态，save/load round-trip 测试绿。dotnet 1147。
 
 > **dotnet 1147 绿；3 DLL 同步。发觉持久化已闭环；战略图屏 C# 侧完成，★需编辑器生成场景验证。**
 > - **发觉入存档（Point 2 完成）**：把「已探知目标」从会话内标记改为**派生自持久化侦察态**（`Session.PendingScouts` / `PlayerKnowledge.Entries`，二者已在存档 head）→ 存读档天然一致，无需新字段/迁移。CampaignMapViewTests +1（scout→save→load 仍识得高顺）。
