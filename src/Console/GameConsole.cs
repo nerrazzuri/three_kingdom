@@ -148,6 +148,7 @@ namespace ThreeKingdom.Console
                     case "betray": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Betrayed, "背弃");
                     case "strategy": return RenderStrategies();
                     case "assignai": return RenderAssignment(a1);
+                    case "dipai": return RenderDiplomaticAI();
                     case "lore": return RenderLoreEvents();
 
                     // 人心杠杆施计
@@ -524,6 +525,28 @@ namespace ThreeKingdom.Console
             var a = GeneralAssignmentService.Recommend(new ThreeKingdom.Domain.City.CityId(cityId), _rt.Scenario.AnchorYear, CurrentOverrides());
             string N(ThreeKingdom.Domain.Characters.CharacterId? g) => g.HasValue ? Name(g.Value.Value) : "（无）";
             return $"【{Name(cityId)}·任命荐】守将 {N(a.DefenderLead)}｜军师 {N(a.Advisor)}｜内政 {N(a.Governor)}｜先锋 {N(a.Vanguard)}";
+        }
+
+        private string RenderDiplomaticAI()
+        {
+            var views = _rt.PlayerStances();
+            if (views.Count == 0) return "天下无对手。";
+            var sb = new System.Text.StringBuilder();
+            if (_rt.CoalitionAgainstPlayer()) sb.Append("⚠ 【合纵】诸侯联合，共讨于你！\n");
+            sb.Append("【各势力对你的外交立场】");
+            foreach (var v in views)
+            {
+                string stance = v.Stance switch
+                {
+                    ThreeKingdom.Domain.Contention.PlayerStance.Submissive => "臣服求和",
+                    ThreeKingdom.Domain.Contention.PlayerStance.Neutral => "中立",
+                    ThreeKingdom.Domain.Contention.PlayerStance.Wary => "警惕",
+                    ThreeKingdom.Domain.Contention.PlayerStance.Hostile => "敌意",
+                    _ => "合纵抗你",
+                };
+                sb.Append($"\n  {Name(v.Faction.Value)}：{stance}");
+            }
+            return sb.ToString();
         }
 
         private string RenderStrategies()

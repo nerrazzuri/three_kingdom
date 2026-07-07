@@ -117,6 +117,14 @@ namespace ThreeKingdom.Presentation.Runtime
         public System.Collections.Generic.IReadOnlyList<ThreeKingdom.Domain.Contention.FactionStrategyView> FactionStrategies()
             => ThreeKingdom.Domain.Contention.FactionStrategy.AssessAll(Contend, _scenario.PlayerFaction, _prevContention, _wrongedByPlayer);
 
+        /// <summary>各非玩家势力对玩家外交立场（E5 可解释反馈；背信度=夺城家数）。</summary>
+        public System.Collections.Generic.IReadOnlyList<ThreeKingdom.Domain.Contention.PlayerStanceView> PlayerStances()
+            => ThreeKingdom.Domain.Contention.DiplomaticAI.AssessAll(Contend, _scenario.PlayerFaction, _wrongedByPlayer, _wrongedByPlayer.Count);
+
+        /// <summary>是否有合纵围玩家（≥2 家判为合纵）。</summary>
+        public bool CoalitionAgainstPlayer()
+            => ThreeKingdom.Domain.Contention.DiplomaticAI.CoalitionForming(Contend, _scenario.PlayerFaction, _wrongedByPlayer, _wrongedByPlayer.Count);
+
         /// <summary>调拨某将入某城（GDD_027 P3）：经合法性门（在世/非俘/非重创/属玩家麾下）+ 城册约束。返回门结果。</summary>
         public ThreeKingdom.Application.Scenarios.AppointGate AppointGeneral(ThreeKingdom.Domain.City.CityId city, ThreeKingdom.Domain.Characters.CharacterId general)
         {
