@@ -102,6 +102,8 @@ namespace ThreeKingdom.Domain.ZoneBattle
                 // E2 守将性格：善守/铁骨之将死守要点（正面关城）。
                 if (target == BattleField.Front && (HasTag(det, GeneralTag.Defender) || HasTag(det, GeneralTag.IronBones)))
                     score += ai.StubbornDefenderBonus;
+                // E3 反套路：据玩家惯用路线加固其主攻落点区（渐进；用过去战例，不作弊）。
+                if (ai.CounterZone != null && target.Value == ai.CounterZone) score += ai.CounterWeight;
             }
 
             // 低士气退避：偏好向无威胁区保全。

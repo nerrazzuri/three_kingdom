@@ -43,7 +43,8 @@ namespace ThreeKingdom.Presentation.Runtime
         /// </summary>
         public static ZoneBattleRuntime FromOffensive(
             OffensivePreparation prep, FixedPoint morale, int garrison, ulong seed, int maxRounds = 6,
-            SubversionEffect? subversion = null, IReadOnlyList<OffensiveGeneral>? defenders = null)
+            SubversionEffect? subversion = null, IReadOnlyList<OffensiveGeneral>? defenders = null,
+            PlayerTacticProfile? tacticProfile = null)
         {
             var field = BattleFieldCatalog.ForTerrain(prep.Terrain);   // #3 逐城/地形战场：按目标城地形选正面区
             var planner = new OffensiveDeploymentPlanner();
@@ -61,7 +62,15 @@ namespace ThreeKingdom.Presentation.Runtime
                 new SiegeDefense(garrison, FixedPoint.FromFraction(12, 10)), FixedPoint.FromFraction(7, 10), field,
                 subversion ?? SubversionEffect.None, defenders));
             ZoneBattleState start = new ZoneBattleService().Start(field, dets, BattleSide.Attacker, maxRounds, seed);
-            return new ZoneBattleRuntime(start, planner.ContextFrom(prep));
+
+            // E3 反套路：据玩家惯用路线，给守方 AI 渐进反制提示（用过去战例，不作弊）。
+            EnemyAiConfig aiCfg = EnemyAiConfig.Default;
+            if (tacticProfile != null)
+            {
+                (ZoneId zone, int weight) = tacticProfile.CounterHint();
+                if (weight > 0) aiCfg = aiCfg.WithCounter(zone.Value, weight);
+            }
+            return new ZoneBattleRuntime(start, planner.ContextFrom(prep), aiConfig: aiCfg);
         }
 
         /// <summary>

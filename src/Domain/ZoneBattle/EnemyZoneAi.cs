@@ -89,7 +89,8 @@ namespace ThreeKingdom.Domain.ZoneBattle
             int deficitBonus, int trendBonus, int moveCost, int sharpness,
             int objectivePush = 50, int opportunityBonus = 30,
             FixedPoint? retreatMoraleThreshold = null, int preserveBonus = 35,
-            int supplyRaidBonus = 45, int stubbornDefenderBonus = 40)
+            int supplyRaidBonus = 45, int stubbornDefenderBonus = 40,
+            string? counterZone = null, int counterWeight = 0)
         {
             if (sharpness < 1) throw new ArgumentOutOfRangeException(nameof(sharpness));
             var zv = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -107,12 +108,24 @@ namespace ThreeKingdom.Domain.ZoneBattle
             PreserveBonus = preserveBonus;
             SupplyRaidBonus = supplyRaidBonus;
             StubbornDefenderBonus = stubbornDefenderBonus;
+            CounterZone = counterZone;
+            CounterWeight = counterWeight;
         }
 
         /// <summary>攻方乘虚突袭弱守粮道的效用（E1：切粮道）。</summary>
         public int SupplyRaidBonus { get; }
         /// <summary>善守/铁骨守将死守要点的效用（E2：守将性格）。</summary>
         public int StubbornDefenderBonus { get; }
+        /// <summary>反套路加固区（E3：据玩家惯用路线；null=无历史）。</summary>
+        public string? CounterZone { get; }
+        /// <summary>反套路加固权重（E3：随连击渐进）。</summary>
+        public int CounterWeight { get; }
+
+        /// <summary>派生一份带反套路提示的配置（E3；其余项照旧）。</summary>
+        public EnemyAiConfig WithCounter(string? counterZone, int counterWeight)
+            => new EnemyAiConfig(ZoneValue, DefaultZoneValue, ThreatWeight, DeficitBonus, TrendBonus, MoveCost, Sharpness,
+                ObjectivePush, OpportunityBonus, RetreatMoraleThreshold, PreserveBonus, SupplyRaidBonus, StubbornDefenderBonus,
+                counterZone, counterWeight);
 
         /// <summary>某区战略价值。</summary>
         public int ValueOf(ZoneId zone) => ZoneValue.TryGetValue(zone.Value ?? "", out int v) ? v : DefaultZoneValue;

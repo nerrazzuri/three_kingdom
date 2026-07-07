@@ -102,6 +102,13 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>本局任用簿（只读投影）。</summary>
         public ThreeKingdom.Domain.Appointment.AppointmentBook Appointments => _appointments;
 
+        /// <summary>玩家战术倾向档（E3 反套路·渐进记忆；随存读档持久化）。</summary>
+        private ThreeKingdom.Domain.ZoneBattle.PlayerTacticProfile _tactics = ThreeKingdom.Domain.ZoneBattle.PlayerTacticProfile.Empty;
+        private readonly ThreeKingdom.Domain.Persistence.PlayerTacticProfileCodec _tacticsCodec = new ThreeKingdom.Domain.Persistence.PlayerTacticProfileCodec();
+        private string TacticsSlot => _slot + ".tactics";
+        /// <summary>本局玩家战术档（只读投影；AI 反套路来源）。</summary>
+        public ThreeKingdom.Domain.ZoneBattle.PlayerTacticProfile Tactics => _tactics;
+
         /// <summary>调拨某将入某城（GDD_027 P3）：经合法性门（在世/非俘/非重创/属玩家麾下）+ 城册约束。返回门结果。</summary>
         public ThreeKingdom.Application.Scenarios.AppointGate AppointGeneral(ThreeKingdom.Domain.City.CityId city, ThreeKingdom.Domain.Characters.CharacterId general)
         {
@@ -697,7 +704,9 @@ namespace ThreeKingdom.Presentation.Runtime
             var loreOv = ThreeKingdom.Application.Scenarios.LoreEvents.OverridesAt(
                 new ThreeKingdom.Application.Scenarios.LoreContext(_scenario.AnchorYear, CurrentYear, _scenario.PlayerFaction));
             var defenders = PlayableCampaign.DefendersFor(target, _scenario.AnchorYear, loreOv);
-            _offensiveBattle = ZoneBattleRuntime.FromOffensive(prep, morale, garrison, _scenario.OffensiveSeed, defenders: defenders);
+            // E3 反套路：把玩家惯用路线档传入 → 守方 AI 渐进反制。
+            _offensiveBattle = ZoneBattleRuntime.FromOffensive(prep, morale, garrison, _scenario.OffensiveSeed,
+                defenders: defenders, tacticProfile: _tactics);
             _offensiveTarget = target;
             return OffensiveResultView.Started();
         }
@@ -752,6 +761,8 @@ namespace ThreeKingdom.Presentation.Runtime
 
             // 战斗结算 → 运行时人生态（ADR-0017）：参战积劳、败则主将受创、破城俘守方主将。
             ApplyBattleAftermathToGenerals(_offensiveBattle.Outcome == ZoneBattleOutcome.AttackerVictory);
+            // E3 反套路：记录本次玩家出征路线（连击累加）→ 下战 AI 更会反制。
+            if (_offensivePlan != null) _tactics = _tactics.Record(_offensivePlan.Approach);
 
             _offensiveBattle = null;
             _offensivePlan = null;
@@ -1130,10 +1141,14 @@ namespace ThreeKingdom.Presentation.Runtime
                 string aTmp = AppointmentsSlot + ".tmp";
                 _medium.Write(aTmp, _appointmentCodec.Serialize(_appointments));
                 _medium.Move(aTmp, AppointmentsSlot);
+                string kTmp = TacticsSlot + ".tmp";
+                _medium.Write(kTmp, _tacticsCodec.Serialize(_tactics));
+                _medium.Move(kTmp, TacticsSlot);
             }
             catch (Exception)
             {
-                TryDelete(GeneralsSlot + ".tmp"); TryDelete(TalentsSlot + ".tmp"); TryDelete(AppointmentsSlot + ".tmp");
+                TryDelete(GeneralsSlot + ".tmp"); TryDelete(TalentsSlot + ".tmp");
+                TryDelete(AppointmentsSlot + ".tmp"); TryDelete(TacticsSlot + ".tmp");
                 return false;   // 伴生槽未全就位 → 报未完全存档
             }
 
@@ -1177,6 +1192,8 @@ namespace ThreeKingdom.Presentation.Runtime
                     new ThreeKingdom.Application.Scenarios.TalentKnowledgeBook());
                 _appointments = SafeLoadSlot(() => _appointmentCodec.Deserialize(_medium.Read(AppointmentsSlot)),
                     ThreeKingdom.Domain.Appointment.AppointmentBook.Empty(ThreeKingdom.Application.Scenarios.GeneralAffiliations.RosterCap));
+                _tactics = SafeLoadSlot(() => _tacticsCodec.Deserialize(_medium.Read(TacticsSlot)),
+                    ThreeKingdom.Domain.ZoneBattle.PlayerTacticProfile.Empty);
                 reason = string.Empty;
                 return true;
             }
