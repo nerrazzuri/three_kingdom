@@ -1117,7 +1117,8 @@ namespace ThreeKingdom.Presentation.Runtime
                 return false;
             }
 
-            // 伴生槽：武将人生台账（ADR-0017），同「临时槽 + 原子改名」范式。主存档已就位，台账失败不回滚主档（下次存档补齐）。
+            // 伴生槽：人生台账/知晓簿/任用簿（同「临时槽 + 原子改名」范式）。主存档已就位；伴生槽失败<b>不再静默吞</b>——
+            // 返回 false 让调用方知悉"未完全存档"（主档仍在，下次存档补齐），避免"存档显示成功但武将态丢失"。
             try
             {
                 string gTmp = GeneralsSlot + ".tmp";
@@ -1130,7 +1131,11 @@ namespace ThreeKingdom.Presentation.Runtime
                 _medium.Write(aTmp, _appointmentCodec.Serialize(_appointments));
                 _medium.Move(aTmp, AppointmentsSlot);
             }
-            catch (Exception) { /* 台账/知晓簿/任用簿为增量态，缺失退化为空，不损主存档一致性 */ }
+            catch (Exception)
+            {
+                TryDelete(GeneralsSlot + ".tmp"); TryDelete(TalentsSlot + ".tmp"); TryDelete(AppointmentsSlot + ".tmp");
+                return false;   // 伴生槽未全就位 → 报未完全存档
+            }
 
             return true;
         }
@@ -1165,10 +1170,13 @@ namespace ThreeKingdom.Presentation.Runtime
                     tacticChains: _scenario.TacticChains);
                 _session = restored;
                 _daysCrossedLastAdvance = 0;
-                // 恢复武将人生台账 + 人才知晓簿（伴生槽；无此槽的旧存档 → 空，向后兼容）。
-                _generals = _generalsCodec.Deserialize(_medium.Read(GeneralsSlot));
-                _talents = ThreeKingdom.Application.Scenarios.TalentKnowledgeCodec.Deserialize(_medium.Read(TalentsSlot));
-                _appointments = _appointmentCodec.Deserialize(_medium.Read(AppointmentsSlot));
+                // 恢复伴生槽（人生台账/知晓簿/任用簿）；<b>坏档/半写/缺段各自降级为空</b>，不牵连主档载入成功（robust）。
+                _generals = SafeLoadSlot(() => _generalsCodec.Deserialize(_medium.Read(GeneralsSlot)),
+                    new ThreeKingdom.Domain.Characters.GeneralLedger());
+                _talents = SafeLoadSlot(() => ThreeKingdom.Application.Scenarios.TalentKnowledgeCodec.Deserialize(_medium.Read(TalentsSlot)),
+                    new ThreeKingdom.Application.Scenarios.TalentKnowledgeBook());
+                _appointments = SafeLoadSlot(() => _appointmentCodec.Deserialize(_medium.Read(AppointmentsSlot)),
+                    ThreeKingdom.Domain.Appointment.AppointmentBook.Empty(ThreeKingdom.Application.Scenarios.GeneralAffiliations.RosterCap));
                 reason = string.Empty;
                 return true;
             }
@@ -1190,6 +1198,12 @@ namespace ThreeKingdom.Presentation.Runtime
         private void TryDelete(string tmp)
         {
             try { _medium.Delete(tmp); } catch { /* 清理失败不掩盖原始错误 */ }
+        }
+
+        /// <summary>伴生槽稳健载入：坏档/半写/缺段各自降级为 <paramref name="fallback"/>，不牵连主档载入成功。</summary>
+        private static T SafeLoadSlot<T>(Func<T> load, T fallback)
+        {
+            try { return load(); } catch { return fallback; }
         }
     }
 }
