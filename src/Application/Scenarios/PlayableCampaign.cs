@@ -199,16 +199,54 @@ namespace ThreeKingdom.Application.Scenarios
             }
         }
 
-        /// <summary>由武将 id 组装出征将领：智略门取自其气质（诡谋/远图者智略高），战力/士气取中庸默认；携档案战阵/谋略档。</summary>
+        /// <summary>
+        /// 由武将 id 组装出征将领（GDD_027 #5 三维细化）：统率/武勇/智略<b>确定性派生</b>自战阵档/谋略档 + 气质标签，
+        /// 拉开名将差异——吕布（绝世武·愚钝谋）高统率高武勇低智略，诸葛（羸弱武·经天纬地谋）低武高智；不再恒 0.6/0.7/0.8。
+        /// 围绕旧均值散开（档 0..4），玩家仍不见数值，但内部行为分明。携档案战阵/谋略档供结算右偏抽取。
+        /// </summary>
         private static OffensiveGeneral GeneralOf(CharacterId c)
         {
             IReadOnlyList<GeneralTag> tags = TagsOf(c);
-            bool wise = false;
-            foreach (GeneralTag t in tags) if (t == GeneralTag.Cunning || t == GeneralTag.Strategist) wise = true;
-            FixedPoint guile = wise ? FixedPoint.FromFraction(8, 10) : FixedPoint.FromFraction(5, 10);
-            return new OffensiveGeneral(c, FixedPoint.FromFraction(6, 10), FixedPoint.FromFraction(7, 10), guile,
-                GeneralSpecialty.None, tags, ProwessOf(c), StrategyOf(c));
+            CombatTier? prow = ProwessOf(c);
+            StrategyTier? strat = StrategyOf(c);
+            return new OffensiveGeneral(c, DeriveCommand(prow, tags), DeriveValor(prow, tags), DeriveGuile(strat, tags),
+                GeneralSpecialty.None, tags, prow, strat);
         }
+
+        // 统率（→战力/军纪）：随战阵档递增，善守/铁骨统军 +。无档＝寻常(1)。
+        private static FixedPoint DeriveCommand(CombatTier? prow, IReadOnlyList<GeneralTag> tags)
+        {
+            int p = prow.HasValue ? (int)prow.Value : 1;
+            int pct = 50 + p * 6;
+            if (HasAny(tags, GeneralTag.Defender, GeneralTag.IronBones)) pct += 5;
+            return Frac(Clamp(pct, 30, 90), 100);
+        }
+
+        // 武勇（→士气）：随战阵档递增，莽勇/骑锋/孤胆 +。
+        private static FixedPoint DeriveValor(CombatTier? prow, IReadOnlyList<GeneralTag> tags)
+        {
+            int p = prow.HasValue ? (int)prow.Value : 1;
+            int pct = 52 + p * 7;
+            if (HasAny(tags, GeneralTag.Reckless, GeneralTag.Cavalry, GeneralTag.LoneValor)) pct += 5;
+            return Frac(Clamp(pct, 30, 95), 100);
+        }
+
+        // 智略（→兵法可行/识破）：随谋略档递增，诡谋/远图 +。无档＝寻常(1)。
+        private static FixedPoint DeriveGuile(StrategyTier? strat, IReadOnlyList<GeneralTag> tags)
+        {
+            int s = strat.HasValue ? (int)strat.Value : 1;
+            int pct = 44 + s * 8;
+            if (HasAny(tags, GeneralTag.Cunning, GeneralTag.Strategist)) pct += 6;
+            return Frac(Clamp(pct, 30, 92), 100);
+        }
+
+        private static bool HasAny(IReadOnlyList<GeneralTag> tags, params GeneralTag[] any)
+        {
+            foreach (GeneralTag t in tags) foreach (GeneralTag a in any) if (t == a) return true;
+            return false;
+        }
+
+        private static int Clamp(int v, int lo, int hi) => v < lo ? lo : (v > hi ? hi : v);
 
         /// <summary>
         /// 某城某纪元的守城将（GDD_027 #3 守将进战斗）：城武将册 → 出征将领投影，供守方分区布防择位。
@@ -220,6 +258,9 @@ namespace ThreeKingdom.Application.Scenarios
             foreach (CharacterId g in GeneralAffiliations.RosterOf(city, anchorYear, overrides)) list.Add(GeneralOf(g));
             return list;
         }
+
+        /// <summary>某武将的出征将领投影（GDD_027 #5）：供 UI/测试查其派生统率/武勇/智略（玩家不见数值，仅作强弱依据）。</summary>
+        public static OffensiveGeneral GeneralProjection(CharacterId general) => GeneralOf(general);
 
         /// <summary>目标敌城的<b>真实</b>守备（结算用真值；玩家所见须经情报投影，反全知）。虎牢关：守军600 × 工事1.2。</summary>
         public SiegeDefense DefenseOf(CityId city) => new SiegeDefense(600, Frac(12, 10));
