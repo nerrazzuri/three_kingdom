@@ -24,6 +24,8 @@ namespace ThreeKingdom.Application.Battle
             int cav = prep.Composition.Count(TroopType.Cavalry);
             int inf = Math.Max(0, total - cav);
             OffensiveGeneral lead = prep.Command.Lead;
+            // 副将进区域（GDD_027 #4）：主将坐镇招牌列，副将按区适配填此前无将的次列（正面→善守/猛将，粮道→诡谋）。
+            var deputies = new List<OffensiveGeneral>(prep.Command.Deputies);
             FixedPoint fatigue = FixedPoint.FromFraction(2, 10);
 
             var dets = new List<Detachment>();
@@ -33,19 +35,19 @@ namespace ThreeKingdom.Application.Battle
                     if (cav > 0)
                         dets.Add(Make("atk-flank", BattleSide.Attacker, lead, Cavalry(cav), cav, morale, fatigue, Posture.Feint, BattleField.Flank));
                     if (inf > 0)
-                        dets.Add(Make("atk-front", BattleSide.Attacker, cav > 0 ? null : lead, Infantry(inf), inf, morale, fatigue, Posture.Assault, BattleField.Front));
+                        dets.Add(Make("atk-front", BattleSide.Attacker, cav > 0 ? TakeBest(deputies, FrontTags, byProwess: true) : lead, Infantry(inf), inf, morale, fatigue, Posture.Assault, BattleField.Front));
                     break;
 
                 case ApproachPlan.ProtractedSiege:
                     int siege = total / 2, siegeFront = total - siege;
                     if (siege > 0) dets.Add(Make("atk-supply", BattleSide.Attacker, lead, Infantry(siege), siege, morale, fatigue, Posture.Hold, BattleField.Supply));
-                    if (siegeFront > 0) dets.Add(Make("atk-front", BattleSide.Attacker, null, Infantry(siegeFront), siegeFront, morale, fatigue, Posture.Assault, BattleField.Front));
+                    if (siegeFront > 0) dets.Add(Make("atk-front", BattleSide.Attacker, TakeBest(deputies, FrontTags, byProwess: true), Infantry(siegeFront), siegeFront, morale, fatigue, Posture.Assault, BattleField.Front));
                     break;
 
                 case ApproachPlan.NightRaid:
                     int raid = total / 2, raidFront = total - raid;
                     if (raid > 0) dets.Add(Make("atk-cover", BattleSide.Attacker, lead, Infantry(raid), raid, morale, fatigue, Posture.Assault, BattleField.Cover));
-                    if (raidFront > 0) dets.Add(Make("atk-front", BattleSide.Attacker, null, Infantry(raidFront), raidFront, morale, fatigue, Posture.Assault, BattleField.Front));
+                    if (raidFront > 0) dets.Add(Make("atk-front", BattleSide.Attacker, TakeBest(deputies, FrontTags, byProwess: true), Infantry(raidFront), raidFront, morale, fatigue, Posture.Assault, BattleField.Front));
                     break;
 
                 case ApproachPlan.FrontalAssault:
@@ -128,6 +130,27 @@ namespace ThreeKingdom.Application.Battle
                 if (key > bestKey) { bestKey = key; best = g; }
             }
             return best;
+        }
+
+        /// <summary>正面适配标签（善守/铁骨镇正面）。</summary>
+        private static readonly GeneralTag[] FrontTags = { GeneralTag.Defender, GeneralTag.IronBones };
+
+        /// <summary>从副将池取一名最适配某区之将并移出（不重复用人）：命中偏好标签者优先，再按战阵档/谋略档排序。池空返 null。</summary>
+        private static OffensiveGeneral? TakeBest(List<OffensiveGeneral> pool, GeneralTag[] preferred, bool byProwess)
+        {
+            if (pool.Count == 0) return null;
+            int bestIdx = 0, bestKey = int.MinValue;
+            for (int i = 0; i < pool.Count; i++)
+            {
+                OffensiveGeneral g = pool[i];
+                int key = 0;
+                foreach (GeneralTag t in preferred) if (g.HasTag(t)) { key = 1000; break; }
+                key += byProwess ? (g.Prowess.HasValue ? (int)g.Prowess.Value : 0) : (g.Strategy.HasValue ? (int)g.Strategy.Value : 0);
+                if (key > bestKey) { bestKey = key; bestIdx = i; }
+            }
+            OffensiveGeneral picked = pool[bestIdx];
+            pool.RemoveAt(bestIdx);
+            return picked;
         }
 
         /// <summary>六维时机/侦察 → 战斗上下文（反全知门）。晴天=干燥→火攻天时门（DryField）。</summary>
