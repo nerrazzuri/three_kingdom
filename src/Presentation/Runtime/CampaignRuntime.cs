@@ -57,6 +57,12 @@ namespace ThreeKingdom.Presentation.Runtime
         private readonly ThreeKingdom.Domain.Persistence.GeneralLedgerCodec _generalsCodec = new ThreeKingdom.Domain.Persistence.GeneralLedgerCodec();
         private string GeneralsSlot => _slot + ".generals";
 
+        /// <summary>人才知晓簿（反全知发觉进度；随会话存读档持久化）。</summary>
+        private ThreeKingdom.Application.Scenarios.TalentKnowledgeBook _talents = new ThreeKingdom.Application.Scenarios.TalentKnowledgeBook();
+        private string TalentsSlot => _slot + ".talents";
+        /// <summary>本局人才知晓簿（招揽消费方读写；随存读档持久化）。</summary>
+        public ThreeKingdom.Application.Scenarios.TalentKnowledgeBook Talents => _talents;
+
         /// <summary>本局武将人生台账（消费方/表现层读写；随会话存读档持久化）。</summary>
         public ThreeKingdom.Domain.Characters.GeneralLedger Generals => _generals;
 
@@ -1059,8 +1065,11 @@ namespace ThreeKingdom.Presentation.Runtime
                 string gTmp = GeneralsSlot + ".tmp";
                 _medium.Write(gTmp, _generalsCodec.Serialize(_generals));
                 _medium.Move(gTmp, GeneralsSlot);
+                string tTmp = TalentsSlot + ".tmp";
+                _medium.Write(tTmp, ThreeKingdom.Application.Scenarios.TalentKnowledgeCodec.Serialize(_talents));
+                _medium.Move(tTmp, TalentsSlot);
             }
-            catch (Exception) { /* 台账为增量态，缺失退化为空台账，不损主存档一致性 */ }
+            catch (Exception) { /* 台账/知晓簿为增量态，缺失退化为空，不损主存档一致性 */ }
 
             return true;
         }
@@ -1095,8 +1104,9 @@ namespace ThreeKingdom.Presentation.Runtime
                     tacticChains: _scenario.TacticChains);
                 _session = restored;
                 _daysCrossedLastAdvance = 0;
-                // 恢复武将人生台账（伴生槽；无此槽的旧存档 → 空台账，向后兼容）。
+                // 恢复武将人生台账 + 人才知晓簿（伴生槽；无此槽的旧存档 → 空，向后兼容）。
                 _generals = _generalsCodec.Deserialize(_medium.Read(GeneralsSlot));
+                _talents = ThreeKingdom.Application.Scenarios.TalentKnowledgeCodec.Deserialize(_medium.Read(TalentsSlot));
                 reason = string.Empty;
                 return true;
             }

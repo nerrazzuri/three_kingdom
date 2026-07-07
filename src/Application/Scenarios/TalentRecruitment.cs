@@ -103,6 +103,13 @@ namespace ThreeKingdom.Application.Scenarios
 
         /// <summary>持久化入口（供存档 DTO 读写；键=将 id）。</summary>
         public IReadOnlyDictionary<string, Entry> Entries => _entries;
+
+        /// <summary>读档恢复某将知晓态（供 <see cref="TalentKnowledgeCodec"/>）。</summary>
+        public void Restore(CharacterId g, TalentKnowledge discovery, int attempts, RecruitOutcome outcome)
+        {
+            if (g.Value == null) return;
+            _entries[g.Value] = new Entry { Discovery = discovery, Attempts = attempts, LastOutcome = outcome };
+        }
     }
 
     /// <summary>某已知人才的招揽视图（反全知：仅已闻名者可见；难度呈定性档，无数字）。</summary>
