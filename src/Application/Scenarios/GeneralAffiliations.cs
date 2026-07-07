@@ -62,6 +62,48 @@ namespace ThreeKingdom.Application.Scenarios
         public static FactionId? BaseFactionOf(CharacterId general)
             => general.Value != null && Base.TryGetValue(general.Value, out FactionId f) ? f : (FactionId?)null;
 
+        private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<int, FactionId?>> EraOverrides = BuildEraOverrides();
+
+        /// <summary>
+        /// (将,纪元)→势力 覆盖（GDD_027 R1 史准细化）：某将在加入其 baseFaction 前的实际归属（值 null=该纪元在野）。
+        /// 命中返 true 且 <paramref name="faction"/> 为覆盖势力。数据活、可扩，修「跳槽者在早纪元混入终属势力册」（如黄权 190 混入刘备小沛册）。
+        /// </summary>
+        public static bool TryEraFaction(CharacterId general, int anchorYear, out FactionId? faction)
+        {
+            faction = null;
+            return general.Value != null
+                && EraOverrides.TryGetValue(general.Value, out IReadOnlyDictionary<int, FactionId?>? byYear)
+                && byYear.TryGetValue(anchorYear, out faction);
+        }
+
+        private static IReadOnlyDictionary<string, IReadOnlyDictionary<int, FactionId?>> BuildEraOverrides()
+        {
+            var m = new Dictionary<string, IReadOnlyDictionary<int, FactionId?>>(StringComparer.Ordinal);
+            void O(string id, params (int Year, FactionId? Faction)[] entries)
+            {
+                var d = new Dictionary<int, FactionId?>();
+                foreach ((int y, FactionId? f) in entries) d[y] = f;
+                m[id] = d;
+            }
+            FactionId? LZ = PlayableCampaign.LiuZhang;   // 刘璋/刘焉·益州
+            FactionId? MT = PlayableCampaign.MaTeng;     // 西凉马氏
+            FactionId? WEI = PlayableCampaign.Cao;       // 曹魏
+            FactionId? WILD = null;                      // 在野
+
+            // 益州系（加入刘备 214 前属刘璋/刘焉）：
+            O("char-huangquan", (190, LZ), (194, LZ), (200, LZ), (208, LZ));
+            O("char-donghe", (190, LZ), (194, LZ), (200, LZ), (208, LZ));
+            O("char-fazheng", (194, LZ), (200, LZ), (208, LZ));   // 190 未及冠（生176）
+            // 西凉马氏（马超加入刘备 214 前从父马腾）：
+            O("char-machao", (194, MT), (200, MT), (208, MT));    // 190 未及冠（生176）
+            // 后归者早年在野（杨仪加入刘备 ~209 前辗转）：
+            O("char-yangyi", (190, WILD), (194, WILD), (200, WILD), (208, WILD));
+            // 姜维降蜀 228 前属曹魏天水：
+            O("char-jiangwei", (219, WEI));               // 202 生，190/208 未出；219 属魏
+
+            return m;
+        }
+
         /// <summary>
         /// 某将在某纪元的归属（GDD_027 R1）：生卒门 → 本属势力存续则在职（驻布防城，无则治所；角色派生），否则在野。
         /// 城/势力键于纪元盘（anchorYear）；在世与否由调用方按当前年 <see cref="GeneralDossiers.AvailableAt"/> 另门（地图已如此）。
@@ -72,6 +114,9 @@ namespace ThreeKingdom.Application.Scenarios
             if (overrides != null && overrides.IsSlain(general)) return Affiliation.Absent;
             if (!GeneralDossiers.AvailableAt(general, anchorYear)) return Affiliation.Absent;
             FactionId? bf = BaseFactionOf(general);
+            // 纪元覆盖（GDD_027 R1 史准细化）：跳槽者加入 baseFaction 前的实际归属（null=在野）。数据活，非引擎改。
+            if (TryEraFaction(general, anchorYear, out FactionId? eraF)) bf = eraF;
+            // 演义事件移籍（动态，最高优先，覆盖静态纪元）。
             if (overrides != null && overrides.TryReassigned(general, out FactionId? moved)) bf = moved;
             if (bf == null || !PlayableCampaign.FactionExistsAt(bf.Value, anchorYear)) return Affiliation.Wandering;
             CityId? station = GeneralDossiers.StationOf(general, anchorYear) ?? PlayableCampaign.FactionCapitalAt(bf.Value, anchorYear);
