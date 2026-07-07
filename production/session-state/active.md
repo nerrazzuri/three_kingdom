@@ -39,7 +39,7 @@
 > - ✅ **G GeneralState 运行时人生**（#1/#4，最大）— 基座（ADR-0017：GeneralState 不可变·记忆联动忠诚·伤病·被俘·叛离风险 + GeneralLedger + GeneralLifeSeeding，提交 cff4c2e）**+ 持久化完成**（GeneralLedgerCodec 无损 round-trip + 台账入 CampaignRuntime + 伴生存档槽 slot.generals，绕核心信封首迁移风险；提交 6b26b49）。测试 +10。实测存读档人生态往返正确。剩余渐进步：消费方全接（关系/AI/战斗/军议自动读写 GeneralState）。
 > - ✅ **H 数据外部化**（#5 维护）— GeneralDossierCodec 从权威档案【生成】外部数据（零转写误差）+ 解析 + round-trip 证全 500 员等价 + assets/data/generals.tkdata 入库 + console exportgen。测试 +2。提交 7ff998e。剩余步：运行期权威源切外部文件加载（须 Unity StreamingAssets 装载，★编辑器）。
 > **🏁 全 8 批（A-H）完成，dotnet 1200 绿；3 DLL 同步。武将 7 大问题全部实质解决。**
-> **Unity 验证**：本轮全为纯 C# 后端 + console 验证，未建新 Unity 场景/屏（P9 表现层仍未做）。但 3 DLL 已变（行为差异：守将/副将进战斗·三维差异·城池守备·招揽门），宜在编辑器 smoke-check：编译通过 + 现有场景（HUD/战略图/战斗）载入无 error + 一场战斗可结算。见交接末 computer-use prompt。
+> **✅ Unity smoke-check 通过（s23，2026-07-07）**：computer-use 编辑器验证 DLL 更新未破坏现有场景。步骤1编译0 error/warning · 步骤2 场景生成11屏 · 步骤3 HUD完整渲染0 error · 步骤5 战略图反全知雾正常。步骤4战斗结算 BLOCKED——computer-use 未从 HUD 摸到出征入口（`出征`在HUD为文字提示非按钮），**非回归/非崩溃，全程0 error**；战斗逻辑（守将/副将/守备 B/C/E）由 1200 单测覆盖。证据 s23-unity-smoke-2026-07-07.md + 5 截图（Claude 独立核图）。既有小瑕（非本轮）：`君命: Pending` 未本地化占位符。**结论：A-H 后端更新对 Unity 安全，现有可玩场景无恙。**
 > **诚实边界**：系统覆盖 500 将；深度手工调校先喂 ~30 核心（符合用户"深度优先勿扩 500"）。F/G/H 各为多提交独立工程（G 动存档格式）。Unity 屏（招揽/GeneralState 展示）仍 ★编辑器，C# + console 先做到可验。
 
 ## ✅ 完成（2026-07-07 续22b）— 演义事件运行期透传 + 触发时机
