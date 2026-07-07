@@ -210,6 +210,17 @@ namespace ThreeKingdom.Application.Scenarios
                 GeneralSpecialty.None, tags, ProwessOf(c), StrategyOf(c));
         }
 
+        /// <summary>
+        /// 某城某纪元的守城将（GDD_027 #3 守将进战斗）：城武将册 → 出征将领投影，供守方分区布防择位。
+        /// 应用演义覆盖层（斩杀/移籍排除已陨落/易主者）。空册（无名守军）返回空列表。
+        /// </summary>
+        public static IReadOnlyList<OffensiveGeneral> DefendersFor(CityId city, int anchorYear, LoreOverrides? overrides = null)
+        {
+            var list = new List<OffensiveGeneral>();
+            foreach (CharacterId g in GeneralAffiliations.RosterOf(city, anchorYear, overrides)) list.Add(GeneralOf(g));
+            return list;
+        }
+
         /// <summary>目标敌城的<b>真实</b>守备（结算用真值；玩家所见须经情报投影，反全知）。虎牢关：守军600 × 工事1.2。</summary>
         public SiegeDefense DefenseOf(CityId city) => new SiegeDefense(600, Frac(12, 10));
 

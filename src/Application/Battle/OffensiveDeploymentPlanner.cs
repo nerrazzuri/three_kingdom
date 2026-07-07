@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.Conquest;
 using ThreeKingdom.Domain.Environment;
 using ThreeKingdom.Domain.Numerics;
@@ -60,13 +61,21 @@ namespace ThreeKingdom.Application.Battle
 
         /// <summary>由守备（守军 + 工事）构造守方分区布防：主力守正面，一部护粮道。</summary>
         public IReadOnlyList<Detachment> PlanDefender(SiegeDefense defense, FixedPoint morale, BattleField field)
-            => PlanDefender(defense, morale, field, SubversionEffect.None);
+            => PlanDefender(defense, morale, field, SubversionEffect.None, null);
+
+        /// <summary>同上 + 人心杠杆施计效果（无守将版，向后兼容）。</summary>
+        public IReadOnlyList<Detachment> PlanDefender(SiegeDefense defense, FixedPoint morale, BattleField field, SubversionEffect subversion)
+            => PlanDefender(defense, morale, field, subversion, null);
 
         /// <summary>
-        /// 同上，但先应用<b>人心杠杆</b>施计效果（GDD_024 F3 接缝）：有效守军 = 守军×(1−倒戈比)；
-        /// 守方开战士气 += 士气增量 + 军纪增量（区域引擎无独立军纪项，MVP 军纪损失折进士气——见 GDD_024 §17 后续独立军纪项）。
+        /// 守方分区布防（GDD_027 #3：<b>守将进战斗</b>）：主力守正面、一部护粮道，并按守城将<b>标签择位</b>——
+        /// 善守/铁骨镇正面（压杀伤右偏），诡谋/远图护粮道（反伏击/识破敌预设）。守将携标签/战阵档/谋略档入结算，
+        /// 使"打曹仁守的樊城"≠"打无名守军"。<paramref name="defenders"/> 为该城守将（空/null=无名守军，退回原纯守军行为）。
+        /// 先应用人心杠杆施计效果（GDD_024 F3 接缝）：有效守军=守军×(1−倒戈比)；守方开战士气 += 士气增量 + 军纪增量。
         /// </summary>
-        public IReadOnlyList<Detachment> PlanDefender(SiegeDefense defense, FixedPoint morale, BattleField field, SubversionEffect subversion)
+        public IReadOnlyList<Detachment> PlanDefender(
+            SiegeDefense defense, FixedPoint morale, BattleField field, SubversionEffect subversion,
+            IReadOnlyList<OffensiveGeneral>? defenders)
         {
             if (defense == null) throw new ArgumentNullException(nameof(defense));
             subversion = subversion ?? SubversionEffect.None;
@@ -78,15 +87,47 @@ namespace ThreeKingdom.Application.Battle
             morale = (morale + subversion.DefenderMoraleDelta + subversion.DefenderDisciplineDelta)
                 .Clamp(FixedPoint.Zero, FixedPoint.One);
 
+            OffensiveGeneral? front = PickDefenderFront(defenders);
+            OffensiveGeneral? supply = PickDefenderSupply(defenders, front);
+
             int frontG = garrison - garrison / 3;
             int supplyG = garrison - frontG;
             FixedPoint fatigue = FixedPoint.FromFraction(1, 10);
 
             var dets = new List<Detachment>();
-            if (frontG > 0) dets.Add(Make("def-front", BattleSide.Defender, null, Infantry(frontG), frontG, morale, fatigue, Posture.Hold, BattleField.Front));
-            if (supplyG > 0) dets.Add(Make("def-supply", BattleSide.Defender, null, Infantry(supplyG), supplyG, morale, fatigue, Posture.Hold, BattleField.Supply));
-            if (dets.Count == 0) dets.Add(Make("def-front", BattleSide.Defender, null, TroopComposition.None, 0, morale, fatigue, Posture.Hold, BattleField.Front));
+            if (frontG > 0) dets.Add(Make("def-front", BattleSide.Defender, front, Infantry(frontG), frontG, morale, fatigue, Posture.Hold, BattleField.Front));
+            if (supplyG > 0) dets.Add(Make("def-supply", BattleSide.Defender, supply, Infantry(supplyG), supplyG, morale, fatigue, Posture.Hold, BattleField.Supply));
+            if (dets.Count == 0) dets.Add(Make("def-front", BattleSide.Defender, front, TroopComposition.None, 0, morale, fatigue, Posture.Hold, BattleField.Front));
             return dets;
+        }
+
+        /// <summary>择守正面之将：善守/铁骨优先（镇守压阵），否则战阵档最高（猛将当关）。</summary>
+        private static OffensiveGeneral? PickDefenderFront(IReadOnlyList<OffensiveGeneral>? gs)
+        {
+            if (gs == null) return null;
+            OffensiveGeneral? best = null; int bestKey = int.MinValue;
+            foreach (OffensiveGeneral g in gs)
+            {
+                int key = (g.HasTag(GeneralTag.Defender) || g.HasTag(GeneralTag.IronBones)) ? 1000 : 0;
+                key += g.Prowess.HasValue ? (int)g.Prowess.Value : 0;
+                if (key > bestKey) { bestKey = key; best = g; }
+            }
+            return best;
+        }
+
+        /// <summary>择护粮道之将：诡谋/远图优先（反伏击·识破），否则谋略档最高；避开已镇正面者。</summary>
+        private static OffensiveGeneral? PickDefenderSupply(IReadOnlyList<OffensiveGeneral>? gs, OffensiveGeneral? exclude)
+        {
+            if (gs == null) return null;
+            OffensiveGeneral? best = null; int bestKey = int.MinValue;
+            foreach (OffensiveGeneral g in gs)
+            {
+                if (exclude != null && g.Character.Equals(exclude.Character)) continue;
+                int key = (g.HasTag(GeneralTag.Cunning) || g.HasTag(GeneralTag.Strategist)) ? 1000 : 0;
+                key += g.Strategy.HasValue ? (int)g.Strategy.Value : 0;
+                if (key > bestKey) { bestKey = key; best = g; }
+            }
+            return best;
         }
 
         /// <summary>六维时机/侦察 → 战斗上下文（反全知门）。晴天=干燥→火攻天时门（DryField）。</summary>

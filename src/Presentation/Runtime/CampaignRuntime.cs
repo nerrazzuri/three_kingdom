@@ -612,7 +612,11 @@ namespace ThreeKingdom.Presentation.Runtime
             OffensivePreparation prep = _offensivePlan.Build(_scenario.TerrainOf(target), scouted);
             FixedPoint morale = _offensiveDerive.Derive(prep, _scenario.OffensiveSetup).Morale;
             int garrison = _scenario.DefenseOf(target).Garrison;
-            _offensiveBattle = ZoneBattleRuntime.FromOffensive(prep, morale, garrison, _scenario.OffensiveSeed);
+            // 守将进战斗（GDD_027 #3）：目标城武将册（应用演义覆盖层）→ 守方分区布防择位。
+            var loreOv = ThreeKingdom.Application.Scenarios.LoreEvents.OverridesAt(
+                new ThreeKingdom.Application.Scenarios.LoreContext(_scenario.AnchorYear, CurrentYear, _scenario.PlayerFaction));
+            var defenders = PlayableCampaign.DefendersFor(target, _scenario.AnchorYear, loreOv);
+            _offensiveBattle = ZoneBattleRuntime.FromOffensive(prep, morale, garrison, _scenario.OffensiveSeed, defenders: defenders);
             _offensiveTarget = target;
             return OffensiveResultView.Started();
         }

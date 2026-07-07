@@ -43,7 +43,7 @@ namespace ThreeKingdom.Presentation.Runtime
         /// </summary>
         public static ZoneBattleRuntime FromOffensive(
             OffensivePreparation prep, FixedPoint morale, int garrison, ulong seed, int maxRounds = 6,
-            SubversionEffect? subversion = null)
+            SubversionEffect? subversion = null, IReadOnlyList<OffensiveGeneral>? defenders = null)
         {
             var field = BattleFieldCatalog.ForTerrain(prep.Terrain);   // #3 逐城/地形战场：按目标城地形选正面区
             var planner = new OffensiveDeploymentPlanner();
@@ -59,7 +59,7 @@ namespace ThreeKingdom.Presentation.Runtime
             dets.AddRange(planner.PlanAttacker(prep, attackerMorale, field));
             dets.AddRange(planner.PlanDefender(
                 new SiegeDefense(garrison, FixedPoint.FromFraction(12, 10)), FixedPoint.FromFraction(7, 10), field,
-                subversion ?? SubversionEffect.None));
+                subversion ?? SubversionEffect.None, defenders));
             ZoneBattleState start = new ZoneBattleService().Start(field, dets, BattleSide.Attacker, maxRounds, seed);
             return new ZoneBattleRuntime(start, planner.ContextFrom(prep));
         }
