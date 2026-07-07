@@ -29,6 +29,8 @@ namespace ThreeKingdom.Console
         private CampaignRuntime _rt;
         // 全谱人才知晓簿（反全知门；会话内，同发觉门范式待接存档）。
         private readonly TalentKnowledgeBook _talentBook = new TalentKnowledgeBook();
+        // 武将运行时人生台账（忠诚/记忆/健康；会话内，待接存档 DTO）。
+        private readonly ThreeKingdom.Domain.Characters.GeneralLedger _lifeLedger = new ThreeKingdom.Domain.Characters.GeneralLedger();
         public bool Quit { get; private set; }
 
         public GameConsole()
@@ -142,6 +144,9 @@ namespace ThreeKingdom.Console
                     case "pool": return RenderRecruitPool();
                     case "discover": return Discover(a1, a2);
                     case "hire": return Hire(a1, a2);
+                    case "life": return RenderLife(a1);
+                    case "reward": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Rewarded, "重赏");
+                    case "betray": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Betrayed, "背弃");
                     case "lore": return RenderLoreEvents();
 
                     // 人心杠杆施计
@@ -439,6 +444,46 @@ namespace ThreeKingdom.Console
             TalentKnowledge d = _talentBook.DiscoveryOf(g);
             if (d == TalentKnowledge.Unknown) return $"× {Name(id)} 非在野人才（在职/未在世/不存），未纳入招揽视野。";
             return $"✓ 发觉 {Name(id)}——进度：{d}（{(_talentBook.CanAttempt(g) ? "可招" : "尚不可招，需接触")}）。";
+        }
+
+        private ThreeKingdom.Domain.Characters.GeneralState LifeOf(string id)
+        {
+            var gid = new ThreeKingdom.Domain.Characters.CharacterId(id);
+            int y = _rt.Scenario.AnchorYear;
+            return _lifeLedger.GetOrSeed(gid, x => GeneralLifeSeeding.Seed(x, y));
+        }
+
+        private string RenderLife(string id)
+        {
+            var s = LifeOf(id);
+            string health = s.Health switch
+            {
+                ThreeKingdom.Domain.Characters.GeneralHealth.Hale => "康健",
+                ThreeKingdom.Domain.Characters.GeneralHealth.Wounded => "负伤",
+                _ => "重创",
+            };
+            string risk = ThreeKingdom.Domain.Characters.GeneralLifeService.RiskOf(s) switch
+            {
+                ThreeKingdom.Domain.Characters.DefectionRisk.Steadfast => "忠贞",
+                ThreeKingdom.Domain.Characters.DefectionRisk.Settled => "安稳",
+                ThreeKingdom.Domain.Characters.DefectionRisk.Wavering => "浮动",
+                _ => "离心",
+            };
+            string master = s.Faction.HasValue ? Name(s.Faction.Value.Value) : "无主";
+            return $"【{Name(id)}·人生】主君 {master}｜忠诚 {LoyaltyBand(s.Loyalty)}｜{health}｜叛离 {risk}｜记忆 {s.Memories.Count} 桩"
+                 + (s.CaptiveOf.HasValue ? "｜在押" : "");
+        }
+
+        // 忠诚不呈数字（反全知），呈定性带。
+        private static string LoyaltyBand(int loyalty)
+            => loyalty >= 80 ? "笃厚" : loyalty >= 60 ? "安稳" : loyalty >= 40 ? "平平" : loyalty >= 20 ? "疏离" : "离德";
+
+        private string LifeMemo(string id, ThreeKingdom.Domain.Characters.MemoryKind kind, string verb)
+        {
+            var s = LifeOf(id);
+            s = ThreeKingdom.Domain.Characters.GeneralLifeService.Remember(s, kind, new ThreeKingdom.Domain.Characters.CharacterId("char-player-lord"), _rt.CurrentYear, weight: 1);
+            _lifeLedger.Set(s);
+            return $"〔{verb}〕{Name(id)} 铭记于心。\n" + RenderLife(id);
         }
 
         private string Hire(string id, string offer)
