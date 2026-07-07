@@ -39,6 +39,16 @@
 > - ✅ **G GeneralState 运行时人生**（#1/#4，最大）— 基座（ADR-0017：GeneralState 不可变·记忆联动忠诚·伤病·被俘·叛离风险 + GeneralLedger + GeneralLifeSeeding，提交 cff4c2e）**+ 持久化完成**（GeneralLedgerCodec 无损 round-trip + 台账入 CampaignRuntime + 伴生存档槽 slot.generals，绕核心信封首迁移风险；提交 6b26b49）。测试 +10。实测存读档人生态往返正确。剩余渐进步：消费方全接（关系/AI/战斗/军议自动读写 GeneralState）。
 > - ✅ **H 数据外部化**（#5 维护）— GeneralDossierCodec 从权威档案【生成】外部数据（零转写误差）+ 解析 + round-trip 证全 500 员等价 + assets/data/generals.tkdata 入库 + console exportgen。测试 +2。提交 7ff998e。剩余步：运行期权威源切外部文件加载（须 Unity StreamingAssets 装载，★编辑器）。
 > **🏁 全 8 批（A-H）完成，dotnet 1203 绿；3 DLL 同步。武将 7 大问题全部实质解决。**
+> **✅ 后端收尾 I2-I7（除 UI 外全做完，2026-07-07）dotnet 1217 绿**：
+> - I2 演义事件↔GeneralState（GeneralLifeReconciler：斩杀标重创/移籍换主，幂等，接 Advance）提交 86829f6
+> - I3 战斗结算→GeneralState（ConcludeOffensive：参战积劳/败则受创/破城俘敌将）提交 d883861
+> - I4 招揽知晓簿入存档（TalentKnowledgeCodec + 伴生槽 slot.talents，反全知发觉跨存读档）提交 add6e18
+> - I5 任用态入存档 + 接运行期（AppointmentCodec + CampaignRuntime.AppointGeneral + slot.appoint）提交 109e218
+> - I6 外部档案加载器（GeneralDossierLoader 记录→对象 + export/load 保真）提交 fce421a
+> - I7 baseFaction 纪元覆盖（TryEraFaction + 播种黄权/董和/法正/马超/杨仪/姜维，修190小沛史准）提交 21c6094
+> - **I1（副将封顶）诊断为 UI-only**（HudController.AddDeputy 硬编码限1副将），后端正确，按"除UI"范围跳过。
+> **剩余全部为 Unity 表现层（招揽屏/人生屏/任用屏 + I6 权威源切外部文件的 StreamingAssets 装载 + I1 副将UI），均 ★编辑器。**
+
 > **✅ 战斗界面守将呈现（s23b/s23c，编辑器验证 PASS）**：s23b 验证出征战斗全链在 HUD 走通（step4 BLOCK 原为可发现性），并发现战斗UI只显数字兵力不显将领。已修（提交 eaa6705）：ZoneBattleView 我方支队拼主将名 + 守方将领反全知投影（已侦察现真名/否则未探明）+ ZoneBattleController 渲染敌将行 + 标题按模式（修硬编码虎牢关）。s23c 编辑器验证全 PASS（截图坐实：标题=出征·攻城战、我方=主公亲征·atk-front、敌将未侦察=未探明之将/侦察后=高顺[190吕布下邳守将，史实正确]）。测试 +3（1200→1203）。"打高顺守的下邳≠打无名守军"闭环。证据 s23b/s23c-*.md。
 > **✅ Unity smoke-check 通过（s23，2026-07-07）**：computer-use 编辑器验证 DLL 更新未破坏现有场景。步骤1编译0 error/warning · 步骤2 场景生成11屏 · 步骤3 HUD完整渲染0 error · 步骤5 战略图反全知雾正常。步骤4战斗结算 BLOCKED——computer-use 未从 HUD 摸到出征入口（`出征`在HUD为文字提示非按钮），**非回归/非崩溃，全程0 error**；战斗逻辑（守将/副将/守备 B/C/E）由 1200 单测覆盖。证据 s23-unity-smoke-2026-07-07.md + 5 截图（Claude 独立核图）。既有小瑕（非本轮）：`君命: Pending` 未本地化占位符。**结论：A-H 后端更新对 Unity 安全，现有可玩场景无恙。**
 > **诚实边界**：系统覆盖 500 将；深度手工调校先喂 ~30 核心（符合用户"深度优先勿扩 500"）。F/G/H 各为多提交独立工程（G 动存档格式）。Unity 屏（招揽/GeneralState 展示）仍 ★编辑器，C# + console 先做到可验。
