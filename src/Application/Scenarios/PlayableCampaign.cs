@@ -262,8 +262,31 @@ namespace ThreeKingdom.Application.Scenarios
         /// <summary>某武将的出征将领投影（GDD_027 #5）：供 UI/测试查其派生统率/武勇/智略（玩家不见数值，仅作强弱依据）。</summary>
         public static OffensiveGeneral GeneralProjection(CharacterId general) => GeneralOf(general);
 
-        /// <summary>目标敌城的<b>真实</b>守备（结算用真值；玩家所见须经情报投影，反全知）。虎牢关：守军600 × 工事1.2。</summary>
-        public SiegeDefense DefenseOf(CityId city) => new SiegeDefense(600, Frac(12, 10));
+        /// <summary>
+        /// 目标敌城的<b>真实</b>守备（GDD_027 #6：接城池，不再恒 600/1.2）：守军取世界大盘该城真值（邺900/虎牢600/小沛400…），
+        /// 工事随城规模分级（治所坚城 &gt; 边城小邑）。未在大盘（新占/中立）回退 600/1.2。玩家所见须经情报投影（反全知）。
+        /// </summary>
+        public SiegeDefense DefenseOf(CityId city)
+        {
+            int garrison = SeededGarrisonOf(city) ?? 600;
+            return new SiegeDefense(garrison, FortificationFor(garrison));
+        }
+
+        /// <summary>查世界大盘该城初始守军（无＝null）。</summary>
+        private int? SeededGarrisonOf(CityId city)
+        {
+            foreach (SeedFaction w in World)
+                foreach ((CityId c, int g) in w.Cities)
+                    if (c.Value == city.Value) return g;
+            return null;
+        }
+
+        /// <summary>工事系数随守军规模分级（治所坚城工事高；虎牢600→1.2 保持旧值不动平衡）。</summary>
+        private static FixedPoint FortificationFor(int garrison)
+            => garrison >= 900 ? Frac(14, 10)
+             : garrison >= 700 ? Frac(13, 10)
+             : garrison >= 500 ? Frac(12, 10)
+             : Frac(11, 10);
 
         /// <summary>目标进攻路线地形（#3 逐城/地形：由开局指定——虎牢关隘口/下邳坚城/江夏渡口；决定战场正面区与攻坚难度）。</summary>
         public TerrainKind TerrainOf(CityId city)
