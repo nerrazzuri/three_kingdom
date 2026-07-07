@@ -27,6 +27,8 @@ namespace ThreeKingdom.Console
     {
         private readonly ISaveMedium _medium = new MemorySaveMedium();
         private CampaignRuntime _rt;
+        // 全谱人才知晓簿（反全知门；会话内，同发觉门范式待接存档）。
+        private readonly TalentKnowledgeBook _talentBook = new TalentKnowledgeBook();
         public bool Quit { get; private set; }
 
         public GameConsole()
@@ -138,6 +140,8 @@ namespace ThreeKingdom.Console
                     case "affil": return RenderAffiliation(a1);
                     case "croster": return RenderCityRoster(a1);
                     case "pool": return RenderRecruitPool();
+                    case "discover": return Discover(a1, a2);
+                    case "hire": return Hire(a1, a2);
                     case "lore": return RenderLoreEvents();
 
                     // 人心杠杆施计
@@ -399,18 +403,51 @@ namespace ThreeKingdom.Console
 
         private string RenderRecruitPool()
         {
+            // 反全知门（GDD_027 #2）：只呈已发觉人才，不再裸露全部在野将。
             int y = _rt.Scenario.AnchorYear;
-            var pool = GeneralRecruitment.PoolAt(y);
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"【在野可招池】公元{y} · 共 {pool.Count} 员（在野在世·可发觉可招）。例：");
-            int n = 0;
-            foreach (RecruitCandidate c in pool)
+            var known = TalentRecruitment.KnownPool(y, _talentBook);
+            if (known.Count == 0)
+                return $"【已知人才】公元{y}：暂无（未闻名者不可见——反全知）。以 [discover <将id> <scout|council|bond|visit>] 发觉，[hire <将id> <待遇0-9>] 招揽。";
+            var sb = new System.Text.StringBuilder($"【已知人才】公元{y} · {known.Count} 员（未闻名者隐去）：");
+            foreach (KnownTalent t in known)
             {
-                if (n++ >= 12) break;
-                sb.Append($"  {Name(c.GeneralId)}〔{c.DifficultyLabel}〕");
-                if (n % 4 == 0) sb.AppendLine();
+                string stage = t.Discovery switch
+                {
+                    TalentKnowledge.Heard => "听闻",
+                    TalentKnowledge.Located => "已定位",
+                    _ => "已接触",
+                };
+                string status = t.LastOutcome == RecruitOutcome.Joined ? "已入伙"
+                    : t.CanAttempt ? "可招" : (t.LastOutcome == RecruitOutcome.Declined ? "婉拒·可再图" : "不可招");
+                sb.Append($"\n  {Name(t.GeneralId)}〔{t.DifficultyLabel}〕[{stage}·{status}]");
             }
-            return sb.ToString().TrimEnd();
+            return sb.ToString();
+        }
+
+        private string Discover(string id, string channel)
+        {
+            RecruitChannel ch = channel switch
+            {
+                "council" => RecruitChannel.Council,
+                "bond" => RecruitChannel.Bond,
+                "event" => RecruitChannel.Event,
+                "visit" => RecruitChannel.Visit,
+                _ => RecruitChannel.Scout,
+            };
+            var g = new ThreeKingdom.Domain.Characters.CharacterId(id);
+            TalentRecruitment.Reveal(_talentBook, g, ch, _rt.Scenario.AnchorYear);
+            TalentKnowledge d = _talentBook.DiscoveryOf(g);
+            if (d == TalentKnowledge.Unknown) return $"× {Name(id)} 非在野人才（在职/未在世/不存），未纳入招揽视野。";
+            return $"✓ 发觉 {Name(id)}——进度：{d}（{(_talentBook.CanAttempt(g) ? "可招" : "尚不可招，需接触")}）。";
+        }
+
+        private string Hire(string id, string offer)
+        {
+            var g = new ThreeKingdom.Domain.Characters.CharacterId(id);
+            int offerTier = ParseInt(offer, 3);
+            ulong seed = 0x3151F2A9UL ^ ((ulong)(_talentBook.AttemptsOf(g) + 1) * 40503UL);
+            RecruitAttemptResult r = TalentRecruitment.Attempt(_talentBook, g, renownTier: 0, offerTier: offerTier, seed: seed);
+            return r.Accepted ? $"〔招揽〕{r.Message}" : $"× {r.Message}";
         }
 
         private string RenderLoreEvents()

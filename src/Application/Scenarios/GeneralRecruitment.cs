@@ -42,20 +42,32 @@ namespace ThreeKingdom.Application.Scenarios
             return d == null ? "尚可" : Difficulty(d, renownTier);
         }
 
-        // 净成本 = 野心成本(0狼顾3) + 傲物(+1) − 仁德(−1) − 名望档。<=0 易招 / 1..2 尚可 / >=3 难招。
-        private static string Difficulty(GeneralDossier d, int renownTier)
+        /// <summary>招揽难度<b>数值</b>（内部用；招揽结算/状态机消费，不呈玩家）。净成本越高越难。</summary>
+        public static int DifficultyScore(CharacterId general, int renownTier = 0)
+        {
+            GeneralDossier? d = GeneralDossiers.Find(general);
+            return d == null ? 1 : DifficultyScoreOf(d, renownTier);
+        }
+
+        private static int DifficultyScoreOf(GeneralDossier d, int renownTier)
         {
             int ambitionCost = d.Ambition switch
             {
                 Ambition.None => 0,
                 Ambition.Aspiring => 1,
                 Ambition.Grand => 2,
-                _ => 3,   // Wolfish
+                _ => 3,
             };
-            int score = ambitionCost
-                        + (d.HasTag(GeneralTag.Arrogant) ? 1 : 0)
-                        - (d.HasTag(GeneralTag.Benevolent) ? 1 : 0)
-                        - renownTier;
+            return ambitionCost
+                   + (d.HasTag(GeneralTag.Arrogant) ? 1 : 0)
+                   - (d.HasTag(GeneralTag.Benevolent) ? 1 : 0)
+                   - renownTier;
+        }
+
+        // 净成本 = 野心成本(0狼顾3) + 傲物(+1) − 仁德(−1) − 名望档。<=0 易招 / 1..2 尚可 / >=3 难招。
+        private static string Difficulty(GeneralDossier d, int renownTier)
+        {
+            int score = DifficultyScoreOf(d, renownTier);
             if (score <= 0) return "易招";
             if (score <= 2) return "尚可";
             return "难招";
