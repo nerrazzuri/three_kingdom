@@ -94,6 +94,36 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         }
 
         [Test]
+        public void test_battle_aftermath_marks_generals_in_ledger()
+        {
+            // Arrange：强部署破城。
+            _runtime.RequestOffensiveAuthorization();
+            OffensivePlan plan = _runtime.BeginOffensive(PlayableCampaign.EnemyCity);
+            plan.Muster = 900; plan.Supply = 400; plan.Approach = ApproachPlan.FrontalAssault;
+            plan.Composition[TroopType.Cavalry] = 400; plan.Composition[TroopType.Infantry] = 500;
+            plan.Advisor = true;
+            var leadId = plan.Lead.Character;
+
+            // Act
+            _runtime.LaunchOffensive();
+            OffensiveResultView result = FightToEnd();
+
+            // Assert
+            Assert.That(result.Victory, Is.True, "强部署 → 破城。");
+            var lead = _runtime.Generals.Get(leadId);
+            Assert.That(lead, Is.Not.Null, "参战主将入台账。");
+            Assert.That(lead!.Fatigue, Is.GreaterThan(0), "参战 → 积劳（战斗结算写人生态）。");
+
+            // 破城 → 守方主将被俘。
+            var defenders = PlayableCampaign.DefendersFor(PlayableCampaign.EnemyCity, _runtime.Scenario.AnchorYear);
+            if (defenders.Count > 0)
+            {
+                var cap = _runtime.Generals.Get(defenders[0].Character);
+                Assert.That(cap != null && cap.CaptiveOf.HasValue, Is.True, "破城 → 守方主将被俘。");
+            }
+        }
+
+        [Test]
         public void test_bare_plan_loses_but_campaign_continues()
         {
             _runtime.RequestOffensiveAuthorization();

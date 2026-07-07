@@ -688,9 +688,47 @@ namespace ThreeKingdom.Presentation.Runtime
                 view = OffensiveResultView.Defeated();
             }
 
+            // 战斗结算 → 运行时人生态（ADR-0017）：参战积劳、败则主将受创、破城俘守方主将。
+            ApplyBattleAftermathToGenerals(_offensiveBattle.Outcome == ZoneBattleOutcome.AttackerVictory);
+
             _offensiveBattle = null;
             _offensivePlan = null;
             return view;
+        }
+
+        /// <summary>出征战后将领际遇（ADR-0017）：我方参战将领积劳（败则主将受创）；破城俘守方主将。</summary>
+        private void ApplyBattleAftermathToGenerals(bool victory)
+        {
+            if (_offensivePlan == null) return;
+            int y = _scenario.AnchorYear;
+
+            // 我方主将：积劳 +15；败则受创一档。
+            var leadId = _offensivePlan.Lead.Character;
+            var lead = _generals.GetOrSeed(leadId, x => ThreeKingdom.Application.Scenarios.GeneralLifeSeeding.Seed(x, y));
+            lead = ThreeKingdom.Domain.Characters.GeneralLifeService.Tire(lead, 15);
+            if (!victory) lead = ThreeKingdom.Domain.Characters.GeneralLifeService.Wound(lead);
+            _generals.Set(lead);
+
+            // 副将：积劳。
+            foreach (var dep in _offensivePlan.Deputies)
+            {
+                var ds = _generals.GetOrSeed(dep.Character, x => ThreeKingdom.Application.Scenarios.GeneralLifeSeeding.Seed(x, y));
+                _generals.Set(ThreeKingdom.Domain.Characters.GeneralLifeService.Tire(ds, 15));
+            }
+
+            // 破城：守方主将被俘于玩家势力。
+            if (victory)
+            {
+                var ov = ThreeKingdom.Application.Scenarios.LoreEvents.OverridesAt(
+                    new ThreeKingdom.Application.Scenarios.LoreContext(_scenario.AnchorYear, CurrentYear, _scenario.PlayerFaction));
+                var defenders = PlayableCampaign.DefendersFor(_offensiveTarget, y, ov);
+                if (defenders.Count > 0)
+                {
+                    var capId = defenders[0].Character;
+                    var cs = _generals.GetOrSeed(capId, x => ThreeKingdom.Application.Scenarios.GeneralLifeSeeding.Seed(x, y));
+                    _generals.Set(ThreeKingdom.Domain.Characters.GeneralLifeService.Capture(cs, _scenario.PlayerFaction));
+                }
+            }
         }
 
         /// <summary>挂 AI 代打出征至终局并结算后果（玩家可选亲自打或代打；代打不保证赢，胜负由六维准备/对阵定）。</summary>
