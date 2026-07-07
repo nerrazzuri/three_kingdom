@@ -993,7 +993,31 @@ namespace ThreeKingdom.Presentation.Runtime
                 .Append(_scenario.OffensiveSeed).Append(Session.CurrentTime.AbsoluteIndex).Append(_contentionSteps++)
                 .ToHash().Value;
             _prevContention = Contend;   // E4.1 趋势基准：步进前快照（供"刚失城→恢复"判定）
-            _service.StepRivalContention(Session, Contend, _scenario.PlayerFaction, seed, _scenario.ContentionConfig);
+            var before = Contend;
+            // E4.2 战略化推进：意图驱动兼并 + 对玩家施压（世界反击玩家）。
+            var after = _service.StepRivalContentionStrategic(
+                Session, before, _scenario.PlayerFaction, _prevContention, _wrongedByPlayer, seed, _scenario.ContentionConfig);
+            _lastContentionNotice = DiffNotice(before, after);
+        }
+
+        private string _lastContentionNotice = string.Empty;
+        /// <summary>上一战略步的天下变动通报（可解释反馈；空=无变动）。</summary>
+        public string LastContentionNotice => _lastContentionNotice;
+
+        /// <summary>争霸前后差异 → 可解释通报（谁夺谁城；夺玩家城则示警）。</summary>
+        private string DiffNotice(ThreeKingdom.Domain.Contention.ContentionState before, ThreeKingdom.Domain.Contention.ContentionState after)
+        {
+            FactionId player = _scenario.PlayerFaction;
+            string gainer = null!, loser = null!;
+            foreach (var p in after.Powers)
+            {
+                int d = after.CitiesOf(p.Faction) - before.CitiesOf(p.Faction);
+                if (d > 0) gainer = p.Faction.Value;
+                else if (d < 0) loser = p.Faction.Value;
+            }
+            if (gainer == null || loser == null) return string.Empty;
+            string g = DisplayNames.Of(gainer), l = DisplayNames.Of(loser);
+            return loser == player.Value ? $"⚠ {g} 乘势夺你一城！（世界在反击）" : $"{g} 攻取 {l} 一城。";
         }
 
         // --- 战略外交（GDD M11 / epic-024）：外交立场约束战争；缔约；背约代价 ---

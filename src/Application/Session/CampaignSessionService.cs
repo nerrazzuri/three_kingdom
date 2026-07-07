@@ -829,6 +829,19 @@ namespace ThreeKingdom.Application.Session
             return next;
         }
 
+        /// <summary>战略化推进（E4.2）：意图驱动兼并 + 对玩家施压。传入趋势基准 prev 与被夺方集 wronged。</summary>
+        public ThreeKingdom.Domain.Contention.ContentionState StepRivalContentionStrategic(
+            CampaignSession session, ThreeKingdom.Domain.Contention.ContentionState current, FactionId player,
+            ThreeKingdom.Domain.Contention.ContentionState? prev, System.Collections.Generic.IReadOnlyCollection<string> wronged,
+            ulong seed, ThreeKingdom.Domain.Contention.ContentionConfig config)
+        {
+            if (session is null) throw new ArgumentNullException(nameof(session));
+            if (current is null) throw new ArgumentNullException(nameof(current));
+            ThreeKingdom.Domain.Contention.ContentionState next = _rivalExpansion.StepStrategic(current, player, prev, wronged, seed, config);
+            session.SetContention(next);
+            return next;
+        }
+
         /// <summary>争霸编排（GDD_017）：玩家占城 → 领土 +1、被夺方 −1，持久化到会话并返回新态。</summary>
         public ThreeKingdom.Domain.Contention.ContentionState RecordPlayerConquest(
             CampaignSession session, ThreeKingdom.Domain.Contention.ContentionState current, FactionId player, FactionId? loser)

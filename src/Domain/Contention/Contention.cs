@@ -135,5 +135,59 @@ namespace ThreeKingdom.Domain.Contention
                 .WithCities(weakest.Faction, weakest.Cities - 1)
                 .WithCities(strongest.Faction, strongest.Cities + 1);
         }
+
+        /// <summary>
+        /// 战略化推进（ADR-0013 E4.2）：<b>意图驱动</b>——只有侵略性势力（扩张/趁火/报复）出手；且强势报复/扩张者在玩家较弱时
+        /// 可<b>夺玩家一城</b>（世界反击玩家·多线压力），否则夺最弱非玩家。种子化确定性、gap 概率。纯函数。
+        /// </summary>
+        public ContentionState StepStrategic(
+            ContentionState state, FactionId player, ContentionState? prev,
+            IReadOnlyCollection<string> wronged, ulong seed, ContentionConfig config)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+
+            PowerStanding? aggressor = null;
+            StrategicIntent aggIntent = StrategicIntent.Defense;
+            foreach (PowerStanding p in state.Powers)
+            {
+                if (p.Faction == player || !p.Alive) continue;
+                bool w = wronged != null && p.Faction.Value != null && Has(wronged, p.Faction.Value);
+                StrategicIntent intent = FactionStrategy.Assess(state, p.Faction, player, prev, w);
+                if (intent != StrategicIntent.Expansion && intent != StrategicIntent.Opportunist && intent != StrategicIntent.Revenge) continue;
+                if (aggressor == null || p.Cities > aggressor.Cities) { aggressor = p; aggIntent = intent; }
+            }
+            if (aggressor == null) return state;   // 无势力有侵略意图 → 天下暂安
+
+            int playerCities = state.CitiesOf(player);
+            // 战略压力可夺玩家城，但<b>永不夺其最后一城</b>（>1）——灭国须真刀真枪攻城，非抽象骰子（避免磨死玩家）。
+            bool pressurePlayer = playerCities > 1
+                && aggressor.Cities > playerCities
+                && (aggIntent == StrategicIntent.Revenge || aggressor.Cities >= playerCities * 2);
+
+            PowerStanding? target = null;
+            if (pressurePlayer) target = new PowerStanding(player, playerCities);
+            else
+                foreach (PowerStanding p in state.Powers)
+                {
+                    if (p.Faction == player || p.Faction == aggressor.Faction || !p.Alive) continue;
+                    if (target == null || p.Cities < target.Cities) target = p;
+                }
+            if (target == null || target.Cities <= 0 || target.Cities >= aggressor.Cities) return state;
+
+            int gap = aggressor.Cities - target.Cities;
+            int sum = aggressor.Cities + target.Cities;
+            FixedPoint p2 = (FixedPoint.FromFraction(gap, sum) * config.AnnexWeight).Clamp(FixedPoint.Zero, FixedPoint.One);
+            if (!(new DeterministicRandom(seed).NextUnit() < p2)) return state;
+
+            return state
+                .WithCities(target.Faction, target.Cities - 1)
+                .WithCities(aggressor.Faction, aggressor.Cities + 1);
+        }
+
+        private static bool Has(IReadOnlyCollection<string> set, string v)
+        {
+            foreach (string s in set) if (s == v) return true;
+            return false;
+        }
     }
 }
