@@ -124,6 +124,27 @@ namespace ThreeKingdom.Domain.Tests.PresentationRuntime
         }
 
         [Test]
+        public void test_conquest_turns_loser_hostile_to_player()
+        {
+            // Arrange：强部署破敌城（袁术·虎牢关）。
+            _runtime.RequestOffensiveAuthorization();
+            OffensivePlan plan = _runtime.BeginOffensive(PlayableCampaign.EnemyCity);
+            plan.Muster = 900; plan.Supply = 400; plan.Approach = ApproachPlan.FrontalAssault;
+            plan.Composition[TroopType.Cavalry] = 400; plan.Composition[TroopType.Infantry] = 500;
+            plan.Advisor = true;
+            _runtime.LaunchOffensive();
+            OffensiveResultView result = FightToEnd();
+            Assert.That(result.Victory, Is.True, "强部署 → 破城。");
+
+            // Assert：E5 外交 AI——被夺方（袁术）对玩家转"敌意"。
+            var stances = _runtime.PlayerStances();
+            ThreeKingdom.Domain.Contention.PlayerStance? enemyStance = null;
+            foreach (var v in stances) if (v.Faction.Equals(PlayableCampaign.Enemy)) enemyStance = v.Stance;
+            Assert.That(enemyStance, Is.EqualTo(ThreeKingdom.Domain.Contention.PlayerStance.Hostile),
+                "破敌城 → 被夺方图报复，对玩家转敌意（E5 占城转敌意分支）。");
+        }
+
+        [Test]
         public void test_bare_plan_loses_but_campaign_continues()
         {
             _runtime.RequestOffensiveAuthorization();
