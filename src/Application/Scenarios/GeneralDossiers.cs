@@ -282,7 +282,6 @@ namespace ThreeKingdom.Application.Scenarios
                 ["char-jushou"] = "city-ye", ["char-shenpei"] = "city-ye", ["char-gaolan"] = "city-ye",
                 ["char-dongzhuo"] = "city-luoyang", ["char-liru"] = "city-luoyang",       // 董卓系·洛阳
                 ["char-chengpu"] = "city-jianye", ["char-handang"] = "city-jianye", ["char-zhoutai"] = "city-jianye",
-                ["char-jiling"] = "city-runan",                                           // 袁术·汝南
                 ["char-yanyan"] = "city-jiangzhou",                                       // 刘璋·江州
                 ["char-huangzu"] = "city-jiangxia", ["char-caimao"] = "city-jiangling",   // 刘表
                 ["char-zangba"] = "city-xuzhou",                                          // 吕布·徐州
