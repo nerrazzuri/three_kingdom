@@ -141,6 +141,8 @@ namespace ThreeKingdom.Console
                     case "discover": return Discover(a1, a2);
                     case "hire": return Hire(a1, a2);
                     case "exportgen": System.IO.File.WriteAllText(a1, GeneralDossierCodec.Export()); return $"✓ 导出 {GeneralDossiers.All.Count} 员档案 → {a1}";
+                    case "appoint": return Appoint(a1, a2);
+                    case "unappoint": return Unappoint(a1);
                     case "life": return RenderLife(a1);
                     case "reward": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Rewarded, "重赏");
                     case "betray": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Betrayed, "背弃");
@@ -441,6 +443,25 @@ namespace ThreeKingdom.Console
             TalentKnowledge d = _rt.Talents.DiscoveryOf(g);
             if (d == TalentKnowledge.Unknown) return $"× {Name(id)} 非在野人才（在职/未在世/不存），未纳入招揽视野。";
             return $"✓ 发觉 {Name(id)}——进度：{d}（{(_rt.Talents.CanAttempt(g) ? "可招" : "尚不可招，需接触")}）。";
+        }
+
+        private string Appoint(string cityId, string generalId)
+        {
+            var r = _rt.AppointGeneral(new ThreeKingdom.Domain.City.CityId(cityId), new ThreeKingdom.Domain.Characters.CharacterId(generalId));
+            return r switch
+            {
+                ThreeKingdom.Domain.Appointment.AppointResult.Ok => $"✓ 调拨 {Name(generalId)} 入 {Name(cityId)}（任用簿，存档持久）。",
+                ThreeKingdom.Domain.Appointment.AppointResult.CityFull => $"× {Name(cityId)} 城册已满（≤{ThreeKingdom.Application.Scenarios.GeneralAffiliations.RosterCap}），须先撤出。",
+                ThreeKingdom.Domain.Appointment.AppointResult.AlreadyThere => $"× {Name(generalId)} 已在 {Name(cityId)}。",
+                _ => "× 调拨失败（非法）。",
+            };
+        }
+
+        private string Unappoint(string generalId)
+        {
+            var r = _rt.RemoveAppointment(new ThreeKingdom.Domain.Characters.CharacterId(generalId));
+            return r == ThreeKingdom.Domain.Appointment.AppointResult.Ok
+                ? $"✓ 撤 {Name(generalId)} 出任用。" : $"× {Name(generalId)} 未在任用簿。";
         }
 
         private ThreeKingdom.Domain.Characters.GeneralState LifeOf(string id)

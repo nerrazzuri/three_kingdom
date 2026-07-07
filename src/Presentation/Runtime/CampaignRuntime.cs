@@ -63,6 +63,30 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>本局人才知晓簿（招揽消费方读写；随存读档持久化）。</summary>
         public ThreeKingdom.Application.Scenarios.TalentKnowledgeBook Talents => _talents;
 
+        /// <summary>太守任用簿（玩家把已招武将调拨入城册；随存读档持久化）。</summary>
+        private ThreeKingdom.Domain.Appointment.AppointmentBook _appointments =
+            ThreeKingdom.Domain.Appointment.AppointmentBook.Empty(ThreeKingdom.Application.Scenarios.GeneralAffiliations.RosterCap);
+        private readonly ThreeKingdom.Domain.Persistence.AppointmentCodec _appointmentCodec = new ThreeKingdom.Domain.Persistence.AppointmentCodec();
+        private string AppointmentsSlot => _slot + ".appoint";
+        /// <summary>本局任用簿（只读投影）。</summary>
+        public ThreeKingdom.Domain.Appointment.AppointmentBook Appointments => _appointments;
+
+        /// <summary>调拨某将入某城（GDD_027 P3；满员/已在拒）。返回结果码。</summary>
+        public ThreeKingdom.Domain.Appointment.AppointResult AppointGeneral(ThreeKingdom.Domain.City.CityId city, ThreeKingdom.Domain.Characters.CharacterId general)
+        {
+            var (result, book) = _appointments.Assign(city, general);
+            if (result == ThreeKingdom.Domain.Appointment.AppointResult.Ok) _appointments = book;
+            return result;
+        }
+
+        /// <summary>撤某将出其所在城。返回结果码。</summary>
+        public ThreeKingdom.Domain.Appointment.AppointResult RemoveAppointment(ThreeKingdom.Domain.Characters.CharacterId general)
+        {
+            var (result, book) = _appointments.Remove(general);
+            if (result == ThreeKingdom.Domain.Appointment.AppointResult.Ok) _appointments = book;
+            return result;
+        }
+
         /// <summary>本局武将人生台账（消费方/表现层读写；随会话存读档持久化）。</summary>
         public ThreeKingdom.Domain.Characters.GeneralLedger Generals => _generals;
 
@@ -1068,8 +1092,11 @@ namespace ThreeKingdom.Presentation.Runtime
                 string tTmp = TalentsSlot + ".tmp";
                 _medium.Write(tTmp, ThreeKingdom.Application.Scenarios.TalentKnowledgeCodec.Serialize(_talents));
                 _medium.Move(tTmp, TalentsSlot);
+                string aTmp = AppointmentsSlot + ".tmp";
+                _medium.Write(aTmp, _appointmentCodec.Serialize(_appointments));
+                _medium.Move(aTmp, AppointmentsSlot);
             }
-            catch (Exception) { /* 台账/知晓簿为增量态，缺失退化为空，不损主存档一致性 */ }
+            catch (Exception) { /* 台账/知晓簿/任用簿为增量态，缺失退化为空，不损主存档一致性 */ }
 
             return true;
         }
@@ -1107,6 +1134,7 @@ namespace ThreeKingdom.Presentation.Runtime
                 // 恢复武将人生台账 + 人才知晓簿（伴生槽；无此槽的旧存档 → 空，向后兼容）。
                 _generals = _generalsCodec.Deserialize(_medium.Read(GeneralsSlot));
                 _talents = ThreeKingdom.Application.Scenarios.TalentKnowledgeCodec.Deserialize(_medium.Read(TalentsSlot));
+                _appointments = _appointmentCodec.Deserialize(_medium.Read(AppointmentsSlot));
                 reason = string.Empty;
                 return true;
             }
