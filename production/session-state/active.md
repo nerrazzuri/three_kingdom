@@ -36,9 +36,9 @@
 > - ✅ **D 三维细化**（#5）— GeneralOf 统率/武勇/智略从战阵档/谋略档+标签确定性派生（吕布高武低智/诸葛反之），围绕旧均值散开无平衡回归。+GeneralProjection 公开。测试 +3。提交 740f7e4。
 > - ✅ **E 守备接城池**（#6）— DefenseOf 取世界大盘该城真实守军（邺900/虎牢600/小沛400）+ 工事分级（虎牢600→1.2 不动平衡）。测试 +3。提交 6b405cf。
 > - ✅ **F 招揽状态机 + 反全知门**（#2）— TalentKnowledge 阶梯（未闻→听闻→定位→接触）+ RecruitChannel + TalentKnowledgeBook + KnownPool（只呈已闻名，替代裸 PoolAt）+ Attempt 确定性结算（入伙/婉拒/结怨/投敌）。console `pool` 改走门（堵 78 员泄漏）+ discover/hire。测试 +6。提交 5237707。诚实边界：知晓簿会话内待接存档；与旧 3-原型 TalentService 并存待统一。
-> - ⏳ **G GeneralState 运行时人生**（#1/#4，最大）— 待：持久化 per-general 态（主君/位置/官职/伤病/疲劳/忠诚/名声/任务/被俘/记忆）+ 存档迁移 + 喂关系/AI。**需 ADR。**
-> - ⏳ **H 数据外部化**（#5 维护，用户排序最低）— GeneralDossiers 巨型硬编码 → 外部数据 + 加载器承接校验。
-> **进度：A-F 已落库（6/8），dotnet 1188 绿。G/H 为剩余两大工程。**
+> - 🟡 **G GeneralState 运行时人生**（#1/#4，最大）**基座完成**（ADR-0017 Accepted，提交 cff4c2e）— GeneralState（主君/驻城/忠诚/健康/疲劳/被俘/记忆·不可变）+ GeneralLifeService（记忆联动忠诚·伤病·被俘·叛离风险）+ GeneralLedger + GeneralLifeSeeding（气质→初忠诚）+ console life/reward/betray 演示 + 测试 +7。**剩余步（未做）**：① 存档 DTO/迁移（权威可变态须显式入档，风险最高，须单独谨慎一步）② 消费方全接（关系/AI/战斗/军议/城册读 GeneralState）。
+> - ⏳ **H 数据外部化**（#5 维护，用户排序最低）— GeneralDossiers 巨型硬编码 → 外部数据 + 加载器承接校验。大迁移、风险高。
+> **进度：A-F 全完成 + G 基座完成（6.5/8），dotnet 1195 绿。剩：G 持久化/全接 + H 外部化——两项最高风险/最低优先，宜各作专注一遍，不在超长回合末仓促改存档格式。**
 > **诚实边界**：系统覆盖 500 将；深度手工调校先喂 ~30 核心（符合用户"深度优先勿扩 500"）。F/G/H 各为多提交独立工程（G 动存档格式）。Unity 屏（招揽/GeneralState 展示）仍 ★编辑器，C# + console 先做到可验。
 
 ## ✅ 完成（2026-07-07 续22b）— 演义事件运行期透传 + 触发时机
