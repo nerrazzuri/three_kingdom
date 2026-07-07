@@ -409,7 +409,7 @@ namespace ThreeKingdom.Console
         {
             // 反全知门（GDD_027 #2）：只呈已发觉人才，不再裸露全部在野将。
             int y = _rt.Scenario.AnchorYear;
-            var known = TalentRecruitment.KnownPool(y, _rt.Talents);
+            var known = _rt.KnownTalents();
             if (known.Count == 0)
                 return $"【已知人才】公元{y}：暂无（未闻名者不可见——反全知）。以 [discover <将id> <scout|council|bond|visit>] 发觉，[hire <将id> <待遇0-9>] 招揽。";
             var sb = new System.Text.StringBuilder($"【已知人才】公元{y} · {known.Count} 员（未闻名者隐去）：");
@@ -439,7 +439,7 @@ namespace ThreeKingdom.Console
                 _ => RecruitChannel.Scout,
             };
             var g = new ThreeKingdom.Domain.Characters.CharacterId(id);
-            TalentRecruitment.Reveal(_rt.Talents, g, ch, _rt.Scenario.AnchorYear);
+            _rt.DiscoverTalent(g, ch);
             TalentKnowledge d = _rt.Talents.DiscoveryOf(g);
             if (d == TalentKnowledge.Unknown) return $"× {Name(id)} 非在野人才（在职/未在世/不存），未纳入招揽视野。";
             return $"✓ 发觉 {Name(id)}——进度：{d}（{(_rt.Talents.CanAttempt(g) ? "可招" : "尚不可招，需接触")}）。";
@@ -513,7 +513,7 @@ namespace ThreeKingdom.Console
             var g = new ThreeKingdom.Domain.Characters.CharacterId(id);
             int offerTier = ParseInt(offer, 3);
             ulong seed = 0x3151F2A9UL ^ ((ulong)(_rt.Talents.AttemptsOf(g) + 1) * 40503UL);
-            RecruitAttemptResult r = TalentRecruitment.Attempt(_rt.Talents, g, renownTier: 0, offerTier: offerTier, seed: seed);
+            RecruitAttemptResult r = _rt.RecruitGeneral(g, offerTier, seed);
             return r.Accepted ? $"〔招揽〕{r.Message}" : $"× {r.Message}";
         }
 

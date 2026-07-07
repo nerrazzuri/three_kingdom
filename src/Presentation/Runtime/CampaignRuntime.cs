@@ -63,6 +63,37 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>本局人才知晓簿（招揽消费方读写；随存读档持久化）。</summary>
         public ThreeKingdom.Application.Scenarios.TalentKnowledgeBook Talents => _talents;
 
+        // ── 全谱招揽（GDD_027 #2，运行期权威路径）：反全知知晓门 + 确定性结算，取代旧 3-原型 TalentService（后者留兼容） ──
+
+        /// <summary>已闻名可招人才（反全知门：未闻名不呈）。玩家可见招揽列表来源。</summary>
+        public System.Collections.Generic.IReadOnlyList<ThreeKingdom.Application.Scenarios.KnownTalent> KnownTalents()
+            => ThreeKingdom.Application.Scenarios.TalentRecruitment.KnownPool(_scenario.AnchorYear, _talents, RenownTier());
+
+        /// <summary>经某渠道发觉某在野人才（侦察/军师/羁绊/事件/访贤）。</summary>
+        public void DiscoverTalent(ThreeKingdom.Domain.Characters.CharacterId general, ThreeKingdom.Application.Scenarios.RecruitChannel channel)
+            => ThreeKingdom.Application.Scenarios.TalentRecruitment.Reveal(_talents, general, channel, _scenario.AnchorYear);
+
+        /// <summary>发起招揽（须已接触）。成功入伙 → 归玩家麾下（人生态铸入并事奉玩家）。</summary>
+        public ThreeKingdom.Application.Scenarios.RecruitAttemptResult RecruitGeneral(ThreeKingdom.Domain.Characters.CharacterId general, int offerTier, ulong seed)
+        {
+            var r = ThreeKingdom.Application.Scenarios.TalentRecruitment.Attempt(_talents, general, RenownTier(), offerTier, seed);
+            if (r.Outcome == ThreeKingdom.Application.Scenarios.RecruitOutcome.Joined)
+            {
+                var s = _generals.GetOrSeed(general, x => ThreeKingdom.Application.Scenarios.GeneralLifeSeeding.Seed(x, _scenario.AnchorYear));
+                _generals.Set(ThreeKingdom.Domain.Characters.GeneralLifeService.Reassign(
+                    s, _scenario.PlayerFaction, null, ThreeKingdom.Application.Scenarios.GeneralLifeSeeding.InitialLoyalty(general)));
+            }
+            return r;
+        }
+
+        /// <summary>名望档（招揽难度减项）：由生涯名望粗分，clamp 0..3。</summary>
+        private int RenownTier()
+        {
+            int renown = CareerView().Renown;
+            int tier = renown / 20;
+            return tier < 0 ? 0 : (tier > 3 ? 3 : tier);
+        }
+
         /// <summary>太守任用簿（玩家把已招武将调拨入城册；随存读档持久化）。</summary>
         private ThreeKingdom.Domain.Appointment.AppointmentBook _appointments =
             ThreeKingdom.Domain.Appointment.AppointmentBook.Empty(ThreeKingdom.Application.Scenarios.GeneralAffiliations.RosterCap);
@@ -1017,6 +1048,8 @@ namespace ThreeKingdom.Presentation.Runtime
 
         // --- 人才招揽（GDD_020）：出现随历史 · 知晓靠情报（反全知）· 入伙靠条件+种子判定 · 喂给战斗/生涯 ---
 
+        // 【兼容层】旧 3-原型招揽（talent-wolong/xiaojiang/nengli）：HUD 尚走此路。运行期新权威路径为
+        // KnownTalents/DiscoverTalent/RecruitGeneral（全谱反全知）。HUD 切到新路径后此可废弃（GDD_027 #2 统一）。
         private readonly TalentService _talentService = new TalentService();
         private ThreeKingdom.Domain.Talent.TalentState _talent = ThreeKingdom.Domain.Talent.TalentState.Empty;
 
