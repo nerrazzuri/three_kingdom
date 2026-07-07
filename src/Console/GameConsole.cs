@@ -147,6 +147,7 @@ namespace ThreeKingdom.Console
                     case "reward": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Rewarded, "重赏");
                     case "betray": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Betrayed, "背弃");
                     case "strategy": return RenderStrategies();
+                    case "assignai": return RenderAssignment(a1);
                     case "lore": return RenderLoreEvents();
 
                     // 人心杠杆施计
@@ -516,6 +517,13 @@ namespace ThreeKingdom.Console
             ulong seed = 0x3151F2A9UL ^ ((ulong)(_rt.Talents.AttemptsOf(g) + 1) * 40503UL);
             RecruitAttemptResult r = _rt.RecruitGeneral(g, offerTier, seed);
             return r.Accepted ? $"〔招揽〕{r.Message}" : $"× {r.Message}";
+        }
+
+        private string RenderAssignment(string cityId)
+        {
+            var a = GeneralAssignmentService.Recommend(new ThreeKingdom.Domain.City.CityId(cityId), _rt.Scenario.AnchorYear, CurrentOverrides());
+            string N(ThreeKingdom.Domain.Characters.CharacterId? g) => g.HasValue ? Name(g.Value.Value) : "（无）";
+            return $"【{Name(cityId)}·任命荐】守将 {N(a.DefenderLead)}｜军师 {N(a.Advisor)}｜内政 {N(a.Governor)}｜先锋 {N(a.Vanguard)}";
         }
 
         private string RenderStrategies()
