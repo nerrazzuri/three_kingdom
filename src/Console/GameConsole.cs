@@ -450,9 +450,13 @@ namespace ThreeKingdom.Console
             var r = _rt.AppointGeneral(new ThreeKingdom.Domain.City.CityId(cityId), new ThreeKingdom.Domain.Characters.CharacterId(generalId));
             return r switch
             {
-                ThreeKingdom.Domain.Appointment.AppointResult.Ok => $"✓ 调拨 {Name(generalId)} 入 {Name(cityId)}（任用簿，存档持久）。",
-                ThreeKingdom.Domain.Appointment.AppointResult.CityFull => $"× {Name(cityId)} 城册已满（≤{ThreeKingdom.Application.Scenarios.GeneralAffiliations.RosterCap}），须先撤出。",
-                ThreeKingdom.Domain.Appointment.AppointResult.AlreadyThere => $"× {Name(generalId)} 已在 {Name(cityId)}。",
+                ThreeKingdom.Application.Scenarios.AppointGate.Ok => $"✓ 调拨 {Name(generalId)} 入 {Name(cityId)}（任用簿，存档持久）。",
+                ThreeKingdom.Application.Scenarios.AppointGate.NotYours => $"× {Name(generalId)} 非你麾下（须事奉本势力或已招揽）。",
+                ThreeKingdom.Application.Scenarios.AppointGate.Captive => $"× {Name(generalId)} 在押，不可任用。",
+                ThreeKingdom.Application.Scenarios.AppointGate.Incapacitated => $"× {Name(generalId)} 重创，须将养。",
+                ThreeKingdom.Application.Scenarios.AppointGate.Absent => $"× {Name(generalId)} 不在世间（未及冠/已故）。",
+                ThreeKingdom.Application.Scenarios.AppointGate.CityFull => $"× {Name(cityId)} 城册已满（≤{ThreeKingdom.Application.Scenarios.GeneralAffiliations.RosterCap}），须先撤出。",
+                ThreeKingdom.Application.Scenarios.AppointGate.AlreadyThere => $"× {Name(generalId)} 已在 {Name(cityId)}。",
                 _ => "× 调拨失败（非法）。",
             };
         }

@@ -71,12 +71,13 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>本局任用簿（只读投影）。</summary>
         public ThreeKingdom.Domain.Appointment.AppointmentBook Appointments => _appointments;
 
-        /// <summary>调拨某将入某城（GDD_027 P3；满员/已在拒）。返回结果码。</summary>
-        public ThreeKingdom.Domain.Appointment.AppointResult AppointGeneral(ThreeKingdom.Domain.City.CityId city, ThreeKingdom.Domain.Characters.CharacterId general)
+        /// <summary>调拨某将入某城（GDD_027 P3）：经合法性门（在世/非俘/非重创/属玩家麾下）+ 城册约束。返回门结果。</summary>
+        public ThreeKingdom.Application.Scenarios.AppointGate AppointGeneral(ThreeKingdom.Domain.City.CityId city, ThreeKingdom.Domain.Characters.CharacterId general)
         {
-            var (result, book) = _appointments.Assign(city, general);
-            if (result == ThreeKingdom.Domain.Appointment.AppointResult.Ok) _appointments = book;
-            return result;
+            var (gate, book) = ThreeKingdom.Application.Scenarios.AppointmentService.Assign(
+                _appointments, city, general, _scenario.AnchorYear, _scenario.PlayerFaction, _generals, _talents);
+            if (gate == ThreeKingdom.Application.Scenarios.AppointGate.Ok) _appointments = book;
+            return gate;
         }
 
         /// <summary>撤某将出其所在城。返回结果码。</summary>
