@@ -4,7 +4,7 @@
     <ui:VisualElement name="zb-root" class="hud-root">
         <ui:Style src="Hud.uss" />
         <ui:VisualElement name="zb-header" class="hud-header">
-            <ui:Label name="zb-title" text="出征·虎牢关 — 战场区域" class="hud-objective" />
+            <ui:Label name="zb-title" text="战场区域" class="hud-objective" />
             <ui:Label name="zb-round" class="hud-note" />
             <ui:Label name="zb-outcome" class="hud-banner" />
             <ui:Button name="zb-resolve" text="亲自打 · 推进回合（敌军亦动）" />

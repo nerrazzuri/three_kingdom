@@ -174,6 +174,6 @@ namespace ThreeKingdom.Presentation.Runtime
         }
 
         /// <summary>当前战斗展示投影（各区态势 + 上回合涌现 + 终局）。</summary>
-        public ZoneBattleView View() => ZoneBattleView.FromState(_state, _outcome, _lastEmergences);
+        public ZoneBattleView View() => ZoneBattleView.FromState(_state, _outcome, _lastEmergences, _context.AttackerScouted);
     }
 }

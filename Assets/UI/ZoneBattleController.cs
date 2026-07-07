@@ -35,6 +35,13 @@ namespace ThreeKingdom.Unity.UI
             ZoneBattleView view = ZoneBattleSession.View();
 
             SetLabel(root, "zb-round", $"第 {view.Round} / {view.MaxRounds} 回合");
+            // 标题按战斗模式（修此前硬编码「虎牢关」与实际目标不符）。
+            SetLabel(root, "zb-title", ZoneBattleSession.Current switch
+            {
+                ZoneBattleSession.Mode.Offensive => "出征 · 攻城战 — 战场区域",
+                ZoneBattleSession.Mode.Defense => "守城迎敌 — 战场区域",
+                _ => "演武 — 战场区域",
+            });
             SetLabel(root, "zb-outcome", view.IsOver ? view.OutcomeLabel : string.Empty);
             SetLabel(root, "zb-result", view.IsOver ? "点「结算战果并返回」收兵。" : string.Empty);
 
@@ -50,6 +57,8 @@ namespace ThreeKingdom.Unity.UI
                 {
                     string star = z.IsObjective ? "★" : "　";
                     zones.Add(new Label($"{star}{z.ZoneLabel}　我 {z.OwnStrength} ｜ 敌 {z.EnemyStrength}"));
+                    // 守将进战斗（GDD_027 B/C）：敌方将领（反全知——已侦察现真名，否则未探明）。
+                    foreach (string cmd in z.EnemyCommanders) zones.Add(new Label($"　　敌将：{cmd}"));
                     foreach (string c in z.FormedConditions) zones.Add(new Label($"　　✦ {c}"));
                     foreach (string d in z.OwnDetachments) zones.Add(new Label($"　　· {d}"));
                 }

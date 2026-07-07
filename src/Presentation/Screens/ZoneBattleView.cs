@@ -46,13 +46,16 @@ namespace ThreeKingdom.Presentation.Screens
         public int OwnStrength { get; }
         public int EnemyStrength { get; }
         public IReadOnlyList<string> FormedConditions { get; }
-        /// <summary>我方在该区的支队（id + 一句摘要，供选择调动）。</summary>
+        /// <summary>我方在该区的支队（将领·id + 一句摘要，供选择调动）。</summary>
         public IReadOnlyList<string> OwnDetachments { get; }
+        /// <summary>该区敌方将领（GDD_027 #3/#4 守将进战斗，反全知：已侦察目标现真名，否则「未探明之将」）。</summary>
+        public IReadOnlyList<string> EnemyCommanders { get; }
         public bool IsObjective { get; }
 
         internal ZoneLineView(
             string zoneId, int ownStrength, int enemyStrength,
-            IReadOnlyList<string> formed, IReadOnlyList<string> ownDetachments, bool isObjective)
+            IReadOnlyList<string> formed, IReadOnlyList<string> ownDetachments,
+            IReadOnlyList<string> enemyCommanders, bool isObjective)
         {
             ZoneId = zoneId;
             ZoneLabel = ZoneBattleText.Zone(zoneId);
@@ -60,6 +63,7 @@ namespace ThreeKingdom.Presentation.Screens
             EnemyStrength = enemyStrength;
             FormedConditions = formed;
             OwnDetachments = ownDetachments;
+            EnemyCommanders = enemyCommanders;
             IsObjective = isObjective;
         }
     }
@@ -112,8 +116,9 @@ namespace ThreeKingdom.Presentation.Screens
             OutcomeLabel = ZoneBattleText.Outcome(outcome, playerIsAttacker);
         }
 
-        /// <summary>由战斗态构造（玩家视角：己方=PlayerSide）。</summary>
-        public static ZoneBattleView FromState(ZoneBattleState state, ZoneBattleOutcome outcome, IReadOnlyList<string>? lastEmergences)
+        /// <summary>由战斗态构造（玩家视角：己方=PlayerSide）。<paramref name="defendersRevealed"/>=已侦察目标 → 敌将现真名，否则「未探明之将」（反全知）。</summary>
+        public static ZoneBattleView FromState(
+            ZoneBattleState state, ZoneBattleOutcome outcome, IReadOnlyList<string>? lastEmergences, bool defendersRevealed = false)
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
             BattleSide own = state.PlayerSide;
@@ -123,19 +128,27 @@ namespace ThreeKingdom.Presentation.Screens
             {
                 int ownStrength = 0, enemyStrength = 0;
                 var ownDets = new List<string>();
+                var enemyCmd = new List<string>();
                 foreach (Detachment d in state.DetachmentsIn(z.Id))
                 {
                     if (d.Side == own)
                     {
                         ownStrength += d.Strength;
                         string transit = d.InTransit ? $"→在途" : "";
-                        ownDets.Add($"{d.Id.Value}（{d.Strength}·{ZoneBattleText.Posture(d.Posture)}{transit}）");
+                        string leader = d.General != null ? DisplayNames.Of(d.General.Character.Value) + "·" : "";
+                        ownDets.Add($"{leader}{d.Id.Value}（{d.Strength}·{ZoneBattleText.Posture(d.Posture)}{transit}）");
                     }
-                    else enemyStrength += d.Strength;
+                    else
+                    {
+                        enemyStrength += d.Strength;
+                        // 守将进战斗（B/C）：敌方支队将领投影，反全知门——已侦察现真名，否则未探明。
+                        if (d.General != null)
+                            enemyCmd.Add(defendersRevealed ? DisplayNames.Of(d.General.Character.Value) : "未探明之将");
+                    }
                 }
                 var formed = new List<string>();
                 foreach (TacticCondition c in state.EngagementOf(z.Id).FormedConditions) formed.Add(OffensiveText.Condition(c));
-                lines.Add(new ZoneLineView(z.Id.Value, ownStrength, enemyStrength, formed, ownDets, z.Id == BattleField.Front));
+                lines.Add(new ZoneLineView(z.Id.Value, ownStrength, enemyStrength, formed, ownDets, enemyCmd, z.Id == BattleField.Front));
             }
 
             var emerg = new List<string>();
