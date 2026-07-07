@@ -142,6 +142,7 @@ namespace ThreeKingdom.Console
                     case "pool": return RenderRecruitPool();
                     case "discover": return Discover(a1, a2);
                     case "hire": return Hire(a1, a2);
+                    case "exportgen": System.IO.File.WriteAllText(a1, GeneralDossierCodec.Export()); return $"✓ 导出 {GeneralDossiers.All.Count} 员档案 → {a1}";
                     case "life": return RenderLife(a1);
                     case "reward": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Rewarded, "重赏");
                     case "betray": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Betrayed, "背弃");
