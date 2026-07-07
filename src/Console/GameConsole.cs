@@ -146,6 +146,7 @@ namespace ThreeKingdom.Console
                     case "life": return RenderLife(a1);
                     case "reward": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Rewarded, "重赏");
                     case "betray": return LifeMemo(a1, ThreeKingdom.Domain.Characters.MemoryKind.Betrayed, "背弃");
+                    case "strategy": return RenderStrategies();
                     case "lore": return RenderLoreEvents();
 
                     // 人心杠杆施计
@@ -515,6 +516,29 @@ namespace ThreeKingdom.Console
             ulong seed = 0x3151F2A9UL ^ ((ulong)(_rt.Talents.AttemptsOf(g) + 1) * 40503UL);
             RecruitAttemptResult r = _rt.RecruitGeneral(g, offerTier, seed);
             return r.Accepted ? $"〔招揽〕{r.Message}" : $"× {r.Message}";
+        }
+
+        private string RenderStrategies()
+        {
+            var views = _rt.FactionStrategies();
+            if (views.Count == 0) return "天下已定或无对手。";
+            var sb = new System.Text.StringBuilder("【天下大势·各势力战略】");
+            foreach (var v in views)
+            {
+                string intent = v.Intent switch
+                {
+                    ThreeKingdom.Domain.Contention.StrategicIntent.Expansion => "扩张",
+                    ThreeKingdom.Domain.Contention.StrategicIntent.Opportunist => "趁火打劫",
+                    ThreeKingdom.Domain.Contention.StrategicIntent.Defense => "固守",
+                    ThreeKingdom.Domain.Contention.StrategicIntent.Recovery => "休整恢复",
+                    ThreeKingdom.Domain.Contention.StrategicIntent.Revenge => "图谋报复",
+                    ThreeKingdom.Domain.Contention.StrategicIntent.Diplomacy => "求存外交",
+                    _ => "濒临崩溃",
+                };
+                string threat = v.ThreatToPlayer switch { 3 => "·大威胁", 2 => "·威胁", 1 => "·小患", _ => "" };
+                sb.Append($"\n  {Name(v.Faction.Value)}：{intent}{threat}");
+            }
+            return sb.ToString();
         }
 
         private string RenderLoreEvents()

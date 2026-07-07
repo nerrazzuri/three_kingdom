@@ -109,6 +109,14 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>本局玩家战术档（只读投影；AI 反套路来源）。</summary>
         public ThreeKingdom.Domain.ZoneBattle.PlayerTacticProfile Tactics => _tactics;
 
+        // E4 战略层：势力意图评估的趋势基准（上一战略步快照）+ 遭玩家夺城的势力（→报复意图）。
+        private ThreeKingdom.Domain.Contention.ContentionState? _prevContention;
+        private readonly System.Collections.Generic.HashSet<string> _wrongedByPlayer = new System.Collections.Generic.HashSet<string>(System.StringComparer.Ordinal);
+
+        /// <summary>各非玩家势力当前战略投影（E4.1 可解释反馈：意图 + 对玩家威胁档）。</summary>
+        public System.Collections.Generic.IReadOnlyList<ThreeKingdom.Domain.Contention.FactionStrategyView> FactionStrategies()
+            => ThreeKingdom.Domain.Contention.FactionStrategy.AssessAll(Contend, _scenario.PlayerFaction, _prevContention, _wrongedByPlayer);
+
         /// <summary>调拨某将入某城（GDD_027 P3）：经合法性门（在世/非俘/非重创/属玩家麾下）+ 城册约束。返回门结果。</summary>
         public ThreeKingdom.Application.Scenarios.AppointGate AppointGeneral(ThreeKingdom.Domain.City.CityId city, ThreeKingdom.Domain.Characters.CharacterId general)
         {
@@ -751,6 +759,7 @@ namespace ThreeKingdom.Presentation.Runtime
                     // 争霸领土（M13）：玩家 +1，被夺方 −1（经服务编排，持久化到会话）。
                     FactionId? loser = _scenario.DefendingFactionOf(_offensiveTarget);
                     _service.RecordPlayerConquest(Session, Contend, _scenario.PlayerFaction, loser);
+                    if (loser.HasValue && loser.Value.Value != null) _wrongedByPlayer.Add(loser.Value.Value);   // E4.1 被夺方图报复
                 }
                 view = OffensiveResultView.Victorious(conquest);
             }
@@ -983,6 +992,7 @@ namespace ThreeKingdom.Presentation.Runtime
             ulong seed = new StateHasher()
                 .Append(_scenario.OffensiveSeed).Append(Session.CurrentTime.AbsoluteIndex).Append(_contentionSteps++)
                 .ToHash().Value;
+            _prevContention = Contend;   // E4.1 趋势基准：步进前快照（供"刚失城→恢复"判定）
             _service.StepRivalContention(Session, Contend, _scenario.PlayerFaction, seed, _scenario.ContentionConfig);
         }
 
