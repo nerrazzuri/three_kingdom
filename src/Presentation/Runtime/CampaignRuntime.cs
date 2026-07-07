@@ -60,6 +60,14 @@ namespace ThreeKingdom.Presentation.Runtime
         /// <summary>本局武将人生台账（消费方/表现层读写；随会话存读档持久化）。</summary>
         public ThreeKingdom.Domain.Characters.GeneralLedger Generals => _generals;
 
+        /// <summary>演义覆盖层幂等同步进人生台账（斩杀→重创、移籍→换主）。</summary>
+        private void SyncGeneralsWithLore()
+        {
+            var ov = ThreeKingdom.Application.Scenarios.LoreEvents.OverridesAt(
+                new ThreeKingdom.Application.Scenarios.LoreContext(_scenario.AnchorYear, CurrentYear, _scenario.PlayerFaction));
+            ThreeKingdom.Application.Scenarios.GeneralLifeReconciler.ApplyLore(_generals, ov, _scenario.AnchorYear);
+        }
+
         /// <summary>军议/敌情屏调节项（置信档阈值等；表现态，不入会话/存档）。</summary>
         private readonly CouncilIntelTuning _councilTuning = CouncilIntelTuning.Default;
 
@@ -111,6 +119,9 @@ namespace ThreeKingdom.Presentation.Runtime
 
             // 天下大势在轨推演（GDD_015）：触发到期历史事件 → 按可达性 + 主角人设产出通报流（含心里话）。
             RefreshEventNotices(session);
+
+            // 演义事件 → 运行时人生态（ADR-0017 / ADR-0016 D6）：斩杀标重创、移籍换主，幂等同步进台账。
+            SyncGeneralsWithLore();
 
             // 君主争霸自动推演（GDD_017/018）：每跨一年至多一次种子化兼并（放慢，2026-07-05：由季改年 + 缓和权重）；
             // 走向由 AI 涌现自掌、不照搬演义；强弱相当自刹车 → 三/四国鼎立可久持。终局既定则止。
