@@ -52,6 +52,14 @@ namespace ThreeKingdom.Presentation.Runtime
         private CampaignSession? _session;
         private int _daysCrossedLastAdvance;
 
+        /// <summary>武将运行时人生台账（ADR-0017）：本局权威人生态（忠诚/记忆/健康/被俘），经伴生存档槽持久化。</summary>
+        private ThreeKingdom.Domain.Characters.GeneralLedger _generals = new ThreeKingdom.Domain.Characters.GeneralLedger();
+        private readonly ThreeKingdom.Domain.Persistence.GeneralLedgerCodec _generalsCodec = new ThreeKingdom.Domain.Persistence.GeneralLedgerCodec();
+        private string GeneralsSlot => _slot + ".generals";
+
+        /// <summary>本局武将人生台账（消费方/表现层读写；随会话存读档持久化）。</summary>
+        public ThreeKingdom.Domain.Characters.GeneralLedger Generals => _generals;
+
         /// <summary>军议/敌情屏调节项（置信档阈值等；表现态，不入会话/存档）。</summary>
         private readonly CouncilIntelTuning _councilTuning = CouncilIntelTuning.Default;
 
@@ -996,6 +1004,15 @@ namespace ThreeKingdom.Presentation.Runtime
                 return false;
             }
 
+            // 伴生槽：武将人生台账（ADR-0017），同「临时槽 + 原子改名」范式。主存档已就位，台账失败不回滚主档（下次存档补齐）。
+            try
+            {
+                string gTmp = GeneralsSlot + ".tmp";
+                _medium.Write(gTmp, _generalsCodec.Serialize(_generals));
+                _medium.Move(gTmp, GeneralsSlot);
+            }
+            catch (Exception) { /* 台账为增量态，缺失退化为空台账，不损主存档一致性 */ }
+
             return true;
         }
 
@@ -1029,6 +1046,8 @@ namespace ThreeKingdom.Presentation.Runtime
                     tacticChains: _scenario.TacticChains);
                 _session = restored;
                 _daysCrossedLastAdvance = 0;
+                // 恢复武将人生台账（伴生槽；无此槽的旧存档 → 空台账，向后兼容）。
+                _generals = _generalsCodec.Deserialize(_medium.Read(GeneralsSlot));
                 reason = string.Empty;
                 return true;
             }

@@ -29,8 +29,6 @@ namespace ThreeKingdom.Console
         private CampaignRuntime _rt;
         // 全谱人才知晓簿（反全知门；会话内，同发觉门范式待接存档）。
         private readonly TalentKnowledgeBook _talentBook = new TalentKnowledgeBook();
-        // 武将运行时人生台账（忠诚/记忆/健康；会话内，待接存档 DTO）。
-        private readonly ThreeKingdom.Domain.Characters.GeneralLedger _lifeLedger = new ThreeKingdom.Domain.Characters.GeneralLedger();
         public bool Quit { get; private set; }
 
         public GameConsole()
@@ -450,7 +448,7 @@ namespace ThreeKingdom.Console
         {
             var gid = new ThreeKingdom.Domain.Characters.CharacterId(id);
             int y = _rt.Scenario.AnchorYear;
-            return _lifeLedger.GetOrSeed(gid, x => GeneralLifeSeeding.Seed(x, y));
+            return _rt.Generals.GetOrSeed(gid, x => GeneralLifeSeeding.Seed(x, y));
         }
 
         private string RenderLife(string id)
@@ -482,7 +480,7 @@ namespace ThreeKingdom.Console
         {
             var s = LifeOf(id);
             s = ThreeKingdom.Domain.Characters.GeneralLifeService.Remember(s, kind, new ThreeKingdom.Domain.Characters.CharacterId("char-player-lord"), _rt.CurrentYear, weight: 1);
-            _lifeLedger.Set(s);
+            _rt.Generals.Set(s);
             return $"〔{verb}〕{Name(id)} 铭记于心。\n" + RenderLife(id);
         }
 
