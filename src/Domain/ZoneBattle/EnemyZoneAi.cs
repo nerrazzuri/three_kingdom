@@ -88,7 +88,8 @@ namespace ThreeKingdom.Domain.ZoneBattle
             IReadOnlyDictionary<string, int>? zoneValue, int defaultZoneValue, int threatWeight,
             int deficitBonus, int trendBonus, int moveCost, int sharpness,
             int objectivePush = 50, int opportunityBonus = 30,
-            FixedPoint? retreatMoraleThreshold = null, int preserveBonus = 35)
+            FixedPoint? retreatMoraleThreshold = null, int preserveBonus = 35,
+            int supplyRaidBonus = 45, int stubbornDefenderBonus = 40)
         {
             if (sharpness < 1) throw new ArgumentOutOfRangeException(nameof(sharpness));
             var zv = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -104,7 +105,14 @@ namespace ThreeKingdom.Domain.ZoneBattle
             OpportunityBonus = opportunityBonus;
             RetreatMoraleThreshold = retreatMoraleThreshold ?? FixedPoint.FromFraction(3, 10);
             PreserveBonus = preserveBonus;
+            SupplyRaidBonus = supplyRaidBonus;
+            StubbornDefenderBonus = stubbornDefenderBonus;
         }
+
+        /// <summary>攻方乘虚突袭弱守粮道的效用（E1：切粮道）。</summary>
+        public int SupplyRaidBonus { get; }
+        /// <summary>善守/铁骨守将死守要点的效用（E2：守将性格）。</summary>
+        public int StubbornDefenderBonus { get; }
 
         /// <summary>某区战略价值。</summary>
         public int ValueOf(ZoneId zone) => ZoneValue.TryGetValue(zone.Value ?? "", out int v) ? v : DefaultZoneValue;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ThreeKingdom.Domain.Characters;
 using ThreeKingdom.Domain.Numerics;
 
 namespace ThreeKingdom.Domain.ZoneBattle
@@ -41,7 +42,8 @@ namespace ThreeKingdom.Domain.ZoneBattle
                 for (int i = 0; i < targets.Count; i++)
                 {
                     bool isMove = targets[i] != det.Location;
-                    scores[i] = Score(targets[i], isMove, aiSide, det, view, state.Memory, ai);
+                    scores[i] = Score(targets[i], isMove, aiSide, det,
+                        view.VisibleEnemyIn(targets[i]), view.OwnIn(targets[i]), state.Memory.LastVisible(targets[i]), ai);
                     if (scores[i] < min) min = scores[i];
                 }
 
@@ -63,7 +65,9 @@ namespace ThreeKingdom.Domain.ZoneBattle
                 }
 
                 // 姿态决策（角色感知；同经命令契约）。
-                Posture desired = DecidePosture(aiSide, chosen, det, view, ai);
+                int posEnemy = view.VisibleEnemyIn(chosen);
+                int posOwn = view.OwnIn(chosen) + (chosen != det.Location ? det.Strength : 0);
+                Posture desired = DecidePosture(aiSide, chosen, det, posOwn, posEnemy, ai);
                 ZoneCommandResult pr = _commands.SetPosture(working, aiSide, det.Id, desired);
                 if (pr.Applied) working = pr.State;
             }
@@ -72,26 +76,32 @@ namespace ThreeKingdom.Domain.ZoneBattle
             return working.WithMemory(new EnemyAiMemory(view.VisibleEnemyMap));
         }
 
-        private static int Score(
-            ZoneId target, bool isMove, BattleSide aiSide, Detachment det, AiWorldView view, EnemyAiMemory memory, EnemyAiConfig ai)
+        /// <summary>区域动作效用评分（纯函数，可测）。visibleEnemy/ownHere/lastVisible 由调用方从反全知投影解析。</summary>
+        public static int Score(
+            ZoneId target, bool isMove, BattleSide aiSide, Detachment det,
+            int visibleEnemy, int ownHere, int lastVisible, EnemyAiConfig ai)
         {
-            int visibleEnemy = view.VisibleEnemyIn(target);
-            int ownHere = view.OwnIn(target);
             int effectiveOwn = ownHere + (isMove ? det.Strength : 0);   // 若移入则计入本支队
 
             int score = ai.ValueOf(target);
             score += (visibleEnemy / 50) * ai.ThreatWeight;                     // 向受威胁区集中
             if (visibleEnemy > ownHere) score += ai.DeficitBonus;               // 增援劣势区
-            if (visibleEnemy > memory.LastVisible(target)) score += ai.TrendBonus; // 玩家增兵趋势
+            if (visibleEnemy > lastVisible) score += ai.TrendBonus;             // 玩家增兵趋势
 
             if (aiSide == BattleSide.Attacker)
             {
                 if (target == BattleField.Front) score += ai.ObjectivePush;     // 攻方压破城目标
                 if (effectiveOwn > visibleEnemy) score += ai.OpportunityBonus;  // 乘虚/press advantage
+                // E1 切粮道：乘虚突袭弱守粮道（断补给，非只钻正面）。
+                if (target == BattleField.Supply && effectiveOwn > visibleEnemy) score += ai.SupplyRaidBonus;
             }
-            else if (visibleEnemy > 0 && effectiveOwn >= visibleEnemy)
+            else
             {
-                score += ai.OpportunityBonus;                                   // 守方在能守处巩固
+                if (visibleEnemy > 0 && effectiveOwn >= visibleEnemy)
+                    score += ai.OpportunityBonus;                               // 守方在能守处巩固
+                // E2 守将性格：善守/铁骨之将死守要点（正面关城）。
+                if (target == BattleField.Front && (HasTag(det, GeneralTag.Defender) || HasTag(det, GeneralTag.IronBones)))
+                    score += ai.StubbornDefenderBonus;
             }
 
             // 低士气退避：偏好向无威胁区保全。
@@ -101,18 +111,22 @@ namespace ThreeKingdom.Domain.ZoneBattle
             return score;
         }
 
-        /// <summary>角色感知姿态决策（守方守/攻方主攻·侧翼佯攻/劣势或低士气则守）。</summary>
-        private static Posture DecidePosture(BattleSide aiSide, ZoneId target, Detachment det, AiWorldView view, EnemyAiConfig ai)
+        /// <summary>角色感知姿态决策（纯函数，可测）：守方守/攻方主攻·侧翼佯攻/劣势或低士气则守；莽将悍勇。</summary>
+        public static Posture DecidePosture(BattleSide aiSide, ZoneId target, Detachment det, int own, int enemy, EnemyAiConfig ai)
         {
             if (det.Morale < ai.RetreatMoraleThreshold) return Posture.Hold;    // 士气动摇 → 转守
             if (aiSide == BattleSide.Defender) return Posture.Hold;
 
             // 攻方
             if (target == BattleField.Flank) return Posture.Feint;              // 侧翼 → 佯攻诱敌
-            int enemy = view.VisibleEnemyIn(target);
-            int own = view.OwnIn(target) + (target != det.Location ? det.Strength : 0);
-            return own > enemy ? Posture.Assault : Posture.Hold;
+            // E2 守将性格：莽勇/骑锋/孤胆之将悍勇——势均即冲（无需绝对优势）；余者优势方攻。
+            bool aggressive = HasTag(det, GeneralTag.Reckless) || HasTag(det, GeneralTag.Cavalry) || HasTag(det, GeneralTag.LoneValor);
+            bool willAssault = aggressive ? own * 4 >= enemy * 3 : own > enemy;
+            return willAssault ? Posture.Assault : Posture.Hold;
         }
+
+        /// <summary>支队所携将领是否带某气质标签（AI 依己方将性格调整打法；反全知——只用己方将，不作弊）。</summary>
+        private static bool HasTag(Detachment det, GeneralTag tag) => det.General != null && det.General.HasTag(tag);
 
         private static int WeightedPick(DeterministicRandom rng, long[] weights, long total)
         {
