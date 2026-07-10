@@ -1,0 +1,10 @@
+/* 区域战斗屏专属样式（仅本屏经 ZoneBattle.uxml 的 <Style src> 挂载，不影响 HUD）。
+   战场背景（坚城）直接铺在 zb-root 自身——盖过 .hud-root 的不透明宣纸底色；
+   各态势/布阵卡片（.card 不透明宣纸底）叠于其上仍清晰可读。同 MainMenu 已验证的 resource() 范式。 */
+#zb-root {
+    background-image: resource("Backgrounds/battle-city");
+    background-size: cover;
+    background-position-x: center;
+    background-position-y: center;
+    background-repeat: no-repeat;
+}

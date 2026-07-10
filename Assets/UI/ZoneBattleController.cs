@@ -16,6 +16,8 @@ namespace ThreeKingdom.Unity.UI
         private void OnEnable()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
+            // 战场背景（坚城）走 ZoneBattle.uss #zb-root（背景图直接铺在 zb-root 自身，盖过其宣纸底色）——
+            // 同 MainMenu 已验证的 USS resource() 范式；不再在此设文档根背景（会被子元素不透明底遮住）。
             Render(root);
 
             Wire(root, "zb-resolve", () => { if (!ZoneBattleSession.IsOver) ZoneBattleSession.ResolveRound(); Render(root); });

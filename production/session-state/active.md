@@ -14,6 +14,40 @@
 
 
 
+## 🎨 里程碑（2026-07-08）— Phase 2 美术：签名风格锁定 + 关羽立绘定稿 + MVP 背景全出
+
+> **Midjourney 生产管线跑通，"军府活图卷"美学落地为可用资产。产出在 `D:\Projects\三国演义\UI Test\UI\final`。全程遵守 §9.4 原创红线（不得像光荣三国志/真·三国无双）。**
+> - **MVP 背景 4 张已 Upscale 定稿**：主菜单(zm-0) / 坚城(jc-3) / 遮蔽(zb-2) / 粮道(ld2-2，旧带辎重车版已弃)。签名 A 背景锚 bg3-1 仍待补 Upscale（低优先，4 张够用）。
+> - **关羽立绘定稿（10 轮迭代）**：v1.4.6 prompt（§5.28.3）产出 gy10 批。经典关羽神韵完整——绿幞头(帽子非扎布)+红脸满饱和+黑长髯+绿袍+米纸底；缩略图焦点(红脸)够亮。
+>   - **解耦锁定（§5.29.4）**：关羽**展示立绘**=gy10-3（用户审美选稿，水印已 PS 去除=final/wmremove-transformed.png，Claude 复核无接缝）；30 将 **`--sref` 风格锚**=gy10-2（布光均匀·缩略图安全）。二者可不同。
+> - **✅ gy10-2 锚图已 Upscale 入 final**（2026-07-08，`..._Three_quarter_portrait_bust..._3fa4e042....png`，Claude 复核=布光均匀·缩略图安全版）。落地 `--sref` 时须用其 Midjourney 图 URL（右键 Copy Image Address）或直接把该图拖进 prompt 框。
+> - **裁定沉淀**：art-bible §3.1 补充裁定四（关羽绿主红辅命名例外，阵营识别靠小红领口 + UI 阵营边框/徽章）；§1.2 UI 框portrait 免"同笔"一致性。prompt-pack 已推进至 v2.6（art-director 维护 §5.x/§6 registry）。
+> - **✅ 诸葛亮立绘定稿（2026-07-08）**：`final`/`530823f0`（Upscale Creative 版）。高诸葛巾（竖褶银灰）+ 手持大羽扇 + 白/红袍 + 年轻清朗睿智脸 + 游戏厚涂。经十余轮试出的关键教训（已由 art-director 沉淀入 §5.30）：①**去 --sref 人物锚**——拿人物立绘当 sref 会传导神韵令众人变关羽复制人，30 将统一画风改靠共享风格文字段落（更正原 §5.29.4）；②MJ 审核拦写实人物→须声明"绘画非照片"，但框定词用 `video game key art/digital painting`，**绝不能用 `traditional Chinese gouache/ink painting`**（滑向工笔绢本/故事书）；过审去 realistic/photo/caucasian、负面避堆 weapon/screaming/muscular/vampire；③MJ 默认把"东亚大胡子男+game splash"画成猛将→文官须显式"年轻俊朗+柔光脸+少须+压猛将负面"；④招牌道具要"明确手持/正戴 prominently visible"，别写 understated；⑤收尾用 Upscale (Creative) 精细化而非重 roll。
+> - **✅ 曹操立绘定稿（2026-07-09）**：`73ae56db` c_2（待 Upscale Creative 入 final）。高金饰冠 + 铁苍蓝袍 + 睥睨枭雄。**新增关键裁定——曹操 vs 司马懿神韵须掰开**：首版曹操写了 `cold/reserved/calculating` 结果撞司马懿路子（且沾光荣冷脸谋士味，踩 §9.4 边）；改判——**曹操=外放霸主（ambitious/charismatic/imperious/robust，外露野心）**，**司马懿=内敛谋主（cold/reserved/hawk-eyed/elder，内藏算计）**，两条 prompt 神韵/相貌/头冠（曹操高金饰冠 vs 司马懿低炭灰冠）显式互斥。曹操 v2 负面加 `koei rotk portrait style / cold reserved elder schemer / hawk-eyed wolf-turning`。观察：v2 背景易跑战火红底（dramatic 词拉的），可留（战意）或加 `red/crimson flame background` 负面换米纸。
+> - **✅ 司马懿立绘（2026-07-09）**：`b0595d56` 一发即成——冷诈隐忍谋主、低炭灰冠（区别曹操高冠）、铁苍蓝+云纹滚边、灰白须显年长、鹰视狼顾。待选 s_0（鹰视狼顾侧目最传神）/ s_3（灰须更显年长）。
+> - **✅ 吕布立绘（2026-07-09）**：`d477df46` 一发即成——骄矜暴烈飞将、紫金冠+雉羽、紫垒袍+兽纹甲、年轻俊猛（此位神韵本就该张扬故不压）。待选 l_1 / l_3（l_0/l_2 偏平面海报弃）。
+> - **🎉 五位核心立绘全跑通**：关羽(gy10-3 final)/诸葛亮(530823f0 final)/曹操(c_2)/司马懿(s_0或s_3)/吕布(l_1或l_3)。曹操/司马懿/吕布待用户拍板选图 + Upscale Creative 入 final。
+> - **✅ 收官**：art-director 已把最终四条 prompt 回填 §5.30 + 登记 §6（后台完成）。**通用法已验证：游戏原画框定/过审词表/柔光脸治猛将/招牌道具显著/角色神韵互斥(曹操外放霸主↔司马懿内敛谋主)/Upscale Creative 收尾——后续 ~30 将可直接套用。** gy10-2 仅作关羽自身参照，不再作跨角色 sref。
+
+## 🖼️ 里程碑（2026-07-09 s25）— 立绘/背景接进 Unity（编辑器验证 PASS）
+
+> **首个"美术落地进游戏"闭环。computer-use 编辑器验证 PASS，Claude 独立核图坐实。证据 `production/qa/evidence/s25-portrait-ui-2026-07-09/`（01-mainmenu / 02-roster / DONE.flag）。**
+> - **资产入库**：`Assets/Resources/Portraits/{关羽,诸葛亮,曹操,司马懿,吕布}.png` + `Assets/Resources/Backgrounds/main-menu.png`（背景 ASCII 名避 USS `resource()` 中文风险；立绘保中文名，C# 按 `card.Name` 取）。
+> - **武将录立绘位**（`RosterController.cs`）：每行加 64×85 立绘（`Resources.Load<Texture2D>("Portraits/"+中文名)`，有图显立绘、无图深色剪影占位）；反全知不变（仍只名+性情，立绘不泄数值）。**零维护扩展**：以后加新立绘只丢文件进 Resources，代码不动。**关键**：`SessionRuntime.Roster()=GeneralRosterView.Build()` 静态全谱，武将录可独立 Play 验证不需开局。
+> - **主菜单背景**（`MainMenu.uxml` 补挂 `<Style src>`[此前漏挂 uss 未生效] + `MainMenu.uss` 加 `background-image: resource(...)`+`background-size:cover`+标题/按钮半透宣纸衬底）。
+> - **验证 PASS**：编译0错(仅1条 Input Manager 弃用黄警)；主菜单活图卷背景+文字可读；武将录关羽立绘缩略图脸清晰、余者剪影占位。
+> - **遗留非阻断**：武将录面板透天空盒（老问题「面板非不透明底」，归美术/USS 打磨）。
+> - **下一步候选**：① HUD 主将立绘 + 战斗/城池背景接入；② 势力徽章/边框（立绘靠 UI 框标阵营，尤其关羽绿袍/诸葛亮白袍不靠袍色识别）；③ 扩产其余 ~25 核心武将立绘（套已验证通用法）；④ 武将录面板不透明底美术打磨。
+
+## 🖼️ 里程碑（2026-07-10 s26）— HUD 麾下立绘 + 战斗屏城战背景（编辑器验证 PASS）
+
+> **接续 s25 的"美术进游戏"第二批。computer-use 编辑器验证 PASS（含一次 FAIL→修复→复验 PASS），Claude 独立核图坐实。证据 `production/qa/evidence/s26-hud-battle-art-2026-07-10/`。**
+> - **战斗屏坚城背景**：`Assets/Resources/Backgrounds/battle-city.png`（坚城）+ 新建 `Assets/UI/ZoneBattle.uss`（`#zb-root` 背景图 cover）+ `ZoneBattle.uxml` 挂 `<Style src>`。不透明宣纸卡叠其上可读。
+> - **HUD 麾下人物立绘**（`HudController.RenderRetinue`）：`SessionRuntime.DeputyRoster` 每员 40×53 立绘缩略图 + 中文名（`DisplayNames.Of`），有图显立绘、无图剪影占位；OnEnable + 推进时段刷新。
+> - **关键教训（USS 背景绑定）**：`UIDocument.rootVisualElement` 是**文档根**，其子元素（带 `.hud-root` 不透明底色的 zb-root/menu-root）会遮住设在文档根上的背景图。**背景图必须设在"带 class 那个元素自身"**（zb-root/menu-root），用 USS `#name{ background-image: resource(...); background-size: cover }`（MainMenu 已验证范式），别用 C# `root.style.backgroundImage`（首版就是设错元素→FAIL）。
+> - **HUD 具名立绘分支**等价验证：加载+显示路径（`Resources.Load<Texture2D>`+`Image.image`）与 s25 武将录关羽立绘完全一致，剧本出现 5 位时必显；默认190汜水关部将为无名"副将"故显剪影（符合预期）。
+> - **✅ 用户选定的"接进 Unity"方向首轮完成**：主菜单背景(s25) + 武将录立绘(s25) + 战斗屏背景(s26) + HUD麾下立绘(s26)。
+
 ## ✅ 完成（2026-07-07 续22）— 演义事件引擎「全做完」（试水→完整）
 
 > **用户裁定：效果层做「完整·可推演不入档」。dotnet 1166 绿（1158→1166，+8）；3 DLL 同步；console 端到端实测效果可见。**

@@ -36,8 +36,33 @@ namespace ThreeKingdom.Unity.UI
                 }
                 else sb.Append("　〔泛泛之辈〕");
 
-                var row = new Label(sb.ToString());
+                // 横向卡片：立绘缩略图 + 名/性情（反全知——立绘不泄任何数值/隐藏档）。
+                var row = new VisualElement();
                 row.AddToClassList("roster-row");
+                row.style.flexDirection = FlexDirection.Row;
+                row.style.alignItems = Align.Center;
+                row.style.marginTop = 4;
+                row.style.marginBottom = 4;
+
+                // 立绘位（美术圣经 §3.1：64×85px 缩略图，脸为焦点）。
+                // 用 Texture2D + Image.image（PNG 默认导入即 Texture2D，无需 Sprite 模式）；
+                // 有图者显示立绘，其余以中性剪影底占位（不泄信息）。
+                var portrait = new Image { scaleMode = ScaleMode.ScaleToFit };
+                portrait.style.width = 64;
+                portrait.style.height = 85;
+                portrait.style.flexShrink = 0;
+                portrait.style.marginRight = 12;
+                portrait.style.backgroundColor = new Color(0.16f, 0.15f, 0.13f, 1f); // 剪影占位底
+                var tex = Resources.Load<Texture2D>($"Portraits/{card.Name}");
+                if (tex != null) portrait.image = tex;
+                row.Add(portrait);
+
+                var label = new Label(sb.ToString());
+                label.AddToClassList("roster-row-label");
+                label.style.whiteSpace = WhiteSpace.Normal;
+                label.style.flexGrow = 1;
+                row.Add(label);
+
                 list.Add(row);
             }
 

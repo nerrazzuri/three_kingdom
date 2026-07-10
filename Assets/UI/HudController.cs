@@ -72,6 +72,7 @@ namespace ThreeKingdom.Unity.UI
                     RenderCouncil(root);
                     RenderLoop(root);                            // 相位/治理/备战/战斗刷新
                     RenderCareerMission(root);                   // 官阶/手令/君命/人才随时段刷新
+                    RenderRetinue(root);                         // 麾下人物随时段刷新（登场/移籍）
                     // 势力覆灭 → 转被俘流程屏（GDD_026 R9：唯身死才终）。
                     if (SessionRuntime.IsEliminated()) SceneManager.LoadScene("Defeat");
                 };
@@ -99,6 +100,7 @@ namespace ThreeKingdom.Unity.UI
             Wire(root, "btn-tribute", () => { bool ok = SessionRuntime.PayTribute(); SetLabel(root, "mission-feedback", ok ? "已上缴军粮" : "非献纳任务或库存不足"); RenderCareerMission(root); });
             Wire(root, "btn-scout-talents", () => { foreach (string t in KnownTalents) SessionRuntime.RevealTalentScouting(t); RenderCareerMission(root); });
             RenderCareerMission(root);
+            RenderRetinue(root); // 麾下人物：立绘 + 名
 
             // 军议/敌情屏（story-003 / TR-ux-002/003）：从战役会话只读投影渲染；反全知只经玩家知识投影。
             RenderEnemyIntel(root);
@@ -581,6 +583,42 @@ namespace ThreeKingdom.Unity.UI
             }
             if (talents.Count == 0)
                 list.Add(new Label("尚无可见人才——[打听人才] 或推进时段待其登场。"));
+        }
+
+        /// <summary>麾下人物卡：当前可点部将——立绘缩略图 + 中文名（反全知：只名，不呈数值/隐藏档）。</summary>
+        private static void RenderRetinue(VisualElement root)
+        {
+            var list = root.Q<VisualElement>("roster-list");
+            if (list == null) return;
+            list.Clear();
+
+            var retinue = SessionRuntime.DeputyRoster;
+            foreach (OffensiveGeneral d in retinue)
+            {
+                string name = DisplayNames.Of(d.Character.Value);
+
+                var row = new VisualElement();
+                row.style.flexDirection = FlexDirection.Row;
+                row.style.alignItems = Align.Center;
+                row.style.marginBottom = 4;
+
+                // 立绘缩略图（有图显立绘、无图深色剪影占位；同武将录 §3.1）。
+                var portrait = new Image { scaleMode = ScaleMode.ScaleToFit };
+                portrait.style.width = 40;
+                portrait.style.height = 53;
+                portrait.style.flexShrink = 0;
+                portrait.style.marginRight = 8;
+                portrait.style.backgroundColor = new Color(0.16f, 0.15f, 0.13f, 1f);
+                var tex = Resources.Load<Texture2D>($"Portraits/{name}");
+                if (tex != null) portrait.image = tex;
+                row.Add(portrait);
+
+                row.Add(new Label(name));
+                list.Add(row);
+            }
+
+            if (retinue.Count == 0)
+                list.Add(new Label("麾下暂无可点之将——推进时局或招揽人才。"));
         }
 
         private static void RenderPendingPanels(VisualElement root)

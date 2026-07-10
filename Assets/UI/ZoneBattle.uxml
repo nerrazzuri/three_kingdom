@@ -3,6 +3,7 @@
          逻辑在纯 C# ZoneBattleRuntime（dotnet 已单测）；本壳只绑定 name 渲染。 -->
     <ui:VisualElement name="zb-root" class="hud-root">
         <ui:Style src="Hud.uss" />
+        <ui:Style src="ZoneBattle.uss" />
         <ui:VisualElement name="zb-header" class="hud-header">
             <ui:Label name="zb-title" text="战场区域" class="hud-objective" />
             <ui:Label name="zb-round" class="hud-note" />

@@ -1,6 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <!-- 主菜单视觉壳（design/ux/main-menu.md §5；绑定 MainMenuViewModel） -->
     <ui:VisualElement name="root" class="menu-root">
+        <ui:Style src="MainMenu.uss" />
         <ui:Label name="title" text="三国演义：兵法沙盒" class="title" />
         <ui:VisualElement name="actions" class="actions">
             <ui:Button name="new-game" text="新游戏" class="menu-button" />

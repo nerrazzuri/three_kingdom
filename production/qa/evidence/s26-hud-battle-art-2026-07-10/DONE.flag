@@ -1,0 +1,23 @@
+S26 战斗屏背景 + HUD 麾下立绘 QA 结果（复验）
+工程：D:\Projects\三国演义\Claude-Code-Game-Studios
+日期：2026-07-10（复验，覆盖首次结果）
+
+本次复验范围：战斗屏背景修复（新增 Assets/UI/ZoneBattle.uss）
+
+判据结果：
+
+1) 编译0错误：PASS
+Assets/UI/ZoneBattle.uss 已确认存在；Assets>Refresh 后 Console 全程 0 Error / 0 Warning / 0 Message，无编译异常。
+
+2) 战斗屏坚城背景 + 卡片可读：PASS
+Play 模式下 Assets/Scenes/ZoneBattle.unity「演武-战场区域」屏幕背景已正确显示「坚城·古城墙战场」水墨风格贴图，铺满整个屏幕、居中 cover，顶部按钮区叠加半透明深色遮罩以保证按钮文字可读（遮罩下仍可见背景城墙/屋脊线稿，非纯色平涂，确认为背景图渲染而非缺图）。
+「各区态势」「排兵布阵」两张宣纸底卡片清晰叠加于背景之上，文字可读性良好。
+证据：01-zonebattle-bg.png（已覆盖首次 FAIL 时的旧截图）
+
+3) 无报错：PASS
+全程 Console 无红色错误。
+
+结论：PASS
+战斗屏背景美术缺失问题已修复，battle-city.png 通过 Assets/UI/ZoneBattle.uss 正确绑定并渲染。
+
+（备注：HUD 麾下人物具名立绘分支仍待用已招募到关羽/诸葛亮/曹操/司马懿/吕布之一的存档复测，不在本次复验范围内。）
