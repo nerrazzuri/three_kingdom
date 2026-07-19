@@ -1,6 +1,7 @@
 # ADR-0012 — 确定性区域战斗引擎（Deterministic Zone Battle Engine）
 
-> **Status**: Accepted（2026-07-04；lean 内联裁定——扩 GDD_010 执行层，复用 ADR-0004 确定性 + 现有 TacticCondition，无新违反禁则，story 可引用）
+> **Status**: Superseded by ADR-0018（2026-07-20；命名区域模型经实玩判定参与感不足，用户转向格子战术战斗——原型验证通过。本 ADR 的确定性/兵法涌现/反全知/攻守统一理念由 ADR-0018 继承并空间化，命名区域"无坐标"模型作废）
+> **原 Status**: Accepted（2026-07-04；lean 内联裁定——扩 GDD_010 执行层，复用 ADR-0004 确定性 + 现有 TacticCondition，无新违反禁则，story 可引用）
 > **相关**: GDD_021 战场区域战斗 · GDD_010/011/019 · epic-031 · ADR-0004（确定性）· ADR-0006（敌AI，见 ADR-0013）· ADR-0011（多维准备）· ADR-0009（会话装配）
 
 ## Context（背景）

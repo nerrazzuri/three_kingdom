@@ -13,9 +13,10 @@
 | [ADR-0009](adr-0009-campaign-session-assembly.md) | CampaignSession 装配边界（完整会话脊梁） | Accepted | 2026-06-28 |
 | [ADR-0010](adr-0010-conquest-occupation-ownership.md) | 占城归属契约（出征占城复用 004 控制权 + 归属方案 C 种子化判定） | Accepted | 2026-07-04 |
 | [ADR-0011](adr-0011-offensive-preparation-model.md) | 多维确定性出征准备模型（六维闭合因果 + 路线复用兵法链 + 兵种杠杆非克制 + 布势非坐标 + 反全知侦察门） | Accepted | 2026-07-04 |
-| [ADR-0012](adr-0012-deterministic-zone-battle-engine.md) | 确定性区域战斗引擎（命名区域图非坐标 + 回合状态机 + 部署/战中调整命令 + 条件按区涌现 + 攻守统一 + 战中存档续战） | Accepted | 2026-07-04 |
+| [ADR-0012](adr-0012-deterministic-zone-battle-engine.md) | 确定性区域战斗引擎（命名区域图非坐标 + 回合状态机 + 条件按区涌现 + 攻守统一） | **Superseded by 0018** | 2026-07-04 |
 | [ADR-0013](adr-0013-enemy-zone-ai.md) | 敌方区域AI效用模型（特化 ADR-0006 于区域动作 + 反全知 AiWorldView + 种子softmax + 渐进记忆 + LLM隔离；落地 GDD_016） | Accepted | 2026-07-04 |
 | [ADR-0014](adr-0014-mind-lever-subversion.md) | 人心杠杆·施计改变战斗条件契约（施计产 SubversionEffect 在战斗接缝削弱守方 + 反全知门 + 种子化 + 可反噬 + 撬动非替代 W5 + 对称威胁；复用 0004/0006/0008/0010；落地 GDD_024） | Accepted | 2026-07-04 |
+| [ADR-0018](adr-0018-grid-tactical-battle-engine.md) | 确定性格子战术战斗引擎（**supersede 0012**：整数格子地图+地形 + 时间段确定性状态机 + 兵种定速行军寻路 + 地形/时机涌现[伏击/火攻/夜袭] + 补给硬约束[回血/叛逃/伤亡倍率] + 半路遭遇决策 + 反全知；复用 GDD-010/011/012/001/007/019；落地 GDD-028） | Accepted | 2026-07-20 |
 
 ## 规则
 
