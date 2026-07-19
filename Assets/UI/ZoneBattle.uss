@@ -1,13 +1,8 @@
 /* 区域战斗屏专属样式（仅本屏经 ZoneBattle.uxml 的 <Style src> 挂载，不影响 HUD）。
    战场背景直接铺在 zb-root 自身（盖过 .hud-root 不透明底色）；方格卡叠其上仍可读。同 MainMenu 已验证 resource() 范式。
    P1：车道方格 + 队列旗帜兵力 + 将领名牌边框。真 sprite 未出，旗帜/名牌用 USS 占位元素，日后按 battle-scene-art-spec 命名替换。 */
-#zb-root {
-    background-image: resource("Backgrounds/battle-city");
-    background-size: cover;
-    background-position-x: center;
-    background-position-y: center;
-    background-repeat: no-repeat;
-}
+/* M1：战场底图从 zb-root 移到地图画布 zb-map（区域节点绝对定位其上、随地图裁剪）。
+   真战场地图一到，只换这张 resource() + 控制器锚点表即可，无需动布局。 */
 
 /* 涌现横幅（成型时醒目一次性提示；无内容时不占位） */
 .zb-emergence-banner {
@@ -28,26 +23,43 @@
     padding-right: 8px;
 }
 
-.zb-grid {
+/* 战场地图画布：底图铺满、相对定位（区域节点相对它绝对定位）、超出裁剪 */
+.zb-map {
+    position: relative;
     flex-grow: 1;
-    flex-direction: column;
+    min-height: 420px;
+    overflow: hidden;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    background-image: resource("Backgrounds/battle-city");
+    background-size: cover;
+    background-position-x: center;
+    background-position-y: center;
+    background-repeat: no-repeat;
 }
 
-.zb-grid-row {
-    flex-grow: 1;
-    flex-direction: row;
+/* 邻接连线层：铺满地图，Painter2D 在此描夯土路（节点之下，不拦交互） */
+.zb-edges {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
 }
 
-/* 区域方格：半透宣纸卡叠在战场背景上，可读；正面目标区高亮边框 */
-.zb-slot {
-    flex-grow: 1;
-    flex-basis: 0;
-    margin: 6px;
+/* 区域节点：绝对定位于锚点（left/top 百分比由控制器设），translate 使锚点=节点中心；
+   半透宣纸卡叠在地图上仍可读；控制器为其设锚点百分比。 */
+.zb-node {
+    position: absolute;
+    translate: -50% -50%;
+    max-width: 210px;
     padding-top: 6px;
     padding-bottom: 6px;
     padding-left: 8px;
     padding-right: 8px;
-    background-color: rgba(247, 244, 236, 0.90);
+    background-color: rgba(247, 244, 236, 0.92);
     border-left-width: 1px;
     border-right-width: 1px;
     border-top-width: 1px;
@@ -62,17 +74,8 @@
     border-bottom-right-radius: 4px;
 }
 
-/* 空槽（第二行第三格无区域）——透明占位保持方格对齐 */
-.zb-slot-empty {
-    background-color: rgba(0, 0, 0, 0);
-    border-left-width: 0;
-    border-right-width: 0;
-    border-top-width: 0;
-    border-bottom-width: 0;
-}
-
 /* 正面关城（目标区）★ 金白高亮边框（art-bible §3.4 战术焦点节点语言） */
-.zb-slot-objective {
+.zb-node-objective {
     border-left-color: rgb(201, 136, 48);
     border-right-color: rgb(201, 136, 48);
     border-top-color: rgb(201, 136, 48);

@@ -21,19 +21,12 @@
         </ui:VisualElement>
 
         <ui:VisualElement name="zb-body" class="zb-body">
-            <!-- 战场方格（固定两行；控制器按 zone-id 填对应槽的态势内容）。 -->
+            <!-- 战场地图（M1 真地图化）：地图底图铺在 zb-map；区域节点由控制器按【数据驱动锚点】绝对定位到地图上；
+                 邻接连线由 Painter2D 画在 zb-edges 层（节点之下）。锚点/连线全数据驱动，真战场地图一到只改锚点表即可热换。 -->
             <ui:VisualElement name="zb-field" class="zb-field">
-                <ui:VisualElement name="zb-grid" class="zb-grid">
-                    <ui:VisualElement class="zb-grid-row">
-                        <ui:VisualElement name="zb-slot-reserve" class="zb-slot" />
-                        <ui:VisualElement name="zb-slot-front" class="zb-slot" />
-                        <ui:VisualElement name="zb-slot-flank" class="zb-slot" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="zb-grid-row">
-                        <ui:VisualElement name="zb-slot-cover" class="zb-slot" />
-                        <ui:VisualElement name="zb-slot-supply" class="zb-slot" />
-                        <ui:VisualElement class="zb-slot zb-slot-empty" />
-                    </ui:VisualElement>
+                <ui:VisualElement name="zb-map" class="zb-map">
+                    <ui:VisualElement name="zb-edges" class="zb-edges" picking-mode="Ignore" />
+                    <!-- 区域节点在此动态生成（class zb-node，绝对定位于锚点） -->
                 </ui:VisualElement>
                 <ui:Label name="zb-adjacency" class="zb-adjacency" />
             </ui:VisualElement>

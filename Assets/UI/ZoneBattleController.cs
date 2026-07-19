@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -19,12 +20,40 @@ namespace ThreeKingdom.Unity.UI
         private const float IconUnitFraction = 0.15f;
         private const int IconCap = 7;
 
+        // ── M1 真地图化：区域锚点表（zone-id 去前缀 → 地图归一化坐标 0..1，x 左→右 / y 上→下）。
+        // 敌方在上/远（关城正面、粮道居敌后、高地在上），我方在下（预备后方）。纯呈现层布局（float 合 ADR-0004）。
+        // ★ 数据驱动：真战场地图一到，只调这张表的坐标即可把节点重贴到新地形上，无需动布局代码。
+        private static readonly Dictionary<string, Vector2> ZoneAnchors = new()
+        {
+            ["cover"] = new Vector2(0.30f, 0.18f),   // 遮蔽高地——上方高地
+            ["supply"] = new Vector2(0.82f, 0.24f),  // 敌粮道——敌后
+            ["front"] = new Vector2(0.52f, 0.44f),   // 正面关城——中央目标区★
+            ["flank"] = new Vector2(0.16f, 0.52f),   // 侧翼隘口——侧翼
+            ["reserve"] = new Vector2(0.50f, 0.82f), // 预备后方——我方后方
+        };
+
+        // 邻接连线（对齐 Domain StandardAdjacency 的 6 条路；连线画在 zb-edges 层，节点之下）。
+        private static readonly (string A, string B)[] Edges =
+        {
+            ("reserve", "front"), ("front", "flank"), ("front", "cover"),
+            ("reserve", "cover"), ("cover", "supply"), ("flank", "supply"),
+        };
+
         private void OnEnable()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
-            // 战场背景（坚城）走 ZoneBattle.uss #zb-root（背景图铺在 zb-root 自身，盖过其宣纸底色）。
+            // 战场底图（坚城占位）铺在 zb-map（ZoneBattle.uss .zb-map）；区域节点绝对定位其上。
             SetLabel(root, "zb-adjacency",
                 "邻接（可调动路径）：预备—正面 · 正面—侧翼 · 正面—遮蔽 · 预备—遮蔽 · 遮蔽—粮道 · 侧翼—粮道");
+
+            // 邻接连线层：Painter2D 描夯土路（节点之下）。地图尺寸就绪/变化时重绘。
+            var edges = root.Q<VisualElement>("zb-edges");
+            if (edges != null)
+            {
+                edges.generateVisualContent += ctx => DrawEdges(ctx, edges);
+                edges.RegisterCallback<GeometryChangedEvent>(_ => edges.MarkDirtyRepaint());
+            }
+
             Render(root);
 
             Wire(root, "zb-resolve", () => { if (!ZoneBattleSession.IsOver) ZoneBattleSession.ResolveRound(); Render(root); });
@@ -57,12 +86,23 @@ namespace ThreeKingdom.Unity.UI
             SetEnabled(root, "zb-auto", !view.IsOver);
             SetEnabled(root, "zb-conclude", view.IsOver);
 
-            // 各区态势 → 对应方格槽（按 zone-id）。
-            foreach (ZoneLineView z in view.Zones)
+            // 各区态势 → 地图上的区域节点（按 zone-id 锚点绝对定位）。
+            var map = root.Q<VisualElement>("zb-map");
+            if (map != null)
             {
-                var slot = root.Q<VisualElement>("zb-slot-" + StripZonePrefix(z.ZoneId));
-                if (slot == null) continue;
-                FillZoneSlot(slot, z, root);
+                // 清掉上一帧的节点（保留 zb-edges 连线层）。
+                map.Query<VisualElement>(className: "zb-node").ToList().ForEach(n => n.RemoveFromHierarchy());
+                foreach (ZoneLineView z in view.Zones)
+                {
+                    if (!ZoneAnchors.TryGetValue(StripZonePrefix(z.ZoneId), out Vector2 anchor)) continue;
+                    var node = new VisualElement();
+                    node.AddToClassList("zb-node");
+                    node.style.left = Length.Percent(anchor.x * 100f);
+                    node.style.top = Length.Percent(anchor.y * 100f);
+                    FillZoneNode(node, z, root);
+                    map.Add(node);
+                }
+                root.Q<VisualElement>("zb-edges")?.MarkDirtyRepaint();
             }
 
             // 涌现横幅（醒目一次性）+ 侧栏涌现记录。
@@ -109,11 +149,11 @@ namespace ThreeKingdom.Unity.UI
             }
         }
 
-        /// <summary>把一个区域的态势填进它的方格槽：标题(★) + 我方支队(名牌+姿态切换) + 敌方兵力/将领(反全知) + 已成条件徽章。</summary>
-        private void FillZoneSlot(VisualElement slot, ZoneLineView z, VisualElement root)
+        /// <summary>把一个区域的态势填进它的地图节点：标题(★) + 我方支队(名牌+姿态切换) + 敌方兵力/将领(反全知) + 已成条件徽章。</summary>
+        private void FillZoneNode(VisualElement slot, ZoneLineView z, VisualElement root)
         {
             slot.Clear();
-            slot.EnableInClassList("zb-slot-objective", z.IsObjective);
+            slot.EnableInClassList("zb-node-objective", z.IsObjective);
 
             var title = new Label((z.IsObjective ? "★ " : "") + z.ZoneLabel);
             title.AddToClassList("zb-zone-title");
@@ -256,6 +296,26 @@ namespace ThreeKingdom.Unity.UI
         {
             if (string.IsNullOrEmpty(name) || name == "未探明之将") return null;
             return Resources.Load<Texture2D>($"Portraits/{name}");
+        }
+
+        /// <summary>邻接连线：在 zb-edges 层用 Painter2D 沿锚点描夯土路（节点之下，读作"可调动路径"）。</summary>
+        private static void DrawEdges(MeshGenerationContext ctx, VisualElement edges)
+        {
+            float w = edges.contentRect.width, h = edges.contentRect.height;
+            if (w <= 0f || h <= 0f) return;
+
+            var p = ctx.painter2D;
+            p.lineWidth = 3f;
+            p.lineCap = LineCap.Round;
+            p.strokeColor = new Color(0.42f, 0.34f, 0.22f, 0.55f); // 夯土路·半透（不抢节点）
+            foreach ((string a, string b) in Edges)
+            {
+                if (!ZoneAnchors.TryGetValue(a, out Vector2 pa) || !ZoneAnchors.TryGetValue(b, out Vector2 pb)) continue;
+                p.BeginPath();
+                p.MoveTo(new Vector2(pa.x * w, pa.y * h));
+                p.LineTo(new Vector2(pb.x * w, pb.y * h));
+                p.Stroke();
+            }
         }
 
         private static string StripZonePrefix(string zoneId)

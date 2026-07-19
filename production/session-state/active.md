@@ -39,11 +39,19 @@
 > - **遗留非阻断**：武将录面板透天空盒（老问题「面板非不透明底」，归美术/USS 打磨）。
 > - **下一步候选**：① HUD 主将立绘 + 战斗/城池背景接入；② 势力徽章/边框（立绘靠 UI 框标阵营，尤其关羽绿袍/诸葛亮白袍不靠袍色识别）；③ 扩产其余 ~25 核心武将立绘（套已验证通用法）；④ 武将录面板不透明底美术打磨。
 
+## 🚧 里程碑（2026-07-19 s28）— 战斗真地图化 M1（换皮·地图布局骨架）编译验证通过 + 已提交
+
+> **大方向（用户 2026-07-19 裁定，见记忆 project-battle-real-map-reskin）**：游戏太静态（卡片+数字），战斗要**真地图 + 兵马沿路行军 + 玩家拖动布防**。方案=**A 换皮**（纯呈现层，引擎 ADR-0012 不动，1261 测试全保）；**否决**自由坐标战棋（重造）。战斗优先。分期 M1 地图布局骨架→M2 行军动画→M3 拖动布防。
+> - **M1 完成（纯 Unity 侧，不动 DLL）**：`ZoneBattle.uxml` 删固定方格→地图画布 `zb-map`+连线层 `zb-edges`；`ZoneBattle.uss` 底图移到 `.zb-map`+新增 `.zb-node`(绝对定位 translate 居中)/`.zb-edges`；`ZoneBattleController.cs` 加**数据驱动锚点表** `ZoneAnchors`(zone-id→归一化坐标)+**邻接表** `Edges`(对齐 StandardAdjacency 6 路)，Render 按锚点把区域节点绝对定位到地图上，`DrawEdges` 用 Painter2D 描夯土路连线；FillZoneSlot→FillZoneNode。
+> - **验证（本轮用户免 computer-use，走现有线）**：编辑器开着锁项目→batchmode 走不了；改用 **csc + Unity 参考程序集(139)+3 Plugins DLL 直接编译 19 个 Assets/UI 脚本**——退出 0、无 CS 错、程序集产出。**C# 编译已验干净**；**视觉（节点摆位/连线渲染/USS）未验**，留用户开着的编辑器 Ctrl+R+Play 一眼。s28 CHECKLIST 已备（production/qa/evidence/s28-battle-map-m1-2026-07-19，无 DONE.flag=本轮免机验）。
+> - **锚点(占位坚城底图上)**：关城中央★(0.52,0.44)/隘口左(0.16,0.52)/高地左上(0.30,0.18)/粮道右上(0.82,0.24)/预备下方(0.50,0.82)。真战场地图一到只改这表即热换。
+> - **并行待产**：真战场地图美术（俯瞰战场图，MJ prompt 已给 art 侧，挂签名图A --sref）。**下一步 M2**：回合推进 diff 兵马位置→图元沿连线补间行军 + 在途画半路。
+
 ## ✅ 里程碑（2026-07-19 s27）— 视觉战斗场景 P1-P3 编辑器验证 PASS + 已提交
 
 > **s27 编辑器验证 PASS（DONE.flag 见 production/qa/evidence/s27-battle-scene-2026-07-11/）**：Unity 6.3 LTS 重编译 0 错，Play 推进 1→4 回合破城取胜，Console 全程无红错。5 项判据全过——① 车道方格 5 区摆位 + 正面关城★金框 ② 旗帜兵力分档（我红竖旗/敌蓝倾斜旗，观测 敌200=3旗/120=2旗/70=1旗）③ 将领名牌（剪影占位+阵营金框，敌将反全知不泄身份）④ 姿态三态 UI（主攻朱红高亮）⑤ 推进回合刷新无报错。P3 涌现徽章亦验（侧翼隘口「伏兵突然性」绿◆）。证据 01-battlefield.png 已存。
 > - **非阻断遗留（记后续微调）**：① 侧翼隘口卡元素较多时名牌文字压住姿态三键，纵向布局需微调；② 兵力雾化区间「敌 约X–Y」/「未探明之将」/旗帜溢出"+N" 本轮场景未触发（敌军均已侦察、兵力未超封顶），仅确认代码机制在位，建议后续用未侦察高兵力敌区补正向截图。
-> - **已提交批次**：ZoneBattleView.cs + ZoneBattle.{uxml,uss,Controller} + SessionRuntime/ZoneBattleSession + 3 DLL（Release 同步）+ ZoneBattleViewFogTests + 设计规格（visual-battle-scene GDD / battle-scene-art-spec v1.1 / midjourney-prompt-pack / art-bible / art-director memory）+ s27 验证证据。**未纳入本批**：Assets/data/generals.tkdata（独立武将数据，另提）、11 个 .unity 场景（纯 fileID 重编 churn，SliceSceneBuilder 重跑所致，不提交）、_diag2.txt 等 scratch。
+> - **已提交并推送**：`c28853c`（20 文件 +3226/-58）已 push **tk/main**（26f4329..c28853c）。内容=ZoneBattleView.cs + ZoneBattle.{uxml,uss,Controller} + SessionRuntime/ZoneBattleSession + 3 DLL（Release 同步）+ ZoneBattleViewFogTests + 设计规格（visual-battle-scene GDD / battle-scene-art-spec v1.1 / midjourney-prompt-pack / art-bible / art-director memory）+ s27 验证证据。**未纳入本批（仍在工作树）**：Assets/data/generals.tkdata（独立武将数据，另提）、11 个 .unity 场景（纯 fileID 重编 churn，SliceSceneBuilder 重跑所致，不提交）、_diag2.txt 等 scratch。
 > - **待产美术（不挡提交）**：3 地形背景（隘口/渡口/平原，prompt 备 §8.1-8.3）+ 真 sprite（旗帜/涌现/姿态/节点框，规格见 battle-scene-art-spec）。地形切换代码待素材出图后一处小接。
 
 ## 🏗️ 原始记录（2026-07-10 s27）— 视觉战斗场景 P1-P3 建造（用户批准，后台建造中）
