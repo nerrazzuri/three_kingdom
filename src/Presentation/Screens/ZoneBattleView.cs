@@ -44,25 +44,38 @@ namespace ThreeKingdom.Presentation.Screens
         public string ZoneId { get; }
         public string ZoneLabel { get; }
         public int OwnStrength { get; }
+        /// <summary>敌方兵力显示值：已侦察=真值；未侦察=区间中点（反全知，视图不暴露真值，F2）。图元数量按此值算。</summary>
         public int EnemyStrength { get; }
+        /// <summary>敌方兵力显示标签：已侦察=精确数；未侦察="约 X–Y"或"未见敌踪"（F2）。</summary>
+        public string EnemyStrengthLabel { get; }
+        /// <summary>敌方是否已侦察（false=未探明，兵力/将领皆走反全知雾）。</summary>
+        public bool EnemyRevealed { get; }
+        /// <summary>该区软容量（Zone.SoftCapacity，恒 &gt; 0）——兵力图元分档基准（GDD_visual-battle-scene F1）。地貌事实，不受反全知影响。</summary>
+        public int ZoneCapacity { get; }
         public IReadOnlyList<string> FormedConditions { get; }
         /// <summary>我方在该区的支队（将领·id + 一句摘要，供选择调动）。</summary>
         public IReadOnlyList<string> OwnDetachments { get; }
+        /// <summary>我方在该区的支队·结构化（供姿态切换 UI：id/将领/兵力/姿态/在途）。</summary>
+        public IReadOnlyList<OwnUnitView> OwnUnits { get; }
         /// <summary>该区敌方将领（GDD_027 #3/#4 守将进战斗，反全知：已侦察目标现真名，否则「未探明之将」）。</summary>
         public IReadOnlyList<string> EnemyCommanders { get; }
         public bool IsObjective { get; }
 
         internal ZoneLineView(
-            string zoneId, int ownStrength, int enemyStrength,
-            IReadOnlyList<string> formed, IReadOnlyList<string> ownDetachments,
+            string zoneId, int ownStrength, int enemyStrength, string enemyStrengthLabel, bool enemyRevealed, int zoneCapacity,
+            IReadOnlyList<string> formed, IReadOnlyList<string> ownDetachments, IReadOnlyList<OwnUnitView> ownUnits,
             IReadOnlyList<string> enemyCommanders, bool isObjective)
         {
             ZoneId = zoneId;
             ZoneLabel = ZoneBattleText.Zone(zoneId);
             OwnStrength = ownStrength;
             EnemyStrength = enemyStrength;
+            EnemyStrengthLabel = enemyStrengthLabel;
+            EnemyRevealed = enemyRevealed;
+            ZoneCapacity = zoneCapacity;
             FormedConditions = formed;
             OwnDetachments = ownDetachments;
+            OwnUnits = ownUnits;
             EnemyCommanders = enemyCommanders;
             IsObjective = isObjective;
         }
@@ -82,6 +95,29 @@ namespace ThreeKingdom.Presentation.Screens
             DetachmentLabel = detachmentLabel;
             TargetZoneId = targetZoneId;
             TargetZoneLabel = ZoneBattleText.Zone(targetZoneId);
+        }
+    }
+
+    /// <summary>我方一支队的结构化态势（供姿态切换 UI：id + 带队将领 + 兵力 + 当前姿态 + 在途/溃散）。不可变。</summary>
+    public sealed class OwnUnitView
+    {
+        public string DetachmentId { get; }
+        public string LeaderName { get; }   // 具名将领中文名；无将领为 null
+        public int Strength { get; }
+        public Posture Posture { get; }
+        public string PostureLabel { get; }
+        public bool InTransit { get; }
+        public bool IsBroken { get; }
+
+        internal OwnUnitView(string detachmentId, string leaderName, int strength, Posture posture, bool inTransit, bool isBroken)
+        {
+            DetachmentId = detachmentId;
+            LeaderName = leaderName;
+            Strength = strength;
+            Posture = posture;
+            PostureLabel = ZoneBattleText.Posture(posture);
+            InTransit = inTransit;
+            IsBroken = isBroken;
         }
     }
 
@@ -128,6 +164,7 @@ namespace ThreeKingdom.Presentation.Screens
             {
                 int ownStrength = 0, enemyStrength = 0;
                 var ownDets = new List<string>();
+                var ownUnits = new List<OwnUnitView>();
                 var enemyCmd = new List<string>();
                 foreach (Detachment d in state.DetachmentsIn(z.Id))
                 {
@@ -135,8 +172,10 @@ namespace ThreeKingdom.Presentation.Screens
                     {
                         ownStrength += d.Strength;
                         string transit = d.InTransit ? $"→在途" : "";
-                        string leader = d.General != null ? DisplayNames.Of(d.General.Character.Value) + "·" : "";
+                        string leaderName = d.General != null ? DisplayNames.Of(d.General.Character.Value) : null;
+                        string leader = leaderName != null ? leaderName + "·" : "";
                         ownDets.Add($"{leader}{d.Id.Value}（{d.Strength}·{ZoneBattleText.Posture(d.Posture)}{transit}）");
+                        ownUnits.Add(new OwnUnitView(d.Id.Value, leaderName, d.Strength, d.Posture, d.InTransit, d.IsBroken));
                     }
                     else
                     {
@@ -148,7 +187,8 @@ namespace ThreeKingdom.Presentation.Screens
                 }
                 var formed = new List<string>();
                 foreach (TacticCondition c in state.EngagementOf(z.Id).FormedConditions) formed.Add(OffensiveText.Condition(c));
-                lines.Add(new ZoneLineView(z.Id.Value, ownStrength, enemyStrength, formed, ownDets, enemyCmd, z.Id == BattleField.Front));
+                (int enemyDisplay, string enemyLabel) = FogBand(enemyStrength, z.SoftCapacity, defendersRevealed);
+                lines.Add(new ZoneLineView(z.Id.Value, ownStrength, enemyDisplay, enemyLabel, defendersRevealed, z.SoftCapacity, formed, ownDets, ownUnits, enemyCmd, z.Id == BattleField.Front));
             }
 
             var emerg = new List<string>();
@@ -173,6 +213,31 @@ namespace ThreeKingdom.Presentation.Screens
                 }
 
             return new ZoneBattleView(state.Clock.Round, state.Clock.MaxRounds, own == BattleSide.Attacker, lines, emerg, moves, outcome);
+        }
+
+        /// <summary>
+        /// 反全知敌军兵力区间估计（visual-battle-scene GDD §4 F2，确定性纯函数，可单测）。
+        /// 已侦察 → (真值, 精确数字串)；未侦察 → (区间中点, "约 X–Y" 标签)——视图<b>不</b>把真值交给渲染层。
+        /// 真值 0 → ("未见敌踪")，不凭空造假非零区间；顶档（band 封顶）标签加"+"提示可能更多。
+        /// </summary>
+        public static (int Display, string Label) FogBand(int trueStrength, int capacity, bool revealed)
+        {
+            if (revealed) return (trueStrength, trueStrength.ToString());
+            if (trueStrength <= 0) return (0, "未见敌踪");
+            if (capacity <= 0) capacity = 1;
+
+            // FogBandWidth=0.20 即 1/5 → BandCount=5（档 0..4）。用整数运算避免浮点 floor 误差（如 0.6/0.2=2.9999→2），
+            // 确定性纯函数：band = floor(strength×5 / capacity)（正整数整除即 floor）。
+            const int BandCount = 5;
+            int band = trueStrength * BandCount / capacity;
+            if (band < 0) band = 0;
+            if (band > BandCount - 1) band = BandCount - 1;
+
+            int lower = band * capacity / BandCount;
+            int upper = (band + 1) * capacity / BandCount;
+            int mid = (lower + upper) / 2;
+            string label = band >= BandCount - 1 ? $"约 {lower}–{upper}+" : $"约 {lower}–{upper}";
+            return (mid, label);
         }
     }
 }

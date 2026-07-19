@@ -132,6 +132,9 @@ namespace ThreeKingdom.Unity.UI
         public static ZoneBattleView OffensiveBattleView() => _runtime.OffensiveBattleView();
         /// <summary>战中调动己方支队到相邻区。</summary>
         public static bool OffensiveBattleMove(string detId, string zoneId) => _runtime.OffensiveBattleMove(detId, zoneId).Applied;
+        /// <summary>战中切换己方支队姿态（主攻/佯攻/守）。</summary>
+        public static bool OffensiveBattleSetPosture(string detId, ThreeKingdom.Domain.ZoneBattle.Posture posture)
+            => _runtime.OffensiveBattleSetPosture(detId, posture).Applied;
         /// <summary>推进出征战斗一回合（敌AI + 结算）。</summary>
         public static ZoneBattleView OffensiveBattleResolveRound() => _runtime.OffensiveBattleResolveRound();
         /// <summary>挂 AI 代打出征至终局（不结算）。</summary>
@@ -151,6 +154,9 @@ namespace ThreeKingdom.Unity.UI
         public static ZoneBattleView DefenseBattleView() => _runtime.DefenseBattleView();
         /// <summary>守城战中调动己方守军到相邻区。</summary>
         public static bool DefenseBattleMove(string detId, string zoneId) => _runtime.DefenseBattleMove(detId, zoneId).Applied;
+        /// <summary>守城战中切换己方守军姿态。</summary>
+        public static bool DefenseBattleSetPosture(string detId, ThreeKingdom.Domain.ZoneBattle.Posture posture)
+            => _runtime.DefenseBattleSetPosture(detId, posture).Applied;
         /// <summary>推进守城战一回合。</summary>
         public static ZoneBattleView DefenseBattleResolveRound() => _runtime.DefenseBattleResolveRound();
         /// <summary>挂 AI 代打守城至终局（不结算）。</summary>

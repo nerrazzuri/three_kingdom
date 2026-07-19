@@ -39,6 +39,27 @@
 > - **遗留非阻断**：武将录面板透天空盒（老问题「面板非不透明底」，归美术/USS 打磨）。
 > - **下一步候选**：① HUD 主将立绘 + 战斗/城池背景接入；② 势力徽章/边框（立绘靠 UI 框标阵营，尤其关羽绿袍/诸葛亮白袍不靠袍色识别）；③ 扩产其余 ~25 核心武将立绘（套已验证通用法）；④ 武将录面板不透明底美术打磨。
 
+## ✅ 里程碑（2026-07-19 s27）— 视觉战斗场景 P1-P3 编辑器验证 PASS + 已提交
+
+> **s27 编辑器验证 PASS（DONE.flag 见 production/qa/evidence/s27-battle-scene-2026-07-11/）**：Unity 6.3 LTS 重编译 0 错，Play 推进 1→4 回合破城取胜，Console 全程无红错。5 项判据全过——① 车道方格 5 区摆位 + 正面关城★金框 ② 旗帜兵力分档（我红竖旗/敌蓝倾斜旗，观测 敌200=3旗/120=2旗/70=1旗）③ 将领名牌（剪影占位+阵营金框，敌将反全知不泄身份）④ 姿态三态 UI（主攻朱红高亮）⑤ 推进回合刷新无报错。P3 涌现徽章亦验（侧翼隘口「伏兵突然性」绿◆）。证据 01-battlefield.png 已存。
+> - **非阻断遗留（记后续微调）**：① 侧翼隘口卡元素较多时名牌文字压住姿态三键，纵向布局需微调；② 兵力雾化区间「敌 约X–Y」/「未探明之将」/旗帜溢出"+N" 本轮场景未触发（敌军均已侦察、兵力未超封顶），仅确认代码机制在位，建议后续用未侦察高兵力敌区补正向截图。
+> - **已提交批次**：ZoneBattleView.cs + ZoneBattle.{uxml,uss,Controller} + SessionRuntime/ZoneBattleSession + 3 DLL（Release 同步）+ ZoneBattleViewFogTests + 设计规格（visual-battle-scene GDD / battle-scene-art-spec v1.1 / midjourney-prompt-pack / art-bible / art-director memory）+ s27 验证证据。**未纳入本批**：Assets/data/generals.tkdata（独立武将数据，另提）、11 个 .unity 场景（纯 fileID 重编 churn，SliceSceneBuilder 重跑所致，不提交）、_diag2.txt 等 scratch。
+> - **待产美术（不挡提交）**：3 地形背景（隘口/渡口/平原，prompt 备 §8.1-8.3）+ 真 sprite（旗帜/涌现/姿态/节点框，规格见 battle-scene-art-spec）。地形切换代码待素材出图后一处小接。
+
+## 🏗️ 原始记录（2026-07-10 s27）— 视觉战斗场景 P1-P3 建造（用户批准，后台建造中）
+
+> **愿景：战斗屏依城市地形生成、山路埋伏/旱林火攻、sprite 军队带将。核实后关键结论——逻辑后端全有（ADR-0012 命名区战场 + BattleFieldCatalog.ForTerrain 逐地形 + 火攻/水攻/埋伏/夜袭涌现 + 兵力/将领投影），缺的纯是视觉呈现。**
+> - **规格已出并经用户批准**（先设计后建造）：`design/gdd/visual-battle-scene.md`（呈现设计 8 段）+ `design/art/battle-scene-art-spec.md` v1.1 + prompt-pack §8（隘口/渡口/平原 3 背景 prompt）。
+> - **用户拍板设计**：布局=车道方格（5区+6邻接连线对应 StandardAdjacency）；兵力=旗帜图元堆叠（15%容量/档，封顶7转+N）；两缺口一并修——① `ZoneBattleView.EnemyStrength` 漏反全知门（补区间估计 FogBandWidth0.20 5档）② `SetPosture` 有命令无界面（补姿态三态UI）。
+> - **建造（3 个后台 agent 全空转没交付 → Claude 自建，同 s25/s26 节奏，分期验）**：
+>   - **✅ P1 完成（Claude 手建，dotnet 1254/1254 绿）**：`ZoneBattleView` 加 `ZoneCapacity`（旗帜分档基准）+ `ZoneBattle.uxml/uss/Controller` 重构为车道方格战场（5区槽位按 zone-id 填）+ 队列旗帜兵力（F1：ceil(兵力/容量/0.15)、非零≥1、封顶7转+N）+ 将领名牌（立绘缩略+阵营/敌我色边框，反全知敌将未探明）+ 键盘可达调动列表 + 涌现横幅。真 sprite 未出→USS 占位（我方红竖旗/敌方蓝倾斜旗）。**待编辑器验证**（清单 s27-battle-scene-2026-07-11，Monitor 盯 DONE flag）。
+>   - **✅ P2-fog 完成（Claude 手建，dotnet 1261/1261 绿）**：`ZoneBattleView.FogBand`（反全知 F2 区间估计，**整数运算**避浮点 floor 误差[0.6/0.2=2.9999→2 的坑]）+ `ZoneLineView.EnemyStrengthLabel/EnemyRevealed`；控制器敌军显"约 X–Y"+旗帜半透+问号。新增 `ZoneBattleViewFogTests`（7 项边界）。DLL 已同步。**并入 s27 一起验证。**
+>   - **✅ P2-posture 完成（Claude 手建，dotnet 1261 绿）**：CampaignRuntime.OffensiveBattleSetPosture/DefenseBattleSetPosture 已存在→透传 SessionRuntime + ZoneBattleSession.SetPosture；ZoneBattleView 加结构化 `OwnUnitView`/`OwnUnits`（id/将领/兵力/姿态/在途）；控制器每支队名牌下加姿态三态切换（主攻/佯攻/守，当前高亮，在途/溃散禁用）。
+>   - **✅ P3-涌现 完成（Claude 手建）**：已成条件渲染为彩色徽章（火▲红/水●青/伏◆绿/夜■靛+通用✦，形状+色双编码，不剧透未成型）。
+>   - **P3-地形切换 延后**：隘口/渡口/平原背景未出图（3/5 地形无图），prompt 备在 §8.1-8.3（用 bg3-1 签名A做 --sref）。待用户出图后一处小接（controller 按 terrain 选 bg + terrain 访问器透传）。
+>   - **总状态**：P1+P2+P3 代码全建完（除地形切换待素材），dotnet 1261/1261 绿，3 DLL 已同步，**待一次编辑器验证**（s27 清单已含全部：方格/旗帜/名牌/雾/姿态/徽章）。未提交（等 UI 验过）。
+> - **待产美术**：3 地形背景（隘口/渡口/平原）+ 真 sprite（旗帜/涌现/姿态/节点框，规格见 battle-scene-art-spec）。
+
 ## 🖼️ 里程碑（2026-07-10 s26）— HUD 麾下立绘 + 战斗屏城战背景（编辑器验证 PASS）
 
 > **接续 s25 的"美术进游戏"第二批。computer-use 编辑器验证 PASS（含一次 FAIL→修复→复验 PASS），Claude 独立核图坐实。证据 `production/qa/evidence/s26-hud-battle-art-2026-07-10/`。**
@@ -47,6 +68,14 @@
 > - **关键教训（USS 背景绑定）**：`UIDocument.rootVisualElement` 是**文档根**，其子元素（带 `.hud-root` 不透明底色的 zb-root/menu-root）会遮住设在文档根上的背景图。**背景图必须设在"带 class 那个元素自身"**（zb-root/menu-root），用 USS `#name{ background-image: resource(...); background-size: cover }`（MainMenu 已验证范式），别用 C# `root.style.backgroundImage`（首版就是设错元素→FAIL）。
 > - **HUD 具名立绘分支**等价验证：加载+显示路径（`Resources.Load<Texture2D>`+`Image.image`）与 s25 武将录关羽立绘完全一致，剧本出现 5 位时必显；默认190汜水关部将为无名"副将"故显剪影（符合预期）。
 > - **✅ 用户选定的"接进 Unity"方向首轮完成**：主菜单背景(s25) + 武将录立绘(s25) + 战斗屏背景(s26) + HUD麾下立绘(s26)。
+
+## 🎨 里程碑（2026-07-10，v1.1 已按 GDD 定稿校正）— art-director 出品：视觉战斗场景美术资产规格 + 逐地形背景 Prompt
+
+> **战斗引擎从"文字卡片"升级"真·战场画面"的美术侧规格。game-designer 并行出 `design/gdd/visual-battle-scene.md`（内容/布局，已定稿），art-director 定视觉，本轮已逐类对齐该 GDD §6 资产接口契约表校正命名。**
+> - **`design/art/battle-scene-art-spec.md` 升级到 v1.1**：① 逐地形战场背景（`TerrainKind`：坚城/隘口/渡口/平原/遮蔽，5 类**全部各自独立成图，不互相复用**——**v1.0 曾建议平原复用「粮道」背景 `bg_supplyroad_neutral_1920.png` 的方案已作废**，因"粮道"是区角色名非地形，本轮改为平原单独出 Prompt，见 §1.5 更正记录）；② 新增此前遗漏的**区域节点框+邻接连线**（§2）、**姿态图标×3**（§5，主攻/佯攻/守，命令语气朱红实线）、**在途/溃散状态叠加**（§6，`charfx_transit_24`/`charfx_broken_24`）三大资产族；③ 兵力队列图元架构重做（§3）——由"每档位一张图+大纛"改为"每阵营 1 枚基础图元×3 状态（own/enemy/fogged）由 UI 层重复堆叠 N 次+溢出数字徽标"，前缀改用独立 `troopicon_*`；④ 涌现标记从 4 类扩到 8 类全覆盖（4 专属+1 通用兜底卷轴图标），命名改 `uiicon_emergence_[tag]_32`；⑤ 反全知问号徽标重构为独立叠加层 `uiicon_tier_unknown_32`（不再合并进旗帜本体），未侦察态兵力图元读解为"保留真实阵营色，仅隐藏精确数量/将领身份"（本文件读解，已标注若与 game-designer 原意不符可低成本改一处）；⑥ 名牌容器命名改为复用既有 `faction_*` 前缀（`faction_[faction]_generalframe_128.png`），不再新造 `ui_generalplate_*`。
+> - **prompt-pack §8 升级为 3 条新背景 Prompt**（`design/art/midjourney-prompt-pack.md`）：隘口 Pass（§8.1）/ 渡口 Ford（§8.2）/ **平原 Plain（§8.3，本轮新增，替换掉已作废的"复用粮道"方案）**，三者导出命名统一改用 GDD 命名 `bg_zonebattle_[terrain]_1920.png`（已入库的坚城/遮蔽仍保留 legacy 文件名，是否统一改名列为 TODO，见规格文件 §1.6）。平原 Prompt 已在正负面提示词中显式排除道路/车辙/农田脊元素，与粮道图刻意区隔。
+> - **registry §6 本轮未改动**（三张新背景尚未实际出图，仅备好 prompt）。
+> - **下一步候选**：① 项目方按 §8.1/§8.2/§8.3 prompt 实际跑 MJ 出隘口/渡口/平原三张背景，过 §3 检查表后登记入 §6；② 已产出的坚城/遮蔽背景是否改名统一到 GDD 命名，需 tech/producer 排期；③ 兵力图元/涌现标记/节点框/姿态图标等全部待实际出稿（占位符号系统已定，未出图）；④ 规格文件 §10 共 7 项 TODO 与 game-designer/tech 对齐后回填。
 
 ## ✅ 完成（2026-07-07 续22）— 演义事件引擎「全做完」（试水→完整）
 

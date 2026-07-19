@@ -61,6 +61,14 @@ namespace ThreeKingdom.Unity.UI
             _ => Demo().MoveDetachment(detachmentId, zoneId).Applied,
         };
 
+        /// <summary>战中切换己方支队姿态（主攻/佯攻/守）。</summary>
+        public static bool SetPosture(string detachmentId, ThreeKingdom.Domain.ZoneBattle.Posture posture) => Current switch
+        {
+            Mode.Offensive => SessionRuntime.OffensiveBattleSetPosture(detachmentId, posture),
+            Mode.Defense => SessionRuntime.DefenseBattleSetPosture(detachmentId, posture),
+            _ => Demo().SetPosture(detachmentId, posture).Applied,
+        };
+
         /// <summary>战斗是否已终局。</summary>
         public static bool IsOver => Current switch
         {
