@@ -1,0 +1,152 @@
+/* 格子战斗屏样式（GDD-028）。便宜俯视占位——地形色块 + 部队图元；2.5D 等距为后续呈现分期。 */
+.gb-body {
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+/* 战场网格容器：相对定位，格子/图元绝对定位其上；尺寸由控制器按 宽×高×格 设定。 */
+.gb-map {
+    position: relative;
+    margin: 8px;
+    flex-shrink: 0;
+    background-color: rgb(231, 220, 196);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(51, 44, 34);
+    border-right-color: rgb(51, 44, 34);
+    border-top-color: rgb(51, 44, 34);
+    border-bottom-color: rgb(51, 44, 34);
+}
+
+/* 一格地形 */
+.gb-cell {
+    position: absolute;
+    border-left-width: 1px;
+    border-top-width: 1px;
+    border-left-color: rgba(51, 44, 34, 0.16);
+    border-top-color: rgba(51, 44, 34, 0.16);
+}
+
+.gb-cell-glyph {
+    position: absolute;
+    left: 2px;
+    top: 1px;
+    font-size: 11px;
+    color: rgba(74, 63, 44, 0.55);
+}
+
+/* 粮仓归属边（阵营色） */
+.gb-granary-player {
+    border-left-color: rgb(166, 64, 42);
+    border-right-color: rgb(166, 64, 42);
+    border-top-color: rgb(166, 64, 42);
+    border-bottom-color: rgb(166, 64, 42);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+}
+
+.gb-granary-enemy {
+    border-left-color: rgb(61, 90, 120);
+    border-right-color: rgb(61, 90, 120);
+    border-top-color: rgb(61, 90, 120);
+    border-bottom-color: rgb(61, 90, 120);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+}
+
+/* 部队图元（占位圆牌）：兵种字 + 兵力条；阵营色；选中金环。 */
+.gb-token {
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+}
+
+.gb-token-player {
+    background-color: rgb(166, 64, 42);
+    border-left-color: rgb(122, 44, 28);
+    border-right-color: rgb(122, 44, 28);
+    border-top-color: rgb(122, 44, 28);
+    border-bottom-color: rgb(122, 44, 28);
+}
+
+.gb-token-enemy {
+    background-color: rgb(61, 90, 120);
+    border-left-color: rgb(38, 56, 76);
+    border-right-color: rgb(38, 56, 76);
+    border-top-color: rgb(38, 56, 76);
+    border-bottom-color: rgb(38, 56, 76);
+}
+
+.gb-token-selected {
+    border-left-color: rgb(198, 138, 46);
+    border-right-color: rgb(198, 138, 46);
+    border-top-color: rgb(198, 138, 46);
+    border-bottom-color: rgb(198, 138, 46);
+}
+
+.gb-token-cover {
+    opacity: 0.82;
+}
+
+.gb-token-glyph {
+    font-size: 13px;
+    -unity-font-style: bold;
+    color: rgb(243, 236, 217);
+}
+
+.gb-token-name {
+    position: absolute;
+    top: 30px;
+    font-size: 9px;
+    color: rgb(45, 42, 36);
+}
+
+.gb-side {
+    width: 300px;
+    flex-shrink: 0;
+}
+
+.gb-legend {
+    font-size: 11px;
+    color: rgb(70, 66, 58);
+    white-space: normal;
+}
+
+.gb-supply-row {
+    margin-top: 4px;
+}
+
+.gb-supply-lab {
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.gb-supply-bar {
+    height: 10px;
+    background-color: rgba(51, 44, 34, 0.14);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.gb-supply-fill {
+    height: 10px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}

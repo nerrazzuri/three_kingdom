@@ -47,7 +47,12 @@
 >   - `GridBattleEnums`（GridSide/TerrainKind/TroopKind/Outcome + GridCoord）· `BattleGrid`（地图+地形+粮仓+通行，FromRows 字符地图）· `GridBattleConfig`（兵种速/射程 + 全整数调参，Default=原型值）· `GridUnit`（引擎内可变外部只读）· `GridBattleState`（权威态+深拷+FNV确定性哈希）· `GridPathfinder`（整数BFS绕山过隘）· `GridBattleEngine`（段推进状态机：移动→遭遇→火攻→交战[伏击×2.5/夜袭×1.25/告急×3]→补给→回血/叛逃→终局 + SetDestination命令）。
 >   - **测试 `GridBattleEngineTests` 15 项全绿**（覆盖 GDD-028 十条 AC：确定性哈希/原态不变/寻路绕山/兵种定速/伏击/无伏击对照/火攻断粮/补给回血/叛逃/告急伤亡×3/半路遭遇/终局/命令校验/克隆哈希）。
 >   - **dotnet 1276/1276 绿**（1261→1276）；3 DLL Release/netstandard2.1 同步 Assets/Plugins。
-> - **待续（后端之外，未做）**：敌方AI迁到格子动作空间（ADR-0013 特化）· Application 战役接线（从出征/守城发起 + 存档信封 ADR-0005/0009）· 半路遭遇的暂停-抉择接 Application/UI · Presentation（先便宜视图跑通引擎，再上 **2.5D 等距** 呈现分期）· 平衡套件调数值。
+> - **续做完成（2026-07-20，用户令"AI/接线/Presentation 都做"）**：
+>   - **敌方AI**（`GridBattle/AiGridView`+`EnemyGridAi`，特化 ADR-0013）：反全知投影(林中藏兵不入视图)+确定性效用(告急退守/骑兵扑敌粮/步弓逼近最近敌)+同命令契约不作弊。6 测。
+>   - **Application 接线**（`Application/GridBattle/`）：`GridBattleSession`(编排:玩家仅己方下令防越权→敌AI规划→引擎推进→终局) + `GridBattleSnapshot/Codec`(显式版本化 DTO，战中存档 round-trip 哈希一致，读档续战=不间断推进同结果)。6 测。
+>   - **Presentation**（`GridBattleView` 投影 + Unity `GridBattle.uxml/uss/GridBattleController` + `GridBattleRuntime` demo 桥 + SliceSceneBuilder 注册 GridBattle 场景）：便宜俯视——地形色块网格+部队图元+补给条+时钟+点选设目的地+进行。view-model 3 测；21 个 Assets/UI 脚本 csc 编译 0 错。
+>   - **dotnet 1291/1291 绿**（1276→1291，+15）；3 DLL Release 同步。
+> - **仍待（后续，未做）**：GridBattle 场景需编辑器重跑 SliceSceneBuilder 生成 + 视觉验证（编辑器锁项目，本轮 csc 编译验证）· 深度战役接线（从出征/守城 GDD-019 发起 + 存档信封 ADR-0009 并入 CampaignSession）· 半路遭遇的暂停-抉择 UI · **2.5D 等距**呈现分期 · AI 深化(softmax/记忆) · 平衡套件调数值。
 
 ## 🔀 方向转折（2026-07-20）— 换皮不够，用户转向"格子实时战斗"重造，原型已验手感
 

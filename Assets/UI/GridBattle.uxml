@@ -1,0 +1,39 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 格子战斗屏（GDD-028 / ADR-0018）：地形网格 + 部队图元 + 补给/时钟 + 推进。
+         逻辑在纯 C# GridBattleEngine/GridBattleSession（dotnet 已单测 30 项）；本壳只读投影渲染。
+         ★需 Unity 编辑器验证（视觉）；2.5D 等距为后续呈现分期，本轮为便宜俯视占位。 -->
+    <ui:VisualElement name="gb-root" class="hud-root">
+        <ui:Style src="Hud.uss" />
+        <ui:Style src="GridBattle.uss" />
+
+        <ui:VisualElement name="gb-header" class="hud-header">
+            <ui:Label name="gb-title" text="演武 — 格子战场" class="hud-objective" />
+            <ui:Label name="gb-clock" class="hud-note" />
+            <ui:Label name="gb-outcome" class="hud-banner" />
+            <ui:VisualElement class="hud-top">
+                <ui:Button name="gb-advance" text="进行 ▶（推进一个时间段）" />
+                <ui:Button name="gb-reset" text="重开" />
+                <ui:Button name="gb-menu" text="返回主菜单" />
+            </ui:VisualElement>
+            <ui:Label name="gb-status" class="hud-note" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="gb-body" class="gb-body">
+            <ui:VisualElement name="gb-map" class="gb-map" />
+            <ui:ScrollView name="gb-side" class="gb-side">
+                <ui:VisualElement class="card">
+                    <ui:Label text="补给" class="card-title" />
+                    <ui:VisualElement name="gb-supply" />
+                </ui:VisualElement>
+                <ui:VisualElement class="card">
+                    <ui:Label text="兵种 · 打法" class="card-title" />
+                    <ui:Label class="gb-legend" text="骑速3·步速1·弓速1(隔2格放箭)。林中挨隘口→入隘伏击×2.5；绕到敌仓(白昼/黄昏)→火攻断粮。补给告急→叛逃+被打×3。" />
+                </ui:VisualElement>
+                <ui:VisualElement class="card">
+                    <ui:Label text="战况" class="card-title" />
+                    <ui:VisualElement name="gb-log" />
+                </ui:VisualElement>
+            </ui:ScrollView>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

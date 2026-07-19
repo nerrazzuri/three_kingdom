@@ -47,6 +47,8 @@ namespace ThreeKingdom.Unity.EditorTools
             new ScreenDef { Name = "CampaignMap", Uxml = "Assets/UI/CampaignMap.uxml", Controller = typeof(CampaignMapController) },
             // 独立区域战斗场景（GDD_021 / epic-031）：出征/守城从 HUD 进入此屏排兵布阵，结算后返回 HUD。
             new ScreenDef { Name = "ZoneBattle", Uxml = "Assets/UI/ZoneBattle.uxml", Controller = typeof(ZoneBattleController) },
+            // 独立格子战斗场景（GDD-028 / ADR-0018，supersede 命名区域）：地形网格 + 兵种定速行军 + 时间段交战。demo 局自建。
+            new ScreenDef { Name = "GridBattle", Uxml = "Assets/UI/GridBattle.uxml", Controller = typeof(GridBattleController) },
             // 被灭续局屏（被俘→判生死→归顺/投奔→复位续局 / 传承）。
             new ScreenDef { Name = "Defeat", Uxml = "Assets/UI/Defeat.uxml", Controller = typeof(DefeatController) },
             new ScreenDef { Name = "PauseMenu", Uxml = "Assets/UI/PauseMenu.uxml", Controller = typeof(PauseMenuController) },
