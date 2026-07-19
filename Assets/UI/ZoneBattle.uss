@@ -49,6 +49,64 @@
     bottom: 0;
 }
 
+/* 地点标记层（中）+ 兵马图元层（上）：均铺满地图；容器 picking-Ignore（不拦拖拽），
+   但兵马图元本身可拾取（子元素默认 Position，可拖）。 */
+.zb-regions,
+.zb-troops {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* 兵马图元（M2/M3）：绝对定位于所在区锚点（left/top 由控制器设百分比，translate 居中）。
+   left/top 加 transition → 换区时【沿位置补间"行军"】。持久元素按 detachmentId 复用。 */
+.zb-troop {
+    position: absolute;
+    translate: -50% -50%;
+    transition-property: left, top;
+    transition-duration: 0.45s;
+    transition-timing-function: ease-in-out;
+    max-width: 190px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 6px;
+    padding-right: 6px;
+    background-color: rgba(247, 244, 236, 0.94);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(120, 110, 96);
+    border-right-color: rgb(120, 110, 96);
+    border-top-color: rgb(120, 110, 96);
+    border-bottom-color: rgb(120, 110, 96);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+/* 新建/拖拽中：关闭补间（新建不从(0,0)滑入；拖拽实时跟随指针） */
+.zb-troop-new,
+.zb-troop-drag {
+    transition-duration: 0s;
+}
+
+/* 拖拽中：微抬（提示"拈起"）+ 半透，避免遮住落点 */
+.zb-troop-drag {
+    opacity: 0.85;
+    scale: 1.06 1.06;
+}
+
+/* 提示"可拖动"的抓手（视觉线索；键盘调动列表仍是无障碍兜底） */
+.zb-troop-grip {
+    font-size: 10px;
+    color: rgb(120, 110, 96);
+    margin-bottom: 1px;
+}
+
 /* 区域节点：绝对定位于锚点（left/top 百分比由控制器设），translate 使锚点=节点中心；
    半透宣纸卡叠在地图上仍可读；控制器为其设锚点百分比。 */
 .zb-node {

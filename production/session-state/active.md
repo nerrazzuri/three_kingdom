@@ -45,7 +45,12 @@
 > - **M1 完成（纯 Unity 侧，不动 DLL）**：`ZoneBattle.uxml` 删固定方格→地图画布 `zb-map`+连线层 `zb-edges`；`ZoneBattle.uss` 底图移到 `.zb-map`+新增 `.zb-node`(绝对定位 translate 居中)/`.zb-edges`；`ZoneBattleController.cs` 加**数据驱动锚点表** `ZoneAnchors`(zone-id→归一化坐标)+**邻接表** `Edges`(对齐 StandardAdjacency 6 路)，Render 按锚点把区域节点绝对定位到地图上，`DrawEdges` 用 Painter2D 描夯土路连线；FillZoneSlot→FillZoneNode。
 > - **验证（本轮用户免 computer-use，走现有线）**：编辑器开着锁项目→batchmode 走不了；改用 **csc + Unity 参考程序集(139)+3 Plugins DLL 直接编译 19 个 Assets/UI 脚本**——退出 0、无 CS 错、程序集产出。**C# 编译已验干净**；**视觉（节点摆位/连线渲染/USS）未验**，留用户开着的编辑器 Ctrl+R+Play 一眼。s28 CHECKLIST 已备（production/qa/evidence/s28-battle-map-m1-2026-07-19，无 DONE.flag=本轮免机验）。
 > - **锚点(占位坚城底图上)**：关城中央★(0.52,0.44)/隘口左(0.16,0.52)/高地左上(0.30,0.18)/粮道右上(0.82,0.24)/预备下方(0.50,0.82)。真战场地图一到只改这表即热换。
-> - **并行待产**：真战场地图美术（俯瞰战场图，MJ prompt 已给 art 侧，挂签名图A --sref）。**下一步 M2**：回合推进 diff 兵马位置→图元沿连线补间行军 + 在途画半路。
+> - **并行待产**：真战场地图美术（俯瞰战场图，MJ prompt 已给 art 侧，挂签名图A --sref）。
+> - **M2+M3 完成（纯 Unity 侧，不动 DLL；csc 编译校验 0 CS 错）**：
+>   - **M2 行军动画**：兵马从区域卡拆为**独立可移动图元**（zb-troops 层，按 detachmentId 持久复用）；地点标记退化为固定 zb-regions（区名★+敌情+条件）。兵马摆到所在区锚点（同区下方错开），`transition: left,top 0.45s` → **换区时沿位置补间"行军"**（非瞬移）。上一帧原区→这一帧目的区（域内 Location=目的区）自然演出行军，无需 view-model 改。
+>   - **M3 拖动布防**：`AttachDrag`+`DropTargetZone`——拈起兵马跟随指针→松手落**相邻合法区**发 Move 命令（否则回弹）；姿态按钮按压不触发拖拽；键盘调动列表仍无障碍兜底。落点用 view.MoveOptions 校验。
+>   - 提交 6180331(M1)→本批(M2/M3)。验证清单 s28-battle-map-m2m3-2026-07-19（编译已验；视觉/交互留用户编辑器 Play）。
+>   - **遗留**：图元大小/错开偏移/落点半径(0.16) 待看后微调；在途"就位目的区标·在途"，真·画半路需 view-model 加起讫区（后续小步）。
 
 ## ✅ 里程碑（2026-07-19 s27）— 视觉战斗场景 P1-P3 编辑器验证 PASS + 已提交
 

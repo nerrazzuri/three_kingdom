@@ -39,6 +39,11 @@ namespace ThreeKingdom.Unity.UI
             ("reserve", "cover"), ("cover", "supply"), ("flank", "supply"),
         };
 
+        // M2/M3：持久的兵马图元（detachmentId→图元；跨帧复用→换区时 left/top 变化触发 transition"行军"）。
+        private readonly Dictionary<string, VisualElement> _troops = new();
+        // 当前合法拖放落点（"detId|zoneId"）——每帧由 view.MoveOptions 刷新，拖放松手时校验。
+        private readonly HashSet<string> _moveTargets = new();
+
         private void OnEnable()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
@@ -86,24 +91,24 @@ namespace ThreeKingdom.Unity.UI
             SetEnabled(root, "zb-auto", !view.IsOver);
             SetEnabled(root, "zb-conclude", view.IsOver);
 
-            // 各区态势 → 地图上的区域节点（按 zone-id 锚点绝对定位）。
-            var map = root.Q<VisualElement>("zb-map");
-            if (map != null)
+            // 各区态势 → 地图分层：地点标记（固定 zb-regions）+ 兵马图元（可移动/可拖 zb-troops）。
+            var regions = root.Q<VisualElement>("zb-regions");
+            if (regions != null)
             {
-                // 清掉上一帧的节点（保留 zb-edges 连线层）。
-                map.Query<VisualElement>(className: "zb-node").ToList().ForEach(n => n.RemoveFromHierarchy());
+                regions.Clear(); // 地点标记纯静态内容，逐帧重建（不含兵马，故不打断行军补间）。
                 foreach (ZoneLineView z in view.Zones)
                 {
                     if (!ZoneAnchors.TryGetValue(StripZonePrefix(z.ZoneId), out Vector2 anchor)) continue;
-                    var node = new VisualElement();
-                    node.AddToClassList("zb-node");
-                    node.style.left = Length.Percent(anchor.x * 100f);
-                    node.style.top = Length.Percent(anchor.y * 100f);
-                    FillZoneNode(node, z, root);
-                    map.Add(node);
+                    var marker = new VisualElement();
+                    marker.AddToClassList("zb-node");
+                    marker.style.left = Length.Percent(anchor.x * 100f);
+                    marker.style.top = Length.Percent(anchor.y * 100f);
+                    BuildRegionMarker(marker, z);
+                    regions.Add(marker);
                 }
-                root.Q<VisualElement>("zb-edges")?.MarkDirtyRepaint();
             }
+            ReconcileTroops(root, view);                       // 兵马持久复用 + 换区补间行军
+            root.Q<VisualElement>("zb-edges")?.MarkDirtyRepaint();
 
             // 涌现横幅（醒目一次性）+ 侧栏涌现记录。
             var banner = root.Q<VisualElement>("zb-emergence-banner");
@@ -149,39 +154,88 @@ namespace ThreeKingdom.Unity.UI
             }
         }
 
-        /// <summary>把一个区域的态势填进它的地图节点：标题(★) + 我方支队(名牌+姿态切换) + 敌方兵力/将领(反全知) + 已成条件徽章。</summary>
-        private void FillZoneNode(VisualElement slot, ZoneLineView z, VisualElement root)
+        /// <summary>地点标记（固定于锚点）：标题(★) + 敌方兵力/将领(反全知) + 已成条件徽章。我方兵马已拆为独立可移动图元。</summary>
+        private void BuildRegionMarker(VisualElement marker, ZoneLineView z)
         {
-            slot.Clear();
-            slot.EnableInClassList("zb-node-objective", z.IsObjective);
+            marker.Clear();
+            marker.EnableInClassList("zb-node-objective", z.IsObjective);
 
             var title = new Label((z.IsObjective ? "★ " : "") + z.ZoneLabel);
             title.AddToClassList("zb-zone-title");
-            slot.Add(title);
-
-            // 我方兵力（旗帜队列）+ 各支队名牌 + 姿态切换。
-            slot.Add(BuildForceRow($"我 {z.OwnStrength}", z.OwnStrength, z.ZoneCapacity, enemy: false));
-            foreach (OwnUnitView u in z.OwnUnits)
-                slot.Add(BuildOwnUnit(u, root));
+            marker.Add(title);
 
             // 敌方兵力（反全知：已侦察=精确数；未侦察=区间估计"约 X–Y"+旗帜半透+问号，F2）。
-            slot.Add(BuildForceRow($"敌 {z.EnemyStrengthLabel}", z.EnemyStrength, z.ZoneCapacity, enemy: true, fogged: !z.EnemyRevealed));
+            marker.Add(BuildForceRow($"敌 {z.EnemyStrengthLabel}", z.EnemyStrength, z.ZoneCapacity, enemy: true, fogged: !z.EnemyRevealed));
             foreach (string cmd in z.EnemyCommanders)
-                slot.Add(BuildNameplate(cmd, cmd, enemy: true));
+                marker.Add(BuildNameplate(cmd, cmd, enemy: true));
 
             // 已成条件徽章（涌现兵法·形状+色，推测语气；不剧透未成型）。
             foreach (string c in z.FormedConditions)
-                slot.Add(BuildConditionBadge(c));
+                marker.Add(BuildConditionBadge(c));
         }
 
-        /// <summary>我方支队：立绘名牌 + 姿态三态切换（主攻/佯攻/守，当前高亮；在途/溃散禁用）。走 SetPosture 命令后重渲染。</summary>
-        private VisualElement BuildOwnUnit(OwnUnitView u, VisualElement root)
+        /// <summary>
+        /// 调和兵马图元（M2/M3）：按 detachmentId 持久复用元素；把每支队摆到其所在区锚点（下方错开），
+        /// 换区时 left/top 变化触发 USS transition → 兵马<b>沿路补间"行军"</b>；离场支队图元移除。同时刷新合法拖放落点集。
+        /// </summary>
+        private void ReconcileTroops(VisualElement root, ZoneBattleView view)
         {
-            var box = new VisualElement();
-            box.style.marginTop = 3;
+            var troops = root.Q<VisualElement>("zb-troops");
+            if (troops == null) return;
+
+            _moveTargets.Clear();
+            foreach (ZoneMoveOption m in view.MoveOptions)
+                _moveTargets.Add(m.DetachmentId + "|" + m.TargetZoneId);
+
+            var seen = new HashSet<string>();
+            foreach (ZoneLineView z in view.Zones)
+            {
+                if (!ZoneAnchors.TryGetValue(StripZonePrefix(z.ZoneId), out Vector2 anchor)) continue;
+                int i = 0;
+                foreach (OwnUnitView u in z.OwnUnits)
+                {
+                    seen.Add(u.DetachmentId);
+                    // 目标锚点：区锚点下方按序错开，避免同区多队重叠。
+                    float tx = anchor.x;
+                    float ty = Mathf.Min(0.97f, anchor.y + 0.06f + i * 0.075f);
+                    i++;
+
+                    if (!_troops.TryGetValue(u.DetachmentId, out VisualElement chip))
+                    {
+                        chip = new VisualElement();
+                        chip.AddToClassList("zb-troop");
+                        chip.AddToClassList("zb-troop-new"); // 首帧不从(0,0)滑入
+                        troops.Add(chip);
+                        _troops[u.DetachmentId] = chip;
+                        AttachDrag(chip, u.DetachmentId, root);
+                        chip.schedule.Execute(() => chip.RemoveFromClassList("zb-troop-new")).ExecuteLater(60);
+                    }
+                    // 设目标位置（新建=无补间就位；已存在且换区=transition 行军过去）。
+                    chip.style.left = Length.Percent(tx * 100f);
+                    chip.style.top = Length.Percent(ty * 100f);
+                    BuildTroopContent(chip, u, z.ZoneCapacity, root);
+                }
+            }
+
+            // 移除已离场（阵亡/并入）的支队图元。
+            var stale = new List<string>();
+            foreach (KeyValuePair<string, VisualElement> kv in _troops)
+                if (!seen.Contains(kv.Key)) stale.Add(kv.Key);
+            foreach (string id in stale) { _troops[id].RemoveFromHierarchy(); _troops.Remove(id); }
+        }
+
+        /// <summary>兵马图元内容（逐帧重建；拖拽/姿态交互挂在图元根上，内容重建不影响）：抓手 + 立绘名牌 + 兵力旗帜 + 姿态三态。</summary>
+        private void BuildTroopContent(VisualElement chip, OwnUnitView u, int zoneCapacity, VisualElement root)
+        {
+            chip.Clear();
+
+            var grip = new Label("⠿ 拖动布防");
+            grip.AddToClassList("zb-troop-grip");
+            chip.Add(grip);
 
             string label = (u.LeaderName ?? u.DetachmentId) + $"（{u.Strength}{(u.InTransit ? "·在途" : "")}{(u.IsBroken ? "·溃" : "")}）";
-            box.Add(BuildNameplate(label, u.LeaderName, enemy: false));
+            chip.Add(BuildNameplate(label, u.LeaderName, enemy: false));
+            chip.Add(BuildForceRow(string.Empty, u.Strength, zoneCapacity, enemy: false));
 
             var postureRow = new VisualElement();
             postureRow.AddToClassList("zb-force-row");
@@ -201,8 +255,61 @@ namespace ThreeKingdom.Unity.UI
                 btn.SetEnabled(!locked && p != u.Posture);
                 postureRow.Add(btn);
             }
-            box.Add(postureRow);
-            return box;
+            chip.Add(postureRow);
+        }
+
+        /// <summary>兵马图元拖放（M3）：拈起→跟随指针→松手落在相邻区则发 Move 命令（否则回弹）。姿态按钮上的按压不触发拖拽；键盘调动列表仍是无障碍兜底。</summary>
+        private void AttachDrag(VisualElement chip, string detId, VisualElement root)
+        {
+            bool dragging = false;
+            chip.RegisterCallback<PointerDownEvent>(e =>
+            {
+                var t = e.target as VisualElement;
+                if (t != null && (t is Button || t.GetFirstAncestorOfType<Button>() != null)) return; // 姿态按钮正常工作
+                dragging = true;
+                chip.AddToClassList("zb-troop-drag");
+                chip.CapturePointer(e.pointerId);
+                e.StopPropagation();
+            });
+            chip.RegisterCallback<PointerMoveEvent>(e =>
+            {
+                if (!dragging) return;
+                var map = root.Q<VisualElement>("zb-map");
+                if (map == null) return;
+                Vector2 local = map.WorldToLocal(e.position);
+                chip.style.left = local.x; // 拖拽态 transition 关，实时跟随
+                chip.style.top = local.y;
+            });
+            chip.RegisterCallback<PointerUpEvent>(e =>
+            {
+                if (!dragging) return;
+                dragging = false;
+                chip.ReleasePointer(e.pointerId);
+                chip.RemoveFromClassList("zb-troop-drag");
+                var map = root.Q<VisualElement>("zb-map");
+                string target = map != null ? DropTargetZone(map, map.WorldToLocal(e.position), detId) : null;
+                if (target != null) ZoneBattleSession.Move(detId, target); // 合法相邻落点 → 调动命令
+                Render(root); // 有效→补间到新区；无效→补间回原区（松手回弹）
+            });
+        }
+
+        /// <summary>拖放落点判定：松手点最近的区锚点（半径内），且属该支队的合法相邻调动，则返回其 zone-id；否则 null。</summary>
+        private string DropTargetZone(VisualElement map, Vector2 local, string detId)
+        {
+            float w = map.contentRect.width, h = map.contentRect.height;
+            if (w <= 0f || h <= 0f) return null;
+            float nx = local.x / w, ny = local.y / h;
+            const float radiusSq = 0.16f * 0.16f;
+            string best = null; float bestD = radiusSq;
+            foreach (KeyValuePair<string, Vector2> kv in ZoneAnchors)
+            {
+                float dx = kv.Value.x - nx, dy = kv.Value.y - ny;
+                float d = dx * dx + dy * dy;
+                if (d < bestD) { bestD = d; best = kv.Key; }
+            }
+            if (best == null) return null;
+            string zoneId = "zone-" + best;
+            return _moveTargets.Contains(detId + "|" + zoneId) ? zoneId : null;
         }
 
         /// <summary>涌现兵法条件徽章：形状符号 + 色（P3 色彩外编码，不只靠色）。</summary>

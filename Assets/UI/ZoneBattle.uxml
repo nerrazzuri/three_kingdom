@@ -25,8 +25,10 @@
                  邻接连线由 Painter2D 画在 zb-edges 层（节点之下）。锚点/连线全数据驱动，真战场地图一到只改锚点表即可热换。 -->
             <ui:VisualElement name="zb-field" class="zb-field">
                 <ui:VisualElement name="zb-map" class="zb-map">
+                    <!-- 分层：连线（底）→ 地点标记（中，固定）→ 兵马图元（上，可移动/可拖） -->
                     <ui:VisualElement name="zb-edges" class="zb-edges" picking-mode="Ignore" />
-                    <!-- 区域节点在此动态生成（class zb-node，绝对定位于锚点） -->
+                    <ui:VisualElement name="zb-regions" class="zb-regions" picking-mode="Ignore" />
+                    <ui:VisualElement name="zb-troops" class="zb-troops" picking-mode="Ignore" />
                 </ui:VisualElement>
                 <ui:Label name="zb-adjacency" class="zb-adjacency" />
             </ui:VisualElement>
