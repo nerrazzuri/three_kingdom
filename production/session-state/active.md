@@ -39,6 +39,16 @@
 > - **遗留非阻断**：武将录面板透天空盒（老问题「面板非不透明底」，归美术/USS 打磨）。
 > - **下一步候选**：① HUD 主将立绘 + 战斗/城池背景接入；② 势力徽章/边框（立绘靠 UI 框标阵营，尤其关羽绿袍/诸葛亮白袍不靠袍色识别）；③ 扩产其余 ~25 核心武将立绘（套已验证通用法）；④ 武将录面板不透明底美术打磨。
 
+## ✅ 里程碑（2026-07-20）— 格子战斗：文档 + 后端 Domain 核心完成（dotnet 1276 绿）
+
+> **用户令：commit+push 当前 → 写 GDD+ADR → 开发后端 → 全做完汇报。已执行到后端核心完成。**
+> - **文档（提交 8790d77）**：ADR-0018（Accepted，supersede ADR-0012）+ GDD-028（Draft，8段）；ADR-0012/GDD-021 标 superseded；adr-index/gdd-index 更新。
+> - **后端 Domain 核心（`src/Domain/GridBattle/`，纯 C# netstandard2.1 确定性）**：
+>   - `GridBattleEnums`（GridSide/TerrainKind/TroopKind/Outcome + GridCoord）· `BattleGrid`（地图+地形+粮仓+通行，FromRows 字符地图）· `GridBattleConfig`（兵种速/射程 + 全整数调参，Default=原型值）· `GridUnit`（引擎内可变外部只读）· `GridBattleState`（权威态+深拷+FNV确定性哈希）· `GridPathfinder`（整数BFS绕山过隘）· `GridBattleEngine`（段推进状态机：移动→遭遇→火攻→交战[伏击×2.5/夜袭×1.25/告急×3]→补给→回血/叛逃→终局 + SetDestination命令）。
+>   - **测试 `GridBattleEngineTests` 15 项全绿**（覆盖 GDD-028 十条 AC：确定性哈希/原态不变/寻路绕山/兵种定速/伏击/无伏击对照/火攻断粮/补给回血/叛逃/告急伤亡×3/半路遭遇/终局/命令校验/克隆哈希）。
+>   - **dotnet 1276/1276 绿**（1261→1276）；3 DLL Release/netstandard2.1 同步 Assets/Plugins。
+> - **待续（后端之外，未做）**：敌方AI迁到格子动作空间（ADR-0013 特化）· Application 战役接线（从出征/守城发起 + 存档信封 ADR-0005/0009）· 半路遭遇的暂停-抉择接 Application/UI · Presentation（先便宜视图跑通引擎，再上 **2.5D 等距** 呈现分期）· 平衡套件调数值。
+
 ## 🔀 方向转折（2026-07-20）— 换皮不够，用户转向"格子实时战斗"重造，原型已验手感
 
 > **换皮 M1-M3（下方 s28）发布后，用户判定"更像棋盘、不是要的"。** 要的完整战斗：真地形（隘口伏击/粮仓火攻，复用现有兵法涌现空间化）+ 2.5D 等距 + 按已有 DaySegment(黎明/白昼/黄昏/夜)推进 + 兵种定速行军(设目的地→进行→按速走，BFS 绕山过隘) + 半路遭遇临机抉择 + 时间段相邻格交战 + **补给硬约束(充足回血/不足叛逃+被打×3，粮仓/补给线=战略目标)**。
