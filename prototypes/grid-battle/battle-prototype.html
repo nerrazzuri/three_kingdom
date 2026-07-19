@@ -1,0 +1,391 @@
+<title>三国 · 战场玩法原型 v2</title>
+<style>
+  :root{
+    --ground:#e7dcc4; --ink:#332c22; --ink-soft:#6b5f4c; --line:rgba(51,44,34,.16);
+    --own:#a6402a; --own-d:#7a2c1c; --enemy:#3d5a78; --enemy-d:#26384c;
+    --gold:#c68a2e; --panel:#f3ecd9; --panel-line:#c9bd9f;
+    --good:#4b7a3f; --warn:#c68a2e; --bad:#b23a2e;
+    --sans:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+    --serif:"Songti SC","SimSun","Noto Serif CJK SC",serif;
+  }
+  *{box-sizing:border-box}
+  .app{font-family:var(--sans); color:var(--ink); background:var(--ground);
+    max-width:1100px; margin:0 auto; padding:16px; display:flex; flex-direction:column; gap:12px}
+  .hd{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; border-bottom:2px solid var(--ink); padding-bottom:8px}
+  .hd h1{font-family:var(--serif); font-size:22px; margin:0; letter-spacing:1px}
+  .hd .sub{font-size:12px; color:var(--ink-soft)}
+  .timebar{margin-left:auto; display:flex; align-items:center; gap:6px; font-size:13px}
+  .timebar .seg{padding:3px 10px; border:1px solid var(--panel-line); border-radius:12px; background:var(--panel)}
+  .timebar .seg.on{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:700}
+  .main{display:flex; gap:14px; flex-wrap:wrap}
+  .board-wrap{position:relative; flex:0 0 auto}
+  canvas{display:block; border:2px solid var(--ink); border-radius:3px; cursor:pointer; max-width:100%}
+  .side{flex:1 1 270px; min-width:258px; display:flex; flex-direction:column; gap:10px}
+  .card{background:var(--panel); border:1px solid var(--panel-line); border-radius:6px; padding:10px 12px}
+  .card h2{font-family:var(--serif); font-size:14px; margin:0 0 6px; letter-spacing:.5px}
+  .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+  button{font-family:var(--sans); font-size:14px; cursor:pointer; padding:9px 16px; border-radius:5px;
+    border:1px solid var(--ink); background:var(--ink); color:var(--ground); font-weight:700; letter-spacing:1px}
+  button.ghost{background:var(--panel); color:var(--ink)}
+  button:disabled{opacity:.4; cursor:not-allowed}
+  button:focus-visible{outline:3px solid var(--gold); outline-offset:2px}
+  .status{font-size:13px; min-height:18px; color:var(--own-d); font-weight:700}
+  .supply{display:flex; flex-direction:column; gap:6px; font-size:12px}
+  .supply .bar{height:12px; background:rgba(51,44,34,.14); border-radius:6px; overflow:hidden}
+  .supply .fill{height:100%; transition:width .3s}
+  .supply .lab{display:flex; justify-content:space-between; margin-bottom:2px}
+  .legend{font-size:12px; color:var(--ink-soft); line-height:1.65}
+  .legend b{color:var(--ink)}
+  .legend .k{display:inline-block; width:15px; height:15px; border-radius:3px; vertical-align:-3px; margin-right:3px; text-align:center; font-size:10px; line-height:15px; color:#4a3f2c}
+  .log{font-size:12.5px; line-height:1.5; max-height:200px; overflow-y:auto}
+  .log .e{padding:3px 0; border-bottom:1px dashed var(--line)}
+  .log .e.big{font-weight:700}
+  .log .e.fight{color:var(--bad)}
+  .log .e.meet{color:var(--own-d); font-weight:700}
+  .log .e.fire{color:#b5560f; font-weight:700}
+  .log .e.ambush{color:#5a3a86; font-weight:700}
+  .prompt{position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(30,24,16,.42); border-radius:3px}
+  .prompt.show{display:flex}
+  .prompt .box{background:var(--panel); border:2px solid var(--own); border-radius:8px; padding:16px 18px; max-width:340px; box-shadow:0 8px 28px rgba(0,0,0,.3)}
+  .prompt .box h3{font-family:var(--serif); margin:0 0 6px; color:var(--own-d); font-size:16px}
+  .prompt .box p{margin:0 0 12px; font-size:13px; line-height:1.5}
+  .prompt .box .btns{flex-direction:column}
+  .prompt .box button{width:100%; text-align:left}
+  .foot{font-size:11px; color:var(--ink-soft); text-align:center}
+</style>
+
+<div class="app">
+  <div class="hd">
+    <h1>战场玩法原型 v2</h1>
+    <span class="sub">丢弃式验证 · 占位美术 · 便宜俯视（2.5D 留正式版）</span>
+    <div class="timebar" id="timebar"></div>
+  </div>
+
+  <div class="main">
+    <div class="board-wrap">
+      <canvas id="cv" width="616" height="396"></canvas>
+      <div class="prompt" id="prompt">
+        <div class="box">
+          <h3>半路遭遇！</h3>
+          <p id="prompt-text"></p>
+          <div class="btns">
+            <button data-choice="push">继续突进（照原目的地打过去）</button>
+            <button data-choice="hold" class="ghost">就地据守（停在此处结阵）</button>
+            <button data-choice="back" class="ghost">稳住阵脚（后撤避战）</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <h2>指挥</h2>
+        <div class="status" id="status"></div>
+        <div class="btns">
+          <button id="go">进行 ▶（推进一个时间段）</button>
+          <button id="reset" class="ghost">重置</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>补给</h2>
+        <div class="supply" id="supply"></div>
+        <div class="legend" style="margin-top:6px">充足(≥50)→逐段回血；<b>告急(&lt;25)→部队叛逃 + 被打伤亡×3</b>。守住己方【仓】补给回升；烧/断敌【仓】→敌补给崩。</div>
+      </div>
+
+      <div class="card">
+        <h2>地形 · 打法</h2>
+        <div class="legend">
+          <div><span class="k" style="background:#a99b7c">山</span>不可通行（逼出隘口）　<span class="k" style="background:#ecd0a8">隘</span>隘口·唯一通道</div>
+          <div><span class="k" style="background:#b9c69a">林</span>林地·藏兵伏击　<span class="k" style="background:#f0dca0">仓</span>粮仓·补给源</div>
+          <div style="margin-top:4px"><b>诱敌入隘伏击</b>：把兵藏进挨着【隘】的【林】，敌军入隘即遭伏击（×2.5）。</div>
+          <div><b>绕后粮仓火攻</b>：派兵绕到敌【仓】旁（白昼/黄昏）→ 火攻，敌补给崩。</div>
+          <div style="margin-top:4px">骑速3·步速1·弓速1(隔2格放箭)；相邻(含斜)每段交战；<b>夜</b>段突袭×1.25。</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>战况</h2>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">选我军(赤)→点格子设目的地→「进行」。部队会绕山、过隘口。金虚线=目的地。</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var COLS=14, ROWS=9, CELL=44;
+  var SEGS=["黎明","白昼","黄昏","夜"];               // 对齐主域 DaySegment（Dawn/Day/Dusk/Night）
+  // 地图：. 平地  ^ 山(不可通行)  P 隘口  F 林地  G 我仓  g 敌仓
+  var MAP=[
+    ".......^......",
+    ".......^......",
+    ".......^......",
+    "......FPF.....",
+    ".G.....P....g.",
+    "......FPF.....",
+    ".......^......",
+    ".......^......",
+    ".......^......"
+  ];
+  var OWN_GRAN={x:1,y:4}, ENE_GRAN={x:12,y:4};
+
+  var cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+  var elStatus=document.getElementById("status"), elLog=document.getElementById("log");
+  var elTimebar=document.getElementById("timebar"), elSupply=document.getElementById("supply");
+  var elPrompt=document.getElementById("prompt"), elPromptText=document.getElementById("prompt-text");
+
+  var units, phase, timeIdx, day, sel, log, pending, supply, burned;
+
+  function terrain(x,y){ if(x<0||y<0||x>=COLS||y>=ROWS) return '^'; return MAP[y].charAt(x); }
+  function passable(x,y){ return terrain(x,y)!=='^'; }
+
+  function startUnits(){
+    return [
+      {id:"g", side:"own",  type:"骑", name:"关羽", x:3,y:2, hp:100,max:100, atk:24, speed:3, range:1, dest:null},
+      {id:"z", side:"own",  type:"步", name:"张飞", x:3,y:6, hp:130,max:130, atk:22, speed:1, range:1, dest:null},
+      {id:"h", side:"own",  type:"弓", name:"黄忠", x:2,y:4, hp:80, max:80,  atk:23, speed:1, range:2, dest:null},
+      {id:"ec",side:"enemy",type:"骑", name:"敌骑", x:11,y:2, hp:94, max:94,  atk:23, speed:3, range:1, dest:{x:4,y:3}},
+      {id:"ei",side:"enemy",type:"步", name:"敌步", x:11,y:6, hp:120,max:120, atk:20, speed:1, range:1, dest:{x:4,y:5}},
+      {id:"ea",side:"enemy",type:"弓", name:"敌弓", x:11,y:4, hp:76, max:76,  atk:22, speed:1, range:2, dest:{x:9,y:4}}
+    ];
+  }
+
+  function reset(){
+    units=startUnits(); phase="plan"; timeIdx=-1; day=1; sel=null; log=[]; pending=null;
+    supply={own:100, enemy:100}; burned={own:false, enemy:false};
+    addLog("布阵：给每支我军点目的地，再点「进行」。试试把黄忠藏进隘口边的【林】设伏。", "meet");
+    document.getElementById("go").disabled=false;
+    setStatus("选一支我军(赤) → 点一个格子设为目的地。");
+    redraw();
+  }
+
+  function unitAt(x,y){ for(var i=0;i<units.length;i++){var u=units[i]; if(u.hp>0&&u.x===x&&u.y===y) return u;} return null; }
+  function alive(side){ return units.filter(function(u){return u.hp>0&&u.side===side;}); }
+  function cheb(a,b){ return Math.max(Math.abs(a.x-b.x),Math.abs(a.y-b.y)); }
+  function arrived(u){ return u.dest&&u.x===u.dest.x&&u.y===u.dest.y; }
+  function enroute(u){ return u.dest&&!arrived(u); }
+  function foe(side){ return side==="own"?"enemy":"own"; }
+  function adjEnemy(u){ var e=alive(foe(u.side)); for(var i=0;i<e.length;i++){ if(cheb(u,e[i])===1) return e[i]; } return null; }
+
+  // BFS 寻路（绕山、绕友军），返回朝目的地的下一步。
+  function bfsNext(sx,sy,tx,ty){
+    if(sx===tx&&sy===ty) return null;
+    var q=[[sx,sy]], seen={}, prev={}, dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+    seen[sx+","+sy]=true;
+    while(q.length){
+      var c=q.shift();
+      for(var i=0;i<4;i++){
+        var nx=c[0]+dirs[i][0], ny=c[1]+dirs[i][1], k=nx+","+ny;
+        if(nx<0||ny<0||nx>=COLS||ny>=ROWS||seen[k]||!passable(nx,ny)){ continue; }
+        if(unitAt(nx,ny)&&!(nx===tx&&ny===ty)){ seen[k]=true; continue; }
+        seen[k]=true; prev[k]=c[0]+","+c[1];
+        if(nx===tx&&ny===ty){
+          var cur=k; while(prev[cur]&&prev[cur]!==sx+","+sy) cur=prev[cur];
+          var p=cur.split(","); return [parseInt(p[0],10),parseInt(p[1],10)];
+        }
+        q.push([nx,ny]);
+      }
+    }
+    return null;
+  }
+  function moveUnit(u){
+    for(var s=0;s<u.speed;s++){
+      if(!u.dest||arrived(u)) break;
+      var n=bfsNext(u.x,u.y,u.dest.x,u.dest.y); if(!n) break;
+      u.x=n[0]; u.y=n[1]; if(arrived(u)) break;
+    }
+  }
+
+  function advance(){
+    if(phase==="over") return;
+    timeIdx=(timeIdx+1)%SEGS.length; if(timeIdx===0) day++;
+    var seg=SEGS[timeIdx];
+    var wasAdj={}; alive("own").forEach(function(u){ wasAdj[u.id]=!!adjEnemy(u); });
+    units.filter(function(u){return u.hp>0;}).forEach(function(u){ moveUnit(u); });
+
+    var meets=alive("own").filter(function(u){ return enroute(u)&&!wasAdj[u.id]&&adjEnemy(u); });
+    if(meets.length){
+      pending={seg:seg, units:meets};
+      var names=meets.map(function(u){return u.name+"("+u.type+")";}).join("、");
+      addLog(seg+"："+names+" 半路撞上敌军！","meet");
+      phase="encounter"; redraw();
+      elPromptText.textContent=names+" 赶路途中与敌相遇，如何应对？";
+      elPrompt.classList.add("show"); document.getElementById("go").disabled=true;
+      return;
+    }
+    resolveSegment(seg);
+  }
+
+  function applyChoice(choice){
+    if(!pending) return;
+    var seg=pending.seg;
+    pending.units.forEach(function(u){
+      if(choice==="hold"){ u.dest={x:u.x,y:u.y}; addLog("　"+u.name+" 就地据守。"); }
+      else if(choice==="back"){
+        var e=adjEnemy(u);
+        if(e){ var bx=u.x-Math.sign(e.x-u.x), by=u.y-Math.sign(e.y-u.y);
+          if(passable(bx,by)&&!unitAt(bx,by)){ u.x=bx; u.y=by; } }
+        addLog("　"+u.name+" 后撤避战。");
+      } else addLog("　"+u.name+" 继续突进。");
+    });
+    pending=null; phase="plan"; elPrompt.classList.remove("show"); document.getElementById("go").disabled=false;
+    resolveSegment(seg);
+  }
+
+  function isDay(seg){ return seg!=="夜"; }
+
+  function resolveSegment(seg){
+    // ① 火攻：贴敌粮仓 + 白昼/黄昏/黎明 → 焚仓，敌补给崩。
+    ["own","enemy"].forEach(function(sd){
+      var gran = sd==="own"?ENE_GRAN:OWN_GRAN;     // 攻方烧的是【对方】的仓
+      var targetSide = foe(sd);
+      if(burned[targetSide]) return;
+      var attacker = alive(sd).some(function(u){ return cheb(u,gran)<=1; });
+      if(attacker && isDay(seg)){
+        burned[targetSide]=true; supply[targetSide]=Math.max(0, supply[targetSide]-38);
+        addLog(seg+"：火攻！"+(sd==="own"?"我军焚敌粮仓":"敌军焚我粮仓")+" — "+(targetSide==="own"?"我":"敌")+"补给暴跌！","fire");
+      }
+    });
+
+    // ② 交战：射程内造伤（林中伏击 ×2.5、夜段突袭 ×1.25），叛逃(受伤)方 ×3。
+    var live=units.filter(function(u){return u.hp>0;}), dmg={}, ambushes=[];
+    var starving={ own:supply.own<25, enemy:supply.enemy<25 };
+    for(var i=0;i<live.length;i++){ var a=live[i];
+      for(var j=0;j<live.length;j++){ var b=live[j];
+        if(a.side===b.side||cheb(a,b)>a.range) continue;
+        var base=a.atk;
+        if(terrain(a.x,a.y)==='F'&&terrain(b.x,b.y)==='P'&&cheb(a,b)===1){ base*=2.5; ambushes.push(a.name+"→"+b.name); }
+        if(seg==="夜"&&a.range===1) base*=1.25;
+        dmg[b.id]=(dmg[b.id]||0)+base;
+      }
+    }
+    ambushes.forEach(function(t){ addLog(seg+"：林中设伏！"+t+"（×2.5）","ambush"); });
+    var fought=false;
+    live.forEach(function(u){
+      if(!dmg[u.id]) return;
+      var d=Math.round(dmg[u.id]*(starving[u.side]?3:1)); u.hp-=d; fought=true;
+      if(u.hp<=0){ u.hp=0; addLog(seg+"："+u.name+"("+u.type+") 溃灭！","fight"); }
+    });
+    if(fought){
+      var s=live.filter(function(u){return dmg[u.id]&&u.hp>0;}).map(function(u){return u.name+" -"+Math.round(dmg[u.id]*(starving[u.side]?3:1));}).join("　");
+      if(s) addLog(seg+" 交战："+s,"fight");
+    }
+
+    // ③ 补给更新：守住己仓→回升，被焚/被断→下滑。
+    ["own","enemy"].forEach(function(sd){
+      var gran = sd==="own"?OWN_GRAN:ENE_GRAN;
+      var enemyNear = alive(foe(sd)).some(function(u){ return cheb(u,gran)<=1; });
+      var healthy = !burned[sd] && !enemyNear;
+      supply[sd] = Math.max(0, Math.min(100, supply[sd] + (healthy?5:-7)));
+    });
+
+    // ④ 逐段：补给充足→回血；告急→叛逃减员。
+    ["own","enemy"].forEach(function(sd){
+      var sp=supply[sd];
+      alive(sd).forEach(function(u){
+        if(sp>=50){ u.hp=Math.min(u.max, u.hp+5); }
+        else if(sp<25){ u.hp-=6; if(u.hp<=0){ u.hp=0; addLog(seg+"："+u.name+" 补给断绝，部众叛散！","fight"); } }
+      });
+      if(sp<25) addLog(seg+"："+(sd==="own"?"我":"敌")+"军补给告急——士卒叛逃、士气崩！","fight");
+    });
+
+    checkEnd();
+    if(phase!=="over") setStatus(allArrived()?"全军到位——继续「进行」推进时间、与相邻敌军交战。":"行军中：继续「进行」，或改派目的地。");
+    redraw();
+  }
+
+  function allArrived(){ return alive("own").every(function(u){ return u.dest?arrived(u):true; }); }
+  function checkEnd(){
+    var o=alive("own").length, e=alive("enemy").length;
+    if(e===0&&o>0){ phase="over"; addLog("★ 敌军尽墨——我军全胜！","meet big"); setStatus("我军全胜！点「重置」再来。"); document.getElementById("go").disabled=true; }
+    else if(o===0){ phase="over"; addLog("✖ 我军覆没……","fight big"); setStatus("我军覆没。点「重置」再来。"); document.getElementById("go").disabled=true; }
+  }
+
+  // ---------- 渲染 ----------
+  function cellColor(t,x,y){
+    if(t==='^') return "#a99b7c";
+    if(t==='P') return "#ecd0a8";
+    if(t==='F') return "#b9c69a";
+    if(t==='G'||t==='g') return "#f0dca0";
+    return (x+y)%2===0 ? "#e9dfc8" : "#e1d5ba";
+  }
+  function cellGlyph(t){ return t==='^'?"山":t==='P'?"隘":t==='F'?"林":(t==='G'||t==='g')?"仓":""; }
+
+  function redraw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    for(var y=0;y<ROWS;y++){ for(var x=0;x<COLS;x++){
+      var t=terrain(x,y);
+      ctx.fillStyle=cellColor(t,x,y); ctx.fillRect(x*CELL,y*CELL,CELL,CELL);
+      var g=cellGlyph(t);
+      if(g){ ctx.fillStyle="rgba(74,63,44,.5)"; ctx.font="12px "+"'Songti SC',serif"; ctx.textAlign="left"; ctx.textBaseline="top"; ctx.fillText(g,x*CELL+3,y*CELL+2); }
+    }}
+    // 粮仓归属边 + 焚毁标记
+    [{g:OWN_GRAN,s:"own"},{g:ENE_GRAN,s:"enemy"}].forEach(function(o){
+      ctx.strokeStyle=o.s==="own"?"#a6402a":"#3d5a78"; ctx.lineWidth=3;
+      ctx.strokeRect(o.g.x*CELL+2,o.g.y*CELL+2,CELL-4,CELL-4);
+      if(burned[o.s]){ ctx.fillStyle="rgba(150,40,10,.4)"; ctx.fillRect(o.g.x*CELL,o.g.y*CELL,CELL,CELL);
+        ctx.fillStyle="#7a1e08"; ctx.font="bold 16px 'Songti SC',serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("焚",o.g.x*CELL+CELL/2,o.g.y*CELL+CELL/2); }
+    });
+    // 网格线
+    ctx.strokeStyle="rgba(51,44,34,.16)"; ctx.lineWidth=1;
+    for(var gx=0;gx<=COLS;gx++){ ctx.beginPath(); ctx.moveTo(gx*CELL+.5,0); ctx.lineTo(gx*CELL+.5,ROWS*CELL); ctx.stroke(); }
+    for(var gy=0;gy<=ROWS;gy++){ ctx.beginPath(); ctx.moveTo(0,gy*CELL+.5); ctx.lineTo(COLS*CELL,gy*CELL+.5); ctx.stroke(); }
+    // 目的地虚线
+    units.forEach(function(u){ if(u.side==="own"&&u.dest&&u.hp>0&&!arrived(u)){
+      var ux=u.x*CELL+CELL/2,uy=u.y*CELL+CELL/2,dx=u.dest.x*CELL+CELL/2,dy=u.dest.y*CELL+CELL/2;
+      ctx.strokeStyle="rgba(198,138,46,.85)"; ctx.lineWidth=2; ctx.setLineDash([5,5]);
+      ctx.beginPath(); ctx.moveTo(ux,uy); ctx.lineTo(dx,dy); ctx.stroke();
+      ctx.beginPath(); ctx.arc(dx,dy,13,0,7); ctx.stroke(); ctx.setLineDash([]);
+    }});
+    // 单位
+    units.forEach(function(u){ if(u.hp<=0) return;
+      var cx=u.x*CELL+CELL/2, cy=u.y*CELL+CELL/2, r=15, inCover=terrain(u.x,u.y)==='F';
+      if(sel&&sel.id===u.id){ ctx.strokeStyle="#c68a2e"; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(cx,cy,r+4,0,7); ctx.stroke(); }
+      ctx.fillStyle=u.side==="own"?"#a6402a":"#3d5a78"; ctx.strokeStyle=u.side==="own"?"#7a2c1c":"#26384c"; ctx.lineWidth=2;
+      if(inCover){ ctx.setLineDash([3,2]); } // 林中=虚边（藏兵）
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle="#f3ecd9"; ctx.font="bold 15px 'Songti SC',serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(u.type,cx,cy+1);
+      var w=30,hx=cx-w/2,hy=cy-r-8;
+      ctx.fillStyle="rgba(51,44,34,.25)"; ctx.fillRect(hx,hy,w,4);
+      ctx.fillStyle=u.side==="own"?"#4b7a3f":"#b23a2e"; ctx.fillRect(hx,hy,w*Math.max(0,u.hp/u.max),4);
+      ctx.fillStyle="#332c22"; ctx.font="11px 'PingFang SC',sans-serif"; ctx.fillText(u.name,cx,cy+r+9);
+    });
+    renderTime(); renderSupply(); renderLog();
+  }
+  function renderTime(){
+    var h='<span>第 '+day+' 日</span>';
+    for(var i=0;i<SEGS.length;i++) h+='<span class="seg'+(i===timeIdx?" on":"")+'">'+SEGS[i]+'</span>';
+    elTimebar.innerHTML=h;
+  }
+  function renderSupply(){
+    function bar(name,v){ var c=v>=50?"var(--good)":v<25?"var(--bad)":"var(--warn)";
+      return '<div><div class="lab"><span>'+name+'</span><span>'+v+'</span></div><div class="bar"><div class="fill" style="width:'+v+'%;background:'+c+'"></div></div></div>'; }
+    elSupply.innerHTML=bar("我军补给",supply.own)+bar("敌军补给",supply.enemy);
+  }
+  function renderLog(){ elLog.innerHTML=log.map(function(e){return '<div class="e '+(e.cls||"")+'">'+e.txt+'</div>';}).join(""); }
+  function addLog(t,cls){ log.unshift({txt:t,cls:cls||""}); if(log.length>50) log.pop(); }
+  function setStatus(t){ elStatus.textContent=t; }
+
+  cv.addEventListener("click",function(ev){
+    if(phase==="encounter"||phase==="over") return;
+    var rect=cv.getBoundingClientRect(), sx=cv.width/rect.width, sy=cv.height/rect.height;
+    var x=Math.floor((ev.clientX-rect.left)*sx/CELL), y=Math.floor((ev.clientY-rect.top)*sy/CELL);
+    if(x<0||y<0||x>=COLS||y>=ROWS) return;
+    var u=unitAt(x,y);
+    if(u&&u.side==="own"){ sel=u; setStatus("已选 "+u.name+"（"+u.type+"，速"+u.speed+"）——点格子设目的地。"); redraw(); return; }
+    if(sel){ if(!passable(x,y)){ setStatus("那是山地，过不去。换一个格子。"); return; }
+      sel.dest={x:x,y:y}; setStatus(sel.name+" 目的地→("+x+","+y+")。可再选别队或点「进行」。"); redraw(); }
+    else setStatus("先点一支我军(赤)。");
+  });
+  document.getElementById("go").addEventListener("click",advance);
+  document.getElementById("reset").addEventListener("click",reset);
+  Array.prototype.forEach.call(document.querySelectorAll("#prompt [data-choice]"),function(b){
+    b.addEventListener("click",function(){ applyChoice(b.getAttribute("data-choice")); });
+  });
+
+  reset();
+})();
+</script>
