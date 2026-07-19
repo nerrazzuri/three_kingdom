@@ -52,7 +52,8 @@
 >   - **Application 接线**（`Application/GridBattle/`）：`GridBattleSession`(编排:玩家仅己方下令防越权→敌AI规划→引擎推进→终局) + `GridBattleSnapshot/Codec`(显式版本化 DTO，战中存档 round-trip 哈希一致，读档续战=不间断推进同结果)。6 测。
 >   - **Presentation**（`GridBattleView` 投影 + Unity `GridBattle.uxml/uss/GridBattleController` + `GridBattleRuntime` demo 桥 + SliceSceneBuilder 注册 GridBattle 场景）：便宜俯视——地形色块网格+部队图元+补给条+时钟+点选设目的地+进行。view-model 3 测；21 个 Assets/UI 脚本 csc 编译 0 错。
 >   - **dotnet 1291/1291 绿**（1276→1291，+15）；3 DLL Release 同步。
-> - **仍待（后续，未做）**：GridBattle 场景需编辑器重跑 SliceSceneBuilder 生成 + 视觉验证（编辑器锁项目，本轮 csc 编译验证）· 深度战役接线（从出征/守城 GDD-019 发起 + 存档信封 ADR-0009 并入 CampaignSession）· 半路遭遇的暂停-抉择 UI · **2.5D 等距**呈现分期 · AI 深化(softmax/记忆) · 平衡套件调数值。
+> - **再补（2026-07-20）**：**半路遭遇抉择**（EncounterChoice 继续/据守/后撤 + `GridBattleSession.ApplyEncounterChoice` + Unity 桥/控制器弹抉择按钮，Application 4 测）· **装配入口** `GridBattleLauncher`（双方兵力编成→确定性布放→一局，供战役接线 seam，2 测）。dotnet **1297/1297**；3 DLL 同步；UI csc 0 错。
+> - **⛔ 我做不了/需要你的（本会话上限）**：① **GridBattle 场景生成 + 视觉/交互验证**——需在编辑器跑「三国/构建 Slice 场景」+ Play（编辑器锁项目、computer-use 本轮免）；② **2.5D 等距呈现 + 真战场地图美术**——需美术资产(Midjourney 你出)+编辑器；③ **深度并入 CampaignSession 存档信封 + 用格子战斗替换现役 ZoneBattle 战斗路径**——大迁移，会改动你实际在玩的流程，需你拍板才动。可延后（设计已允许）：AI softmax/记忆深化、平衡套件调参。
 
 ## 🔀 方向转折（2026-07-20）— 换皮不够，用户转向"格子实时战斗"重造，原型已验手感
 

@@ -122,8 +122,41 @@ namespace ThreeKingdom.Unity.UI
             if (log != null)
             {
                 log.Clear();
-                log.Add(new Label(view.IsOver ? view.OutcomeLabel : "推进「进行」，相邻格敌我交战；断敌粮、入隘伏。"));
+                var enc = GridBattleRuntime.LastEncounters;
+                if (!view.IsOver && enc.Count > 0)
+                {
+                    var head = new Label("半路遭遇！临机抉择：");
+                    head.style.unityFontStyleAndWeight = FontStyle.Bold;
+                    log.Add(head);
+                    foreach (string id in enc)
+                    {
+                        var row = new VisualElement();
+                        row.style.flexDirection = FlexDirection.Row;
+                        row.style.flexWrap = Wrap.Wrap;
+                        row.Add(new Label(id));
+                        row.Add(EncounterButton(root, id, "继续", EncounterChoice.Continue));
+                        row.Add(EncounterButton(root, id, "据守", EncounterChoice.Hold));
+                        row.Add(EncounterButton(root, id, "后撤", EncounterChoice.Retreat));
+                        log.Add(row);
+                    }
+                }
+                else
+                {
+                    log.Add(new Label(view.IsOver ? view.OutcomeLabel : "推进「进行」，相邻格敌我交战；断敌粮、入隘伏。"));
+                }
             }
+        }
+
+        private Button EncounterButton(VisualElement root, string unitId, string text, EncounterChoice choice)
+        {
+            var b = new Button(() =>
+            {
+                GridBattleRuntime.ApplyEncounter(unitId, choice);
+                GridBattleRuntime.ClearEncounters();
+                Render(root);
+            })
+            { text = text };
+            return b;
         }
 
         private static VisualElement SupplyRow(string name, int val)

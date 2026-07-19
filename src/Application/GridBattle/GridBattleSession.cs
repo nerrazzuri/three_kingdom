@@ -50,6 +50,59 @@ namespace ThreeKingdom.Application.GridBattle
             return r;
         }
 
+        /// <summary>
+        /// 应用半路遭遇的临机抉择（GDD-028 §3.5，仅己方）：继续=保持目的地 / 据守=目的地设为当前格 /
+        /// 后撤=朝远离最近敌退一格。经命令契约（设目的地，下段推进生效）。
+        /// </summary>
+        public GridCommandResult ApplyEncounterChoice(BattleUnitId unitId, EncounterChoice choice)
+        {
+            GridUnit unit = null;
+            foreach (GridUnit u in _state.Units)
+                if (u.Alive && u.Id == unitId) { unit = u; break; }
+            if (unit == null || unit.Side != GridSide.Player) return GridCommandResult.UnitNotFound;
+
+            switch (choice)
+            {
+                case EncounterChoice.Continue:
+                    return GridCommandResult.Ok; // 保持原目的地
+                case EncounterChoice.Hold:
+                    return GridBattleEngine.SetDestination(_state, unitId, unit.Position);
+                case EncounterChoice.Retreat:
+                    GridCoord? back = StepAwayFromNearestFoe(unit);
+                    return GridBattleEngine.SetDestination(_state, unitId, back ?? unit.Position);
+                default:
+                    return GridCommandResult.Ok;
+            }
+        }
+
+        private GridCoord? StepAwayFromNearestFoe(GridUnit unit)
+        {
+            GridUnit nearest = null;
+            int bestD = int.MaxValue;
+            foreach (GridUnit e in _state.Units)
+            {
+                if (!e.Alive || e.Side == unit.Side) continue;
+                int d = GridCoord.Manhattan(unit.Position, e.Position);
+                if (d < bestD) { bestD = d; nearest = e; }
+            }
+            if (nearest == null) return null;
+            int dx = Math.Sign(unit.Position.X - nearest.Position.X);
+            int dy = Math.Sign(unit.Position.Y - nearest.Position.Y);
+            var diag = new GridCoord(unit.Position.X + dx, unit.Position.Y + dy);
+            if (diag != unit.Position && _state.Grid.Passable(diag) && _state.UnitAt(diag) == null) return diag;
+            if (dx != 0)
+            {
+                var ax = new GridCoord(unit.Position.X + dx, unit.Position.Y);
+                if (_state.Grid.Passable(ax) && _state.UnitAt(ax) == null) return ax;
+            }
+            if (dy != 0)
+            {
+                var ay = new GridCoord(unit.Position.X, unit.Position.Y + dy);
+                if (_state.Grid.Passable(ay) && _state.UnitAt(ay) == null) return ay;
+            }
+            return null;
+        }
+
         /// <summary>战中存档（显式 DTO，ADR-0005）。</summary>
         public GridBattleSnapshot Snapshot() => GridBattleSnapshotCodec.Capture(_state);
 

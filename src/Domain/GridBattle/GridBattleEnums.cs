@@ -48,6 +48,17 @@ namespace ThreeKingdom.Domain.GridBattle
         EnemyVictory = 2,
     }
 
+    /// <summary>半路遭遇的临机抉择（GDD-028 §3.5）。</summary>
+    public enum EncounterChoice
+    {
+        /// <summary>继续突进：保持原目的地。</summary>
+        Continue = 0,
+        /// <summary>就地据守：停在当前格结阵。</summary>
+        Hold = 1,
+        /// <summary>后撤避战：朝远离最近敌的方向退一格。</summary>
+        Retreat = 2,
+    }
+
     /// <summary><see cref="GridSide"/> 辅助。</summary>
     public static class GridSideExtensions
     {

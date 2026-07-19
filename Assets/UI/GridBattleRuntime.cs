@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using ThreeKingdom.Application.GridBattle;
 using ThreeKingdom.Domain.Battle;
 using ThreeKingdom.Domain.GridBattle;
@@ -34,14 +36,31 @@ namespace ThreeKingdom.Unity.UI
         public static GridCommandResult SetDestination(string unitId, int x, int y)
             => Session.SetPlayerDestination(new BattleUnitId(unitId), new GridCoord(x, y));
 
-        /// <summary>推进一个时间段（终局后为空操作，返回 null）。</summary>
-        public static SegmentResult Advance() => Session.IsOver ? null : Session.Advance();
+        private static List<string> _lastEncounters = new List<string>();
+        /// <summary>上一次推进的半路遭遇（玩家部队 id）——供 UI 弹抉择。</summary>
+        public static IReadOnlyList<string> LastEncounters => _lastEncounters;
+
+        /// <summary>推进一个时间段（终局后为空操作，返回 null）。记录本段半路遭遇。</summary>
+        public static SegmentResult Advance()
+        {
+            if (Session.IsOver) return null;
+            SegmentResult r = Session.Advance();
+            _lastEncounters = r.Encounters.Select(e => e.Value).ToList();
+            return r;
+        }
+
+        /// <summary>应用某遭遇部队的抉择（继续/据守/后撤）。</summary>
+        public static GridCommandResult ApplyEncounter(string unitId, EncounterChoice choice)
+            => Session.ApplyEncounterChoice(new BattleUnitId(unitId), choice);
+
+        /// <summary>清空遭遇提示（抉择处理后）。</summary>
+        public static void ClearEncounters() => _lastEncounters = new List<string>();
 
         /// <summary>是否终局。</summary>
         public static bool IsOver => Session.IsOver;
 
         /// <summary>重开 demo 局。</summary>
-        public static void Reset() => _session = BuildDemo();
+        public static void Reset() { _session = BuildDemo(); _lastEncounters = new List<string>(); }
 
         private static GridBattleSession BuildDemo()
         {
